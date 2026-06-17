@@ -245,7 +245,7 @@ export default function WorldCupHub() {
   }).sort((a, b) => parseLocalDate(a.local_date).getTime() - parseLocalDate(b.local_date).getTime());
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-[52px]">
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-20">
 
       {/* Futuristic Stadium HUD Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -259,43 +259,39 @@ export default function WorldCupHub() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#0A0A0A]/40 to-[#0A0A0A]" />
       </div>
 
-      {/* Fixed HUD Header Bar - Always visible at top */}
-      <div className="fixed top-[52px] left-0 z-30 w-full bg-[#0A0A0A] border-b border-white/10 shadow-lg shadow-black/80 py-4 sm:py-5 px-6">
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#881337] via-[#D97706] to-[#881337] opacity-60" />
-        <div className="max-w-8xl mx-auto flex items-center justify-between gap-4">
-          <div className="text-left">
-            <h1 className="font-display font-black text-lg sm:text-xl md:text-2xl text-white uppercase tracking-wider leading-none"
-                style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
-              FIFA WORLD CUP 2026 HUB
-            </h1>
-            <p className="text-gray-400 text-[9px] sm:text-xs mt-1.5 font-medium leading-none">
-              Simulation Date: <span className="text-[#D97706] font-bold">June 16, 2026</span><span className="hidden min-[500px]:inline"> • Lock predictions and claim cards.</span>
-            </p>
-          </div>
-
-          {profile && (
-            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-all duration-300 rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 sm:gap-3 bg-black/60 shadow-xl shrink-0 group active:scale-98">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-xs sm:text-sm text-white shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
-                {profile.overallRating}
-              </div>
-              <div className="text-left hidden min-[400px]:block">
-                <p className="text-[7px] sm:text-[8px] font-black text-gray-500 uppercase tracking-widest leading-none">Manager Reputation</p>
-                <p className="font-bold text-[10px] sm:text-xs text-white group-hover:text-[#D97706] transition-colors leading-none mt-0.5 sm:mt-1 truncate max-w-[85px] sm:max-w-[120px]">{profile.username}</p>
-              </div>
-            </Link>
-          )}
-        </div>
+      {/* Centered Heading Section */}
+      <div className="relative z-10 text-center max-w-3xl mx-auto mb-8 px-6 pt-4">
+        <h1 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none"
+            style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+          FIFA WORLD CUP 2026 HUB
+        </h1>
+        <p className="text-gray-400 text-xs sm:text-sm mt-3 font-medium leading-none">
+          Simulation Date: <span className="text-[#D97706] font-bold">June 16, 2026</span> • Lock predictions and claim cards.
+        </p>
       </div>
-
-      {/* Dedicated Spacing Element to reserve fixed header layout flow */}
-      <div className="h-[76px] sm:h-[84px] w-full shrink-0" />
 
       {/* Main Console Layout: Left Sidebar Deck, Right Match Board */}
       <div className="relative z-10 max-w-8xl mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6 items-start w-full">
         
         {/* Left-Aligned Control Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0 bg-black/75 border border-white/5 p-4 rounded-2xl space-y-6 sticky lg:top-[152px] shadow-2xl backdrop-blur-md w-full">
+        <aside className="w-full lg:w-64 shrink-0 bg-black/75 border border-white/5 p-4 rounded-2xl space-y-5 sticky lg:top-[72px] shadow-2xl backdrop-blur-md">
           
+          {/* Section 0: Manager Career Profile Widget */}
+          {profile && (
+            <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3 bg-gradient-to-b from-black/80 to-black/40 shadow-inner flex items-center gap-3 transition-colors duration-300 group">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-sm text-white shadow-[0_0_10px_rgba(217,119,6,0.25)] group-hover:scale-105 transition-transform duration-300 shrink-0">
+                {profile.overallRating}
+              </div>
+              <div className="text-left overflow-hidden">
+                <p className="text-[7.5px] font-black text-gray-500 uppercase tracking-widest leading-none">Manager Profile</p>
+                <p className="font-bold text-xs text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
+                <div className="w-20 bg-white/15 h-1 rounded-full mt-1.5 overflow-hidden">
+                  <div className="bg-gradient-to-r from-[#881337] to-[#D97706] h-full rounded-full" style={{ width: `${profile.overallRating}%` }} />
+                </div>
+              </div>
+            </Link>
+          )}
+
           {/* Section 1: Navigation Plinths */}
           <div className="space-y-2.5">
             <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Navigation Console</span>
