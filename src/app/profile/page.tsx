@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
+import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, FootballIQProfile } from '@/lib/profileSync';
+import { VerdictData } from '@/lib/tribunalDB';
 import { 
   User, 
   Settings, 
@@ -15,10 +17,10 @@ import {
   Flag, 
   Shield, 
   Fingerprint, 
-  Crown, 
-  Sparkle,
-  BadgeAlert
+  Crown,
+  Sparkle
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 // Maps input countries to flag emojis for live card preview
 function getFlagEmoji(countryName: string): string {
@@ -63,7 +65,7 @@ export default function ProfileSettingsPage() {
   const [avatarStyle, setAvatarStyle] = useState('fun-emoji');
   
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -79,29 +81,29 @@ export default function ProfileSettingsPage() {
 
   // Card 3D Tilt Effect on mouse move
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const card = cardRef.current;
-    const rect = card.getBoundingClientRect();
+    if (!cardContainerRef.current) return;
+    const container = cardContainerRef.current;
+    const rect = container.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
     const xc = rect.width / 2;
     const yc = rect.height / 2;
     
-    const angleX = (yc - y) / 10;
-    const angleY = (x - xc) / 10;
+    const angleX = (yc - y) / 12;
+    const angleY = (x - xc) / 12;
     
-    card.style.transform = `perspective(600px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.02)`;
+    container.style.transform = `perspective(800px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.03)`;
   };
 
   const handleMouseLeave = () => {
-    if (!cardRef.current) return;
-    cardRef.current.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg) scale(1)';
+    if (!cardContainerRef.current) return;
+    cardContainerRef.current.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
   };
 
   if (!mounted || !profile) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center">
+      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-4" />
         <p className="font-display font-black text-sm uppercase tracking-widest text-gray-500">Loading Manager Locker Room...</p>
       </div>
@@ -150,32 +152,73 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  // Build the goated VerdictData object to feed to SportsCenterCard component
+  const managerCardData: VerdictData = {
+    id: 'mgr-preview',
+    text: `Locker room authorization active. Registered manager signed to ${favoriteClub || 'VAR FC'}.`,
+    mode: 'court',
+    caseId: 2026,
+    fanbase: null,
+    isRivalry: false,
+    rarity: role === 'ADMIN' ? 'LEGENDARY' : role === 'PREMIUM' ? 'EPIC' : 'COMMON',
+    ovr: profile.overallRating,
+    rulingText: 'Manager credentials registered successfully.',
+    verdict: role === 'ADMIN' ? 'TRIBUNAL COMMISSIONER' : role === 'PREMIUM' ? 'CERTIFIED CHEF' : 'KNOWS BALL',
+    charge: 'TACTICAL INGENUITY',
+    sentence: `Managing ${favoriteClub || 'VAR FC'} under ${role.toLowerCase()} status.`,
+    ach: {
+      title: 'MANAGER LICENSE',
+      desc: 'Registered tactician.',
+      badge: 'trophy'
+    },
+    cardTheme: role === 'ADMIN' ? 'toty' : role === 'PREMIUM' ? 'gold' : 'silver',
+    countryFlag: favoriteNation ? getFlagEmoji(favoriteNation) : '🏳️',
+    playerName: username.toUpperCase() || 'MANAGER',
+    playerPosition: 'MGR',
+    clubName: favoriteClub || 'VAR FC',
+    avatarStyle: avatarStyle,
+    avatarSeed: avatarSeed,
+    stats: [
+      { label: 'IQ', name: 'Ball IQ', val: profile.overallRating },
+      { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - profile.overallRating) }
+    ]
+  };
+
+
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground pb-20 overflow-hidden">
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-20 overflow-hidden">
       <Navbar />
 
-      {/* Immersive Game Stadium Background */}
+      {/* Immersive Game Stadium Background - MATCHING LANDING PAGE 1-TO-1 */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/game_stadium_showcase.webp" 
-          alt="Locker Room Background" 
+          src="/images/world_cup_stadium.webp" 
+          alt="World Cup Stadium Background" 
           fill 
-          className="object-cover opacity-35 object-center scale-105 filter blur-[2px]" 
+          className="object-cover opacity-55 object-center" 
           priority 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/50 via-[#030712]/90 to-[#030712]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-[#0A0A0A]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         
-        {/* Hanging HUD Panel Header */}
-        <div className="pt-[70px] pb-3 px-8 flex flex-col items-center text-center max-w-md mx-auto rounded-b-2xl border-x border-b border-white/10 bg-gradient-to-b from-black/80 via-black/55 to-black/10 backdrop-blur-md shadow-[0_8px_25px_rgba(0,0,0,0.8)] relative z-20 mb-10">
-          <div className="inline-flex items-center gap-1 bg-white/5 border border-white/10 text-gray-300 rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest mb-1 shadow-md">
-            <Settings className="w-3 h-3 text-[#D97706]" /> MANAGER LOCKER ROOM
+        {/* Goated Header Design (Matching Landing Page styling) */}
+        <div className="pt-24 pb-8 text-center max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-4 shadow-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">BallKnowledge • Manager Locker Room</span>
           </div>
-          <h1 className="font-display font-black text-xl sm:text-2xl text-white uppercase tracking-wider leading-none">
-            Manager Profile
+          <h1 className="font-display font-black uppercase tracking-tight text-white mb-2 text-center leading-[1.1]"
+              style={{
+                fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+                textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)'
+              }}>
+            Manager <span className="text-[#D97706]">Cockpit</span>
           </h1>
+          <p className="font-sans text-gray-300 text-xs sm:text-sm max-w-md mx-auto font-medium">
+            Configure your manager profile credentials, manage your license tier, or terminate your contract.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -200,17 +243,17 @@ export default function ProfileSettingsPage() {
                 <Trophy className="w-6 h-6 text-[#D97706]/40 hidden sm:block" />
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {/* Username */}
                 <div>
-                  <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                  <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">
                     <User className="w-3.5 h-3.5 text-gray-500" /> Manager Alias / Registration ID
                   </label>
                   <input
                     type="text"
                     value={username}
                     onChange={e => setUsername(e.target.value)}
-                    className="w-full h-12 bg-black/80 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
+                    className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
                     placeholder="e.g. tactical_chef"
                   />
                   <p className="text-[9px] text-gray-500 mt-1 font-medium">Use alphanumeric characters and underscores only. No spaces.</p>
@@ -219,26 +262,26 @@ export default function ProfileSettingsPage() {
                 {/* Club & Nation Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">
                       <Shield className="w-3.5 h-3.5 text-gray-500" /> Club Allegiance
                     </label>
                     <input
                       type="text"
                       value={favoriteClub}
                       onChange={e => setFavoriteClub(e.target.value)}
-                      className="w-full h-12 bg-black/80 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
+                      className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
                       placeholder="e.g. Real Madrid, Arsenal, FC Bayern"
                     />
                   </div>
                   <div>
-                    <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">
                       <Flag className="w-3.5 h-3.5 text-gray-500" /> National Allegiance
                     </label>
                     <input
                       type="text"
                       value={favoriteNation}
                       onChange={e => setFavoriteNation(e.target.value)}
-                      className="w-full h-12 bg-black/80 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
+                      className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
                       placeholder="e.g. Argentina, France, England"
                     />
                   </div>
@@ -247,20 +290,20 @@ export default function ProfileSettingsPage() {
                 {/* Custom Avatar parameters */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-white/5 pt-5">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Manager Portrait Seed</label>
+                    <label className="block text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">Manager Portrait Seed</label>
                     <input
                       type="text"
                       value={avatarSeed}
                       onChange={e => setAvatarSeed(e.target.value)}
-                      className="w-full h-12 bg-black/80 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
+                      className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Portrait Render Style (Dicebear)</label>
+                    <label className="block text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">Portrait Render Style (Dicebear)</label>
                     <select
                       value={avatarStyle}
                       onChange={e => setAvatarStyle(e.target.value)}
-                      className="w-full h-12 bg-black/80 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all cursor-pointer"
+                      className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all cursor-pointer"
                     >
                       <option value="fun-emoji">Fun Emoji</option>
                       <option value="bottts">Bots & Androids</option>
@@ -272,7 +315,7 @@ export default function ProfileSettingsPage() {
 
                 {/* License selector */}
                 <div className="border-t border-white/5 pt-5">
-                  <label className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                  <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-3">
                     <Crown className="w-3.5 h-3.5 text-gray-500" /> Manager License Tier (Role Setting)
                   </label>
                   
@@ -283,11 +326,11 @@ export default function ProfileSettingsPage() {
                       onClick={() => setRole('FREE')}
                       className={`flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
                         role === 'FREE'
-                          ? 'bg-orange-950/15 border-orange-700/60 shadow-[0_0_15px_rgba(194,65,12,0.1)]'
-                          : 'bg-black/40 border-white/5 hover:border-white/10'
+                          ? 'bg-[#64748B]/10 border-[#64748B]/50 shadow-[0_0_15px_rgba(100,116,139,0.15)]'
+                          : 'bg-black/30 border-white/5 hover:border-white/10'
                       }`}
                     >
-                      <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 bg-orange-900/10 border border-orange-950 px-2 py-0.5 rounded-md w-max mb-2">Bronze License</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-900/20 border border-slate-950 px-2 py-0.5 rounded-md w-max mb-2">Bronze License</span>
                       <h4 className="font-display font-black text-xs text-white uppercase">Probationary (FREE)</h4>
                       <p className="text-[10px] text-gray-400 mt-1 font-medium leading-relaxed">
                         3 hot takes per fixture, standard community chat features.
@@ -300,8 +343,8 @@ export default function ProfileSettingsPage() {
                       onClick={() => setRole('PREMIUM')}
                       className={`flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
                         role === 'PREMIUM'
-                          ? 'bg-[#D97706]/10 border-[#D97706]/60 shadow-[0_0_15px_rgba(217,119,6,0.15)]'
-                          : 'bg-black/40 border-white/5 hover:border-white/10'
+                          ? 'bg-[#D97706]/10 border-[#D97706] shadow-[0_0_20px_rgba(217,119,6,0.25)]'
+                          : 'bg-black/30 border-white/5 hover:border-white/10'
                       }`}
                     >
                       <span className="text-[9px] font-black uppercase tracking-widest text-[#D97706] bg-[#D97706]/10 border border-[#D97706]/20 px-2 py-0.5 rounded-md w-max mb-2">Gold License</span>
@@ -319,8 +362,8 @@ export default function ProfileSettingsPage() {
                       onClick={() => setRole('ADMIN')}
                       className={`flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
                         role === 'ADMIN'
-                          ? 'bg-[#881337]/15 border-[#881337]/60 shadow-[0_0_15px_rgba(136,19,55,0.2)]'
-                          : 'bg-black/40 border-white/5 hover:border-white/10'
+                          ? 'bg-[#881337]/15 border-[#881337] shadow-[0_0_20px_rgba(136,19,55,0.3)]'
+                          : 'bg-black/30 border-white/5 hover:border-white/10'
                       }`}
                     >
                       <span className="text-[9px] font-black uppercase tracking-widest text-rose-400 bg-rose-950/20 border border-rose-950 px-2 py-0.5 rounded-md w-max mb-2">Commissioner</span>
@@ -335,11 +378,11 @@ export default function ProfileSettingsPage() {
               </div>
 
               {/* Action buttons */}
-              <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+              <div className="pt-6 border-t border-white/10 flex justify-center">
                 <button
                   type="button"
                   onClick={handleSaveSettings}
-                  className="flex-1 py-4 rounded-xl bg-gradient-to-r from-[#881337] to-[#D97706] hover:opacity-95 text-white font-display font-black text-xs uppercase tracking-widest shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+                  className="flex items-center justify-center gap-2 px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-102 hover:shadow-[0_0_20px_rgba(217,119,6,0.3)] bg-gradient-to-r from-[#881337] to-[#D97706] cursor-pointer"
                 >
                   {saveSuccess ? (
                     <>
@@ -358,120 +401,47 @@ export default function ProfileSettingsPage() {
           </div>
 
           {/* RIGHT COLUMN: FUT Manager Card & Disciplinary Zone */}
-          <div className="lg:col-span-4 space-y-8 flex flex-col items-center">
+          <div className="lg:col-span-4 space-y-6 flex flex-col items-center">
             
             {/* FUT-Style Manager Badge Preview */}
-            <div className="text-center w-full max-w-[300px]">
-              <span className="block text-[9px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3">Live Manager License Card</span>
+            <div className="text-center w-full flex flex-col items-center">
+              <span className="block text-[9px] font-black text-gray-500 uppercase tracking-[0.25em] mb-4">Live Manager License Card</span>
               
+              {/* 3D tilt container */}
               <div 
-                ref={cardRef}
+                ref={cardContainerRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                className="relative w-[280px] h-[390px] mx-auto rounded-[32px] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.85)] border border-[#D97706]/40 bg-gradient-to-b from-[#181D29] via-[#0E121E] to-[#040609] p-5 flex flex-col justify-between group transition-all duration-300 ease-out cursor-default"
+                className="relative bg-transparent rounded-[32px] transition-all duration-300 ease-out cursor-default"
                 style={{
                   transformStyle: 'preserve-3d',
-                  transition: 'transform 0.15s ease-out, border-color 0.3s ease',
+                  transition: 'transform 0.15s ease-out',
                   backfaceVisibility: 'hidden',
                 }}
               >
-                
-                {/* Holographic Sheen Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
-
-                {/* Card Header Shield lines */}
-                <div className="absolute inset-[3px] border border-[#D97706]/15 rounded-[29px] pointer-events-none" />
-
-                {/* Card Top Block */}
-                <div className="flex justify-between items-start z-10">
-                  {/* Stats Badge */}
-                  <div className="flex flex-col items-center">
-                    <span className="font-display font-black text-3xl text-[#D97706] tracking-tight leading-none">
-                      {profile.overallRating}
-                    </span>
-                    <span className="text-[8px] font-black text-white/60 tracking-wider uppercase mt-0.5">OVR</span>
-                    
-                    <div className="w-5 h-[1px] bg-white/10 my-1.5" />
-                    
-                    <span className="text-[9px] font-black text-[#D97706]/85 tracking-widest leading-none">MGR</span>
-                    
-                    <div className="w-5 h-[1px] bg-white/10 my-1.5" />
-                    
-                    {/* Flag emoji resolved */}
-                    <span className="text-sm" title={favoriteNation || 'No Nation'}>
-                      {favoriteNation ? getFlagEmoji(favoriteNation) : '🏳️'}
-                    </span>
-                  </div>
-
-                  {/* Manager Avatar image */}
-                  <div className="relative w-28 h-28 rounded-2xl bg-black/35 border border-white/5 flex items-center justify-center p-2 mt-1 shadow-inner">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(avatarSeed)}`}
-                      alt="Manager Avatar"
-                      className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
-                    />
-                  </div>
-                </div>
-
-                {/* Divider Line */}
-                <div className="h-[2px] bg-gradient-to-r from-transparent via-[#D97706]/35 to-transparent my-1 z-10" />
-
-                {/* Card Info & Stats Block */}
-                <div className="text-center z-10 flex-grow flex flex-col justify-center">
-                  <h4 className="font-sans font-black text-lg text-white uppercase tracking-wider truncate px-2 leading-none">
-                    {username || 'MANAGER_ID'}
-                  </h4>
-                  <p className="text-[8px] font-black tracking-widest text-[#D97706]/90 uppercase mt-0.5 truncate max-w-full px-4">
-                    {favoriteClub || 'UNATTACHED CLUB'}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 mt-3.5 mx-auto max-w-[210px] border-t border-white/5 pt-3">
-                    <div className="flex justify-between items-center text-[10px] font-semibold text-gray-400">
-                      <span className="tracking-wide">PRE</span>
-                      <span className="font-black text-white">{profile.predictionRating}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] font-semibold text-gray-400">
-                      <span className="tracking-wide">TAK</span>
-                      <span className="font-black text-white">{profile.hotTakeRating}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] font-semibold text-gray-400">
-                      <span className="tracking-wide">TAC</span>
-                      <span className="font-black text-white">{profile.tacticalRating}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] font-semibold text-gray-400">
-                      <span className="tracking-wide">COM</span>
-                      <span className="font-black text-white">{profile.communityRating}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Badge License footer */}
-                <div className="text-center pb-2 z-10">
-                  <span className="text-[7.5px] font-black uppercase tracking-[0.25em] text-white/40">
-                    {role === 'ADMIN' ? 'TRIBUNAL COMMISSIONER' : role === 'PREMIUM' ? 'GOLD TACTICIAN' : 'PROBATIONARY TACTICIAN'}
-                  </span>
-                </div>
-
+                <SportsCenterCard data={managerCardData} />
               </div>
             </div>
 
             {/* RED CARD: Danger/Reset Zone */}
-            <div className="glass-panel border-red-500/20 bg-red-950/10 rounded-3xl p-6 shadow-xl w-full max-w-[300px] relative overflow-hidden">
+            <div className="glass-panel border-red-500/20 bg-red-950/5 rounded-3xl p-6 shadow-xl w-full max-w-[340px] relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600" />
               
-              <h4 className="font-display font-black text-xs text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <BadgeAlert className="w-4 h-4 shrink-0 text-red-500 animate-pulse" /> RED CARD DISCIPLINARY
+              <h4 className="font-display font-black text-xs text-red-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 shrink-0 text-red-500 animate-pulse" /> RED CARD DISCIPLINARY
               </h4>
               
-              <p className="text-[10px] text-gray-400 leading-relaxed mb-4 font-medium">
-                Request contract termination to delete all campaigns, predictions, verdict cards, and reset stats.
-              </p>
+              <ul className="text-[10px] text-gray-400 space-y-2 mb-5 font-medium list-disc list-inside">
+                <li>Permanently terminates your contract</li>
+                <li>All fixture predictions will be deleted</li>
+                <li>FUT verdict cards album will be wiped</li>
+                <li>Overall BallKnowledge resets to 50</li>
+              </ul>
               
               <button
                 type="button"
                 onClick={handleResetCampaign}
-                className="w-full py-3 rounded-xl border border-red-500/35 hover:border-red-500 text-red-500 hover:bg-red-500/5 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(239,68,68,0.1)] active:scale-95"
+                className="w-full py-3 rounded-full border border-red-500/40 text-red-500 hover:bg-red-500/10 font-display font-black text-[10px] uppercase tracking-widest transition-all hover:scale-102 cursor-pointer flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)] active:scale-95"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> TERMINATE CONTRACT
               </button>
