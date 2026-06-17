@@ -63,6 +63,13 @@ function getDeterministicMatchResult(matchId: string, homeTeamName: string, away
   return { homeScore, awayScore };
 }
 
+const getTacticalTitle = (rating: number): string => {
+  if (rating >= 90) return 'Legendary Coach';
+  if (rating >= 75) return 'Master Tactician';
+  if (rating >= 60) return 'Elite Analyst';
+  return 'Rookie Tactician';
+};
+
 export default function WorldCupHub() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -261,12 +268,12 @@ export default function WorldCupHub() {
 
       {/* Centered Heading Section */}
       <div className="relative z-10 text-center max-w-3xl mx-auto mb-8 px-6 pt-4">
-        <h1 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none"
+        <h1 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent"
             style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
           FIFA WORLD CUP 2026 HUB
         </h1>
-        <p className="text-gray-400 text-xs sm:text-sm mt-3 font-medium leading-none">
-          Simulation Date: <span className="text-[#D97706] font-bold">June 16, 2026</span> • Lock predictions and claim cards.
+        <p className="text-gray-400 text-[10px] sm:text-xs mt-3.5 font-bold uppercase tracking-widest leading-none">
+          SIMULATION DATE: <span className="text-[#D97706]">JUNE 16, 2026</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
         </p>
       </div>
 
@@ -278,15 +285,23 @@ export default function WorldCupHub() {
           
           {/* Section 0: Manager Career Profile Widget */}
           {profile && (
-            <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3 bg-gradient-to-b from-black/80 to-black/40 shadow-inner flex items-center gap-3 transition-colors duration-300 group">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-sm text-white shadow-[0_0_10px_rgba(217,119,6,0.25)] group-hover:scale-105 transition-transform duration-300 shrink-0">
-                {profile.overallRating}
+            <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3.5 bg-gradient-to-b from-black/85 to-black/45 shadow-2xl flex items-center gap-3.5 transition-colors duration-300 group">
+              {/* Hexagonal Shield Badge */}
+              <div className="w-12 h-12 bg-gradient-to-br from-[#D97706] via-[#881337] to-[#D97706] p-[1.5px] clip-path-badge shrink-0 shadow-[0_0_15px_rgba(217,119,6,0.3)] group-hover:scale-105 transition-transform duration-300">
+                <div className="w-full h-full bg-[#0A0A0A] clip-path-badge flex flex-col items-center justify-center font-display font-black">
+                  <span className="text-white text-base leading-none">{profile.overallRating}</span>
+                  <span className="text-[7px] text-[#D97706] tracking-tighter leading-none mt-0.5">OVR</span>
+                </div>
               </div>
-              <div className="text-left overflow-hidden">
-                <p className="text-[7.5px] font-black text-gray-500 uppercase tracking-widest leading-none">Manager Profile</p>
-                <p className="font-bold text-xs text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
-                <div className="w-20 bg-white/15 h-1 rounded-full mt-1.5 overflow-hidden">
-                  <div className="bg-gradient-to-r from-[#881337] to-[#D97706] h-full rounded-full" style={{ width: `${profile.overallRating}%` }} />
+              <div className="text-left overflow-hidden flex-grow">
+                <p className="text-[7.5px] font-black text-[#D97706] uppercase tracking-widest leading-none">Manager Reputation</p>
+                <p className="font-display font-black text-sm text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
+                <p className="text-[9px] font-bold text-gray-400 mt-1 leading-none tracking-wide">{getTacticalTitle(profile.overallRating)}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex-1 bg-white/10 h-1 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-[#881337] to-[#D97706] h-full rounded-full" style={{ width: `${profile.overallRating}%` }} />
+                  </div>
+                  <span className="text-[8px] font-mono font-bold text-gray-500 shrink-0">{profile.overallRating}%</span>
                 </div>
               </div>
             </Link>
