@@ -60,6 +60,8 @@ export default function PricingPage() {
     }
     setTimeout(() => {
       alert(`Contract Signed! You have successfully upgraded to the ${plan} tier.`);
+      selectedPlan === 'Gold' && (window.location.href = '/profile');
+      selectedPlan === 'Crimson' && (window.location.href = '/profile');
       setSelectedPlan(null);
     }, 1200);
   };
@@ -80,22 +82,22 @@ export default function PricingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-[#0A0A0A]" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 w-full flex-grow pt-14 pb-2 flex flex-col justify-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex-grow pt-14 pb-2 flex flex-col justify-center">
         
         {/* Header Section */}
-        <div className="text-center max-w-2xl mx-auto mb-4 sm:mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-5">
           <div className="inline-flex items-center gap-1.5 bg-[#881337]/20 border border-[#881337]/40 text-[#ff4b72] rounded-full px-3 py-1 mb-1 shadow-md">
-            <span className="w-1 h-1 rounded-full bg-[#D97706] animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse" />
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">BallKnowledge • Season Passes</span>
           </div>
           <h1 className="font-display font-black uppercase tracking-tight text-white mb-1.5 text-center leading-[1.1]"
               style={{
-                fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)',
+                fontSize: 'clamp(1.8rem, 4.2vw, 2.8rem)',
                 textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)'
               }}>
             Sign Your <span className="text-[#D97706]">Contract</span>
           </h1>
-          <p className="font-sans text-gray-300 text-[11px] sm:text-xs max-w-md mx-auto font-medium leading-relaxed">
+          <p className="font-sans text-gray-300 text-[11px] sm:text-xs max-w-lg mx-auto font-medium leading-relaxed">
             Acquire your official manager license for the World Cup 2026. Select a tier, lock in predictions, and claim premium card collectibles.
           </p>
           
@@ -107,44 +109,44 @@ export default function PricingPage() {
           </button>
         </div>
 
-        {/* Pricing Tickets Grid - Compact & Height-Aligned */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-stretch max-w-4xl mx-auto mb-4 w-full">
+        {/* Pricing Tickets Grid - High-Fidelity & Space-optimized */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 items-stretch max-w-5.5xl mx-auto mb-4 w-full">
           
           {/* SILVER TICKET (FREE) */}
-          <div className="glass-panel border-slate-500/20 bg-black/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 shadow-2xl relative flex flex-col justify-between overflow-hidden border">
+          <div className="glass-panel border-slate-500/20 bg-black/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-2xl relative flex flex-col justify-between overflow-hidden border transition-all duration-300 hover:border-slate-500/35 hover:shadow-[0_0_30px_rgba(255,255,255,0.03)]">
             {/* Top Barcode Aesthetic */}
-            <div className="absolute top-0 left-0 right-0 h-3 bg-slate-500/10 border-b border-slate-500/20 flex items-center justify-center">
+            <div className="absolute top-0 left-0 right-0 h-4 bg-slate-500/10 border-b border-slate-500/20 flex items-center justify-center">
               <span className="text-[5px] font-mono tracking-[0.4em] text-slate-400">|||| | ||||| | | |||| | |||||</span>
             </div>
 
-            <div className="pt-3">
-              <div className="flex justify-between items-start mb-2">
+            <div className="pt-4">
+              <div className="flex justify-between items-start mb-3.5">
                 <div>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-800/40 border border-slate-700/60 px-2 py-0.5 rounded">
+                  <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400 bg-slate-800/40 border border-slate-700/60 px-2 py-0.5 rounded">
                     Bronze Pass
                   </span>
-                  <h3 className="font-display font-black text-base text-white uppercase mt-1.5">Free Agent</h3>
+                  <h3 className="font-display font-black text-lg text-white uppercase mt-2">Free Agent</h3>
                 </div>
-                <Ticket className="w-5 h-5 text-slate-400" />
+                <Ticket className="w-5.5 h-5.5 text-slate-400" />
               </div>
-              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-3">Perfect for casual pundits</p>
+              <p className="text-[9.5px] text-gray-400 font-bold uppercase tracking-wider mb-3.5">Perfect for casual pundits</p>
               
-              <div className="flex items-baseline mb-3">
-                <span className="font-display font-black text-2xl text-white">$0</span>
-                <span className="text-gray-400 text-[9px] uppercase font-bold tracking-widest ml-1">/ season pass</span>
+              <div className="flex items-baseline mb-4">
+                <span className="font-display font-black text-3xl text-white">$0</span>
+                <span className="text-gray-400 text-[9.5px] uppercase font-bold tracking-widest ml-1">/ season pass</span>
               </div>
 
-              <div className="h-[1px] bg-slate-500/10 my-3" />
+              <div className="h-[1px] bg-slate-500/10 my-3.5" />
 
-              <ul className="space-y-1.5 mb-5">
+              <ul className="space-y-2.5 mb-6">
                 {[
                   "3 predictions per fixture",
                   "Standard card drops (Common)",
                   "Community chat access",
                   "OVR reputation tracker",
                 ].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-[11px] text-slate-200">
-                    <Check className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <li key={f} className="flex items-center gap-2.5 text-[11px] text-slate-200">
+                    <Check className="w-4 h-4 text-slate-400 shrink-0" />
                     <span className="truncate">{f}</span>
                   </li>
                 ))}
@@ -154,43 +156,43 @@ export default function PricingPage() {
             <button
               onClick={() => handleSignContract('Bronze')}
               disabled={selectedPlan !== null}
-              className="w-full py-2.5 rounded-lg border border-slate-500/35 text-slate-300 hover:text-white hover:bg-slate-500/10 font-display font-black text-[10px] uppercase tracking-widest transition-all hover:scale-102 cursor-pointer text-center"
+              className="w-full py-3 rounded-lg border border-slate-500/35 text-slate-300 hover:text-white hover:bg-slate-500/10 font-display font-black text-xs uppercase tracking-widest transition-all hover:scale-102 cursor-pointer text-center"
             >
               CLAIM BRONZE
             </button>
           </div>
 
           {/* GOLD TICKET (PREMIUM) */}
-          <div className="glass-panel border-[#D97706]/40 bg-black/85 backdrop-blur-md rounded-2xl p-4 sm:p-5 shadow-2xl relative flex flex-col justify-between overflow-hidden border shadow-[0_0_25px_rgba(217,119,6,0.1)] scale-102">
+          <div className="glass-panel border-[#D97706]/40 bg-black/85 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-2xl relative flex flex-col justify-between overflow-hidden border shadow-[0_0_35px_rgba(217,119,6,0.15)] scale-102 transition-all duration-300 hover:border-[#D97706]/70">
             {/* Top Barcode Aesthetic */}
-            <div className="absolute top-0 left-0 right-0 h-3 bg-[#D97706]/10 border-b border-[#D97706]/20 flex items-center justify-center">
-              <span className="text-[5px] font-mono tracking-[0.4em] text-[#D97706]/80">||| | || |||| | | ||| || ||| |</span>
+            <div className="absolute top-0 left-0 right-0 h-4 bg-[#D97706]/10 border-b border-[#D97706]/20 flex items-center justify-center">
+              <span className="text-[5px] font-mono tracking-[0.4em] text-[#D97706]/85">||| | || |||| | | ||| || ||| |</span>
             </div>
 
             {/* Popular Badge */}
-            <div className="absolute top-4 right-4 flex items-center gap-0.5 bg-gradient-to-r from-[#881337] to-[#D97706] text-white text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-md">
+            <div className="absolute top-5 right-5 flex items-center gap-0.5 bg-gradient-to-r from-[#881337] to-[#D97706] text-white text-[7.5px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-md">
               <Flame className="w-2 h-2 animate-pulse" /> POPULAR
             </div>
 
-            <div className="pt-3">
-              <div className="flex justify-between items-start mb-2">
+            <div className="pt-4">
+              <div className="flex justify-between items-start mb-3.5">
                 <div>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-[#D97706] bg-[#D97706]/10 border border-[#D97706]/20 px-2 py-0.5 rounded">
+                  <span className="text-[8.5px] font-black uppercase tracking-widest text-[#D97706] bg-[#D97706]/10 border border-[#D97706]/20 px-2 py-0.5 rounded">
                     Gold Pass
                   </span>
-                  <h3 className="font-display font-black text-base text-white uppercase mt-1.5">Certified Chef</h3>
+                  <h3 className="font-display font-black text-lg text-white uppercase mt-2">Certified Chef</h3>
                 </div>
               </div>
-              <p className="text-[9px] text-gray-300 font-bold uppercase tracking-wider mb-3">The ultimate fan experience</p>
+              <p className="text-[9.5px] text-gray-300 font-bold uppercase tracking-wider mb-3.5">The ultimate fan experience</p>
               
-              <div className="flex items-baseline mb-3">
-                <span className="font-display font-black text-2xl text-[#D97706]">$9.99</span>
-                <span className="text-gray-400 text-[9px] uppercase font-bold tracking-widest ml-1">/ season pass</span>
+              <div className="flex items-baseline mb-4">
+                <span className="font-display font-black text-3xl text-[#D97706]">$9.99</span>
+                <span className="text-gray-400 text-[9.5px] uppercase font-bold tracking-widest ml-1">/ season pass</span>
               </div>
 
-              <div className="h-[1px] bg-[#D97706]/20 my-3" />
+              <div className="h-[1px] bg-[#D97706]/20 my-3.5" />
 
-              <ul className="space-y-1.5 mb-5">
+              <ul className="space-y-2.5 mb-6">
                 {[
                   "5 predictions per fixture",
                   "2 substitutions per matchday",
@@ -198,8 +200,8 @@ export default function PricingPage() {
                   "Double reputation points (2x XP)",
                   "Exclusive Roast Chat access & tags",
                 ].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-[11px] text-amber-50">
-                    <Check className="w-3.5 h-3.5 text-[#D97706] shrink-0" />
+                  <li key={f} className="flex items-center gap-2.5 text-[11px] text-amber-50">
+                    <Check className="w-4 h-4 text-[#D97706] shrink-0" />
                     <span className="truncate">{f}</span>
                   </li>
                 ))}
@@ -209,10 +211,10 @@ export default function PricingPage() {
             <button
               onClick={() => handleSignContract('Gold')}
               disabled={selectedPlan !== null}
-              className="w-full py-2.5 rounded-lg text-white font-display font-black text-[10px] uppercase tracking-widest shadow-md transition-all hover:scale-102 hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] bg-gradient-to-r from-[#881337] to-[#D97706] cursor-pointer text-center flex items-center justify-center gap-1.5"
+              className="w-full py-3.5 rounded-lg text-white font-display font-black text-xs uppercase tracking-widest shadow-md transition-all hover:scale-102 hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] bg-gradient-to-r from-[#881337] to-[#D97706] cursor-pointer text-center flex items-center justify-center gap-1.5"
             >
               {selectedPlan === 'Gold' ? (
-                <div className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
               ) : (
                 'SIGN CONTRACT'
               )}
@@ -220,32 +222,32 @@ export default function PricingPage() {
           </div>
 
           {/* CRIMSON TICKET (ADMIN) */}
-          <div className="glass-panel border-rose-600/30 bg-black/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 shadow-2xl relative flex flex-col justify-between overflow-hidden border">
+          <div className="glass-panel border-rose-600/30 bg-black/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-2xl relative flex flex-col justify-between overflow-hidden border transition-all duration-300 hover:border-rose-600/55 hover:shadow-[0_0_30px_rgba(244,63,94,0.08)]">
             {/* Top Barcode Aesthetic */}
-            <div className="absolute top-0 left-0 right-0 h-3 bg-rose-600/10 border-b border-rose-600/20 flex items-center justify-center">
+            <div className="absolute top-0 left-0 right-0 h-4 bg-rose-600/10 border-b border-rose-600/20 flex items-center justify-center">
               <span className="text-[5px] font-mono tracking-[0.4em] text-rose-500">| |||| | | ||||| | ||| |||| | | |</span>
             </div>
 
-            <div className="pt-3">
-              <div className="flex justify-between items-start mb-2">
+            <div className="pt-4">
+              <div className="flex justify-between items-start mb-3.5">
                 <div>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-rose-400 bg-rose-950/20 border border-rose-950 px-2 py-0.5 rounded">
+                  <span className="text-[8.5px] font-black uppercase tracking-widest text-rose-400 bg-rose-950/20 border border-rose-950 px-2 py-0.5 rounded">
                     Crimson Pass
                   </span>
-                  <h3 className="font-display font-black text-base text-white uppercase mt-1.5">Commissioner</h3>
+                  <h3 className="font-display font-black text-lg text-white uppercase mt-2">Commissioner</h3>
                 </div>
-                <Zap className="w-5 h-5 text-rose-500" />
+                <Zap className="w-5.5 h-5.5 text-rose-500" />
               </div>
-              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-3">Prestige & simulation overrides</p>
+              <p className="text-[9.5px] text-gray-400 font-bold uppercase tracking-wider mb-3.5">Prestige & simulation overrides</p>
               
-              <div className="flex items-baseline mb-3">
-                <span className="font-display font-black text-2xl text-rose-500">$24.99</span>
-                <span className="text-gray-400 text-[9px] uppercase font-bold tracking-widest ml-1">/ season pass</span>
+              <div className="flex items-baseline mb-4">
+                <span className="font-display font-black text-3xl text-rose-500">$24.99</span>
+                <span className="text-gray-400 text-[9.5px] uppercase font-bold tracking-widest ml-1">/ season pass</span>
               </div>
 
-              <div className="h-[1px] bg-rose-600/10 my-3" />
+              <div className="h-[1px] bg-rose-600/10 my-3.5" />
 
-              <ul className="space-y-1.5 mb-5">
+              <ul className="space-y-2.5 mb-6">
                 {[
                   "Unlimited fixture predictions",
                   "Bypass kickoff locks (simulation tool)",
@@ -253,8 +255,8 @@ export default function PricingPage() {
                   "Triple reputation points (3x XP)",
                   "Unique Commissioner badge & tags",
                 ].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-[11px] text-rose-50">
-                    <Check className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  <li key={f} className="flex items-center gap-2.5 text-[11px] text-rose-50">
+                    <Check className="w-4 h-4 text-rose-500 shrink-0" />
                     <span className="truncate">{f}</span>
                   </li>
                 ))}
@@ -264,10 +266,10 @@ export default function PricingPage() {
             <button
               onClick={() => handleSignContract('Crimson')}
               disabled={selectedPlan !== null}
-              className="w-full py-2.5 rounded-lg border border-rose-600/35 text-rose-400 hover:text-white hover:bg-rose-600/15 font-display font-black text-[10px] uppercase tracking-widest transition-all hover:scale-102 cursor-pointer text-center flex items-center justify-center gap-1.5"
+              className="w-full py-3.5 rounded-lg border border-rose-600/35 text-rose-400 hover:text-white hover:bg-rose-600/15 font-display font-black text-xs uppercase tracking-widest transition-all hover:scale-102 cursor-pointer text-center flex items-center justify-center gap-1.5"
             >
               {selectedPlan === 'Crimson' ? (
-                <div className="w-3.5 h-3.5 rounded-full border-2 border-rose-500 border-t-transparent animate-spin" />
+                <div className="w-4 h-4 rounded-full border-2 border-rose-500 border-t-transparent animate-spin" />
               ) : (
                 'COMMISSION CONTRACT'
               )}
@@ -281,7 +283,7 @@ export default function PricingPage() {
       {/* Floating Holographic Rules FAQ Modal */}
       <AnimatePresence>
         {showFaqModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 text-white">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
