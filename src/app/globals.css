@@ -1,26 +1,632 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #030712;
+  --foreground: #F3F4F6;
+  --surface: #0B0F19;
+  --surface-elevated: #111827;
+  --primary: #881337; /* Prestigious World Cup Burgundy / Maroon */
+  --secondary: #D97706; /* Warm Gold / Amber */
+  --muted: #9CA3AF;
 }
 
-@theme inline {
+@theme {
+  --font-sans: 'Outfit', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-card-fut: 'Oswald', sans-serif;
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base resets & typography */
+html {
+  color-scheme: dark;
 }
-
-body {
-  background: var(--background);
+html, body {
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  scroll-behavior: auto !important;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Lenis Smooth Scroll Overrides */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overflow: clip;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+
+/* Premium Glass Card Panels (Dark Mode Glassmorphism) */
+.glass-panel {
+  background: rgba(11, 15, 25, 0.45) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-elevated {
+  background: rgba(11, 15, 25, 0.7) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Premium Card Rarity Outlines & Frames in Light Mode */
+.card-common {
+  border: 2px solid #E2E8F0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+}
+
+.card-rare {
+  border: 2px solid #D97706; /* Gold */
+  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.08);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFDF0 100%);
+}
+
+.card-hating {
+  border: 2px solid #EF4444;
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F5 100%);
+}
+
+.card-cooking {
+  border: 2px solid #16A34A; /* Grass Green */
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.08);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+}
+
+.card-rivalry {
+  border: 2px dashed #EF4444;
+  box-shadow: 0 12px 35px rgba(239, 68, 68, 0.12);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF1F2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-rivalry::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #EF4444, #D97706);
+}
+
+/* FIFA FUT Card Shield Layouts */
+.fut-shield-outer {
+  clip-path: polygon(0% 12%, 15% 8%, 35% 8%, 50% 0%, 65% 8%, 85% 8%, 100% 12%, 100% 82%, 50% 100%, 0% 82%);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background-size: 200% 200%;
+}
+
+.fut-shield-inner {
+  clip-path: polygon(0% 12%, 15% 8%, 35% 8%, 50% 0%, 65% 8%, 85% 8%, 100% 12%, 100% 82%, 50% 100%, 0% 82%);
+  position: absolute;
+  top: 3.5px;
+  left: 3.5px;
+  right: 3.5px;
+  bottom: 3.5px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Card Rarity Design Overlays */
+.card-wc-champion {
+  background: linear-gradient(135deg, #FFE082 0%, #D97706 50%, #B45309 100%);
+  box-shadow: 0 15px 45px rgba(217, 119, 6, 0.35);
+}
+.card-wc-champion .fut-shield-inner {
+  background: radial-gradient(circle at 50% 20%, #0d1527 0%, #030712 100%);
+}
+.card-wc-champion .fut-shield-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(217, 119, 6, 0.15) 1px, transparent 0);
+  background-size: 24px 24px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.card-wc-bottler {
+  background: linear-gradient(135deg, #F1F5F9 0%, #64748B 50%, #334155 100%);
+  box-shadow: 0 15px 35px rgba(100, 116, 139, 0.25);
+}
+.card-wc-bottler .fut-shield-inner {
+  background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 100%);
+}
+.card-wc-bottler .fut-shield-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.card-wc-var {
+  background: linear-gradient(135deg, #FCA5A5 0%, #DC2626 50%, #7F1D1D 100%);
+  box-shadow: 0 15px 45px rgba(220, 38, 38, 0.35);
+}
+.card-wc-var .fut-shield-inner {
+  background: radial-gradient(circle at 50% 20%, #3b0712 0%, #050508 100%);
+}
+.card-wc-var .fut-shield-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(220, 38, 38, 0.03) 0px, rgba(220, 38, 38, 0.03) 2px, transparent 2px, transparent 8px);
+  pointer-events: none;
+}
+
+.card-wc-spinner {
+  background: linear-gradient(135deg, #86EFAC 0%, #16A34A 50%, #14532D 100%);
+  box-shadow: 0 15px 35px rgba(22, 163, 74, 0.3);
+}
+.card-wc-spinner .fut-shield-inner {
+  background: radial-gradient(circle at 50% 20%, #022c22 0%, #020617 100%);
+}
+.card-wc-spinner .fut-shield-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(22, 163, 74, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Holographic Sheen Overlay */
+.holographic-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(255, 255, 255, 0.05) 35%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0.05) 45%,
+    transparent 55%,
+    transparent 100%
+  );
+  background-size: 200% 200%;
+  background-position: 100% 100%;
+  transition: background-position 0.6s ease;
+  pointer-events: none;
+  z-index: 15;
+}
+.fut-shield-outer:hover .holographic-sheen {
+  background-position: 0% 0%;
+}
+
+/* Scanlines Effect for Futuristic HUDs */
+.scanlines-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+}
+
+/* Keyframes & Animations (Optimized to reduce CPU recalculations) */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes spotlight-left {
+  0% { transform: rotate(-25deg) scale(1); opacity: 0.15; }
+  50% { transform: rotate(-15deg) scale(1.05); opacity: 0.35; }
+  100% { transform: rotate(-25deg) scale(1); opacity: 0.15; }
+}
+
+@keyframes spotlight-right {
+  0% { transform: rotate(25deg) scale(1); opacity: 0.15; }
+  50% { transform: rotate(15deg) scale(1.05); opacity: 0.35; }
+  100% { transform: rotate(25deg) scale(1); opacity: 0.15; }
+}
+
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+  will-change: transform;
+}
+
+.animate-spotlight-l {
+  animation: spotlight-left 12s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-spotlight-r {
+  animation: spotlight-right 14s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Utilities */
+.text-glow-primary {
+  text-shadow: 0 0 12px rgba(136, 19, 55, 0.2);
+}
+
+.text-glow-secondary {
+  text-shadow: 0 0 12px rgba(217, 119, 6, 0.2);
+}
+
+.clip-path-banner {
+  clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%);
+}
+
+.clip-path-badge {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Light Particle Container */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.4;
+  will-change: transform;
+}
+
+/* Premium Digital Journal Typography Styles */
+.editorial-serif {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.draggable-card {
+  cursor: grab;
+  touch-action: none;
+}
+
+.draggable-card:active {
+  cursor: grabbing;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* CARD BINDER & TROPHY ROOM OVERHAULS                                     */
+/* ══════════════════════════════════════════════════════════════════════ */
+
+/* The Physical leather album binder container */
+.binder-container {
+  background: linear-gradient(145deg, #131722 0%, #080a0f 100%);
+  border: 12px solid #1e2530;
+  border-radius: 32px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: visible;
+}
+
+/* Simulated leather stitching texture */
+.binder-stitching {
+  position: absolute;
+  inset: 4px;
+  border: 2px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Binder Pages styling */
+.binder-page-left, .binder-page-right {
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 0),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+  background-size: 16px 16px, 100% 100%;
+  border-radius: 16px;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+/* Silver metal binder spine rings */
+.binder-ring-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #111 0%, #333 10%, #222 50%, #444 90%, #111 100%);
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+.binder-metal-ring {
+  width: 44px;
+  height: 18px;
+  background: linear-gradient(to right, #4b5563 0%, #d1d5db 25%, #9ca3af 50%, #f3f4f6 75%, #374151 100%);
+  border-radius: 9px;
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  position: relative;
+  margin-top: 36px;
+  transform: translateX(-50%);
+}
+
+.binder-metal-ring::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 7px;
+}
+
+/* Miniature FUT Card Slot styling */
+.card-mini-fut-slot {
+  aspect-ratio: 3 / 4;
+  clip-path: polygon(0% 12%, 15% 8%, 35% 8%, 50% 0%, 65% 8%, 85% 8%, 100% 12%, 100% 82%, 50% 100%, 0% 82%);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-size: 200% 200%;
+  width: 100%;
+  max-width: 125px;
+  margin: 0 auto;
+}
+
+.card-mini-fut-inner {
+  clip-path: polygon(0% 12%, 15% 8%, 35% 8%, 50% 0%, 65% 8%, 85% 8%, 100% 12%, 100% 82%, 50% 100%, 0% 82%);
+  position: absolute;
+  inset: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 8px 12px 8px;
+  overflow: hidden;
+}
+
+/* Mini Rarity Themes & Special Slot Cover States */
+.card-mini-toty {
+  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #FBBF24 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+.card-mini-toty .card-mini-fut-inner {
+  background: radial-gradient(circle at 50% 20%, #0c152b 0%, #03060d 100%);
+}
+
+.card-mini-gold {
+  background: linear-gradient(135deg, #FFE082 0%, #D97706 50%, #B45309 100%);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+}
+.card-mini-gold .card-mini-fut-inner {
+  background: radial-gradient(circle at 50% 20%, #1e1305 0%, #090602 100%);
+}
+
+.card-mini-var {
+  background: linear-gradient(135deg, #FCA5A5 0%, #DC2626 50%, #7F1D1D 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+.card-mini-var .card-mini-fut-inner {
+  background: radial-gradient(circle at 50% 20%, #2b040c 0%, #0c0204 100%);
+}
+
+.card-mini-bottler {
+  background: linear-gradient(135deg, #F1F5F9 0%, #64748B 50%, #334155 100%);
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.15);
+}
+.card-mini-bottler .card-mini-fut-inner {
+  background: radial-gradient(circle at 50% 20%, #171c26 0%, #080a0f 100%);
+}
+
+/* Premium Card Back Holographic States for Empty, Locked, & Missed slots */
+.card-mini-locked {
+  background: linear-gradient(135deg, #D97706 0%, #78350F 100%);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+}
+.card-mini-locked .card-mini-fut-inner {
+  background: 
+    linear-gradient(rgba(15, 10, 2, 0.75), rgba(15, 10, 2, 0.75)),
+    url('/images/card_back_holographic.png') no-repeat center center;
+  background-size: cover;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+}
+
+.card-mini-missed {
+  background: linear-gradient(135deg, #4B5563 0%, #1F2937 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.card-mini-missed .card-mini-fut-inner {
+  background: 
+    linear-gradient(rgba(17, 24, 39, 0.82), rgba(17, 24, 39, 0.82)),
+    url('/images/card_back_holographic.png') no-repeat center center;
+  background-size: cover;
+  filter: grayscale(80%);
+}
+
+.card-mini-empty {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.card-mini-empty .card-mini-fut-inner {
+  background: 
+    linear-gradient(rgba(11, 15, 25, 0.55), rgba(11, 15, 25, 0.55)),
+    url('/images/card_back_holographic.png') no-repeat center center;
+  background-size: cover;
+  transition: all 0.3s ease;
+}
+.card-mini-empty:hover {
+  background: linear-gradient(135deg, #D97706 0%, #FFE082 100%);
+}
+.card-mini-empty:hover .card-mini-fut-inner {
+  background: 
+    linear-gradient(rgba(11, 15, 25, 0.2), rgba(11, 15, 25, 0.2)),
+    url('/images/card_back_holographic.png') no-repeat center center;
+  background-size: cover;
+}
+
+/* Holographic sweep for mini cards */
+.holographic-sheen-mini {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 20%,
+    rgba(255, 255, 255, 0.12) 30%,
+    rgba(255, 255, 255, 0.25) 35%,
+    rgba(255, 255, 255, 0.12) 40%,
+    transparent 50%,
+    transparent 100%
+  );
+  background-size: 200% 200%;
+  background-position: 150% 150%;
+  transition: background-position 0.5s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+.card-mini-fut-slot:hover .holographic-sheen-mini {
+  background-position: -50% -50%;
+}
+
+/* 3D tilt interaction transition hook */
+.card-3d-tilt {
+  transform-style: preserve-3d;
+  perspective: 600px;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Missed slot EXPIRED grunge stamp */
+.stamp-expired {
+  border: 4px solid #ef4444;
+  border-radius: 8px;
+  color: #ef4444;
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  padding: 2px 8px;
+  transform: rotate(-15deg);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.05);
+  display: inline-block;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Missed slot EXPIRED grunge stamp - mini version for album slots */
+.stamp-expired-mini {
+  border: 2px solid #ef4444;
+  border-radius: 4px;
+  color: #ef4444;
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 1px 3px;
+  transform: rotate(-12deg);
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.05);
+  display: inline-block;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Album Page navigation tabs protruding from binder */
+.binder-tabs-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: -52px;
+  top: 60px;
+  gap: 6px;
+  z-index: 5;
+}
+
+.binder-index-tab {
+  width: 52px;
+  height: 40px;
+  border-radius: 0 10px 10px 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  transition: all 0.2s ease;
+  box-shadow: 4px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.binder-index-tab:hover {
+  width: 60px;
+}
+
+/* Social Media buttons */
+.social-share-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.social-share-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.social-btn-x { background-color: #000000; color: #ffffff; }
+.social-btn-wa { background-color: #25d366; color: #ffffff; }
+.social-btn-reddit { background-color: #ff4500; color: #ffffff; }
+.social-btn-tg { background-color: #229ed9; color: #ffffff; }
+.social-btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: #ffffff; }
+.social-btn-discord { background-color: #5865F2; color: #ffffff; }
+.social-btn-copy { background-color: rgba(255, 255, 255, 0.08); color: #e2e8f0; }
+
+.social-share-btn-sm {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+}
+

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VAR-HALLA | Football's Highest Court</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="VAR-HALLA: Football's Highest Court. Put a rival on trial, judge hot takes, or predict tournament humblings. Generate shareable, high-fidelity card graphics instantly.">
+  <meta name="keywords" content="football tribunal, football viral, messi ronaldo, last dance, world cup 2026, neymar copium, var-halla">
+  
+  <!-- Google Fonts for EA FC 24 sports styling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Floating Stadium Spotlights Backdrop -->
+  <div class="stadium-backdrop"></div>
+  <div class="green-pitch-glow"></div>
+
+  <!-- Main Floating App Panel (EA FC Menu Style) -->
+  <div class="floating-court-box">
+
+    <!-- Active Score Ticker (Social Proof) -->
+    <div class="live-status-bar">
+      <span class="live-pulse"></span>
+      <span id="ticker-text">⚖️ 147,291 TAKES JUDGED TODAY</span>
+    </div>
+
+    <!-- Brand Header -->
+    <header class="court-header">
+      <h1 class="logo">⚖️ VAR-HALLA</h1>
+      <p class="tagline">Football's Highest Court</p>
+    </header>
+
+    <!-- Battle Mode Challenger Banner (URL-Triggered) -->
+    <div class="battle-hud hidden" id="battle-hud">
+      <div class="battle-badge">BANTER DUEL</div>
+      <h3>🔥 <span id="challenger-name">Dave</span> Challenged You!</h3>
+      <p>Their take scored an OVR of <span id="challenger-score" class="score-alert">94</span></p>
+      <div class="challenger-take-preview">
+        &ldquo;<span id="challenger-take-text">Messi is finished</span>&rdquo;
+      </div>
+      <p class="battle-instruction">Enter your counter-take below to battle!</p>
+    </div>
+
+    <!-- STATE 1: Trial Input Box -->
+    <div class="app-state" id="state-input-area">
+      
+      <div class="trial-title">WHO IS STANDING TRIAL TODAY?</div>
+      
+      <div class="input-container">
+        <textarea 
+          id="take-input" 
+          placeholder="England Fans..." 
+          maxlength="140"
+        ></textarea>
+        <div class="input-actions-row">
+          <button class="btn-secondary" id="btn-summon">🎲 RANDOM TARGET</button>
+          <div class="char-count-display"><span id="char-count">0</span>/140</div>
+        </div>
+      </div>
+
+      <!-- Trending tags shortcuts -->
+      <div class="trending-row">
+        <span class="trend-lbl">TRENDING:</span>
+        <div class="trend-tags" id="trending-container">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+      <!-- High-Impact Action Triggers -->
+      <div class="trial-triggers-list">
+        <button class="btn-primary btn-trial" id="btn-rival" data-mode="rival">
+          ⚖️ PUT RIVAL ON TRIAL
+        </button>
+        <button class="btn-primary btn-cook" id="btn-judge" data-mode="take">
+          🔥 JUDGE MY TAKE
+        </button>
+        <button class="btn-primary btn-bottle" id="btn-humble" data-mode="humble">
+          💀 PREDICT THE HUMBLING
+        </button>
+      </div>
+
+      <!-- Quick Cases of the Day Drawer Link -->
+      <div class="cases-toggle-row">
+        <button class="toggle-link" id="btn-toggle-cases">⚖️ Show Today's Active Cases</button>
+      </div>
+
+      <!-- Leaderboard Drawer Link -->
+      <div class="leaderboard-toggle-row">
+        <button class="toggle-link" id="btn-toggle-leaderboard">🏛 View Delusion Hall of Shame</button>
+      </div>
+
+    </div>
+
+    <!-- STATE 2: Animated Court Loader HUD -->
+    <div class="app-state hidden" id="processing-hud">
+      <div class="spinner-container">
+        <div class="football-spinner">⚽</div>
+        <h3 id="loader-title">VAR BOOTH ACTIVE...</h3>
+        <p id="loader-log">Scanning tweet archives...</p>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="hud-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATE 3: Verdict Result Arena -->
+    <div class="app-state hidden" id="result-section">
+      <div class="verdict-card-container">
+        
+        <!-- eSports/FUT Card (Screenshot Ready) -->
+        <div class="fut-card-wrapper" id="fut-card-element">
+          <div class="fut-card" id="card-rarity-frame">
+            <div class="card-inner">
+              
+              <!-- Card Header -->
+              <div class="card-badge-header">
+                <span class="card-badge-label" id="card-tier-label">COMMON VERDICT</span>
+                <span class="card-badge-logo">⚖️ VAR-HALLA</span>
+              </div>
+
+              <!-- Rivalry Warning Banner -->
+              <div class="card-rivalry-banner hidden" id="card-rivalry-banner">
+                ⚡ RIVALRY DETECTED ⚡
+              </div>
+
+              <!-- Fanbase detected flag -->
+              <div class="card-fanbase-badge hidden" id="card-fanbase-badge">
+                <div class="fanbase-title">FANBASE DECLARED: <span id="card-fanbase-name">England</span></div>
+                <div class="fanbase-meta">
+                  <span>Category: <strong id="card-fanbase-cat">Optimists</strong></span>
+                  <span class="badge-divider">|</span>
+                  <span>Threat: <strong id="card-fanbase-threat">Extreme</strong></span>
+                </div>
+              </div>
+
+              <!-- Case Stamp & OVR Rating Box -->
+              <div class="card-ovr-section">
+                <div class="case-stamp">
+                  <div class="stamp-label">CASE NO.</div>
+                  <div class="stamp-value" id="card-case-id">#5842</div>
+                </div>
+                
+                <div class="ovr-rating-box">
+                  <div class="ovr-label" id="card-ovr-title">OVR RATING</div>
+                  <div class="ovr-value" id="card-ovr-value">87</div>
+                </div>
+
+                <div class="achievement-stamp">
+                  <div class="ach-badge-icon" id="card-ach-icon">🏆</div>
+                  <div class="ach-badge-title" id="card-ach-title">Certified Hater</div>
+                </div>
+              </div>
+
+              <!-- Input Quote Text -->
+              <div class="card-quote-section">
+                <div class="quote-text" id="card-subject-text">
+                  Arsenal fans celebrating a 2nd place finish like a Champions League win.
+                </div>
+              </div>
+
+              <!-- Official Sentence Box -->
+              <div class="card-sentence-box">
+                <div class="sentence-heading" id="card-verdict-title">TRIBUNAL VERDICT: GUILTY</div>
+                <div class="sentence-body" id="card-sentence-text">
+                  Banned from accessing any tactical analysis page. Sentenced to watch Sunday league matches on a rainy Tuesday.
+                </div>
+              </div>
+
+              <!-- Metrics Stats Table -->
+              <div class="card-stats-grid">
+                <div class="stat-row">
+                  <span class="stat-abbr" id="stat-label-1">BAL</span>
+                  <span class="stat-name">Ball Knowledge</span>
+                  <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-fill-1" style="width: 14%"></div></div>
+                  <span class="stat-val" id="stat-val-1">14</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-abbr" id="stat-label-2">COP</span>
+                  <span class="stat-name">Copium Level</span>
+                  <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-fill-2" style="width: 98%"></div></div>
+                  <span class="stat-val" id="stat-val-2">98</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-abbr" id="stat-label-3">BOT</span>
+                  <span class="stat-name">Bottle Potential</span>
+                  <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-fill-3" style="width: 99%"></div></div>
+                  <span class="stat-val" id="stat-val-3">99</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-abbr" id="stat-label-4">VAR</span>
+                  <span class="stat-name">VAR Victim Complex</span>
+                  <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-fill-4" style="width: 87%"></div></div>
+                  <span class="stat-val" id="stat-val-4">87</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-abbr" id="stat-label-5">AUR</span>
+                  <span class="stat-name">Aura Inflation</span>
+                  <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-fill-5" style="width: 95%"></div></div>
+                  <span class="stat-val" id="stat-val-5">95</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-abbr" id="stat-label-6">TRIG</span>
+                  <span class="stat-name" id="stat-desc-6">Rival Trigger Score</span>
+                  <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-fill-6" style="width: 94%"></div></div>
+                  <span class="stat-val" id="stat-val-6">94</span>
+                </div>
+              </div>
+
+              <!-- Watermark footer -->
+              <div class="card-footer-watermark">
+                ⚖️ GENERATED BY VAR-HALLA.NET
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden canvas for PNG export -->
+        <canvas id="export-canvas" style="display: none;"></canvas>
+
+        <!-- Expose & Share Controls -->
+        <div class="result-actions-panel">
+          
+          <button class="btn-export btn-download-card" id="btn-download">
+            📥 DOWNLOAD MY VERDICT
+          </button>
+          
+          <button class="btn-export btn-share-expose" id="btn-share-expose">
+            🔥 SHARE TO EXPOSE RONALDO FANS
+          </button>
+          
+          <button class="btn-export btn-battle-challenge" id="btn-challenge">
+            ⚔️ CHALLENGE A RIVAL (BANTER DUEL)
+          </button>
+
+          <!-- Tribunal Consensus Voting widget -->
+          <div class="tribunal-consensus-box">
+            <h4>⚠️ TRIBUNAL CONSENSUS</h4>
+            <div class="consensus-row">
+              <div class="consensus-fill-bar" id="consensus-yes-bar" style="width: 82%;"></div>
+              <span class="consensus-label" id="consensus-yes-label">82% Let Him Cook</span>
+            </div>
+            <div class="consensus-row">
+              <div class="consensus-fill-bar" id="consensus-no-bar" style="width: 18%;"></div>
+              <span class="consensus-label" id="consensus-no-label">18% Lifetime Football Ban</span>
+            </div>
+          </div>
+
+          <button class="btn-retry" id="btn-retry">
+            ⚖️ SENTENCE ANOTHER TARGET
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DRAWER STATE 4: Active Cases overlay panel -->
+    <div class="app-drawer hidden" id="drawer-cases">
+      <div class="drawer-header">
+        <h3>⚖️ TODAY'S BIGGEST FOOTBALL CRIMES</h3>
+        <button class="btn-close-drawer" id="btn-close-cases">×</button>
+      </div>
+      <div class="drawer-content" id="cases-list-container">
+        <!-- Prepopulated by JS -->
+      </div>
+    </div>
+
+    <!-- DRAWER STATE 5: Hall of Shame leaderboard panel -->
+    <div class="app-drawer hidden" id="drawer-leaderboard">
+      <div class="drawer-header">
+        <h3>🏛 DELUSION HALL OF SHAME</h3>
+        <button class="btn-close-drawer" id="btn-close-leaderboard">×</button>
+      </div>
+      <div class="drawer-content">
+        <div class="shame-leaderboard-list">
+          
+          <div class="shame-item card-gold">
+            <span class="shame-medal">🥇</span>
+            <div class="shame-info">
+              <strong>England Fans</strong>
+              <span>Category: Perpetual Optimists</span>
+            </div>
+            <div class="shame-score">
+              <span class="shame-lbl">DELUSION</span>
+              <span class="shame-val">99</span>
+            </div>
+          </div>
+
+          <div class="shame-item card-silver">
+            <span class="shame-medal">🥈</span>
+            <div class="shame-info">
+              <strong>Ronaldo Fans</strong>
+              <span>Category: Football Religion</span>
+            </div>
+            <div class="shame-score">
+              <span class="shame-lbl">AURA INFLATION</span>
+              <span class="shame-val">95</span>
+            </div>
+          </div>
+
+          <div class="shame-item card-bronze">
+            <span class="shame-medal">🥉</span>
+            <div class="shame-info">
+              <strong>Arsenal Fans</strong>
+              <span>Category: Hope Merchants</span>
+            </div>
+            <div class="shame-score">
+              <span class="shame-lbl">BOTTLE RISK</span>
+              <span class="shame-val">97</span>
+            </div>
+          </div>
+
+          <div class="shame-item card-normal">
+            <span class="shame-medal">🎖️</span>
+            <div class="shame-info">
+              <strong>Chelsea Fans</strong>
+              <span>Category: Chaos Merchants</span>
+            </div>
+            <div class="shame-score">
+              <span class="shame-lbl">COPIUM LEVEL</span>
+              <span class="shame-val">98</span>
+            </div>
+          </div>
+
+          <div class="shame-item card-normal">
+            <span class="shame-medal">🎖️</span>
+            <div class="shame-info">
+              <strong>Barcelona Twitter</strong>
+              <span>Category: Lever Pullers</span>
+            </div>
+            <div class="shame-score">
+              <span class="shame-lbl">COPIUM LEVEL</span>
+              <span class="shame-val">96</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- End App Panel -->
+
+  <footer class="court-footer">
+    <p class="copyright">&copy; 2026 VAR-HALLA | Shares Per Visitor is the only metric that matters.</p>
+  </footer>
+
+  <script src="tribunalCases.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

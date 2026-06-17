@@ -1,0 +1,922 @@
+/* ==========================================================================
+   VAR-HALLA EA FC 24 MENU DESIGN SYSTEM (100% Football & Centered Card)
+   ========================================================================== */
+
+:root {
+  /* Colors */
+  --bg-dark: #060e07;
+  --bg-card: rgba(8, 16, 10, 0.95);
+  --border-white: 4px solid #ffffff;
+  
+  /* Vibrant Sports Broadcast Colors */
+  --pitch-green: #2e7d32;
+  --vivid-turf: #4caf50;
+  --var-cyan: #00f3ff;
+  --red-card: #e53935;
+  --gold-trophy: #ffb300;
+  --purple-prophecy: #8e24aa;
+  --steel-grey: #2d3748;
+}
+
+/* Base resets & structural styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: #ffffff;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+  padding: 20px 10px;
+}
+
+/* 1. Full screen stadium background cover */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('stadium_bg.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.35; /* high visibility */
+  z-index: -2;
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(circle at center, rgba(46, 125, 50, 0.4) 0%, #050d06 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   THE FLOATING COURT BOX (CENTER PIECE)
+   ========================================================================== */
+
+.floating-court-box {
+  width: 100%;
+  max-width: 420px; /* Standard phone width */
+  background: var(--bg-card);
+  border: 4px solid #ffffff;
+  box-shadow: 12px 12px 0px #000000;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 10;
+}
+
+/* Live indicator bar */
+.live-status-bar {
+  background: #000;
+  border: 1px solid var(--gold-trophy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px;
+}
+
+.live-pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--red-card);
+  border-radius: 50%;
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+#ticker-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--gold-trophy);
+  letter-spacing: 1px;
+}
+
+/* Header branding */
+.court-header {
+  text-align: center;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+.logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.1rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.tagline {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--var-cyan);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-top: 2px;
+}
+
+/* Battle HUD */
+.battle-hud {
+  background: #000;
+  border: 3px solid var(--red-card);
+  padding: 12px;
+  position: relative;
+}
+
+.battle-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--red-card);
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 2px 6px;
+}
+
+.battle-hud h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.score-alert {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--red-card);
+  font-weight: 900;
+}
+
+.challenger-take-preview {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--red-card);
+  padding: 8px;
+  font-style: italic;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+
+.battle-instruction {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--var-cyan);
+}
+
+/* ==========================================================================
+   STATE 1: INPUT BOX (THE CONTROLS)
+   ========================================================================== */
+
+.app-state {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.trial-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+}
+
+.input-container {
+  background: #000;
+  border: 3px solid #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  resize: none;
+  outline: none;
+  height: 95px;
+}
+
+.input-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #fff;
+  color: #000;
+}
+
+.char-count-display {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Trending */
+.trending-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.78rem;
+}
+
+.trend-lbl {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--gold-trophy);
+  font-weight: 900;
+}
+
+.trend-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.trend-tag {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.trend-tag:hover {
+  background: var(--var-cyan);
+  color: #000;
+  border-color: var(--var-cyan);
+}
+
+/* Action Trigger buttons */
+.trial-triggers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-primary {
+  width: 100%;
+  border: 3px solid #fff;
+  padding: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s ease;
+}
+
+.btn-trial {
+  background: var(--red-card);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.btn-cook {
+  background: var(--pitch-green);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.btn-bottle {
+  background: var(--purple-prophecy);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+/* Toggle link buttons */
+.cases-toggle-row,
+.leaderboard-toggle-row {
+  text-align: center;
+}
+
+.toggle-link {
+  background: transparent;
+  border: none;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.toggle-link:hover {
+  color: var(--var-cyan);
+}
+
+/* ==========================================================================
+   STATE 2: VAR LOADER HUD
+   ========================================================================== */
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.football-spinner {
+  font-size: 2.8rem;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner-container h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  color: #fff;
+}
+
+#loader-log {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--var-cyan);
+  font-size: 0.8rem;
+}
+
+.progress-bar-container {
+  width: 140px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--var-cyan);
+}
+
+/* ==========================================================================
+   STATE 3: VERDICT CARD & ACTIONS
+   ========================================================================== */
+
+.verdict-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.fut-card-wrapper {
+  width: 100%;
+  padding: 6px;
+  background: #000;
+  border: 4px solid #fff;
+  box-shadow: 8px 8px 0px #000;
+}
+
+.fut-card {
+  width: 100%;
+  aspect-ratio: 1 / 1.35;
+  background-image: url('card_bg.png');
+  background-size: cover;
+  background-position: center;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fut-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 3px solid #fff;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Card overrides */
+.card-common::after { border-color: var(--steel-grey); }
+.card-rare::after { border-color: var(--var-cyan); }
+.card-hating::after { border-color: var(--red-card); }
+.card-cooking::after { border-color: var(--gold-trophy); }
+
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  gap: 8px;
+  background: rgba(8, 16, 10, 0.65);
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.card-badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #fff;
+  padding-bottom: 4px;
+}
+
+.card-badge-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.card-badge-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: var(--gold-trophy);
+}
+
+.card-rivalry-banner {
+  background: linear-gradient(90deg, var(--var-cyan) 0%, var(--red-card) 100%);
+  border: 2px solid #fff;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 3px;
+  letter-spacing: 2.5px;
+}
+
+.card-fanbase-badge {
+  background: #000;
+  border: 1px solid #fff;
+  padding: 4px 6px;
+}
+
+.fanbase-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: var(--var-cyan);
+}
+
+.fanbase-meta {
+  display: flex;
+  gap: 6px;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.fanbase-meta strong {
+  color: #fff;
+}
+
+.card-ovr-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #000;
+  border: 2px solid #fff;
+  padding: 5px 8px;
+}
+
+.stamp-label {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+}
+
+.stamp-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.ovr-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.52rem;
+  color: var(--text-muted);
+}
+
+.ovr-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.ach-badge-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: var(--gold-trophy);
+}
+
+.card-quote-section {
+  padding: 2px 6px;
+  border-left: 3px solid var(--var-cyan);
+}
+
+.quote-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.card-sentence-box {
+  background: #000;
+  border: 2px solid #fff;
+  padding: 6px 8px;
+}
+
+.sentence-heading {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--red-card);
+  margin-bottom: 2px;
+}
+
+.sentence-body {
+  font-size: 0.78rem;
+  color: #fff;
+  line-height: 1.35;
+}
+
+.card-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: auto;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.68rem;
+}
+
+.stat-abbr {
+  font-family: 'Orbitron', sans-serif;
+  width: 30px;
+  font-weight: 900;
+  color: var(--var-cyan);
+}
+
+.stat-name {
+  width: 100px;
+  color: var(--text-muted);
+}
+
+.stat-bar-bg {
+  flex-grow: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 8px;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: #fff;
+}
+
+.stat-val {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  width: 20px;
+  text-align: right;
+}
+
+.card-footer-watermark {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 4px;
+}
+
+/* Expose actions panel */
+.result-actions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-export {
+  width: 100%;
+  border: 3px solid #fff;
+  padding: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.btn-download-card {
+  background: var(--gold-trophy);
+  color: #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.btn-share-expose {
+  background: #fff;
+  color: #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.btn-battle-challenge {
+  background: transparent;
+  color: #fff;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.btn-export:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+.btn-retry {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Poll */
+.tribunal-consensus-box {
+  background: #000;
+  border: 2px solid #fff;
+  padding: 10px;
+  margin-top: 4px;
+}
+
+.tribunal-consensus-box h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  color: var(--red-card);
+  margin-bottom: 4px;
+}
+
+.consensus-row {
+  height: 24px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.consensus-fill-bar {
+  position: absolute;
+  top: 0; left: 0; height: 100%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.consensus-label {
+  position: relative;
+  z-index: 2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding-left: 8px;
+}
+
+/* ==========================================================================
+   STATES 4 & 5: APP DRAWERS (Active cases & leaderboard)
+   ========================================================================== */
+
+.app-drawer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #050d06;
+  border: 4px solid #ffffff;
+  padding: 16px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #fff;
+  padding-bottom: 8px;
+}
+
+.drawer-header h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--gold-trophy);
+}
+
+.btn-close-drawer {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.8rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Prebaked case card inside drawer */
+.drawer-case-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid #fff;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.drawer-case-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-case-id {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  color: var(--var-cyan);
+}
+
+.drawer-case-tag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 2px 4px;
+  background: var(--red-card);
+  color: #fff;
+}
+
+.drawer-case-card h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+}
+
+.drawer-case-charge {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.drawer-case-sentence {
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  border-left: 3px solid var(--var-cyan);
+}
+
+/* Leaderboard Shame list in drawer */
+.shame-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shame-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px solid #fff;
+  padding: 10px;
+  gap: 10px;
+}
+
+.card-gold { border-color: var(--gold-trophy); }
+.card-silver { border-color: #cbd5e1; }
+.card-bronze { border-color: #b45309; }
+
+.shame-medal { font-size: 1.4rem; }
+
+.shame-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.shame-info strong {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+}
+
+.shame-info span {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.shame-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.shame-lbl {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+}
+
+.shame-val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.court-footer {
+  text-align: center;
+  margin-top: 15px;
+  z-index: 10;
+}
+
+.court-footer p {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   ANIMATIONS & TRANSITIONS
+   ========================================================================== */
+
+.app-state, .app-drawer {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.2s ease-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+
+@starting-style {
+  .app-state, .app-drawer {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.hidden {
+  display: none !important;
+}

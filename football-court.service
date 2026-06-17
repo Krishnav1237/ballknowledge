@@ -1,0 +1,17 @@
+[Unit]
+Description=Football Court Web Application
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/football-court
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production PORT=3000
+# Load database and API keys (Update the paths as appropriate for your setup)
+# EnvironmentFile=/home/pi/football-court/.env.production
+
+[Install]
+WantedBy=multi-user.target

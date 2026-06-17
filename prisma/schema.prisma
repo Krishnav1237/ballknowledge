@@ -1,0 +1,155 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Legacy Models (Kept to prevent compilation breakages during transition) ───
+
+model Verdict {
+  id              String     @id @default(uuid())
+  text            String
+  mode            String     // 'take' | 'rival' | 'humble' | 'court'
+  caseId          Int
+  rarity          String
+  ovr             Int
+  rulingText      String
+  verdict         String
+  charge          String
+  sentence        String
+  achTitle        String
+  achDesc         String
+  achBadge        String
+  fanbaseName     String?
+  fanbaseCategory String?
+  fanbaseThreat   String?
+  fanbaseNickname String?
+  isRivalry       Boolean
+  stats           Json       // stores array of Stat: { label, name, val }
+  cardTheme       String?    // 'champion' | 'bottler' | 'var' | 'spinner'
+  countryFlag     String?
+  playerName      String?
+  playerPosition  String?
+  clubBadge       String?
+  clubName        String?
+  avatarStyle     String?
+  avatarSeed      String?
+  rebuttalToId    String?
+  rebuttalTo      Verdict?   @relation("VerdictRebuttal", fields: [rebuttalToId], references: [id], onDelete: Cascade)
+  rebuttals       Verdict[]  @relation("VerdictRebuttal")
+  battleVerdictJson Json?    // stores structure: { winner, confidence, battleReason, judge, sentence, severity }
+
+  visitsCount     Int        @default(0)
+  challengesCount Int        @default(0)
+  battlesWonCount Int        @default(0)
+
+  createdAt       DateTime   @default(now())
+
+  courtCase       CourtCase?
+}
+
+model CourtCase {
+  id          String   @id @default(uuid())
+  player      String?
+  club        String?
+  fanbaseName String?
+  country     String?
+  verdictId   String   @unique
+  verdict     Verdict  @relation(fields: [verdictId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Prophecy {
+  id               String   @id @default(uuid())
+  question         String
+  title            String
+  date             String
+  author           String
+  leadParagraph    String
+  analysisSections Json     // stores array of { heading, body }
+  verdictSummary   String
+  probabilityScore Int
+  stadiumContext   String
+  createdAt        DateTime @default(now())
+}
+
+// ─── Football IQ Match-Centric Models ─────────────────────────────────────────
+
+model FootballIQProfile {
+  id               String            @id @default(uuid())
+  username         String            @unique
+  avatarStyle      String            @default("fun-emoji")
+  avatarSeed       String
+  favoriteClub     String?
+  favoriteNation   String?
+  overallRating    Int               @default(50)
+  predictionRating Int               @default(50)
+  hotTakeRating    Int               @default(50)
+  tacticalRating   Int               @default(50)
+  communityRating  Int               @default(50)
+  role             String            @default("FREE") // "FREE" | "PREMIUM" | "ADMIN"
+  season           String            @default("World Cup 2026")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  predictions      MatchPrediction[]
+  matchCards       MatchCard[]
+  chatMessages     ChatMessage[]
+}
+
+model MatchPrediction {
+  id                String            @id @default(uuid())
+  profileId         String
+  profile           FootballIQProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  matchId           String
+  homeScore         Int
+  awayScore         Int
+  firstGoalscorer   String
+  motm              String
+  possessionWinner  String
+  createdAt         DateTime          @default(now())
+  hotTakes          HotTake[]
+
+  @@unique([profileId, matchId])
+}
+
+model HotTake {
+  id             String          @id @default(uuid())
+  predictionId   String
+  prediction     MatchPrediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  statement      String
+  confidence     Int
+  createdAt      DateTime        @default(now())
+}
+
+model ChatMessage {
+  id          String            @id @default(uuid())
+  matchId     String
+  profileId   String
+  profile     FootballIQProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  text        String
+  isRoast     Boolean           @default(false)
+  upvotes     Int               @default(0)
+  downvotes   Int               @default(0)
+  createdAt   DateTime          @default(now())
+}
+
+model MatchCard {
+  id              String            @id @default(uuid())
+  profileId       String
+  profile         FootballIQProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  matchId         String
+  rating          Int               // Match score (0-99)
+  verdict         String            // e.g. "Guilty" | "Acquitted"
+  charge          String            // e.g. "Delusion Merchant" | "Certified Chef"
+  evidence        String
+  sentence        String
+  rarity          String            // COMMON | RARE | EPIC | LEGENDARY
+  statsJson       Json              // stores the deltas or stats
+  cardTheme       String?
+  createdAt       DateTime          @default(now())
+
+  @@unique([profileId, matchId])
+}

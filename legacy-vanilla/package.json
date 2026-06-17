@@ -1,0 +1,16 @@
+{
+  "name": "var-halla",
+  "version": "1.0.0",
+  "description": "Football's Highest Court: Visual Attention Screenshot Machine",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx -y http-server . -p 3000 -c-1"
+  },
+  "keywords": [
+    "football",
+    "viral",
+    "tribunal"
+  ],
+  "author": "VAR-HALLA",
+  "license": "MIT"
+}
