@@ -1,8 +1,12 @@
 # Football IQ Reputation Platform 🏆
 
-**Football IQ** is a single, unified football reputation platform scoped around the **FIFA World Cup 2026 Season**. Fans build their persistent football reputation, one matchday decision at a time, by lock-in predictions and bold hot takes on tournament fixtures, generating collectible FIFA-style verdict cards.
+[![Live Platform](https://img.shields.io/badge/Live-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://football-viral.vercel.app)
+
+**Football IQ** is a single, unified football reputation platform scoped around the **FIFA World Cup 2026 Season**. Fans build their persistent football reputation, one matchday decision at a time, by locking in predictions and bold hot takes on tournament fixtures, generating collectible FIFA-style verdict cards.
 
 *“Football IQ: Build your football reputation, one match at a time.”*
+
+🔗 **Live Website**: [football-viral.vercel.app](https://football-viral.vercel.app)
 
 ---
 
