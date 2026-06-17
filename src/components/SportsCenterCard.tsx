@@ -229,11 +229,12 @@ export default function SportsCenterCard({
         <defs>
           {/* Patterns for background images */}
           <pattern id="toty-premium-pat" width="340" height="480" patternUnits="userSpaceOnUse">
-            <image href="/images/toty_bg_premium.png" x="0" y="0" width="340" height="480" preserveAspectRatio="xMidYMid slice" />
+            <image href="/images/toty_bg_premium.webp" x="0" y="0" width="340" height="480" preserveAspectRatio="xMidYMid slice" />
           </pattern>
           <pattern id="gold-premium-pat" width="340" height="480" patternUnits="userSpaceOnUse">
-            <image href="/images/card_bg.png" x="0" y="0" width="340" height="480" preserveAspectRatio="xMidYMid slice" />
+            <image href="/images/card_bg.webp" x="0" y="0" width="340" height="480" preserveAspectRatio="xMidYMid slice" />
           </pattern>
+
 
           {/* Theme Border Gradients */}
           <linearGradient id="toty-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">

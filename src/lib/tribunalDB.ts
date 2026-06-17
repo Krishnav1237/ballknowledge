@@ -470,7 +470,8 @@ export function generateProphecy(question: string, id?: string): ProphecyData {
   let sections: { heading: string; body: string }[] = [];
   let verdictSummary = "";
   let probabilityScore = 50;
-  const stadiumContext = "stadium_bg.png";
+  const stadiumContext = "stadium_bg.webp";
+
 
   const author = "VAR Chief Official";
 

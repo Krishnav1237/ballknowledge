@@ -87,7 +87,7 @@ const PLAYERS = [
     border: '#002395',
   },
   {
-    src: '/images/stadium_bg.png',
+    src: '/images/stadium_bg.webp',
     alt: 'Erling Haaland Norway',
     flag: '🇳🇴',
     name: 'HAALAND',
@@ -100,7 +100,7 @@ const PLAYERS = [
     border: '#0EA5E9',
   },
   {
-    src: '/images/debate_bg.png',
+    src: '/images/debate_bg.webp',
     alt: 'Jude Bellingham England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
     name: 'BELLINGHAM',
@@ -113,7 +113,7 @@ const PLAYERS = [
     border: '#E0A96D',
   },
   {
-    src: '/images/chaos_crowd.png',
+    src: '/images/chaos_crowd.webp',
     alt: 'Vinicius Jr Brazil',
     flag: '🇧🇷',
     name: 'VINÍCIUS',
@@ -126,7 +126,7 @@ const PLAYERS = [
     border: '#FBBF24',
   },
   {
-    src: '/images/last_dance.png',
+    src: '/images/last_dance.webp',
     alt: 'Harry Kane England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
     name: 'KANE',
@@ -138,6 +138,7 @@ const PLAYERS = [
     accent: '#64748B',
     border: '#64748B',
   },
+
 ];
 
 const COUNTRIES = [
@@ -182,10 +183,16 @@ export default function Home() {
   const [predPossession,  setPredPossession]  = useState('Argentina');
 
   const [isTidied,       setIsTidied]       = useState(false);
-
   const [stats, setStats] = useState({ takes: 0, cases: 0, cards: 0 });
+  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    setMounted(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 800);
+
     fetch('/api/stats')
       .then(res => res.json())
       .then(data => {
@@ -202,13 +209,47 @@ export default function Home() {
         cards: p.cards + Math.floor(Math.random() * 4),
       }));
     }, 3000);
-    return () => clearInterval(id);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(id);
+    };
   }, []);
+
 
   return (
     <div ref={containerRef} className="relative bg-white text-[#0A0A0A] min-h-screen overflow-hidden">
 
+      {/* ── IMMERSIVE PRELOADER SCREEN ──────────────────────────────────────── */}
+      <div 
+        className={`fixed inset-0 z-[100] bg-[#0A0A0A] flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
+          !loading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        <div className="flex flex-col items-center gap-4 text-center px-6">
+          {/* Spinning Golden & Burgundy Rings */}
+          <div className="relative w-16 h-16 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-2 border-t-[#D97706] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '1s' }} />
+            <div className="absolute inset-1.5 rounded-full border-2 border-b-[#881337] border-t-transparent border-r-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }} />
+            <span className="font-display font-black text-xs text-white uppercase tracking-wider">VAR</span>
+          </div>
+          
+          <h2 className="font-display font-black text-2xl tracking-[0.25em] text-white uppercase mt-2">
+            FOOTBALL <span className="text-[#D97706]">IQ</span>
+          </h2>
+          
+          <div className="w-44 h-[2px] bg-white/10 rounded-full overflow-hidden relative mt-1">
+            <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#881337] to-[#D97706] w-full animate-loading-bar" />
+          </div>
+          
+          <p className="text-[9px] font-sans font-black text-gray-500 uppercase tracking-[0.2em] mt-1">
+            Connecting to World Cup Matchday Server...
+          </p>
+        </div>
+      </div>
+
       {/* ── TICKER ──────────────────────────────────────────────────────────── */}
+
       <div className="fixed top-[52px] left-0 w-full h-9 z-30 flex items-center overflow-hidden select-none"
            style={{ background: '#881337' }}>
         <div className="shrink-0 px-4 h-full flex items-center bg-black border-r border-white/10 relative z-10">
@@ -230,11 +271,17 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#0A0A0A] text-white">
         <motion.div style={{ y: yBg }} className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Image src="/images/world_cup_stadium.png" alt="" fill className="object-cover opacity-55" sizes="100vw" priority />
+          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-55" sizes="100vw" priority />
+
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-[#0A0A0A]" />
         </motion.div>
 
-        <div className="relative w-full max-w-3xl mx-auto text-center py-4 md:py-6 flex flex-col justify-center items-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.35 }}
+          className="relative w-full max-w-3xl mx-auto text-center py-4 md:py-6 flex flex-col justify-center items-center"
+        >
 
           {/* Live badge */}
           <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-4 shadow-md">
@@ -283,7 +330,7 @@ export default function Home() {
             </div>
           )}
 
-        </div>
+        </motion.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
@@ -731,7 +778,8 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="relative py-20 md:py-28 px-6 overflow-hidden text-left bg-black">
         <div className="absolute inset-0">
-          <Image src="/images/trophy_moment.png" alt="" fill className="object-cover opacity-100" sizes="100vw" />
+          <Image src="/images/trophy_moment.webp" alt="" fill className="object-cover opacity-100" sizes="100vw" />
+
           <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
         </div>

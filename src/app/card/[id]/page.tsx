@@ -99,12 +99,13 @@ export default function SharedCardPage({ params }: { params: Promise<{ id: strin
       {/* Immersive Game-style Stadium Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/game_stadium_showcase.png" 
+          src="/images/game_stadium_showcase.webp" 
           alt="World Cup Stadium background" 
           fill 
           className="object-cover object-center" 
           priority 
         />
+
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/85" />
       </div>
 

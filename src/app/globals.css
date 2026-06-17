@@ -243,6 +243,16 @@ html.lenis, html.lenis body {
   100% { transform: translateX(-50%); }
 }
 
+@keyframes loadingBar {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.animate-loading-bar {
+  animation: loadingBar 1.4s infinite linear;
+}
+
+
 @keyframes spotlight-left {
   0% { transform: rotate(-25deg) scale(1); opacity: 0.15; }
   50% { transform: rotate(-15deg) scale(1.05); opacity: 0.35; }
@@ -458,7 +468,7 @@ html.lenis, html.lenis body {
 .card-mini-locked .card-mini-fut-inner {
   background: 
     linear-gradient(rgba(15, 10, 2, 0.75), rgba(15, 10, 2, 0.75)),
-    url('/images/card_back_holographic.png') no-repeat center center;
+    url('/images/card_back_holographic.webp') no-repeat center center;
   background-size: cover;
   border: 1px solid rgba(217, 119, 6, 0.25);
 }
@@ -470,7 +480,7 @@ html.lenis, html.lenis body {
 .card-mini-missed .card-mini-fut-inner {
   background: 
     linear-gradient(rgba(17, 24, 39, 0.82), rgba(17, 24, 39, 0.82)),
-    url('/images/card_back_holographic.png') no-repeat center center;
+    url('/images/card_back_holographic.webp') no-repeat center center;
   background-size: cover;
   filter: grayscale(80%);
 }
@@ -482,7 +492,7 @@ html.lenis, html.lenis body {
 .card-mini-empty .card-mini-fut-inner {
   background: 
     linear-gradient(rgba(11, 15, 25, 0.55), rgba(11, 15, 25, 0.55)),
-    url('/images/card_back_holographic.png') no-repeat center center;
+    url('/images/card_back_holographic.webp') no-repeat center center;
   background-size: cover;
   transition: all 0.3s ease;
 }
@@ -492,9 +502,10 @@ html.lenis, html.lenis body {
 .card-mini-empty:hover .card-mini-fut-inner {
   background: 
     linear-gradient(rgba(11, 15, 25, 0.2), rgba(11, 15, 25, 0.2)),
-    url('/images/card_back_holographic.png') no-repeat center center;
+    url('/images/card_back_holographic.webp') no-repeat center center;
   background-size: cover;
 }
+
 
 /* Holographic sweep for mini cards */
 .holographic-sheen-mini {

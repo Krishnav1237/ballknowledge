@@ -277,12 +277,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       {/* Immersive Game-style Stadium Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/game_stadium_showcase.png" 
+          src="/images/game_stadium_showcase.webp" 
           alt="World Cup Stadium background" 
           fill 
           className="object-cover opacity-65 object-center" 
           priority 
         />
+
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#030712]/50 to-[#030712]" />
       </div>
 
