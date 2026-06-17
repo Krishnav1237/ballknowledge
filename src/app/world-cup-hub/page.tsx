@@ -259,8 +259,9 @@ export default function WorldCupHub() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#0A0A0A]/40 to-[#0A0A0A]" />
       </div>
 
-      {/* Sticky HUD Header Bar - Always visible at top */}
-      <div className="sticky top-[52px] z-30 w-full glass-panel border-b border-white/10 bg-[#0A0A0A]/95 shadow-lg shadow-black/40 backdrop-blur-md py-4 sm:py-5 px-6">
+      {/* Fixed HUD Header Bar - Always visible at top */}
+      <div className="fixed top-[52px] left-0 z-30 w-full bg-[#0A0A0A] border-b border-white/10 shadow-lg shadow-black/80 py-4 sm:py-5 px-6">
+        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#881337] via-[#D97706] to-[#881337] opacity-60" />
         <div className="max-w-8xl mx-auto flex items-center justify-between gap-4">
           <div className="text-left">
             <h1 className="font-display font-black text-lg sm:text-xl md:text-2xl text-white uppercase tracking-wider leading-none"
@@ -285,6 +286,9 @@ export default function WorldCupHub() {
           )}
         </div>
       </div>
+
+      {/* Dedicated Spacing Element to reserve fixed header layout flow */}
+      <div className="h-[76px] sm:h-[84px] w-full shrink-0" />
 
       {/* Main Console Layout: Left Sidebar Deck, Right Match Board */}
       <div className="relative z-10 max-w-8xl mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6 items-start w-full">
