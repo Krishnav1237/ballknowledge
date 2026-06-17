@@ -55,8 +55,9 @@ export default function Navbar() {
               </svg>
             </div>
             <span className={`font-display font-black text-2xl tracking-widest flex items-center transition-colors duration-300 ${scrolled ? 'text-foreground' : 'text-white'}`}>
-              VAR<span className={`ml-1 transition-colors duration-300 ${scrolled ? 'text-primary group-hover:text-secondary' : 'text-[#D97706] group-hover:text-white'}`}>CARDS</span>
+              BALL<span className={`ml-1 transition-colors duration-300 ${scrolled ? 'text-primary group-hover:text-secondary' : 'text-[#D97706] group-hover:text-white'}`}>KNOWLEDGE</span>
             </span>
+
           </Link>
 
           {/* Desktop Nav — extreme right */}

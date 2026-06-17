@@ -234,9 +234,10 @@ export default function Home() {
             <span className="font-display font-black text-xs text-white uppercase tracking-wider">VAR</span>
           </div>
           
-          <h2 className="font-display font-black text-2xl tracking-[0.25em] text-white uppercase mt-2">
-            FOOTBALL <span className="text-[#D97706]">IQ</span>
+          <h2 className="font-display font-black text-2xl tracking-[0.2em] text-white uppercase mt-2">
+            BALL<span className="text-[#D97706]">KNOWLEDGE</span>
           </h2>
+
           
           <div className="w-44 h-[2px] bg-white/10 rounded-full overflow-hidden relative mt-1">
             <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#881337] to-[#D97706] w-full animate-loading-bar" />

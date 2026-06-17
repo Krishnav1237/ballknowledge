@@ -6,18 +6,19 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'VAR Cards | Evolve Your Football IQ',
-  description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based Football IQ Profile.",
+  title: 'BallKnowledge | World Cup 2026 Reputation Arena',
+  description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based BallKnowledge Profile.",
   icons: {
     icon: '/favicon.ico',
   },
   openGraph: {
-    title: 'VAR Cards | Evolve Your Football IQ',
-    description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based Football IQ Profile.",
+    title: 'BallKnowledge | World Cup 2026 Reputation Arena',
+    description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based BallKnowledge Profile.",
     type: 'website',
     locale: 'en_US',
-    siteName: 'VAR Cards',
+    siteName: 'BallKnowledge',
   },
+
 };
 
 export default function RootLayout({
