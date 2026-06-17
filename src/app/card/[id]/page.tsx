@@ -111,9 +111,6 @@ export default function SharedCardPage({ params }: { params: Promise<{ id: strin
 
       {/* Centered Heading */}
       <header className="relative z-10 text-center flex flex-col items-center mt-2">
-        <div className="inline-flex items-center gap-1.5 bg-[#D97706]/15 border border-[#D97706]/30 text-[#D97706] rounded-full px-3.5 py-1 text-[9px] font-black uppercase tracking-widest mb-1.5 shadow-md">
-          <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Shared Collectible Card
-        </div>
         <h2 className="font-display font-black text-2xl sm:text-3.5xl text-white uppercase tracking-wider leading-none">
           {profile.username}&apos;s VAR Verdict Card
         </h2>

@@ -86,10 +86,6 @@ export default function PricingPage() {
         
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-5">
-          <div className="inline-flex items-center gap-1.5 bg-[#881337]/20 border border-[#881337]/40 text-[#ff4b72] rounded-full px-3 py-1 mb-1 shadow-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-[0.2em]">BallKnowledge • Season Passes</span>
-          </div>
           <h1 className="font-display font-black uppercase tracking-tight text-white mb-1.5 text-center leading-[1.1]"
               style={{
                 fontSize: 'clamp(1.8rem, 4.2vw, 2.8rem)',

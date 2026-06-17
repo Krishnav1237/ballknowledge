@@ -261,102 +261,116 @@ export default function WorldCupHub() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#0A0A0A]/40 to-[#0A0A0A]" />
       </div>
 
-      {/* Hero Header Banner */}
-      <div className="relative pt-[80px] pb-6 px-6 bg-gradient-to-b from-[#881337]/20 via-transparent to-transparent border-b border-white/5 z-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 bg-[#881337]/15 border border-[#881337]/45 text-[#ff4b72] rounded-full px-3.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] mb-2.5 shadow-md">
-              <Trophy className="w-3.5 h-3.5 text-[#D97706]" /> FIFA World Cup 2026 Hub
-            </div>
-            <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-tight leading-none"
-                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 4px 30px rgba(0,0,0,0.85)' }}>
-              Tournament <span className="text-[#D97706]">Matchday</span>
+      {/* Sticky HUD Header Bar - Always visible at top */}
+      <div className="sticky top-[52px] z-30 w-full glass-panel border-b border-white/5 bg-black/75 backdrop-blur-md py-3.5 px-6">
+        <div className="max-w-8xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="text-center sm:text-left">
+            <h1 className="font-display font-black text-xl sm:text-2xl text-white uppercase tracking-wider leading-none"
+                style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+              FIFA WORLD CUP 2026 HUB
             </h1>
-            <p className="text-gray-300 text-xs mt-1.5 max-w-lg font-medium leading-relaxed">
-              Select fixtures to lock in your hot takes and predictions. Graded dynamically relative to kickoff. Current system simulation date: <span className="text-[#D97706] font-bold">June 16, 2026</span>.
+            <p className="text-gray-400 text-[10px] sm:text-xs mt-1.5 font-medium leading-none">
+              Simulation Date: <span className="text-[#D97706] font-bold">June 16, 2026</span> • Lock predictions and claim verdict cards.
             </p>
           </div>
 
           {profile && (
-            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-all duration-300 rounded-2xl p-4 flex items-center gap-4 bg-black/60 shadow-xl shrink-0 group active:scale-98">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-xl text-white shadow-md group-hover:scale-105 transition-transform duration-300">
+            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-all duration-300 rounded-xl px-4 py-2 flex items-center gap-3 bg-black/60 shadow-xl shrink-0 group active:scale-98">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-sm text-white shadow-md group-hover:scale-105 transition-transform duration-300">
                 {profile.overallRating}
               </div>
-              <div>
-                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Your Reputation</p>
-                <p className="font-bold text-white leading-tight group-hover:text-[#D97706] transition-colors">{profile.username}</p>
-                <p className="text-[8.5px] font-black text-amber-500 uppercase tracking-wider mt-0.5">{profile.season}</p>
+              <div className="text-left">
+                <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest leading-none">Manager Reputation</p>
+                <p className="font-bold text-xs text-white group-hover:text-[#D97706] transition-colors leading-none mt-1">{profile.username}</p>
               </div>
             </Link>
           )}
         </div>
       </div>
 
-      {/* Tabs Cockpit */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 mt-6">
+      {/* Main Console Layout: Left Sidebar Deck, Right Match Board */}
+      <div className="relative z-10 max-w-8xl mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6 items-start w-full">
         
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-white/5 mb-6">
-          <button
-            onClick={() => setActiveTab('schedule')}
-            className={`py-3 px-5 font-display font-black text-xs uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'schedule'
-                ? 'border-[#D97706] text-white shadow-[0_4px_10px_-4px_rgba(217,119,6,0.3)]'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            <Calendar className="w-4 h-4 text-[#D97706]" /> Match Schedule
-          </button>
-          <button
-            onClick={() => setActiveTab('groups')}
-            className={`py-3 px-5 font-display font-black text-xs uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'groups'
-                ? 'border-[#D97706] text-white shadow-[0_4px_10px_-4px_rgba(217,119,6,0.3)]'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            <Trophy className="w-4 h-4 text-[#D97706]" /> Group Standings
-          </button>
-        </div>
-
-        {/* Schedule Tab Contents */}
-        {activeTab === 'schedule' && (
-          <div>
-            {/* Inner Filters capsules */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {[
-                { id: 'today', label: 'Today (June 16)' },
-                { id: 'live', label: 'Live Now' },
-                { id: 'tomorrow', label: 'Tomorrow' },
-                { id: 'upcoming', label: 'Upcoming Matches' },
-                { id: 'completed', label: 'Completed Results' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  onClick={() => setScheduleFilter(sub.id as any)}
-                  className={`px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all border cursor-pointer active:scale-95 ${
-                    scheduleFilter === sub.id
-                      ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_12px_rgba(217,119,6,0.15)]'
-                      : 'bg-black/60 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
-                  }`}
-                >
-                  {sub.label}
-                </button>
-              ))}
+        {/* Left-Aligned Control Sidebar */}
+        <aside className="w-full lg:w-64 shrink-0 bg-black/75 border border-white/5 p-4 rounded-2xl space-y-6 sticky lg:top-[152px] shadow-2xl backdrop-blur-md w-full">
+          
+          {/* Section 1: Navigation Plinths */}
+          <div className="space-y-2.5">
+            <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Navigation Console</span>
+            <div className="space-y-1.5">
+              <button
+                onClick={() => setActiveTab('schedule')}
+                className={`w-full px-4 py-3 rounded-xl font-display font-black text-[11px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center gap-2.5 border ${
+                  activeTab === 'schedule'
+                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)] animate-pulse-slow'
+                    : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
+                }`}
+              >
+                <Calendar className="w-4 h-4 text-[#D97706]" /> Match Schedule
+              </button>
+              <button
+                onClick={() => setActiveTab('groups')}
+                className={`w-full px-4 py-3 rounded-xl font-display font-black text-[11px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center gap-2.5 border ${
+                  activeTab === 'groups'
+                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)] animate-pulse-slow'
+                    : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
+                }`}
+              >
+                <Trophy className="w-4 h-4 text-[#D97706]" /> Group Standings
+              </button>
             </div>
+          </div>
 
-            {/* Match Listings Grid */}
-            {filteredMatches.length === 0 ? (
-              <div className="glass-panel border-white/5 rounded-2xl p-12 text-center bg-black/40 flex flex-col justify-center items-center">
-                <Calendar className="w-8 h-8 text-gray-600 mb-2.5" />
-                <h3 className="font-display font-black text-sm text-white uppercase tracking-wider">No fixtures found</h3>
-                <p className="text-[11px] text-gray-500 max-w-xs mt-1 leading-relaxed">
-                  There are no matches matching the filter &quot;{scheduleFilter}&quot; in this stage of the schedule.
-                </p>
+          {/* Section 2: Fixture Sub-Filters (only active on Schedule tab) */}
+          {activeTab === 'schedule' && (
+            <div className="space-y-2.5 border-t border-white/5 pt-4">
+              <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
+              <div className="space-y-1.5">
+                {[
+                  { id: 'today', label: 'Today (June 16)' },
+                  { id: 'live', label: 'Live Now' },
+                  { id: 'tomorrow', label: 'Tomorrow' },
+                  { id: 'upcoming', label: 'Upcoming' },
+                  { id: 'completed', label: 'Completed Results' }
+                ].map(sub => (
+                  <button
+                    key={sub.id}
+                    onClick={() => setScheduleFilter(sub.id as any)}
+                    className={`w-full px-4 py-2.5 rounded-lg text-[9.5px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer ${
+                      scheduleFilter === sub.id
+                        ? 'bg-[#881337]/25 border-[#881337] text-rose-300 shadow-sm'
+                        : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between w-full">
+                      <span>{sub.label}</span>
+                      {sub.id === 'live' && (
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                      )}
+                    </span>
+                  </button>
+                ))}
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredMatches.map(match => {
+            </div>
+          )}
+        </aside>
+
+        {/* Right-Aligned Main Content Panel */}
+        <main className="flex-grow w-full">
+          
+          {/* Matches Listings */}
+          {activeTab === 'schedule' && (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {filteredMatches.length === 0 ? (
+                <div className="col-span-full glass-panel border border-white/5 rounded-2xl p-12 text-center bg-black/45 flex flex-col justify-center items-center">
+                  <Calendar className="w-8 h-8 text-gray-600 mb-2.5" />
+                  <h3 className="font-display font-black text-sm text-white uppercase tracking-wider">No fixtures found</h3>
+                  <p className="text-[11px] text-gray-500 max-w-xs mt-1 leading-relaxed">
+                    There are no matches matching the filter &quot;{scheduleFilter}&quot; in this stage of the schedule.
+                  </p>
+                </div>
+              ) : (
+                filteredMatches.map(match => {
                   const homeTeam = teams.find(t => t.id === match.home_team_id);
                   const awayTeam = teams.find(t => t.id === match.away_team_id);
                   if (!homeTeam || !awayTeam) return null;
@@ -364,7 +378,7 @@ export default function WorldCupHub() {
                   const status = getMatchStatus(match);
                   const hasPredicted = !!userPreds[match.id];
 
-                  // Left accent indicator based on status
+                  // Left border accent color
                   const statusBorderClass = {
                     COMPLETED: 'border-l-4 border-l-emerald-500',
                     LIVE: 'border-l-4 border-l-amber-500',
@@ -409,7 +423,7 @@ export default function WorldCupHub() {
                         </div>
                       </div>
 
-                      {/* Teams & Scoreboard - Immersive console look */}
+                      {/* Teams & Scoreboard */}
                       <div className="flex items-center justify-between py-2 bg-black/35 border border-white/5 rounded-xl px-4 my-2 shadow-inner">
                         <div className="flex items-center gap-3 flex-1 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -438,7 +452,7 @@ export default function WorldCupHub() {
                         </div>
                       </div>
 
-                      {/* Ticket footer row styling */}
+                      {/* Ticket footer row */}
                       <div className="border-t border-white/5 mt-2.5 pt-2 flex justify-between items-center text-[9px] text-gray-500 font-mono tracking-wider uppercase">
                         <span>{match.local_date}</span>
                         {status === 'COMPLETED' ? (
@@ -451,79 +465,79 @@ export default function WorldCupHub() {
                       </div>
                     </Link>
                   );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                })
+              )}
+            </div>
+          )}
 
-        {/* Group Standings Tab Contents */}
-        {activeTab === 'groups' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {groupsList.map(g => {
-              const standings = getGroupStandings(g);
-              if (standings.length === 0) return null;
+          {/* Group Standings */}
+          {activeTab === 'groups' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {groupsList.map(g => {
+                const standings = getGroupStandings(g);
+                if (standings.length === 0) return null;
 
-              return (
-                <div key={g} className="glass-panel border border-white/5 bg-black/60 rounded-2xl overflow-hidden shadow-2xl relative">
-                  {/* Header styled as mini console plaque */}
-                  <div className="bg-gradient-to-r from-[#881337]/25 to-[#D97706]/10 border-b border-white/5 px-4 py-3 flex justify-between items-center">
-                    <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">Group {g}</h3>
-                    <span className="text-[8px] font-black text-[#D97706] bg-[#D97706]/15 border border-[#D97706]/20 px-2 py-0.5 rounded uppercase tracking-wider font-mono">Standings</span>
+                return (
+                  <div key={g} className="glass-panel border border-white/5 bg-black/60 rounded-2xl overflow-hidden shadow-2xl relative">
+                    {/* Standings plaque header */}
+                    <div className="bg-gradient-to-r from-[#881337]/25 to-[#D97706]/10 border-b border-white/5 px-4 py-3 flex justify-between items-center">
+                      <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">Group {g}</h3>
+                      <span className="text-[8px] font-black text-[#D97706] bg-[#D97706]/15 border border-[#D97706]/20 px-2 py-0.5 rounded uppercase tracking-wider font-mono">Standings</span>
+                    </div>
+
+                    <div className="p-4">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="text-[8px] font-black uppercase text-gray-500 tracking-wider border-b border-white/5">
+                            <th className="pb-2">Team</th>
+                            <th className="pb-2 text-center">PL</th>
+                            <th className="pb-2 text-center">GD</th>
+                            <th className="pb-2 text-right">PTS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {standings.map((st, i) => {
+                            const isPromoted = i < 2;
+                            const rankColorClass = 
+                              i === 0 ? 'bg-amber-500/25 border-amber-500/50 text-[#D97706]' :
+                              i === 1 ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' :
+                              'bg-black/45 border-white/5 text-gray-500';
+
+                            return (
+                              <tr
+                                key={st.teamId}
+                                className={`text-[11px] font-semibold border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors ${
+                                  isPromoted ? 'text-rose-100' : 'text-gray-500'
+                                }`}
+                              >
+                                <td className="py-2 flex items-center gap-2 max-w-[130px]">
+                                  <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black font-mono shrink-0 ${rankColorClass}`}>
+                                    {i + 1}
+                                  </span>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={st.flag} alt="" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
+                                  <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
+                                </td>
+                                <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.played}</td>
+                                <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
+                                <td className={`py-2 text-right font-display font-black text-[12px] ${
+                                  isPromoted ? 'text-[#D97706] drop-shadow-[0_0_4px_rgba(217,119,6,0.15)]' : 'text-gray-500'
+                                }`}>{st.points}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
+                );
+              })}
+            </div>
+          )}
 
-                  <div className="p-4">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="text-[8px] font-black uppercase text-gray-500 tracking-wider border-b border-white/5">
-                          <th className="pb-2">Team</th>
-                          <th className="pb-2 text-center">PL</th>
-                          <th className="pb-2 text-center">GD</th>
-                          <th className="pb-2 text-right">PTS</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {standings.map((st, i) => {
-                          const isPromoted = i < 2; // Top 2 qualify
-                          
-                          // Circular rank dot styling
-                          const rankColorClass = 
-                            i === 0 ? 'bg-amber-500/25 border-amber-500/50 text-[#D97706]' :
-                            i === 1 ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' :
-                            'bg-black/45 border-white/5 text-gray-500';
-
-                          return (
-                            <tr
-                              key={st.teamId}
-                              className={`text-[11px] font-semibold border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors ${
-                                isPromoted ? 'text-rose-100' : 'text-gray-500'
-                              }`}
-                            >
-                              <td className="py-2 flex items-center gap-2 max-w-[130px]">
-                                <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black font-mono shrink-0 ${rankColorClass}`}>
-                                  {i + 1}
-                                </span>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={st.flag} alt="" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
-                                <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
-                              </td>
-                              <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.played}</td>
-                              <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
-                              <td className={`py-2 text-right font-display font-black text-[12px] ${
-                                isPromoted ? 'text-[#D97706] drop-shadow-[0_0_4px_rgba(217,119,6,0.15)]' : 'text-gray-500'
-                              }`}>{st.points}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        </main>
       </div>
+
     </div>
   );
 }

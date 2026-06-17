@@ -259,13 +259,6 @@ export default function ProfileSettingsPage() {
           </div>
 
           <div className="relative z-10 w-full max-w-md text-center">
-            
-            {/* Live security badge */}
-            <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-5 shadow-lg border border-red-500/25">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">BallKnowledge • Security Protocol</span>
-            </div>
-
             <h1 className="font-display font-black uppercase tracking-tight text-white mb-2 leading-[1.15]"
                 style={{
                   fontSize: 'clamp(1.8rem, 6vw, 3rem)',
@@ -370,10 +363,6 @@ export default function ProfileSettingsPage() {
 
           {/* Heading HUD Panel */}
           <div className="text-center max-w-2xl mx-auto mb-10 pt-4">
-            <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-4 shadow-md">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">BallKnowledge • Manager Locker Room</span>
-            </div>
             <h1 className="font-display font-black uppercase tracking-tight text-white mb-2 text-center leading-[1.1]"
                 style={{
                   fontSize: 'clamp(2rem, 5vw, 3.5rem)',
