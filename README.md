@@ -12,12 +12,15 @@
 
 ## Core Product Journey
 
-1. **World Cup 2026 Hub**: The tournament cockpit. View dynamic group standings (Groups A-L) and daily fixture schedules categorized by Today, Tomorrow, Upcoming, and Completed status.
-2. **Match Hub**: Select any upcoming match to lock in score predictions, MOTM, first goalscorer, and hot takes. Chat feeds and tactical picks are previewed as locked future modules (V2/V3).
-3. **Football IQ Progression Screen**: When a match completes, inputs are automatically graded against the real match results. Watch an interactive VAR review animation before your persistent **Overall Rating** changes (e.g. `80 → 83`) are calculated and revealed.
-4. **Collectible Verdict Cards**: Grading a match yields a collectible FIFA-style player card (Common, Rare, Epic, Legendary) based on your performance score.
-5. **Persistent My Card Page**: View your personal Football IQ card, season stats breakdown (Prediction Rating, Hot Take Rating, etc.), and digital album of collected match verdict cards.
-6. **Viral Sharing**: Share individual verdict cards via `/card/[id]` or your entire public season card deck via `/u/[username]`.
+1. **Locker Room Security Gate**: Verification portal supporting simulated authentication (Google, Facebook, Discord) with visual database sync logs before loading the cockpit.
+2. **Manager Cockpit Dashboard**: View your dynamic 3D Ultimate Team manager card, manage alias/allegiances, monitor Level/XP and BallPoints balance, and review your personal Trophy Cabinet slots.
+3. **World Cup 2026 Hub**: The tournament cockpit. View dynamic group standings (Groups A-L) and daily fixture schedules categorized by Today, Tomorrow, Upcoming, and Completed status.
+4. **Match Hub**: Select any upcoming match to lock in score predictions, MOTM, first goalscorer, and hot takes. Chat feeds and tactical picks are previewed as locked future modules (V2/V3).
+5. **Football IQ Progression Screen**: When a match completes, inputs are automatically graded against the real match results. Watch an interactive VAR review animation before your persistent **Overall Rating** changes (e.g. `80 → 83`) are calculated and revealed.
+6. **Collectible Verdict Cards**: Grading a match yields a collectible FIFA-style player card (Common, Rare, Epic, Legendary) based on your performance score.
+7. **Persistent My Card Page**: View your personal Football IQ card, season stats breakdown (Prediction Rating, Hot Take Rating, etc.), and digital album of collected match verdict cards.
+8. **VIP Box Office Pricing**: Choose your official season pass contract tier styled as metallic ticket stubs (Bronze, Gold, Crimson) with specific tactical capabilities.
+9. **Viral Sharing**: Share individual verdict cards via `/card/[id]` or your entire public season card deck via `/u/[username]`.
 
 ---
 

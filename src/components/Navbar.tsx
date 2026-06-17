@@ -93,7 +93,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative font-sans text-xs font-semibold tracking-wide uppercase transition-colors duration-300 ${
+                  className={`relative font-sans text-sm font-semibold tracking-wide uppercase transition-colors duration-300 ${
                     isActive
                       ? (scrolled ? 'text-primary' : 'text-[#D97706]')
                       : (scrolled ? 'text-muted hover:text-white' : 'text-white/70 hover:text-white')
@@ -122,7 +122,7 @@ export default function Navbar() {
                   className="w-5 h-5 object-contain" 
                   alt="Avatar" 
                 />
-                <span className="font-sans font-bold text-[10px] text-white uppercase tracking-wider max-w-[80px] truncate">
+                <span className="font-sans font-bold text-xs text-white uppercase tracking-wider max-w-[85px] truncate">
                   {profile.username}
                 </span>
                 <div className="w-[1px] h-3 bg-white/10" />
@@ -137,7 +137,7 @@ export default function Navbar() {
             ) : (
               <Link 
                 href="/profile" 
-                className="px-4 py-2 rounded-full font-display font-black text-[9px] uppercase tracking-widest text-white transition-all hover:scale-105 bg-gradient-to-r from-[#881337] to-[#D97706] shadow-md hover:shadow-[0_0_15px_rgba(217,119,6,0.35)] flex items-center gap-1.5"
+                className="px-4 py-2 rounded-full font-display font-black text-[11px] uppercase tracking-widest text-white transition-all hover:scale-105 bg-gradient-to-r from-[#881337] to-[#D97706] shadow-md hover:shadow-[0_0_15px_rgba(217,119,6,0.35)] flex items-center gap-1.5"
               >
                 <LogIn className="w-3 h-3" /> Locker Room Login
               </Link>
