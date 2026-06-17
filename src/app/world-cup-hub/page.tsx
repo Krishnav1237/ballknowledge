@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock } from 'lucide-react';
@@ -245,8 +246,20 @@ export default function WorldCupHub() {
   }).sort((a, b) => parseLocalDate(a.local_date).getTime() - parseLocalDate(b.local_date).getTime());
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground pb-16">
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden">
       <Navbar />
+
+      {/* Futuristic Stadium HUD Backdrop */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <Image 
+          src="/images/world_cup_hub_bg.webp" 
+          alt="World Cup Hub Background" 
+          fill 
+          className="object-cover opacity-35 object-center scale-102" 
+          priority 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#0A0A0A]/40 to-[#0A0A0A]" />
+      </div>
 
       {/* Hero Header Banner */}
       <div className="relative pt-[90px] pb-8 px-6 bg-gradient-to-b from-[#881337]/20 via-transparent to-transparent border-b border-white/5">
@@ -279,7 +292,7 @@ export default function WorldCupHub() {
       </div>
 
       {/* Tabs Cockpit */}
-      <div className="max-w-7xl mx-auto px-6 mt-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 mt-8">
         <div className="flex border-b border-white/5 mb-6">
           <button
             onClick={() => setActiveTab('schedule')}

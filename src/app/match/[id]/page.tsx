@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
@@ -339,8 +340,20 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   };
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground pb-20">
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-20 overflow-hidden">
       <Navbar />
+
+      {/* Futuristic Dugout Stadium Backdrop */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <Image 
+          src="/images/match_details_bg.webp" 
+          alt="Match Dugout Background" 
+          fill 
+          className="object-cover opacity-35 object-center scale-102" 
+          priority 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#0A0A0A]/40 to-[#0A0A0A]" />
+      </div>
 
       {/* VAR Simulation Loading Screen */}
       {resolving && (
@@ -425,7 +438,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       )}
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-6 pt-[80px]">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-[80px]">
         {/* Back Link */}
         <Link href="/world-cup-hub" className="inline-flex items-center gap-1.5 text-gray-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest mb-6">
           <ArrowLeft className="w-4 h-4" /> Back to World Cup Hub

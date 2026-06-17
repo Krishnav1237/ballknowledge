@@ -13,6 +13,10 @@ export interface FootballIQProfile {
   role: 'FREE' | 'PREMIUM' | 'ADMIN';
   season: string;
   collectedCards: string[]; // List of MatchCard IDs
+  isAuthenticated?: boolean;
+  authProvider?: 'google' | 'facebook' | 'discord' | null;
+  xp?: number;
+  points?: number;
 }
 
 const DEFAULT_PROFILE: FootballIQProfile = {
@@ -28,8 +32,13 @@ const DEFAULT_PROFILE: FootballIQProfile = {
   communityRating: 50,
   role: 'FREE',
   season: 'World Cup 2026 Season',
-  collectedCards: []
+  collectedCards: [],
+  isAuthenticated: false,
+  authProvider: null,
+  xp: 1200,
+  points: 150
 };
+
 
 export function getStoredProfile(): FootballIQProfile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE;
