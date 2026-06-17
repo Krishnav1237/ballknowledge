@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
-import { Trophy, Calendar, CheckCircle, Play, Lock } from 'lucide-react';
+import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
 
 interface Team {
   id: string;
@@ -116,9 +116,9 @@ export default function WorldCupHub() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center">
+      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-[#9CA3AF]">Lacing boots / Loading World Cup...</p>
+        <p className="font-display font-black text-sm uppercase tracking-widest text-[#D97706]">Lacing boots / Loading World Cup...</p>
       </div>
     );
   }
@@ -255,36 +255,37 @@ export default function WorldCupHub() {
           src="/images/world_cup_hub_bg.webp" 
           alt="World Cup Hub Background" 
           fill 
-          className="object-cover opacity-35 object-center scale-102" 
+          className="object-cover opacity-30 object-center scale-102" 
           priority 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#0A0A0A]/40 to-[#0A0A0A]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#0A0A0A]/40 to-[#0A0A0A]" />
       </div>
 
       {/* Hero Header Banner */}
-      <div className="relative pt-[90px] pb-8 px-6 bg-gradient-to-b from-[#881337]/20 via-transparent to-transparent border-b border-white/5">
+      <div className="relative pt-[80px] pb-6 px-6 bg-gradient-to-b from-[#881337]/20 via-transparent to-transparent border-b border-white/5 z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 bg-[#881337]/15 border border-[#881337]/30 text-rose-400 rounded-full px-3.5 py-1 text-[11px] font-black uppercase tracking-widest mb-3">
-              <Trophy className="w-3.5 h-3.5" /> FIFA World Cup 2026 Hub
+            <div className="inline-flex items-center gap-1.5 bg-[#881337]/15 border border-[#881337]/45 text-[#ff4b72] rounded-full px-3.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] mb-2.5 shadow-md">
+              <Trophy className="w-3.5 h-3.5 text-[#D97706]" /> FIFA World Cup 2026 Hub
             </div>
-            <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-tight leading-none">
-              Tournament Matchday
+            <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-tight leading-none"
+                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 4px 30px rgba(0,0,0,0.85)' }}>
+              Tournament <span className="text-[#D97706]">Matchday</span>
             </h1>
-            <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-lg font-medium">
-              Select fixtures to lock in your hot takes and predictions. Graded dynamically relative to kickoff. Current system simulation date: <span className="text-amber-400">June 16, 2026</span>.
+            <p className="text-gray-300 text-xs mt-1.5 max-w-lg font-medium leading-relaxed">
+              Select fixtures to lock in your hot takes and predictions. Graded dynamically relative to kickoff. Current system simulation date: <span className="text-[#D97706] font-bold">June 16, 2026</span>.
             </p>
           </div>
 
           {profile && (
-            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-colors rounded-2xl p-4 flex items-center gap-4 bg-[#0B0F19]/90 shrink-0">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-xl text-white shadow-md">
+            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-all duration-300 rounded-2xl p-4 flex items-center gap-4 bg-black/60 shadow-xl shrink-0 group active:scale-98">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-xl text-white shadow-md group-hover:scale-105 transition-transform duration-300">
                 {profile.overallRating}
               </div>
               <div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Your Reputation</p>
-                <p className="font-bold text-white leading-tight">{profile.username}</p>
-                <p className="text-[9px] font-black text-amber-500 uppercase tracking-wider mt-0.5">{profile.season}</p>
+                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Your Reputation</p>
+                <p className="font-bold text-white leading-tight group-hover:text-[#D97706] transition-colors">{profile.username}</p>
+                <p className="text-[8.5px] font-black text-amber-500 uppercase tracking-wider mt-0.5">{profile.season}</p>
               </div>
             </Link>
           )}
@@ -292,35 +293,37 @@ export default function WorldCupHub() {
       </div>
 
       {/* Tabs Cockpit */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 mt-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 mt-6">
+        
+        {/* Navigation Tabs */}
         <div className="flex border-b border-white/5 mb-6">
           <button
             onClick={() => setActiveTab('schedule')}
-            className={`py-3.5 px-6 font-display font-black text-sm uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-5 font-display font-black text-xs uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'schedule'
-                ? 'border-[#D97706] text-white'
+                ? 'border-[#D97706] text-white shadow-[0_4px_10px_-4px_rgba(217,119,6,0.3)]'
                 : 'border-transparent text-gray-500 hover:text-gray-300'
             }`}
           >
-            <Calendar className="w-4 h-4" /> Match Schedule
+            <Calendar className="w-4 h-4 text-[#D97706]" /> Match Schedule
           </button>
           <button
             onClick={() => setActiveTab('groups')}
-            className={`py-3.5 px-6 font-display font-black text-sm uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-5 font-display font-black text-xs uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'groups'
-                ? 'border-[#D97706] text-white'
+                ? 'border-[#D97706] text-white shadow-[0_4px_10px_-4px_rgba(217,119,6,0.3)]'
                 : 'border-transparent text-gray-500 hover:text-gray-300'
             }`}
           >
-            <Trophy className="w-4 h-4" /> Group Standings
+            <Trophy className="w-4 h-4 text-[#D97706]" /> Group Standings
           </button>
         </div>
 
         {/* Schedule Tab Contents */}
         {activeTab === 'schedule' && (
           <div>
-            {/* Inner Filters */}
-            <div className="flex flex-wrap gap-2.5 mb-6">
+            {/* Inner Filters capsules */}
+            <div className="flex flex-wrap gap-2 mb-6">
               {[
                 { id: 'today', label: 'Today (June 16)' },
                 { id: 'live', label: 'Live Now' },
@@ -331,10 +334,10 @@ export default function WorldCupHub() {
                 <button
                   key={sub.id}
                   onClick={() => setScheduleFilter(sub.id as any)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
+                  className={`px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all border cursor-pointer active:scale-95 ${
                     scheduleFilter === sub.id
-                      ? 'bg-[#881337]/10 border-[#881337] text-rose-300 shadow-md'
-                      : 'bg-[#111827]/40 border-white/5 text-gray-400 hover:text-white'
+                      ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_12px_rgba(217,119,6,0.15)]'
+                      : 'bg-black/60 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
                   }`}
                 >
                   {sub.label}
@@ -344,11 +347,11 @@ export default function WorldCupHub() {
 
             {/* Match Listings Grid */}
             {filteredMatches.length === 0 ? (
-              <div className="glass-panel border-white/5 rounded-3xl p-12 text-center bg-[#0B0F19]/25 flex flex-col justify-center items-center">
-                <Calendar className="w-10 h-10 text-gray-600 mb-3" />
-                <h3 className="font-display font-black text-lg text-white uppercase">No fixtures matches</h3>
-                <p className="text-sm text-gray-500 max-w-sm mt-1 leading-relaxed">
-                  There are no matches matching the filter {scheduleFilter} in this stage of the schedule.
+              <div className="glass-panel border-white/5 rounded-2xl p-12 text-center bg-black/40 flex flex-col justify-center items-center">
+                <Calendar className="w-8 h-8 text-gray-600 mb-2.5" />
+                <h3 className="font-display font-black text-sm text-white uppercase tracking-wider">No fixtures found</h3>
+                <p className="text-[11px] text-gray-500 max-w-xs mt-1 leading-relaxed">
+                  There are no matches matching the filter &quot;{scheduleFilter}&quot; in this stage of the schedule.
                 </p>
               </div>
             ) : (
@@ -361,69 +364,90 @@ export default function WorldCupHub() {
                   const status = getMatchStatus(match);
                   const hasPredicted = !!userPreds[match.id];
 
+                  // Left accent indicator based on status
+                  const statusBorderClass = {
+                    COMPLETED: 'border-l-4 border-l-emerald-500',
+                    LIVE: 'border-l-4 border-l-amber-500',
+                    UPCOMING: 'border-l-4 border-l-[#881337]'
+                  }[status] || 'border-l-4 border-l-white/5';
+
                   return (
                     <Link
                       key={match.id}
                       href={`/match/${match.id}`}
-                      className="glass-panel border-white/5 hover:border-white/15 bg-[#0B0F19]/40 hover:bg-[#0B0F19]/75 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 shadow-md group"
+                      className={`glass-panel border border-white/5 hover:border-white/15 bg-black/60 hover:bg-black/80 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 shadow-xl group hover:shadow-[0_0_20px_rgba(217,119,6,0.05)] cursor-pointer relative overflow-hidden ${statusBorderClass}`}
                     >
                       {/* Match Header metadata */}
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-500 font-mono">
                           Group {match.group} • Match {match.id}
                         </span>
                         
                         {/* Status Badge */}
                         <div className="flex items-center gap-1.5">
                           {hasPredicted && (
-                            <span className="text-[9px] font-black uppercase text-green-400 tracking-wider flex items-center bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full mr-1.5">
-                              <CheckCircle className="w-2.5 h-2.5 mr-1" /> Predicted
+                            <span className="text-[8px] font-black uppercase text-emerald-400 tracking-widest flex items-center bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-2.5 h-2.5 mr-0.5 shrink-0" /> Predicted
                             </span>
                           )}
 
                           {status === 'COMPLETED' && (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded bg-green-500/10 border border-green-500/25 text-green-400">
+                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
                               Completed
                             </span>
                           )}
                           {status === 'LIVE' && (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 animate-pulse flex items-center gap-1">
-                              <Play className="w-2 h-2 fill-current" /> Live
+                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 animate-pulse flex items-center gap-0.5">
+                              <Play className="w-1.5 h-1.5 fill-current" /> Live
                             </span>
                           )}
                           {status === 'UPCOMING' && (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 flex items-center gap-1">
-                              <Lock className="w-2.5 h-2.5" /> Upcoming
+                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 flex items-center gap-0.5">
+                              <Lock className="w-2 h-2" /> Upcoming
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Teams & Scoreboard */}
-                      <div className="flex items-center justify-between py-2.5">
-                        <div className="flex items-center gap-3 flex-1">
+                      {/* Teams & Scoreboard - Immersive console look */}
+                      <div className="flex items-center justify-between py-2 bg-black/35 border border-white/5 rounded-xl px-4 my-2 shadow-inner">
+                        <div className="flex items-center gap-3 flex-1 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={homeTeam.flag} alt="" className="w-8 h-5 object-cover rounded shadow-sm shrink-0 border border-white/5" />
-                          <span className="font-bold text-sm text-white group-hover:text-[#D97706] transition-colors line-clamp-1">{homeTeam.name_en}</span>
+                          <img src={homeTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
+                          <span className="font-display font-black text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate">{homeTeam.name_en}</span>
                         </div>
                         
-                        <div className="flex items-center justify-center px-4 font-display font-black text-lg text-white gap-2 shrink-0">
-                          <span>{getResolvedScore(match, 'home')}</span>
-                          <span className="text-gray-600 font-normal">:</span>
-                          <span>{getResolvedScore(match, 'away')}</span>
+                        <div className="flex items-center justify-center px-3 gap-1 shrink-0">
+                          {status === 'COMPLETED' || status === 'LIVE' ? (
+                            <div className="bg-slate-950/95 border border-white/15 rounded px-2.5 py-1 font-mono font-black text-[#D97706] text-sm tracking-tight shadow-[0_0_8px_rgba(217,119,6,0.15)] flex items-center gap-1.5">
+                              <span>{getResolvedScore(match, 'home')}</span>
+                              <span className="text-gray-600 font-normal">:</span>
+                              <span>{getResolvedScore(match, 'away')}</span>
+                            </div>
+                          ) : (
+                            <div className="bg-white/5 border border-white/5 rounded px-2.5 py-1 font-mono text-gray-600 text-xs font-bold">
+                              VS
+                            </div>
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-3 flex-1 justify-end">
-                          <span className="font-bold text-sm text-white group-hover:text-[#D97706] transition-colors line-clamp-1 text-right">{awayTeam.name_en}</span>
+                        <div className="flex items-center gap-3 flex-1 justify-end overflow-hidden">
+                          <span className="font-display font-black text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate text-right">{awayTeam.name_en}</span>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={awayTeam.flag} alt="" className="w-8 h-5 object-cover rounded shadow-sm shrink-0 border border-white/5" />
+                          <img src={awayTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
                         </div>
                       </div>
 
-                      {/* Date & Location */}
-                      <div className="border-t border-white/5 mt-4 pt-3 flex justify-between items-center text-[10px] text-gray-500 font-semibold">
+                      {/* Ticket footer row styling */}
+                      <div className="border-t border-white/5 mt-2.5 pt-2 flex justify-between items-center text-[9px] text-gray-500 font-mono tracking-wider uppercase">
                         <span>{match.local_date}</span>
-                        <span className="underline group-hover:text-gray-400 transition-colors">Enter Match Hub →</span>
+                        {status === 'COMPLETED' ? (
+                          <span className="flex items-center gap-0.5 text-[#D97706] font-bold group-hover:underline">VAR VERDICT <ChevronRight className="w-3 h-3" /></span>
+                        ) : status === 'LIVE' ? (
+                          <span className="flex items-center gap-0.5 text-amber-500 font-bold animate-pulse">MONITOR FEED <ChevronRight className="w-3 h-3" /></span>
+                        ) : (
+                          <span className="flex items-center gap-0.5 text-rose-400 font-bold group-hover:text-white transition-colors">LOCK TACTICS <ChevronRight className="w-3 h-3" /></span>
+                        )}
                       </div>
                     </Link>
                   );
@@ -435,48 +459,65 @@ export default function WorldCupHub() {
 
         {/* Group Standings Tab Contents */}
         {activeTab === 'groups' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {groupsList.map(g => {
               const standings = getGroupStandings(g);
               if (standings.length === 0) return null;
 
               return (
-                <div key={g} className="glass-panel border-white/5 bg-[#0B0F19]/40 rounded-2xl p-5 shadow-lg">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-3 mb-3">
-                    <h3 className="font-display font-black text-base text-white uppercase tracking-wider">Group {g}</h3>
-                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Standings</span>
+                <div key={g} className="glass-panel border border-white/5 bg-black/60 rounded-2xl overflow-hidden shadow-2xl relative">
+                  {/* Header styled as mini console plaque */}
+                  <div className="bg-gradient-to-r from-[#881337]/25 to-[#D97706]/10 border-b border-white/5 px-4 py-3 flex justify-between items-center">
+                    <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">Group {g}</h3>
+                    <span className="text-[8px] font-black text-[#D97706] bg-[#D97706]/15 border border-[#D97706]/20 px-2 py-0.5 rounded uppercase tracking-wider font-mono">Standings</span>
                   </div>
 
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="text-[9px] font-black uppercase text-gray-500 tracking-wider border-b border-white/5">
-                        <th className="pb-2">Team</th>
-                        <th className="pb-2 text-center">PL</th>
-                        <th className="pb-2 text-center">GD</th>
-                        <th className="pb-2 text-right">PTS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {standings.map((st, i) => (
-                        <tr
-                          key={st.teamId}
-                          className={`text-xs font-semibold border-b border-white/5 last:border-0 ${
-                            i < 2 ? 'text-rose-200' : 'text-gray-400'
-                          }`}
-                        >
-                          <td className="py-2.5 flex items-center gap-2 max-w-[130px]">
-                            <span className="text-[10px] font-bold text-gray-600 w-3">{i + 1}</span>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={st.flag} alt="" className="w-5 h-3.5 object-cover rounded border border-white/5 shrink-0" />
-                            <span className="truncate">{st.name}</span>
-                          </td>
-                          <td className="py-2.5 text-center font-mono">{st.played}</td>
-                          <td className="py-2.5 text-center font-mono">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
-                          <td className="py-2.5 text-right font-display font-black text-white">{st.points}</td>
+                  <div className="p-4">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="text-[8px] font-black uppercase text-gray-500 tracking-wider border-b border-white/5">
+                          <th className="pb-2">Team</th>
+                          <th className="pb-2 text-center">PL</th>
+                          <th className="pb-2 text-center">GD</th>
+                          <th className="pb-2 text-right">PTS</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {standings.map((st, i) => {
+                          const isPromoted = i < 2; // Top 2 qualify
+                          
+                          // Circular rank dot styling
+                          const rankColorClass = 
+                            i === 0 ? 'bg-amber-500/25 border-amber-500/50 text-[#D97706]' :
+                            i === 1 ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' :
+                            'bg-black/45 border-white/5 text-gray-500';
+
+                          return (
+                            <tr
+                              key={st.teamId}
+                              className={`text-[11px] font-semibold border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors ${
+                                isPromoted ? 'text-rose-100' : 'text-gray-500'
+                              }`}
+                            >
+                              <td className="py-2 flex items-center gap-2 max-w-[130px]">
+                                <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black font-mono shrink-0 ${rankColorClass}`}>
+                                  {i + 1}
+                                </span>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={st.flag} alt="" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
+                                <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
+                              </td>
+                              <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.played}</td>
+                              <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
+                              <td className={`py-2 text-right font-display font-black text-[12px] ${
+                                isPromoted ? 'text-[#D97706] drop-shadow-[0_0_4px_rgba(217,119,6,0.15)]' : 'text-gray-500'
+                              }`}>{st.points}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               );
             })}
