@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Trophy, Award, Sparkles, Share2, Eye, ShieldAlert, Lock, Calendar, CheckCircle, ChevronRight, Bookmark } from 'lucide-react';
@@ -420,7 +419,6 @@ export default function FootballIQPage() {
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-foreground pb-20 overflow-hidden">
-      <Navbar />
 
       {/* Immersive Game-style Stadium Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">

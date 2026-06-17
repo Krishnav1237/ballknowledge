@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, FootballIQProfile } from '@/lib/profileSync';
 import { VerdictData } from '@/lib/tribunalDB';
@@ -238,7 +237,6 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-20 overflow-hidden">
-      <Navbar />
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* CASE A: SIGNED OUT (OAUTH AUTHENTICATION LOCKER ROOM)                  */}

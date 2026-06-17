@@ -4,7 +4,6 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import Navbar from '@/components/Navbar';
 import { Award, ShieldAlert, Trophy, Eye, Lock, Sparkles, Share2, CheckCircle } from 'lucide-react';
 
 interface Team {
@@ -272,7 +271,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-foreground pb-20 overflow-hidden">
-      <Navbar />
 
       {/* Immersive Game-style Stadium Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">

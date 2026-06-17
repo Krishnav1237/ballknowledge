@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   Trophy, 
@@ -68,7 +67,6 @@ export default function PricingPage() {
 
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden flex flex-col justify-between">
-      <Navbar />
 
       {/* Immersive Stadium Ticket Office Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">

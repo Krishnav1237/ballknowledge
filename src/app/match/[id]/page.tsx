@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
 import { Shield, Sparkles, Lock, ArrowLeft, Trophy, Flame, Play, AlertCircle, Share2, Clipboard } from 'lucide-react';
@@ -341,7 +340,6 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-20 overflow-hidden">
-      <Navbar />
 
       {/* Futuristic Dugout Stadium Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">

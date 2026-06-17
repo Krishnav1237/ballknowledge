@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
 
@@ -246,8 +245,7 @@ export default function WorldCupHub() {
   }).sort((a, b) => parseLocalDate(a.local_date).getTime() - parseLocalDate(b.local_date).getTime());
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden">
-      <Navbar />
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-[52px]">
 
       {/* Futuristic Stadium HUD Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -262,26 +260,26 @@ export default function WorldCupHub() {
       </div>
 
       {/* Sticky HUD Header Bar - Always visible at top */}
-      <div className="sticky top-[52px] z-30 w-full glass-panel border-b border-white/5 bg-black/75 backdrop-blur-md py-3.5 px-6">
-        <div className="max-w-8xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="text-center sm:text-left">
-            <h1 className="font-display font-black text-xl sm:text-2xl text-white uppercase tracking-wider leading-none"
+      <div className="sticky top-[52px] z-30 w-full glass-panel border-b border-white/10 bg-[#0A0A0A]/95 shadow-lg shadow-black/40 backdrop-blur-md py-4 sm:py-5 px-6">
+        <div className="max-w-8xl mx-auto flex items-center justify-between gap-4">
+          <div className="text-left">
+            <h1 className="font-display font-black text-lg sm:text-xl md:text-2xl text-white uppercase tracking-wider leading-none"
                 style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
               FIFA WORLD CUP 2026 HUB
             </h1>
-            <p className="text-gray-400 text-[10px] sm:text-xs mt-1.5 font-medium leading-none">
-              Simulation Date: <span className="text-[#D97706] font-bold">June 16, 2026</span> • Lock predictions and claim verdict cards.
+            <p className="text-gray-400 text-[9px] sm:text-xs mt-1.5 font-medium leading-none">
+              Simulation Date: <span className="text-[#D97706] font-bold">June 16, 2026</span><span className="hidden min-[500px]:inline"> • Lock predictions and claim cards.</span>
             </p>
           </div>
 
           {profile && (
-            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-all duration-300 rounded-xl px-4 py-2 flex items-center gap-3 bg-black/60 shadow-xl shrink-0 group active:scale-98">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-sm text-white shadow-md group-hover:scale-105 transition-transform duration-300">
+            <Link href="/football-iq" className="glass-panel border-white/10 hover:border-[#D97706]/40 transition-all duration-300 rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 sm:gap-3 bg-black/60 shadow-xl shrink-0 group active:scale-98">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-tr from-[#881337] to-[#D97706] flex items-center justify-center font-display font-black text-xs sm:text-sm text-white shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
                 {profile.overallRating}
               </div>
-              <div className="text-left">
-                <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest leading-none">Manager Reputation</p>
-                <p className="font-bold text-xs text-white group-hover:text-[#D97706] transition-colors leading-none mt-1">{profile.username}</p>
+              <div className="text-left hidden min-[400px]:block">
+                <p className="text-[7px] sm:text-[8px] font-black text-gray-500 uppercase tracking-widest leading-none">Manager Reputation</p>
+                <p className="font-bold text-[10px] sm:text-xs text-white group-hover:text-[#D97706] transition-colors leading-none mt-0.5 sm:mt-1 truncate max-w-[85px] sm:max-w-[120px]">{profile.username}</p>
               </div>
             </Link>
           )}
@@ -428,7 +426,7 @@ export default function WorldCupHub() {
                         <div className="flex items-center gap-3 flex-1 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={homeTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
-                          <span className="font-display font-black text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate">{homeTeam.name_en}</span>
+                          <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate">{homeTeam.name_en}</span>
                         </div>
                         
                         <div className="flex items-center justify-center px-3 gap-1 shrink-0">
@@ -446,7 +444,7 @@ export default function WorldCupHub() {
                         </div>
 
                         <div className="flex items-center gap-3 flex-1 justify-end overflow-hidden">
-                          <span className="font-display font-black text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate text-right">{awayTeam.name_en}</span>
+                          <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate text-right">{awayTeam.name_en}</span>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={awayTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
                         </div>
