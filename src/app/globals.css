@@ -252,6 +252,25 @@ html.lenis, html.lenis body {
   animation: loadingBar 1.4s infinite linear;
 }
 
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to   { opacity: 1; transform: translate(-50%, 0);     }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.25s ease-out both;
+}
+
+@keyframes gradientX {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradientX 4s ease infinite;
+}
+
 
 @keyframes spotlight-left {
   0% { transform: rotate(-25deg) scale(1); opacity: 0.15; }

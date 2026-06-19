@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import fs from 'fs';
-import path from 'path';
 import crypto from 'crypto';
+import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
+import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+
+export const dynamic = 'force-dynamic';
 
 // System prompt to evaluate the hot take
 const EVALUATE_TAKE_PROMPT = `You are the Stockley Park VAR Grader. Rate this football hot take statement on a scale of 1 to 99, where:
@@ -20,36 +22,6 @@ You MUST return a JSON object with this exact structure:
 
 Be direct, highly cynical, and funny.`;
 
-function parseLocalDate(localDateStr: string): Date {
-  const [datePart, timePart] = localDateStr.split(' ');
-  const [month, day, year] = datePart.split('/').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
-  return new Date(year, month - 1, day, hours, minutes);
-}
-
-// Deterministic result helper for completed matches
-function getDeterministicMatchResult(matchId: string, homeTeamName: string, awayTeamName: string) {
-  let hash = 0;
-  const str = matchId + homeTeamName + awayTeamName;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const homeScore = Math.abs((hash >> 4) % 4); // 0 to 3
-  const awayScore = Math.abs((hash >> 8) % 3); // 0 to 2
-  
-  const scorers = ["Messi", "Mbappe", "Ronaldo", "Bellingham", "Vinicius", "Kane", "Musiala", "Yamal", "Haaland", "Griezmann"];
-  const firstGoalscorer = scorers[Math.abs(hash % scorers.length)];
-  const motm = scorers[Math.abs((hash >> 2) % scorers.length)];
-  const possessionWinner = homeScore > awayScore ? homeTeamName : (awayScore > homeScore ? awayTeamName : "Draw");
-  
-  return {
-    homeScore,
-    awayScore,
-    firstGoalscorer,
-    motm,
-    possessionWinner
-  };
-}
 
 async function callGroq(userPrompt: string) {
   if (!process.env.GROQ_API_KEY) throw new Error('No Groq key');
@@ -150,16 +122,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // Load matches & teams
-    const matchesPath = path.join(process.cwd(), 'src/lib/worldcup2026/football.matches.json');
-    const teamsPath = path.join(process.cwd(), 'src/lib/worldcup2026/football.teams.json');
-    
-    if (!fs.existsSync(matchesPath) || !fs.existsSync(teamsPath)) {
-      return NextResponse.json({ error: 'World cup data files missing.' }, { status: 500 });
-    }
-
-    const matches = JSON.parse(fs.readFileSync(matchesPath, 'utf8'));
-    const teams = JSON.parse(fs.readFileSync(teamsPath, 'utf8'));
+    // Load matches & teams dynamically from caching service
+    const [matches, teams] = await Promise.all([
+      fetchWorldCupMatches(),
+      fetchWorldCupTeams()
+    ]);
 
     const match = matches.find((m: any) => m.id === matchId);
     if (!match) {
@@ -335,17 +302,30 @@ export async function POST(request: Request) {
           });
         }
 
-        // Save Match Prediction
-        const dbPrediction = await prisma.matchPrediction.create({
-          data: {
+        // Upsert Match Prediction (unique on [profileId, matchId])
+        const dbPrediction = await prisma.matchPrediction.upsert({
+          where: {
+            profileId_matchId: {
+              profileId: dbProfile.id,
+              matchId,
+            },
+          },
+          create: {
             profileId: dbProfile.id,
             matchId,
             homeScore: predHomeScore,
             awayScore: predAwayScore,
             firstGoalscorer: predScorer,
             motm: predMotm,
-            possessionWinner: predPossession
-          }
+            possessionWinner: predPossession,
+          },
+          update: {
+            homeScore: predHomeScore,
+            awayScore: predAwayScore,
+            firstGoalscorer: predScorer,
+            motm: predMotm,
+            possessionWinner: predPossession,
+          },
         });
 
         // Save Hot Takes

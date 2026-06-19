@@ -112,6 +112,7 @@ export interface LocalPrediction {
   locked: boolean;
   resolved: boolean;
   card?: any; // Graded match verdict card
+  lineup?: Record<string, any>; // FIFA-style Best XI lineup (position -> player)
 }
 
 export function getStoredPredictions(): Record<string, LocalPrediction> {

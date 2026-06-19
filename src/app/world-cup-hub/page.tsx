@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
+import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 
 interface Team {
   id: string;
@@ -42,27 +43,7 @@ interface GroupStanding {
   points: number;
 }
 
-const SYSTEM_DATE = new Date('2026-06-16T19:20:00');
-
-function parseLocalDate(localDateStr: string): Date {
-  const [datePart, timePart] = localDateStr.split(' ');
-  const [month, day, year] = datePart.split('/').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
-  return new Date(year, month - 1, day, hours, minutes);
-}
-
-// Deterministic result helper matching the backend resolution logic
-function getDeterministicMatchResult(matchId: string, homeTeamName: string, awayTeamName: string) {
-  let hash = 0;
-  const str = matchId + homeTeamName + awayTeamName;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const homeScore = Math.abs((hash >> 4) % 4); // 0 to 3
-  const awayScore = Math.abs((hash >> 8) % 3); // 0 to 2
-  return { homeScore, awayScore };
-}
-
+// Real current time — match statuses reflect live schedule
 const getTacticalTitle = (rating: number): string => {
   if (rating >= 90) return 'Legendary Coach';
   if (rating >= 75) return 'Master Tactician';
@@ -88,8 +69,8 @@ export default function WorldCupHub() {
     const fetchTournamentData = async () => {
       try {
         const [matchesRes, teamsRes] = await Promise.all([
-          fetch('https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.matches.json'),
-          fetch('https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.teams.json')
+          fetch('/api/matches'),
+          fetch('/api/teams')
         ]);
 
         if (matchesRes.ok && teamsRes.ok) {
@@ -129,10 +110,10 @@ export default function WorldCupHub() {
     );
   }
 
-  // Get match status relative to simulation date: June 16, 2026, 19:20
+  // Get match status relative to real current time
   const getMatchStatus = (match: Match) => {
     const kickoff = parseLocalDate(match.local_date);
-    const timeDiff = SYSTEM_DATE.getTime() - kickoff.getTime();
+    const timeDiff = new Date().getTime() - kickoff.getTime();
     
     if (timeDiff >= 2 * 60 * 60 * 1000) {
       return 'COMPLETED';
@@ -244,15 +225,15 @@ export default function WorldCupHub() {
     } else if (scheduleFilter === 'live') {
       return status === 'LIVE';
     } else if (scheduleFilter === 'today') {
-      return kickoff.toDateString() === SYSTEM_DATE.toDateString() && status !== 'COMPLETED';
+      return kickoff.toDateString() === new Date().toDateString() && status !== 'COMPLETED';
     } else {
       // Upcoming
-      return kickoff.getTime() > SYSTEM_DATE.getTime() && kickoff.toDateString() !== SYSTEM_DATE.toDateString();
+      return kickoff.getTime() > new Date().getTime() && kickoff.toDateString() !== new Date().toDateString();
     }
   }).sort((a, b) => parseLocalDate(a.local_date).getTime() - parseLocalDate(b.local_date).getTime());
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-20">
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-[100px]">
 
       {/* Futuristic Stadium HUD Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -266,79 +247,82 @@ export default function WorldCupHub() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#0A0A0A]/40 to-[#0A0A0A]" />
       </div>
 
-      {/* Centered Heading Section */}
-      <div className="relative z-10 text-center max-w-3xl mx-auto mb-8 px-6 pt-4">
-        <h1 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent"
-            style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
-          FIFA WORLD CUP 2026 HUB
-        </h1>
-        <p className="text-gray-400 text-[10px] sm:text-xs mt-3.5 font-bold uppercase tracking-widest leading-none">
-          SIMULATION DATE: <span className="text-[#D97706]">JUNE 16, 2026</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
-        </p>
-      </div>
-
-      {/* Main Console Layout: Left Sidebar Deck, Right Match Board */}
-      <div className="relative z-10 max-w-8xl mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6 items-start w-full">
+      {/* Header Grid: Aligns Manager Reputation OVR next to Page Heading */}
+      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-2 pb-4 flex flex-col lg:flex-row justify-between items-center gap-6 w-full border-b border-white/5 bg-black/20 backdrop-blur-xs">
         
-        {/* Left-Aligned Control Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0 bg-black/75 border border-white/5 p-4 rounded-2xl space-y-5 sticky lg:top-[72px] shadow-2xl backdrop-blur-md">
-          
-          {/* Section 0: Manager Career Profile Widget */}
+        {/* Left Column: Manager Reputation aligned with the sidebar column */}
+        <div className="w-full lg:w-64 shrink-0">
           {profile && (
-            <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3.5 bg-gradient-to-b from-black/85 to-black/45 shadow-2xl flex items-center gap-3.5 transition-colors duration-300 group">
+            <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3 bg-gradient-to-b from-black/95 to-black/60 shadow-2xl flex items-center gap-3 transition-all duration-300 group">
               {/* Hexagonal Shield Badge */}
-              <div className="w-12 h-12 bg-gradient-to-br from-[#D97706] via-[#881337] to-[#D97706] p-[1.5px] clip-path-badge shrink-0 shadow-[0_0_15px_rgba(217,119,6,0.3)] group-hover:scale-105 transition-transform duration-300">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#D97706] via-[#881337] to-[#D97706] p-[1.5px] clip-path-badge shrink-0 shadow-[0_0_15px_rgba(217,119,6,0.35)] group-hover:scale-105 transition-transform duration-300">
                 <div className="w-full h-full bg-[#0A0A0A] clip-path-badge flex flex-col items-center justify-center font-display font-black">
-                  <span className="text-white text-base leading-none">{profile.overallRating}</span>
-                  <span className="text-[7px] text-[#D97706] tracking-tighter leading-none mt-0.5">OVR</span>
+                  <span className="text-white text-sm leading-none">{profile.overallRating}</span>
+                  <span className="text-[6px] text-[#D97706] tracking-tighter leading-none mt-0.5">OVR</span>
                 </div>
               </div>
               <div className="text-left overflow-hidden flex-grow">
-                <p className="text-[7.5px] font-black text-[#D97706] uppercase tracking-widest leading-none">Manager Reputation</p>
-                <p className="font-display font-black text-sm text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
-                <p className="text-[9px] font-bold text-gray-400 mt-1 leading-none tracking-wide">{getTacticalTitle(profile.overallRating)}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="flex-1 bg-white/10 h-1 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-[#881337] to-[#D97706] h-full rounded-full" style={{ width: `${profile.overallRating}%` }} />
-                  </div>
-                  <span className="text-[8px] font-mono font-bold text-gray-500 shrink-0">{profile.overallRating}%</span>
-                </div>
+                <p className="text-[7px] font-black text-[#D97706] uppercase tracking-widest leading-none">Manager Reputation</p>
+                <p className="font-display font-black text-xs text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
+                <p className="text-[8px] font-bold text-gray-400 mt-1 leading-none tracking-wide">{getTacticalTitle(profile.overallRating)}</p>
               </div>
             </Link>
           )}
+        </div>
+
+        {/* Center Column: Heading Section */}
+        <div className="text-center flex-1">
+          <h1 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent"
+              style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+            FIFA WORLD CUP 2026 HUB
+          </h1>
+          <p className="text-gray-400 text-[9.5px] sm:text-[10px] mt-3 font-bold uppercase tracking-widest leading-none">
+            SIMULATION DATE: <span className="text-[#D97706]">JUNE 16, 2026</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
+          </p>
+        </div>
+
+        {/* Right Column: Empty spacer to center the heading */}
+        <div className="hidden lg:block lg:w-64 shrink-0" />
+      </div>
+
+      {/* Main Console Layout: Left Sidebar Deck, Right Match Board */}
+      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-6 flex flex-col lg:flex-row gap-6 items-start w-full">
+        
+        {/* Left-Aligned Control Sidebar */}
+        <aside className="w-full lg:w-64 shrink-0 bg-black/75 border border-white/5 pt-3 px-4 pb-4 rounded-2xl space-y-4 sticky lg:top-[96px] shadow-2xl backdrop-blur-md">
 
           {/* Section 1: Navigation Plinths */}
-          <div className="space-y-2.5">
-            <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Navigation Console</span>
-            <div className="space-y-1.5">
+          <div className="space-y-1.5">
+            <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Navigation Console</span>
+            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-2">
               <button
                 onClick={() => setActiveTab('schedule')}
-                className={`w-full px-4 py-3 rounded-xl font-display font-black text-[11px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center gap-2.5 border ${
+                className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-center lg:justify-start gap-2 border ${
                   activeTab === 'schedule'
-                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)] animate-pulse-slow'
+                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
                     : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
                 }`}
               >
-                <Calendar className="w-4 h-4 text-[#D97706]" /> Match Schedule
+                <Calendar className="w-3.5 h-3.5 text-[#D97706]" /> Match Schedule
               </button>
               <button
                 onClick={() => setActiveTab('groups')}
-                className={`w-full px-4 py-3 rounded-xl font-display font-black text-[11px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center gap-2.5 border ${
+                className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-center lg:justify-start gap-2 border ${
                   activeTab === 'groups'
-                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)] animate-pulse-slow'
+                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
                     : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
                 }`}
               >
-                <Trophy className="w-4 h-4 text-[#D97706]" /> Group Standings
+                <Trophy className="w-3.5 h-3.5 text-[#D97706]" /> Group Standings
               </button>
             </div>
           </div>
 
           {/* Section 2: Fixture Sub-Filters (only active on Schedule tab) */}
           {activeTab === 'schedule' && (
-            <div className="space-y-2.5 border-t border-white/5 pt-4">
+            <div className="space-y-2 border-t border-white/5 pt-4">
               <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
-              <div className="space-y-1.5">
+              <div className="flex flex-row overflow-x-auto gap-2 pb-2 scrollbar-none lg:flex-col lg:overflow-x-visible lg:pb-0 lg:space-y-1.5">
                 {[
                   { id: 'today', label: 'Today (June 16)' },
                   { id: 'live', label: 'Live Now' },
@@ -349,16 +333,16 @@ export default function WorldCupHub() {
                   <button
                     key={sub.id}
                     onClick={() => setScheduleFilter(sub.id as any)}
-                    className={`w-full px-4 py-2.5 rounded-lg text-[9.5px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer ${
+                    className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer shrink-0 whitespace-nowrap lg:w-full ${
                       scheduleFilter === sub.id
                         ? 'bg-[#881337]/25 border-[#881337] text-rose-300 shadow-sm'
                         : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
                     }`}
                   >
-                    <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center justify-between gap-2 w-full">
                       <span>{sub.label}</span>
                       {sub.id === 'live' && (
-                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                       )}
                     </span>
                   </button>

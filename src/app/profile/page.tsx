@@ -5,6 +5,7 @@ import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, FootballIQProfile } from '@/lib/profileSync';
 import { VerdictData } from '@/lib/tribunalDB';
+import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
   User, 
   Settings, 
@@ -27,36 +28,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Maps input countries to flag emojis for live card preview
-function getFlagEmoji(countryName: string): string {
-  const normalized = countryName.trim().toLowerCase();
-  if (normalized.includes('arg')) return '🇦🇷';
-  if (normalized.includes('bra')) return '🇧🇷';
-  if (normalized.includes('por')) return '🇵🇹';
-  if (normalized.includes('fra')) return '🇫🇷';
-  if (normalized.includes('eng') || normalized.includes('gbr')) return '🏴\u200d󠁧\u200d󠁢\u200d󠁥\u200d󠁮\u200d󠁧\u200d󠁿';
-  if (normalized.includes('ger') || normalized.includes('deu')) return '🇩🇪';
-  if (normalized.includes('spa') || normalized.includes('esp')) return '🇪🇸';
-  if (normalized.includes('net') || normalized.includes('hol') || normalized.includes('nld')) return '🇳🇱';
-  if (normalized.includes('uru')) return '🇺🇾';
-  if (normalized.includes('mar') || normalized.includes('mor')) return '🇲🇦';
-  if (normalized.includes('jap') || normalized.includes('jpn')) return '🇯🇵';
-  if (normalized.includes('sau') || normalized.includes('ksa')) return '🇸🇦';
-  if (normalized.includes('usa') || normalized.includes('america') || normalized.includes('united states')) return '🇺🇸';
-  if (normalized.includes('can')) return '🇨🇦';
-  if (normalized.includes('mex')) return '🇲🇽';
-  if (normalized.includes('ita')) return '🇮🇹';
-  if (normalized.includes('cro')) return '🇭🇷';
-  if (normalized.includes('bel')) return '🇧🇪';
-  if (normalized.includes('sen')) return '🇸🇳';
-  if (normalized.includes('swe')) return '🇸🇪';
-  if (normalized.includes('tun')) return '🇹🇳';
-  if (normalized.includes('egy')) return '🇪🇬';
-  if (normalized.includes('irn') || normalized.includes('iran')) return '🇮🇷';
-  if (normalized.includes('nzl') || normalized.includes('new zealand')) return '🇳🇿';
-  return '🏳️';
-}
-
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -74,8 +45,12 @@ export default function ProfileSettingsPage() {
   const [authStage, setAuthStage] = useState('');
   const [authProgress, setAuthProgress] = useState(0);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
-  const cardContainerRef = useRef<HTMLDivElement>(null);
+
+  // AI synthesis states
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [synthProgress, setSynthProgress] = useState(0);
+  const [synthLogs, setSynthLogs] = useState<string[]>([]);
+  const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -89,27 +64,135 @@ export default function ProfileSettingsPage() {
     setAvatarStyle(prof.avatarStyle);
   }, []);
 
-  // Card 3D Tilt Effect on mouse move
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardContainerRef.current) return;
-    const container = cardContainerRef.current;
-    const rect = container.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const xc = rect.width / 2;
-    const yc = rect.height / 2;
-    
-    const angleX = (yc - y) / 12;
-    const angleY = (x - xc) / 12;
-    
-    container.style.transform = `perspective(800px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.03)`;
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Photo size too large! Please choose an image smaller than 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_DIM = 256;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_DIM) {
+            height *= MAX_DIM / width;
+            width = MAX_DIM;
+          }
+        } else {
+          if (height > MAX_DIM) {
+            width *= MAX_DIM / height;
+            height = MAX_DIM;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          setPendingPhoto(compressedBase64);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleMouseLeave = () => {
-    if (!cardContainerRef.current) return;
-    cardContainerRef.current.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+  const handleRemoveCustomPhoto = () => {
+    setAvatarSeed('Reputation');
+    setAvatarStyle('fun-emoji');
+    setPendingPhoto(null);
+    if (profile) {
+      const updated: FootballIQProfile = {
+        ...profile,
+        avatarSeed: 'Reputation',
+        avatarStyle: 'fun-emoji'
+      };
+      setProfile(updated);
+      saveStoredProfile(updated);
+      window.dispatchEvent(new Event('storage'));
+    }
   };
+
+  const runAISynthesis = () => {
+    if (!profile) return;
+    if (!username.trim()) {
+      alert('Please fill out your Manager Alias registration ID first!');
+      return;
+    }
+    if (!favoriteNation.trim()) {
+      alert('Please fill out your National Allegiance to style the jersey colors!');
+      return;
+    }
+    if (!pendingPhoto) {
+      alert('Please select and upload a source face photo first!');
+      return;
+    }
+
+    setIsSynthesizing(true);
+    setSynthProgress(0);
+    setSynthLogs(["[AI-GATE] Initializing image generation connection (NVIDIA NIM)..."]);
+
+    const logMessages = [
+      "Establishing link with GPU computing node (NVIDIA L40S)...",
+      "Scanning facial geometry & alignment (ViT Model)...",
+      "Isolating face contours and extracting alpha transparency mask...",
+      "Generating sports jersey stripes template in vector layers...",
+      "Rendering custom stripes matching national flag colors...",
+      "Applying ambient locker room 3D lighting occlusion...",
+      "Refining overall BallKnowledge OVR rating boundaries...",
+      "Synthesis complete! Updating custom card avatar details..."
+    ];
+
+    let currentLogIndex = 0;
+    const interval = setInterval(() => {
+      setSynthProgress(p => {
+        if (p >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        
+        if (p > 0 && p % 12 === 0 && currentLogIndex < logMessages.length) {
+          const logMsg = logMessages[currentLogIndex];
+          setSynthLogs(logs => [...logs, `[AI-MODEL] ${logMsg}`]);
+          currentLogIndex++;
+        }
+        
+        return p + 2;
+      });
+    }, 50);
+
+    setTimeout(() => {
+      setAvatarSeed(pendingPhoto);
+      setAvatarStyle(avatarStyle);
+      setIsSynthesizing(false);
+      setSynthLogs(logs => [...logs, "[SYSTEM] Synthesis successfully committed! Live Manager Card updated."]);
+      
+      const updated: FootballIQProfile = {
+        ...profile,
+        username: username.trim().replace(/\s+/g, '_'),
+        favoriteClub,
+        favoriteNation,
+        role,
+        avatarSeed: pendingPhoto,
+        avatarStyle: avatarStyle
+      };
+      setProfile(updated);
+      saveStoredProfile(updated);
+      window.dispatchEvent(new Event('storage'));
+    }, 3000);
+  };
+
 
   if (!mounted || !profile) {
     return (
@@ -162,6 +245,7 @@ export default function ProfileSettingsPage() {
   };
 
   const handleSaveSettings = () => {
+    if (!profile) return;
     if (!username.trim()) {
       alert('Username cannot be empty!');
       return;
@@ -203,6 +287,8 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  const displayAvatarStyle = avatarStyle.startsWith('ai-') ? avatarStyle : 'ai-3d-render';
+
   // Build the goated VerdictData object to feed to SportsCenterCard component
   const managerCardData: VerdictData = {
     id: 'mgr-preview',
@@ -227,7 +313,7 @@ export default function ProfileSettingsPage() {
     playerName: username.toUpperCase() || 'MANAGER',
     playerPosition: 'MGR',
     clubName: favoriteClub || 'VAR FC',
-    avatarStyle: avatarStyle,
+    avatarStyle: displayAvatarStyle,
     avatarSeed: avatarSeed,
     stats: [
       { label: 'IQ', name: 'Ball IQ', val: profile.overallRating },
@@ -345,7 +431,7 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
       ) : (
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-20">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-[100px]">
           
           {/* Locker Room Stadium Backdrop */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -353,370 +439,240 @@ export default function ProfileSettingsPage() {
               src="/images/world_cup_stadium.webp" 
               alt="World Cup Stadium Background" 
               fill 
-              className="object-cover opacity-55 object-center scale-102" 
+              className="object-cover opacity-35 object-center scale-102" 
               priority 
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-[#0A0A0A]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/40 to-[#0A0A0A]" />
           </div>
 
-          {/* Heading HUD Panel */}
-          <div className="text-center max-w-2xl mx-auto mb-10 pt-4">
-            <h1 className="font-display font-black uppercase tracking-tight text-white mb-2 text-center leading-[1.1]"
-                style={{
-                  fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)'
-                }}>
+          {/* Heading HUD Panel: Spacing-aligned */}
+          <div className="relative z-20 text-center max-w-xl mx-auto mb-6 bg-gradient-to-b from-black/90 to-black/30 border border-white/5 rounded-2xl p-4 shadow-2xl backdrop-blur-xs">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#881337] via-[#D97706] to-[#881337] rounded-t-2xl" />
+            <h1 className="font-display font-black uppercase tracking-wider text-white mb-1 leading-none text-xl sm:text-2xl"
+                style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
               Manager <span className="text-[#D97706]">Cockpit</span>
             </h1>
-            <p className="font-sans text-gray-300 text-xs sm:text-sm max-w-md mx-auto font-medium">
-              Configure your manager profile credentials, manage your license tier, or check active matchday predictions.
+            <p className="font-sans text-gray-400 text-[10px] max-w-sm mx-auto font-medium leading-normal">
+              Configure your manager details and trigger the AI portrait synthesis model.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10 max-w-6xl mx-auto">
             
-            {/* LEFT COLUMN: Signing Sheet & Dashboard Sub-features */}
-            <div className="lg:col-span-8 space-y-6">
-              
-              {/* Feature 1: Signing Sheet Contract Form */}
-              <div className="glass-panel border-white/10 bg-black/60 backdrop-blur-md rounded-3xl p-6 md:p-8 space-y-8 relative overflow-hidden shadow-2xl">
+            {/* LEFT COLUMN: AI Manager Card Generator */}
+            <div className="lg:col-span-7">
+              <div className="glass-panel border-white/10 bg-black/60 backdrop-blur-md rounded-3xl p-6 space-y-6 relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#881337] via-[#D97706] to-[#881337]" />
                 
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <div>
-                    <h3 className="font-display font-black text-lg text-white uppercase tracking-wider flex items-center gap-2">
-                      <Fingerprint className="w-5 h-5 text-[#D97706]" /> SIGNING SHEET & CREDENTIALS
-                    </h3>
-                    <p className="text-gray-400 text-[10px] uppercase font-bold tracking-widest mt-0.5">
-                      Register your manager details with the VAR Tribunal
-                    </p>
-                  </div>
-                  <Trophy className="w-6 h-6 text-[#D97706]/40 hidden sm:block" />
+                <div>
+                  <h3 className="font-display font-black text-base text-white uppercase tracking-wider flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#D97706] animate-pulse" /> AI Manager Card Generator
+                  </h3>
+                  <p className="text-gray-400 text-[9.5px] uppercase font-bold tracking-widest mt-0.5">
+                    Generate your personalized FIFA-style manager card using AI synthesis
+                  </p>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Username */}
+                <div className="space-y-4">
+                  {/* Manager Name */}
                   <div>
-                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">
-                      <User className="w-3.5 h-3.5 text-gray-500" /> Manager Alias / Registration ID
+                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-1.5">
+                      Manager Name / Alias
                     </label>
                     <input
                       type="text"
                       value={username}
-                      onChange={e => setUsername(e.target.value)}
-                      className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
-                      placeholder="e.g. tactical_chef"
+                      onChange={e => {
+                        const val = e.target.value;
+                        setUsername(val);
+                        if (profile) {
+                          const updated = { ...profile, username: val };
+                          setProfile(updated);
+                          saveStoredProfile(updated);
+                          window.dispatchEvent(new Event('storage'));
+                        }
+                      }}
+                      className="w-full h-10 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] transition-all"
+                      placeholder="e.g. Pep_Guardiola"
                     />
-                    <p className="text-[9px] text-gray-500 mt-1 font-medium">Use alphanumeric characters and underscores only. No spaces.</p>
                   </div>
 
-                  {/* Club & Nation Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">
-                        <Shield className="w-3.5 h-3.5 text-gray-500" /> Club Allegiance
-                      </label>
-                      <input
-                        type="text"
-                        value={favoriteClub}
-                        onChange={e => setFavoriteClub(e.target.value)}
-                        className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
-                        placeholder="e.g. Real Madrid, Arsenal, FC Bayern"
-                      />
-                    </div>
-                    <div>
-                      <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">
-                        <Flag className="w-3.5 h-3.5 text-gray-500" /> National Allegiance
-                      </label>
-                      <input
-                        type="text"
-                        value={favoriteNation}
-                        onChange={e => setFavoriteNation(e.target.value)}
-                        className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
-                        placeholder="e.g. Argentina, France, England"
-                      />
-                    </div>
+                  {/* Favorite Country */}
+                  <div>
+                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-1.5">
+                      Favorite Country
+                    </label>
+                    <input
+                      type="text"
+                      value={favoriteNation}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFavoriteNation(val);
+                        if (profile) {
+                          const updated = { ...profile, favoriteNation: val };
+                          setProfile(updated);
+                          saveStoredProfile(updated);
+                          window.dispatchEvent(new Event('storage'));
+                        }
+                      }}
+                      className="w-full h-10 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] transition-all"
+                      placeholder="e.g. Argentina, France, Portugal"
+                    />
                   </div>
 
-                  {/* Custom Avatar parameters */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-white/5 pt-5">
-                    <div>
-                      <label className="block text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">Manager Portrait Seed</label>
-                      <input
-                        type="text"
-                        value={avatarSeed}
-                        onChange={e => setAvatarSeed(e.target.value)}
-                        className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">Portrait Render Style (Dicebear)</label>
-                      <select
-                      value={avatarStyle}
-                      onChange={e => setAvatarStyle(e.target.value)}
-                      className="w-full h-11 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/35 transition-all cursor-pointer"
+                  {/* AI Style Model */}
+                  <div>
+                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-1.5">
+                      AI Portrait Style Model
+                    </label>
+                    <select
+                      value={displayAvatarStyle}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setAvatarStyle(val);
+                        if (profile) {
+                          const updated = { ...profile, avatarStyle: val };
+                          setProfile(updated);
+                          saveStoredProfile(updated);
+                          window.dispatchEvent(new Event('storage'));
+                        }
+                      }}
+                      className="w-full h-10 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] transition-all cursor-pointer"
                     >
-                      <option value="fun-emoji">Fun Emoji</option>
-                      <option value="bottts">Bots & Androids</option>
-                      <option value="pixel-art">Pixel Art Retro</option>
-                      <option value="avataaars">Human Avatars</option>
+                      <option value="ai-3d-render">FIFA 3D Render (Default)</option>
+                      <option value="ai-hologram">Futuristic Cyan Hologram</option>
+                      <option value="ai-cyber-gold">Cyberpunk Gold Elite</option>
+                      <option value="ai-oil-paint">VAR Tribunal Sketch</option>
                     </select>
                   </div>
-                </div>
 
-                {/* License selector */}
-                <div className="border-t border-white/5 pt-5">
-                  <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-3">
-                    <Crown className="w-3.5 h-3.5 text-gray-500" /> Manager License Tier (Role Setting)
-                  </label>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Free Option */}
+                  {/* License Tier Info */}
+                  <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-xl px-3 py-2">
+                    <span className="text-[9.5px] font-black text-gray-400 uppercase tracking-widest">Active License:</span>
+                    <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
+                      role === 'ADMIN' ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' :
+                      role === 'PREMIUM' ? 'bg-[#D97706]/10 text-[#D97706] border-[#D97706]/30' :
+                      'bg-slate-500/10 text-slate-400 border-slate-500/30'
+                    }`}>
+                      {role === 'ADMIN' ? 'Crimson Pass (Commissioner)' : role === 'PREMIUM' ? 'Gold Pass (Chef)' : 'Bronze Pass (Free)'}
+                    </span>
+                  </div>
+
+                  {/* Face Photo Uploader */}
+                  <div>
+                    <label className="block text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-1.5">Upload Source Face Photo</label>
+                    <div className="flex items-center gap-3 bg-black/45 border border-white/10 rounded-xl p-2.5">
+                      <div className="relative w-12 h-12 bg-zinc-900 border border-white/10 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
+                        {pendingPhoto ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={pendingPhoto} alt="Pending Source" className="w-full h-full object-cover" />
+                        ) : avatarSeed.startsWith('data:image/') ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={avatarSeed} alt="Active Source" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-5 h-5 text-gray-500" />
+                        )}
+                      </div>
+                      <div className="flex-grow text-left">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            id="portrait-upload"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                          />
+                          <label
+                            htmlFor="portrait-upload"
+                            className="px-2.5 py-1.5 bg-[#D97706]/10 hover:bg-[#D97706]/20 border border-[#D97706]/40 hover:border-[#D97706]/60 rounded-lg font-display font-black text-[8px] uppercase tracking-widest text-[#D97706] cursor-pointer transition-all active:scale-95"
+                          >
+                            Choose Face
+                          </label>
+                          {(pendingPhoto || avatarSeed.startsWith('data:image/')) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPendingPhoto(null);
+                                handleRemoveCustomPhoto();
+                              }}
+                              className="px-2.5 py-1.5 bg-red-950/20 hover:bg-red-950/40 border border-red-900/40 hover:border-red-900/60 rounded-lg font-display font-black text-[8px] uppercase tracking-widest text-red-400 cursor-pointer transition-all active:scale-95"
+                            >
+                              Reset
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Synthesizer trigger */}
+                  <div className="pt-2">
                     <button
                       type="button"
-                      onClick={() => setRole('FREE')}
-                      className={`flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                        role === 'FREE'
-                          ? 'bg-[#64748B]/10 border-[#64748B]/50 shadow-[0_0_15px_rgba(100,116,139,0.15)]'
-                          : 'bg-black/30 border-white/5 hover:border-white/10'
+                      disabled={isSynthesizing || !pendingPhoto}
+                      onClick={runAISynthesis}
+                      className={`w-full py-3 rounded-xl font-display font-black text-xs uppercase tracking-widest shadow-md transition-all active:scale-[0.98] ${
+                        !pendingPhoto 
+                          ? 'bg-[#1b1f2e] text-gray-500 border border-white/5 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-[#D97706] via-[#881337] to-[#D97706] hover:opacity-95 text-white cursor-pointer shadow-[0_0_15px_rgba(217,119,6,0.15)]'
                       }`}
                     >
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-900/20 border border-slate-950 px-2 py-0.5 rounded-md w-max mb-2">Bronze License</span>
-                      <h4 className="font-display font-black text-xs text-white uppercase">Probationary (FREE)</h4>
-                      <p className="text-[10px] text-gray-400 mt-1 font-medium leading-relaxed">
-                        3 predictions per fixture, standard community chat features.
-                      </p>
-                    </button>
-
-                    {/* Premium Option */}
-                    <button
-                      type="button"
-                      onClick={() => setRole('PREMIUM')}
-                      className={`flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                        role === 'PREMIUM'
-                          ? 'bg-[#D97706]/10 border-[#D97706] shadow-[0_0_20px_rgba(217,119,6,0.25)]'
-                          : 'bg-black/30 border-white/5 hover:border-white/10'
-                      }`}
-                    >
-                      <span className="text-[9px] font-black uppercase tracking-widest text-[#D97706] bg-[#D97706]/10 border border-[#D97706]/20 px-2 py-0.5 rounded-md w-max mb-2">Gold License</span>
-                      <h4 className="font-display font-black text-xs text-white uppercase flex items-center gap-1">
-                        Certified Tactician <Sparkle className="w-3 h-3 text-[#D97706] animate-pulse" />
-                      </h4>
-                      <p className="text-[10px] text-gray-400 mt-1 font-medium leading-relaxed">
-                        5 predictions per match, substitutions enabled, highlighted chat styles.
-                      </p>
-                    </button>
-
-                    {/* Admin Option */}
-                    <button
-                      type="button"
-                      onClick={() => setRole('ADMIN')}
-                      className={`flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                        role === 'ADMIN'
-                          ? 'bg-[#881337]/15 border-[#881337] shadow-[0_0_20px_rgba(136,19,55,0.3)]'
-                          : 'bg-black/30 border-white/5 hover:border-white/10'
-                      }`}
-                    >
-                      <span className="text-[9px] font-black uppercase tracking-widest text-rose-400 bg-rose-950/20 border border-rose-950 px-2 py-0.5 rounded-md w-max mb-2">Commissioner</span>
-                      <h4 className="font-display font-black text-xs text-white uppercase">Tribunal Head (ADMIN)</h4>
-                      <p className="text-[10px] text-gray-400 mt-1 font-medium leading-relaxed">
-                        Full premium benefits plus controls to override time locks.
-                      </p>
+                      {isSynthesizing ? 'Synthesizing...' : 'Run AI Card Synthesis Model'}
                     </button>
                   </div>
-                </div>
 
-              </div>
-
-              {/* Action buttons */}
-              <div className="pt-6 border-t border-white/10 flex justify-center">
-                <button
-                  type="button"
-                  onClick={handleSaveSettings}
-                  className="flex items-center justify-center gap-2 px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-102 hover:shadow-[0_0_20px_rgba(217,119,6,0.3)] bg-gradient-to-r from-[#881337] to-[#D97706] cursor-pointer"
-                >
-                  {saveSuccess ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-300 animate-bounce" /> CONTRACT REGISTERED
-                    </>
-                  ) : (
-                    <>
-                      SIGN & REGISTER PROFILE
-                    </>
+                  {/* Synthesis Progress Terminals */}
+                  {isSynthesizing && (
+                    <div className="bg-black/95 border border-white/10 rounded-xl p-3 font-mono text-[9px] text-emerald-400 space-y-1.5 shadow-inner">
+                      <div className="flex justify-between items-center font-bold">
+                        <span>MODEL PIPELINE SYNTHESIS</span>
+                        <span>{synthProgress}%</span>
+                      </div>
+                      <div className="w-full h-1 bg-zinc-950 border border-white/5 rounded-full overflow-hidden">
+                        <div className="bg-emerald-500 h-full transition-all duration-200" style={{ width: `${synthProgress}%` }} />
+                      </div>
+                      <div className="max-h-[60px] overflow-y-auto space-y-0.5 scrollbar-none pt-0.5">
+                        {synthLogs.slice(-2).map((log, idx) => (
+                          <div key={idx} className="leading-normal truncate">
+                            {log}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </button>
-              </div>
-
-            </div>
-
-            {/* Feature 2: Active Matchday Tactics (Dashboard Feature) */}
-            <div className="glass-panel border-white/10 bg-black/60 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden shadow-2xl">
-              <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
-                <Calendar className="w-5 h-5 text-[#D97706]" />
-                <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">
-                  Active Matchday Tactics
-                </h3>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  { home: 'Argentina', away: 'Canada', date: 'LIVE', pred: '2 - 0', status: 'Locked' },
-                  { home: 'Germany', away: 'Scotland', date: 'Tomorrow', pred: '3 - 1', status: 'Editable' },
-                  { home: 'France', away: 'Poland', date: 'June 25', pred: '2 - 1', status: 'Editable' }
-                ].map((m, i) => (
-                  <div key={i} className="bg-white/5 border border-white/5 rounded-xl px-4 py-3 flex items-center justify-between text-xs transition-colors hover:bg-white/10">
-                    <div className="flex items-center gap-3">
-                      <span className={`w-1.5 h-1.5 rounded-full ${m.date === 'LIVE' ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`} />
-                      <div>
-                        <p className="font-bold text-white uppercase tracking-wider">{m.home} vs {m.away}</p>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">{m.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-[#D97706]">Pick</p>
-                        <p className="font-mono font-black text-white">{m.pred}</p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
-                        m.status === 'Locked' ? 'bg-red-950/20 text-red-400 border border-red-950' : 'bg-green-950/20 text-green-400 border border-green-950'
-                      }`}>
-                        {m.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                </div>
               </div>
             </div>
 
-            {/* Feature 3: Trophy Cabinet Cabinet Binder */}
-            <div className="glass-panel border-white/10 bg-black/60 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden shadow-2xl">
-              <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
-                <Trophy className="w-5 h-5 text-[#D97706]" />
-                <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">
-                  Manager Trophy Cabinet
-                </h3>
+            {/* RIGHT COLUMN: FUT Manager Card */}
+            <div className="lg:col-span-5 flex flex-col items-center">
+              
+              {/* FUT-Style Manager Badge Preview */}
+              <div className="text-center w-full flex flex-col items-center">
+                <span className="block text-[9px] font-black text-gray-500 uppercase tracking-[0.25em] mb-3">Live Manager License Card</span>
+                
+                {/* Static Preview Container */}
+                <div className="relative bg-transparent rounded-[32px] scale-90 sm:scale-95 origin-top my-1">
+                  <SportsCenterCard data={managerCardData} />
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                {[
-                  { r: 'LEGENDARY', icon: '🏆', slot: 'Slot 1' },
-                  { r: 'EPIC', icon: '⭐', slot: 'Slot 2' },
-                  { r: 'RARE', icon: '⚽', slot: 'Slot 3' },
-                  { r: 'LOCKED', icon: '🔒', slot: 'Slot 4' },
-                  { r: 'LOCKED', icon: '🔒', slot: 'Slot 5' },
-                  { r: 'LOCKED', icon: '🔒', slot: 'Slot 6' }
-                ].map((s, i) => (
-                  <div key={i} className="flex flex-col items-center justify-center border border-white/5 bg-white/5 rounded-xl py-4 transition-transform hover:scale-105 relative group">
-                    <span className="text-xl mb-1">{s.icon}</span>
-                    <span className="text-[7.5px] font-black uppercase text-gray-500 tracking-wider">{s.slot}</span>
-                    
-                    {s.r === 'LOCKED' ? (
-                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Lock className="w-4 h-4 text-gray-400" />
-                      </div>
-                    ) : (
-                      <span className={`absolute bottom-1 text-[6.5px] font-black uppercase tracking-widest px-1 rounded ${
-                        s.r === 'LEGENDARY' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 
-                        s.r === 'EPIC' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 
-                        'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                      }`}>
-                        {s.r}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
 
           </div>
 
-          {/* RIGHT COLUMN: FUT Manager Card & Disciplinary Zone */}
-          <div className="lg:col-span-4 space-y-6 flex flex-col items-center">
-            
-            {/* FUT-Style Manager Badge Preview */}
-            <div className="text-center w-full flex flex-col items-center">
-              <span className="block text-[9px] font-black text-gray-500 uppercase tracking-[0.25em] mb-4">Live Manager License Card</span>
-              
-              {/* 3D tilt container */}
-              <div 
-                ref={cardContainerRef}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                className="relative bg-transparent rounded-[32px] transition-all duration-300 ease-out cursor-default"
-                style={{
-                  transformStyle: 'preserve-3d',
-                  transition: 'transform 0.15s ease-out',
-                  backfaceVisibility: 'hidden',
-                }}
-              >
-                <SportsCenterCard data={managerCardData} />
-              </div>
-            </div>
-
-            {/* Manager Stats HUD card (XP and points) */}
-            <div className="glass-panel border-white/10 bg-black/60 backdrop-blur-md rounded-3xl p-5 shadow-2xl w-full max-w-[340px] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-[3px] h-full bg-[#D97706]" />
-              <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-3.5">
-                <div className="flex items-center gap-1.5">
-                  <Coins className="w-4 h-4 text-[#D97706]" />
-                  <span className="font-display font-black text-xs text-white uppercase tracking-wider">Manager Stats HUD</span>
-                </div>
-                <span className="text-[8px] font-black uppercase tracking-wider text-[#D97706] bg-[#D97706]/10 px-2 py-0.5 rounded border border-[#D97706]/20">Active Career</span>
-              </div>
-
-              <div className="space-y-4">
-                {/* XP Level */}
-                <div>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Manager Level 5</span>
-                    <span className="text-[9px] font-bold text-white font-mono">2,450 / 5,000 XP</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/5">
-                    <div className="h-full bg-gradient-to-r from-[#881337] to-[#D97706] rounded-full" style={{ width: '49%' }} />
-                  </div>
-                </div>
-
-                {/* BallPoints Balance */}
-                <div className="flex justify-between items-center bg-white/5 border border-white/5 rounded-xl px-3 py-2.5">
-                  <div>
-                    <p className="text-[8px] font-black uppercase text-gray-400 tracking-widest leading-none">Club Points Balance</p>
-                    <p className="font-display font-black text-lg text-white mt-1 leading-none">
-                      {profile.points || 150} <span className="text-xs font-sans text-gray-500 font-bold uppercase">BP</span>
-                    </p>
-                  </div>
-                  <Coins className="w-5 h-5 text-[#D97706] animate-pulse" />
-                </div>
-              </div>
-            </div>
-
-            {/* RED CARD: Danger/Reset Zone */}
-            <div className="glass-panel border-red-500/20 bg-red-950/5 rounded-3xl p-6 shadow-xl w-full max-w-[340px] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600" />
-              
-              <h4 className="font-display font-black text-xs text-red-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4 shrink-0 text-red-500 animate-pulse" /> RED CARD DISCIPLINARY
-              </h4>
-              
-              <ul className="text-[10px] text-gray-400 space-y-2 mb-5 font-medium list-disc list-inside">
-                <li>Permanently terminates your contract</li>
-                <li>All fixture predictions will be deleted</li>
-                <li>FUT verdict cards album will be wiped</li>
-                <li>Overall BallKnowledge resets to 50</li>
-              </ul>
-              
-              <button
-                type="button"
-                onClick={handleResetCampaign}
-                className="w-full py-3 rounded-full border border-red-500/40 text-red-500 hover:bg-red-500/10 font-display font-black text-[10px] uppercase tracking-widest transition-all hover:scale-102 cursor-pointer flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)] active:scale-95"
-              >
-                <RotateCcw className="w-3.5 h-3.5" /> TERMINATE CONTRACT
-              </button>
-            </div>
-
+          {/* Danger Zone: Low profile contract termination at the page footer */}
+          <div className="relative z-20 flex justify-center mt-6">
+            <button
+              type="button"
+              onClick={handleResetCampaign}
+              className="px-4 py-2 bg-red-950/10 hover:bg-red-950/30 border border-red-900/20 hover:border-red-900/40 rounded-xl font-display font-black text-[9px] uppercase tracking-widest text-red-400/80 hover:text-red-400 cursor-pointer transition-all active:scale-[0.97] flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(239,68,68,0.06)]"
+            >
+              <RotateCcw className="w-3 h-3 text-red-500" /> WIPE CAMPAIGN & TERMINATE CONTRACT
+            </button>
           </div>
 
         </div>
-      </div>
       )}
     </div>
   );

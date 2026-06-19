@@ -6,6 +6,7 @@ import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Trophy, Award, Sparkles, Share2, Eye, ShieldAlert, Lock, Calendar, CheckCircle, ChevronRight, Bookmark } from 'lucide-react';
+import { getFlagEmoji } from '@/lib/matchUtils';
 
 interface Team {
   id: string;
@@ -70,8 +71,8 @@ export default function FootballIQPage() {
     const fetchTournamentData = async () => {
       try {
         const [matchesRes, teamsRes] = await Promise.all([
-          fetch('https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.matches.json'),
-          fetch('https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.teams.json')
+          fetch('/api/matches'),
+          fetch('/api/teams')
         ]);
 
         if (matchesRes.ok && teamsRes.ok) {
@@ -637,9 +638,11 @@ export default function FootballIQPage() {
                               { label: 'DEL', name: 'Delusion', val: 100 - selectedCard.rating }
                             ],
                             cardTheme: selectedCard.cardTheme || 'gold',
-                            countryFlag: profile.favoriteNation === 'Argentina' ? '🇦🇷' : '🌍',
+                            countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
                             playerName: profile.username,
-                            playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM'
+                            playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM',
+                            avatarStyle: profile.avatarStyle,
+                            avatarSeed: profile.avatarSeed
                           }} />
                         ) : (
                           <SportsCenterCard data={{
@@ -660,9 +663,11 @@ export default function FootballIQPage() {
                               { label: 'DEL', name: 'Delusion', val: 100 - profile.overallRating }
                             ],
                             cardTheme: profile.overallRating >= 85 ? 'toty' : (profile.overallRating >= 70 ? 'gold' : (profile.overallRating >= 45 ? 'var' : 'bottler')),
-                            countryFlag: profile.favoriteNation === 'Argentina' ? '🇦🇷' : '🌍',
+                            countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
                             playerName: profile.username,
-                            playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM'
+                            playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM',
+                            avatarStyle: profile.avatarStyle,
+                            avatarSeed: profile.avatarSeed
                           }} />
                         )}
                       </div>

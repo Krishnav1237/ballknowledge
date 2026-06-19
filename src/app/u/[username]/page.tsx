@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { Award, ShieldAlert, Trophy, Eye, Lock, Sparkles, Share2, CheckCircle } from 'lucide-react';
+import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
 interface Team {
   id: string;
@@ -28,14 +29,7 @@ interface Match {
   type: string;
 }
 
-const SYSTEM_DATE = new Date('2026-06-16T19:20:00');
 
-function parseLocalDate(localDateStr: string): Date {
-  const [datePart, timePart] = localDateStr.split(' ');
-  const [month, day, year] = datePart.split('/').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
-  return new Date(year, month - 1, day, hours, minutes);
-}
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
@@ -77,8 +71,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
         // Fetch tournament matches & teams
         const [matchesRes, teamsRes] = await Promise.all([
-          fetch('https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.matches.json'),
-          fetch('https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.teams.json')
+          fetch('/api/matches'),
+          fetch('/api/teams')
         ]);
 
         if (matchesRes.ok && teamsRes.ok) {
@@ -157,7 +151,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
   const getMatchStatus = (match: Match) => {
     const kickoff = parseLocalDate(match.local_date);
-    const timeDiff = SYSTEM_DATE.getTime() - kickoff.getTime();
+    const timeDiff = new Date().getTime() - kickoff.getTime();
     if (timeDiff >= 2 * 60 * 60 * 1000) {
       return 'COMPLETED';
     } else if (timeDiff >= 0) {
@@ -609,9 +603,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                               { label: 'DEL', name: 'Delusion', val: 100 - selectedCard.rating }
                             ],
                             cardTheme: selectedCard.cardTheme || 'gold',
-                            countryFlag: profile.favoriteNation === 'Argentina' ? '🇦🇷' : '🌍',
+                            countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
                             playerName: profile.username,
-                            playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM'
+                            playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM',
+                            avatarStyle: profile.avatarStyle,
+                            avatarSeed: profile.avatarSeed
                           }} />
                         ) : (
                           <SportsCenterCard data={{
@@ -632,9 +628,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                               { label: 'DEL', name: 'Delusion', val: 100 - profile.overallRating }
                             ],
                             cardTheme: profile.overallRating >= 85 ? 'toty' : (profile.overallRating >= 70 ? 'gold' : (profile.overallRating >= 45 ? 'var' : 'bottler')),
-                            countryFlag: profile.favoriteNation === 'Argentina' ? '🇦🇷' : '🌍',
+                            countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
                             playerName: profile.username,
-                            playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM'
+                            playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM',
+                            avatarStyle: profile.avatarStyle,
+                            avatarSeed: profile.avatarSeed
                           }} />
                         )}
                       </div>

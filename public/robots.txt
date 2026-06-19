@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow admin/internal routes
+Disallow: /api/
+Disallow: /_next/
+
+# Sitemap
+Sitemap: https://ballknowledge.vercel.app/sitemap.xml

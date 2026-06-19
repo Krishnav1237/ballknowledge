@@ -1,6 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { VerdictData } from '@/lib/tribunalDB';
+
 
 // ─── Verdict Label Mapper ────────────────────────────────────────────────────
 // Maps raw verdict strings to premium, entertaining tribunal labels
@@ -177,6 +179,330 @@ function get2Metrics(data: VerdictData): [{ label: string; val: number }, { labe
     { label: 'BALL IQ', val: iq },
     { label: 'DELUSION', val: del },
   ];
+}
+
+// ─── Jersey Details & Custom Avatar Rendering ──────────────────────────────────
+function getJerseyDetails(flag: string) {
+  const normalized = flag.trim();
+  
+  if (normalized === '🇦🇷') {
+    return { primary: '#74ACDF', secondary: '#FFFFFF', collar: '#000000', style: 'stripes' };
+  }
+  if (normalized === '🇧🇷') {
+    return { primary: '#FEDF00', secondary: '#009B3A', collar: '#009B3A', style: 'solid' };
+  }
+  if (normalized === '🇵🇹') {
+    return { primary: '#E42118', secondary: '#006629', collar: '#FEDF00', style: 'halves' };
+  }
+  if (normalized === '🇫🇷') {
+    return { primary: '#0F1E36', secondary: '#FFFFFF', collar: '#E42118', style: 'solid' };
+  }
+  if (normalized === '🏴\u200d󠁢\u200d󠁥\u200d󠁮\u200d󠁧\u200d󠁿' || normalized === '🏴󠁧󠁢󠁥󠁮󠁧󠁿' || normalized.includes('🏴') || normalized.includes('🇬🇧')) {
+    return { primary: '#FFFFFF', secondary: '#0F1E36', collar: '#0F1E36', style: 'solid' };
+  }
+  if (normalized === '🇩🇪') {
+    return { primary: '#FFFFFF', secondary: '#000000', collar: '#000000', style: 'germany-stripes' };
+  }
+  if (normalized === '🇪🇸') {
+    return { primary: '#C60B1E', secondary: '#F1BF00', collar: '#F1BF00', style: 'solid' };
+  }
+  if (normalized === '🇳🇱') {
+    return { primary: '#F15A24', secondary: '#FFFFFF', collar: '#21409A', style: 'solid' };
+  }
+  if (normalized === '🇮🇹') {
+    return { primary: '#0066CC', secondary: '#FFFFFF', collar: '#008C45', style: 'solid' };
+  }
+  if (normalized === '🇺🇸') {
+    return { primary: '#FFFFFF', secondary: '#0A3161', collar: '#B31942', style: 'solid' };
+  }
+  if (normalized === '🇲🇽') {
+    return { primary: '#006847', secondary: '#FFFFFF', collar: '#CE1126', style: 'solid' };
+  }
+  if (normalized === '🇭🇷') {
+    return { primary: '#FFFFFF', secondary: '#C60B1E', collar: '#1D2A44', style: 'checker' };
+  }
+  if (normalized === '🇺🇾') {
+    return { primary: '#55B3FF', secondary: '#FFFFFF', collar: '#FCD116', style: 'solid' };
+  }
+  if (normalized === '🇲🇦') {
+    return { primary: '#C1272D', secondary: '#006233', collar: '#006233', style: 'morocco-band' };
+  }
+  if (normalized === '🇯🇵') {
+    return { primary: '#001E62', secondary: '#FFFFFF', collar: '#BC002D', style: 'solid' };
+  }
+  if (normalized === '🇨🇦') {
+    return { primary: '#C1272D', secondary: '#FFFFFF', collar: '#FFFFFF', style: 'sleeves' };
+  }
+  
+  // Default dynamic fallback based on emoji codepoint to give consistent varied colors
+  let code = 0;
+  if (normalized.length > 0) {
+    code = normalized.charCodeAt(0) + (normalized.charCodeAt(1) || 0);
+  }
+  const colorFallbacks = [
+    { primary: '#1E293B', secondary: '#D97706', collar: '#D97706', style: 'solid' }, // black-gold
+    { primary: '#047857', secondary: '#34D399', collar: '#FFFFFF', style: 'solid' }, // green-white
+    { primary: '#8B5CF6', secondary: '#F472B6', collar: '#FFFFFF', style: 'solid' }, // purple-pink
+    { primary: '#3B82F6', secondary: '#60A5FA', collar: '#FFFFFF', style: 'solid' }, // blue-white
+  ];
+  return colorFallbacks[code % colorFallbacks.length];
+}
+
+function JerseyAvatar({ 
+  avatarUrl, 
+  flag, 
+  avatarStyle 
+}: { 
+  avatarUrl: string; 
+  flag: string; 
+  avatarStyle?: string; 
+}) {
+  const { primary, secondary, collar, style } = getJerseyDetails(flag);
+  const [maskId, setMaskId] = useState('');
+  const [clipId, setClipId] = useState('');
+  const [suffix, setSuffix] = useState('');
+  
+  useEffect(() => {
+    const idSuffix = Math.random().toString(36).substring(2, 9);
+    setSuffix(idSuffix);
+    setMaskId(`jersey-mask-${idSuffix}`);
+    setClipId(`face-clip-${idSuffix}`);
+  }, []);
+
+  if (!maskId || !clipId) return null;
+
+  return (
+    <svg className="w-[180px] h-[180px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        {/* The main jersey shape clip mask */}
+        <mask id={maskId}>
+          <path 
+            d="M 38 20 Q 50 28 62 20 L 78 24 L 92 42 L 82 52 L 74 42 L 74 92 L 26 92 L 26 42 L 18 52 L 8 42 L 22 24 Z" 
+            fill="white" 
+          />
+        </mask>
+        
+        {/* Circular/oval mask for the uploaded face photo */}
+        <clipPath id={clipId}>
+          <ellipse cx="50" cy="22" rx="14" ry="17" />
+        </clipPath>
+        
+        {/* Soft shadow blur filter */}
+        <filter id="shadow-blur" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="1.8" />
+        </filter>
+        
+        {/* Face shading gradient to match game lights */}
+        <radialGradient id="face-shading" cx="50%" cy="30%" r="50%">
+          <stop offset="60%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.85" />
+        </radialGradient>
+
+        {/* Futuristic Hologram Filter (Cyan matrix + scanline grid) */}
+        <filter id={`hologram-filter-${suffix}`}>
+          <feColorMatrix type="matrix" values="
+            0.1 0 0 0 0
+            0 0.85 0 0 0.15
+            0 0.8 0.9 0 0.35
+            0 0 0 1 0
+          "/>
+        </filter>
+
+        {/* Cyberpunk Gold Filter (Golden amber duotone matrix) */}
+        <filter id={`cyber-gold-filter-${suffix}`}>
+          <feColorMatrix type="matrix" values="
+            0.9 0 0 0 0.2
+            0.6 0 0 0 0.1
+            0.1 0 0 0 0
+            0 0 0 1 0
+          "/>
+        </filter>
+
+        {/* VAR Tribunal Sketch (High contrast b&w sketch styling) */}
+        <filter id={`oil-paint-filter-${suffix}`}>
+          <feColorMatrix type="matrix" values="
+            0.33 0.33 0.33 0 0
+            0.33 0.33 0.33 0 0
+            0.33 0.33 0.33 0 0
+            0 0 0 1 0
+          "/>
+          <feComponentTransfer>
+            <feFuncR type="linear" slope="1.4" intercept="-0.15"/>
+            <feFuncG type="linear" slope="1.4" intercept="-0.15"/>
+            <feFuncB type="linear" slope="1.4" intercept="-0.15"/>
+          </feComponentTransfer>
+        </filter>
+
+        {/* 3D Render Filter (High saturation and contrast boost) */}
+        <filter id={`render-filter-${suffix}`}>
+          <feComponentTransfer>
+            <feFuncR type="linear" slope="1.15" />
+            <feFuncG type="linear" slope="1.15" />
+            <feFuncB type="linear" slope="1.15" />
+          </feComponentTransfer>
+        </filter>
+
+        {/* Hologram scanline pattern */}
+        <pattern id={`scanlines-${suffix}`} width="4" height="2" patternUnits="userSpaceOnUse">
+          <rect width="4" height="1" fill="#00FFFF" opacity="0.35" />
+        </pattern>
+
+        {/* Cyberpunk grid pattern */}
+        <pattern id={`cyber-grid-${suffix}`} width="6" height="6" patternUnits="userSpaceOnUse">
+          <rect width="6" height="6" fill="none" stroke="#D97706" strokeWidth="0.5" opacity="0.35" />
+        </pattern>
+      </defs>
+      
+      {/* ─── JERSEY LAYER ─── */}
+      <g mask={`url(#${maskId})`}>
+        {/* Base Shirt Color */}
+        <path 
+          d="M 38 20 Q 50 28 62 20 L 78 24 L 92 42 L 82 52 L 74 42 L 74 92 L 26 92 L 26 42 L 18 52 L 8 42 L 22 24 Z" 
+          fill={primary} 
+        />
+        
+        {/* Patterns based on style */}
+        {style === 'stripes' && (
+          <>
+            <rect x="34" y="20" width="6" height="72" fill={secondary} />
+            <rect x="46" y="20" width="6" height="72" fill={secondary} />
+            <rect x="58" y="20" width="6" height="72" fill={secondary} />
+            <rect x="22" y="20" width="6" height="72" fill={secondary} />
+            <rect x="70" y="20" width="6" height="72" fill={secondary} />
+          </>
+        )}
+        
+        {style === 'halves' && (
+          <path d="M 50 20 L 78 24 L 92 42 L 82 52 L 74 42 L 74 92 L 50 92 Z" fill={secondary} />
+        )}
+        
+        {style === 'checker' && (
+          <g opacity="0.95">
+            <rect x="26" y="20" width="8" height="8" fill={secondary} />
+            <rect x="42" y="20" width="8" height="8" fill={secondary} />
+            <rect x="58" y="20" width="8" height="8" fill={secondary} />
+            
+            <rect x="34" y="28" width="8" height="8" fill={secondary} />
+            <rect x="50" y="28" width="8" height="8" fill={secondary} />
+            <rect x="66" y="28" width="8" height="8" fill={secondary} />
+            
+            <rect x="26" y="36" width="8" height="8" fill={secondary} />
+            <rect x="42" y="36" width="8" height="8" fill={secondary} />
+            <rect x="58" y="36" width="8" height="8" fill={secondary} />
+            
+            <rect x="34" y="44" width="8" height="8" fill={secondary} />
+            <rect x="50" y="44" width="8" height="8" fill={secondary} />
+            <rect x="66" y="44" width="8" height="8" fill={secondary} />
+            
+            <rect x="26" y="52" width="8" height="8" fill={secondary} />
+            <rect x="42" y="52" width="8" height="8" fill={secondary} />
+            <rect x="58" y="52" width="8" height="8" fill={secondary} />
+            
+            <rect x="34" y="60" width="8" height="8" fill={secondary} />
+            <rect x="50" y="60" width="8" height="8" fill={secondary} />
+            <rect x="66" y="60" width="8" height="8" fill={secondary} />
+            
+            <rect x="26" y="68" width="8" height="8" fill={secondary} />
+            <rect x="42" y="68" width="8" height="8" fill={secondary} />
+            <rect x="58" y="68" width="8" height="8" fill={secondary} />
+
+            <rect x="34" y="76" width="8" height="8" fill={secondary} />
+            <rect x="50" y="76" width="8" height="8" fill={secondary} />
+            <rect x="66" y="76" width="8" height="8" fill={secondary} />
+
+            <rect x="26" y="84" width="8" height="8" fill={secondary} />
+            <rect x="42" y="84" width="8" height="8" fill={secondary} />
+            <rect x="58" y="84" width="8" height="8" fill={secondary} />
+          </g>
+        )}
+        
+        {style === 'germany-stripes' && (
+          <g opacity="0.9">
+            <path d="M 26 30 L 74 30 L 74 34 L 26 34 Z" fill="#FF0000" />
+            <path d="M 26 34 L 74 34 L 74 38 L 26 38 Z" fill="#FFCC00" />
+            <path d="M 26 26 L 74 26 L 74 30 L 26 30 Z" fill="#000000" />
+          </g>
+        )}
+        
+        {style === 'morocco-band' && (
+          <path d="M 26 42 L 74 42 L 74 52 L 26 52 Z" fill={secondary} />
+        )}
+        
+        {style === 'sleeves' && (
+          <>
+            <path d="M 22 24 L 8 42 L 18 52 L 26 42 Z" fill={secondary} />
+            <path d="M 78 24 L 92 42 L 82 52 L 74 42 Z" fill={secondary} />
+          </>
+        )}
+
+        {/* Small country flag badge on the left chest */}
+        <text x="61" y="45" fontSize="6.5" textAnchor="middle" filter="drop-shadow(0px 1px 1.5px rgba(0,0,0,0.5))">
+          {flag}
+        </text>
+      </g>
+      
+      {/* Collar Border (drawn on top of patterns) */}
+      <path 
+        d="M 37.5 19.5 Q 50 28.5 62.5 19.5" 
+        stroke={collar} 
+        strokeWidth="3.2" 
+        fill="none" 
+      />
+      
+      {/* ─── FACE LAYER ─── */}
+      {/* 3D drop shadow underneath the face for volume */}
+      <ellipse cx="50" cy="23.5" rx="14" ry="17" fill="black" opacity="0.4" filter="url(#shadow-blur)" />
+      
+      {/* The face photo clipped to the face mask */}
+      <image 
+        href={avatarUrl} 
+        x="34" 
+        y="3" 
+        width="32" 
+        height="38" 
+        clipPath={`url(#${clipId})`} 
+        preserveAspectRatio="xMidYMid slice" 
+        filter={
+          suffix && avatarStyle === 'ai-hologram' ? `url(#hologram-filter-${suffix})` :
+          suffix && avatarStyle === 'ai-cyber-gold' ? `url(#cyber-gold-filter-${suffix})` :
+          suffix && avatarStyle === 'ai-oil-paint' ? `url(#oil-paint-filter-${suffix})` :
+          suffix && avatarStyle === 'ai-3d-render' ? `url(#render-filter-${suffix})` :
+          undefined
+        }
+      />
+      
+      {/* Dynamic scanline overlay for hologram model */}
+      {suffix && avatarStyle === 'ai-hologram' && (
+        <rect 
+          x="34" 
+          y="3" 
+          width="32" 
+          height="38" 
+          clipPath={`url(#${clipId})`} 
+          fill={`url(#scanlines-${suffix})`} 
+          opacity="0.25" 
+          pointerEvents="none" 
+        />
+      )}
+
+      {/* Dynamic grid overlay for cyberpunk gold model */}
+      {suffix && avatarStyle === 'ai-cyber-gold' && (
+        <rect 
+          x="34" 
+          y="3" 
+          width="32" 
+          height="38" 
+          clipPath={`url(#${clipId})`} 
+          fill={`url(#cyber-grid-${suffix})`} 
+          opacity="0.2" 
+          pointerEvents="none" 
+        />
+      )}
+      
+      {/* Ambient shadow overlay on face to blend with cartoonish card */}
+      <ellipse cx="50" cy="22" rx="14" ry="17" fill="url(#face-shading)" opacity="0.15" pointerEvents="none" />
+    </svg>
+  );
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -472,16 +798,11 @@ export default function SportsCenterCard({
           className="absolute top-[62px] left-[15%] w-[70%] h-[216px] flex items-end justify-center z-20 pointer-events-none"
         >
           {hasCustomPhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={data.avatarSeed}
-              alt="Player Portrait"
-              className="max-h-full max-w-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.75)]"
-            />
+            <JerseyAvatar avatarUrl={data.avatarSeed!} flag={data.countryFlag || '🌍'} avatarStyle={data.avatarStyle} />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={`https://api.dicebear.com/7.x/${data.avatarStyle || 'fun-emoji'}/svg?seed=${encodeURIComponent(data.avatarSeed || data.playerName || 'TAKE MAKER')}`}
+              src={`https://api.dicebear.com/7.x/${(data.avatarStyle && !data.avatarStyle.startsWith('ai-')) ? data.avatarStyle : 'fun-emoji'}/svg?seed=${encodeURIComponent(data.avatarSeed || data.playerName || 'TAKE MAKER')}`}
               alt="Avatar"
               className="w-36 h-36 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]"
               loading="lazy"

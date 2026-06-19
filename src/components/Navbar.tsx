@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Trophy, Award, User, Menu, X, LogOut, LogIn, Tag } from 'lucide-react';
+import { Trophy, Award, User, Menu, X, LogOut, LogIn, Tag, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getStoredProfile, saveStoredProfile, FootballIQProfile } from '@/lib/profileSync';
 
@@ -45,19 +45,17 @@ export default function Navbar() {
     };
     setProfile(signedOutProfile);
     saveStoredProfile(signedOutProfile);
-    
     // Dispatch event to sync state across other pages/components instantly
     window.dispatchEvent(new Event('storage'));
-    
-    alert('Logged out from Manager Locker Room.');
     window.location.href = '/';
   };
 
   const navLinks = [
     { name: 'World Cup 2026', href: '/world-cup-hub', icon: Trophy },
-    { name: 'My Card', href: '/football-iq', icon: Award },
-    { name: 'Pricing', href: '/pricing', icon: Tag },
-    { name: 'Profile', href: '/profile', icon: User },
+    { name: 'Leaderboard',    href: '/leaderboard',   icon: BarChart2 },
+    { name: 'My Card',        href: '/football-iq',   icon: Award },
+    { name: 'Pricing',        href: '/pricing',        icon: Tag },
+    { name: 'Profile',        href: '/profile',        icon: User },
   ];
 
   return (

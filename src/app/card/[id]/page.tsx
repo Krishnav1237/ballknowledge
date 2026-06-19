@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { Trophy, ShieldAlert, Sparkles, Share2, CheckCircle, Home } from 'lucide-react';
+import { getFlagEmoji } from '@/lib/matchUtils';
 
 export default function SharedCardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: cardId } = use(params);
@@ -139,7 +140,7 @@ export default function SharedCardPage({ params }: { params: Promise<{ id: strin
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={tiltStyle}
-            className="relative card-3d-tilt filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] mt-[-20px] lg:mt-[-40px]"
+            className="relative card-3d-tilt filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)] mt-[-20px] lg:mt-[-40px] scale-[0.82] min-[375px]:scale-[0.90] sm:scale-95 md:scale-100 origin-center"
           >
             <SportsCenterCard data={{
               text: card.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
@@ -159,9 +160,11 @@ export default function SharedCardPage({ params }: { params: Promise<{ id: strin
                 { label: 'DEL', name: 'Delusion', val: 100 - card.rating }
               ],
               cardTheme: card.cardTheme || 'gold',
-              countryFlag: profile.favoriteNation === 'Argentina' ? '🇦🇷' : '🌍',
+              countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
               playerName: profile.username,
-              playerPosition: card.rating >= 75 ? 'CF' : 'DM'
+              playerPosition: card.rating >= 75 ? 'CF' : 'DM',
+              avatarStyle: profile.avatarStyle,
+              avatarSeed: profile.avatarSeed
             }} />
           </motion.div>
         </div>

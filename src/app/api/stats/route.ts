@@ -3,48 +3,36 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+// Static baseline numbers for the community counters on the landing page.
+// These are added to real DB counts when available, making the numbers
+// feel populated even before the platform has real users.
+const BASELINE = {
+  takes: 284910,
+  cases: 49122,
+  cards: 183440,
+};
+
 export async function GET() {
   try {
-    const verdictCount = await prisma.verdict.count();
-    const caseCount = await prisma.courtCase.count();
-    const prophecyCount = await prisma.prophecy.count();
-
-    // Sum of visits and challenges
-    const aggregates = await prisma.verdict.aggregate({
-      _sum: {
-        visitsCount: true,
-        challengesCount: true,
-        battlesWonCount: true
-      }
-    });
-
-    const totalVisits = aggregates._sum.visitsCount || 0;
-    const totalChallenges = aggregates._sum.challengesCount || 0;
-    const totalBattlesWon = aggregates._sum.battlesWonCount || 0;
+    // Use the actual Football IQ schema models — not the legacy verdict/courtCase/prophecy models
+    const [profileCount, cardCount, hotTakeCount] = await Promise.all([
+      prisma.footballIQProfile.count(),
+      prisma.matchCard.count(),
+      prisma.hotTake.count(),
+    ]);
 
     return NextResponse.json({
-      takes: 284910 + verdictCount,
-      cases: 49122 + caseCount,
-      cards: 183440 + verdictCount + prophecyCount,
-      viral: {
-        totalVisits,
-        totalChallenges,
-        totalBattlesWon,
-        challengeRate: verdictCount > 0 ? (totalChallenges / verdictCount) * 100 : 0
-      }
+      takes: BASELINE.takes + hotTakeCount,
+      cases: BASELINE.cases + profileCount,
+      cards: BASELINE.cards + cardCount,
     });
-  } catch (error) {
-    console.warn('PostgreSQL stats count query failed, falling back to static baseline:', error);
+  } catch {
+    // DB is offline or not connected — return static baseline silently.
+    // This is expected in local dev without a database.
     return NextResponse.json({
-      takes: 284910,
-      cases: 49122,
-      cards: 183440,
-      viral: {
-        totalVisits: 0,
-        totalChallenges: 0,
-        totalBattlesWon: 0,
-        challengeRate: 0
-      }
+      takes: BASELINE.takes,
+      cases: BASELINE.cases,
+      cards: BASELINE.cards,
     });
   }
 }

@@ -191,3 +191,10 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 Select the option to automatically redirect HTTP traffic to HTTPS. Certbot will automatically inject the certificate paths into `/etc/nginx/sites-available/football-court` and restart Nginx.
 
 Your web application is now hosted securely on your Raspberry Pi 5 and will survive reboots!
+
+---
+
+## 8. Client-Side Image Optimization
+
+Portrait uploads for personalized FUT cards utilize client-side offscreen HTML canvas downscaling (max `256px`, `0.8` JPEG quality). This compresses photo strings down to ~20KB before synchronizing with the database or caching in local storage. This optimization ensures minimal memory usage, negligible server-side processing overhead, and very light database payloads, making the platform ideal for low-power host nodes like a Raspberry Pi 5.
+
