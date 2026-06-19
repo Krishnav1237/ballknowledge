@@ -37,9 +37,22 @@ export default function Home() {
     const day = new Date().getDate();
     setDailyProphecy(DAILY_PROPHECIES[day % DAILY_PROPHECIES.length]);
 
-    const timer = setTimeout(() => {
+    let timer: NodeJS.Timeout | undefined;
+
+    // Check if the preloader was already shown in this session to skip redundant loads
+    const hasPreloaded = typeof window !== 'undefined' && sessionStorage.getItem('bk_preloaded');
+    if (hasPreloaded) {
       setLoading(false);
-    }, 800);
+    } else {
+      timer = setTimeout(() => {
+        setLoading(false);
+        try {
+          sessionStorage.setItem('bk_preloaded', 'true');
+        } catch (e) {
+          // ignore session storage exceptions
+        }
+      }, 400); // Fast initial splash
+    }
 
     fetch('/api/stats')
       .then(res => res.json())
@@ -59,7 +72,7 @@ export default function Home() {
     }, 3000);
 
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       clearInterval(id);
     };
   }, []);

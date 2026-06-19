@@ -4,6 +4,7 @@ import Providers from '@/components/Providers';
 import SmoothScroll from '@/components/SmoothScroll';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import PageTransition from '@/components/PageTransition';
 
 export const metadata: Metadata = {
   title: 'BallKnowledge | World Cup 2026 Reputation Arena',
@@ -46,8 +47,10 @@ export default function RootLayout({
         <Providers>
           <SmoothScroll />
           <Navbar />
-          <main className="flex-grow">
-            {children}
+          <main className="flex-grow flex flex-col">
+            <PageTransition>
+              {children}
+            </PageTransition>
           </main>
           <Footer />
         </Providers>
