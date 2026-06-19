@@ -35,6 +35,38 @@ const BANTER_BUTTONS = [
 
 const REACTIONS = ['🔥', '🤣', '😤', '👀', '💀', '🐐'];
 
+const SIMULATED_MANAGERS = [
+  'TacticalMaster',
+  'VARTribunal',
+  'PepFanatic',
+  'ElSocio',
+  'Capitano',
+  'Gegenpresser',
+  'FalseNine',
+  'JoseParkedBus',
+  'SpecialOne',
+  'AncelottiEyebrow',
+  'KloppHugging',
+  'ParkTheDoubleBus'
+];
+
+const SIMULATED_BANTER = [
+  'Ref is absolute garbage today 🤬',
+  'What a goal! World class finish 🚀⚽',
+  'VAR checking... please don\'t ruin this 🙏',
+  'Offside by a millimeter, game is gone 😤',
+  'PARK THE BUS TACTICS IS REAL FOOTBALL 🚌',
+  'Absolute dive, give him a yellow card 🎭',
+  'How did he miss that open goal?! 💀',
+  'Tactical masterclass from the home side today.',
+  'We need substitutions immediately, the midfield is ghosting 👻',
+  'What a pass! Absolute vision 👁️',
+  'Is it just me or is this match of the tournament? 🔥',
+  'This is why we love the World Cup 🏆🐐',
+  'Defending is non-existent, love to see it 😂',
+  'VAR is saving them again, unbelievable 🙄'
+];
+
 function getStoredMessages(matchId: string): ChatMessage[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -78,28 +110,48 @@ export default function MatchLiveChat({
   const inputRef = useRef<HTMLInputElement>(null);
   const alias = managerAlias || 'Anonymous';
 
-  // Load messages on mount
+  // Load messages on mount with initial seeded banter to make it feel alive!
   useEffect(() => {
-    const msgs = getStoredMessages(matchId);
-    setMessages(msgs);
-
-    // Add system message if empty + match is live
-    if (msgs.length === 0 && isLive) {
+    let msgs = getStoredMessages(matchId);
+    if (msgs.length === 0) {
       const systemMsg: ChatMessage = {
         id: generateId(),
         matchId,
         author: 'SYSTEM',
-        text: `⚽ ${homeTeam} vs ${awayTeam} is LIVE! The banter zone is open. Predictions are locked.`,
-        timestamp: Date.now(),
+        text: isLive
+          ? `⚽ ${homeTeam} vs ${awayTeam} is LIVE! The banter zone is open. Predictions are locked.`
+          : `⚽ ${homeTeam} vs ${awayTeam} chat log.`,
+        timestamp: Date.now() - 3600000, // 1 hour ago
         reactions: {},
         type: 'system',
       };
-      setMessages([systemMsg]);
-      saveMessages(matchId, [systemMsg]);
+
+      const seedCount = isLive ? 3 : 8;
+      const seedMsgs: ChatMessage[] = [systemMsg];
+
+      for (let i = 0; i < seedCount; i++) {
+        const randomManager = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
+        const randomText = SIMULATED_BANTER[Math.floor(Math.random() * SIMULATED_BANTER.length)];
+        const reactionEmoji = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
+
+        seedMsgs.push({
+          id: generateId(),
+          matchId,
+          author: randomManager,
+          text: randomText,
+          timestamp: Date.now() - (seedCount - i) * 300000,
+          reactions: Math.random() > 0.4 ? { [reactionEmoji]: Math.floor(Math.random() * 5) + 1 } : {},
+          type: 'message',
+        });
+      }
+
+      msgs = seedMsgs;
+      saveMessages(matchId, msgs);
     }
+    setMessages(msgs);
   }, [matchId, isLive, homeTeam, awayTeam]);
 
-  // Poll for new messages every 3 seconds (simulates real-time)
+  // Poll for new messages every 3 seconds (simulates real-time client sync)
   useEffect(() => {
     const interval = setInterval(() => {
       const latest = getStoredMessages(matchId);
@@ -110,6 +162,40 @@ export default function MatchLiveChat({
     }, 3000);
     return () => clearInterval(interval);
   }, [matchId]);
+
+  // Simulates other live managers joining the banter in real-time if match is LIVE!
+  useEffect(() => {
+    if (!isLive) return;
+
+    const interval = setInterval(() => {
+      // 35% chance to post simulated banter every 10 seconds
+      if (Math.random() > 0.35) return;
+
+      const randomManager = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
+      const randomText = SIMULATED_BANTER[Math.floor(Math.random() * SIMULATED_BANTER.length)];
+      const reactionEmoji = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
+
+      const msg: ChatMessage = {
+        id: generateId(),
+        matchId,
+        author: randomManager,
+        text: randomText,
+        timestamp: Date.now(),
+        reactions: Math.random() > 0.6 ? { [reactionEmoji]: 1 } : {},
+        type: 'message',
+      };
+
+      setMessages(prev => {
+        // Prevent immediate duplicates
+        if (prev.some(m => m.text === msg.text && m.author === msg.author)) return prev;
+        const updated = [...prev, msg];
+        saveMessages(matchId, updated);
+        return updated;
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [matchId, isLive]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {

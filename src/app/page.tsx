@@ -161,7 +161,7 @@ export default function Home() {
           </h1>
 
           <p className="font-sans text-gray-200 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8 font-medium text-center">
-            Reputation is built one matchday decision at a time. Lock in predictions, submit hot takes, collect verdict cards, and evolve your season-based Football IQ Profile.
+            Predict FIFA World Cup 2026 match scores, build your custom Best XI lineups on our interactive tactical pitch, write bold hot takes, and run the AI VAR review to earn holographic Verdict Cards. Evolve your Football IQ and climb the global leaderboard!
           </p>
 
           {/* CTAs */}

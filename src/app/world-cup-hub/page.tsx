@@ -361,6 +361,25 @@ export default function WorldCupHub() {
                 </div>
               </div>
             )}
+
+            {/* Section 3: Gameplay Guide */}
+            <div className="space-y-2 border-t border-white/5 pt-4">
+              <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Gameplay Guide</span>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2.5 text-[10px] leading-relaxed text-gray-400">
+                <div className="flex gap-1.5">
+                  <span className="text-[#D97706] font-black">1.</span>
+                  <span>Select any active fixture from the match schedule.</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <span className="text-[#D97706] font-black">2.</span>
+                  <span>Set score predictions, build your Best XI squad, and drop hot takes.</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <span className="text-[#D97706] font-black">3.</span>
+                  <span>Once the match finishes, run **VAR Review** to grade predictions and claim Verdict Cards!</span>
+                </div>
+              </div>
+            </div>
           </aside>
 
           {/* Right-Aligned Main Content Panel */}
