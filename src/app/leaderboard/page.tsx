@@ -407,10 +407,11 @@ export default function LeaderboardPage() {
 
       {/* ── Center Aligned Header ───────────────────────────────────── */}
       <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-3 flex flex-col items-center justify-center text-center w-full border-b border-white/5 bg-black/20 backdrop-blur-xs shrink-0">
-        <h1 className="font-display font-black text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-300 to-[#D97706] uppercase tracking-wider leading-none drop-shadow-[0_2px_10px_rgba(217,119,6,0.25)]">
-          GLOBAL MANAGER LEADERBOARD
+        <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-wider leading-none"
+            style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+          GLOBAL MANAGER <span className="text-[#D97706]">LEADERBOARD</span>
         </h1>
-        <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2 font-bold uppercase tracking-widest leading-none">
+        <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
           WORLD CUP 2026 SEASON <span className="text-gray-600 mx-2">•</span> RANKED BY FOOTBALL IQ
         </p>
       </div>

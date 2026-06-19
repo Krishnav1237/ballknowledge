@@ -92,15 +92,12 @@ export default function PricingPage() {
         
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-2 sm:mb-3">
-          <h1 className="font-display font-black uppercase tracking-tight text-white mb-1 text-center leading-[1.1]"
-              style={{
-                fontSize: 'clamp(1.8rem, 4.2vw, 2.8rem)',
-                textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)'
-              }}>
-            Sign Your <span className="text-[#D97706]">Contract</span>
+          <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-wider leading-none"
+              style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+            SIGN YOUR MANAGER <span className="text-[#D97706]">CONTRACT</span>
           </h1>
-          <p className="font-sans text-gray-300 text-[11px] sm:text-xs max-w-lg mx-auto font-medium leading-relaxed">
-            Acquire your official manager license for the World Cup 2026. Select a tier, lock in predictions, and claim premium card collectibles.
+          <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none max-w-lg mx-auto">
+            ACQUIRE OFFICIAL MANAGER LICENSE FOR WORLD CUP 2026 <span className="text-gray-600 mx-2">•</span> SELECT TIER & LOCK PREDICTIONS
           </p>
           
           <button 

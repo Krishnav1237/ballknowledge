@@ -234,6 +234,21 @@ export default function WorldCupHub() {
 
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-[100px]">
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.08);
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(217, 119, 6, 0.3);
+        }
+      `}</style>
 
       {/* Futuristic Stadium HUD Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -247,292 +262,283 @@ export default function WorldCupHub() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#0A0A0A]/40 to-[#0A0A0A]" />
       </div>
 
-      {/* Header Grid: Aligns Manager Reputation OVR next to Page Heading */}
-      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-2 pb-4 flex flex-col lg:flex-row justify-between items-center gap-6 w-full border-b border-white/5 bg-black/20 backdrop-blur-xs">
-        
-        {/* Left Column: Manager Reputation aligned with the sidebar column */}
-        <div className="w-full lg:w-64 shrink-0">
-          {profile && (
-            <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3 bg-gradient-to-b from-black/95 to-black/60 shadow-2xl flex items-center gap-3 transition-all duration-300 group">
-              {/* Hexagonal Shield Badge */}
-              <div className="w-11 h-11 bg-gradient-to-br from-[#D97706] via-[#881337] to-[#D97706] p-[1.5px] clip-path-badge shrink-0 shadow-[0_0_15px_rgba(217,119,6,0.35)] group-hover:scale-105 transition-transform duration-300">
-                <div className="w-full h-full bg-[#0A0A0A] clip-path-badge flex flex-col items-center justify-center font-display font-black">
-                  <span className="text-white text-sm leading-none">{profile.overallRating}</span>
-                  <span className="text-[6px] text-[#D97706] tracking-tighter leading-none mt-0.5">OVR</span>
-                </div>
-              </div>
-              <div className="text-left overflow-hidden flex-grow">
-                <p className="text-[7px] font-black text-[#D97706] uppercase tracking-widest leading-none">Manager Reputation</p>
-                <p className="font-display font-black text-xs text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
-                <p className="text-[8px] font-bold text-gray-400 mt-1 leading-none tracking-wide">{getTacticalTitle(profile.overallRating)}</p>
-              </div>
-            </Link>
-          )}
-        </div>
-
-        {/* Center Column: Heading Section */}
-        <div className="text-center flex-1">
-          <h1 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent"
-              style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
-            FIFA WORLD CUP 2026 HUB
-          </h1>
-          <p className="text-gray-400 text-[9.5px] sm:text-[10px] mt-3 font-bold uppercase tracking-widest leading-none">
-            SIMULATION DATE: <span className="text-[#D97706]">JUNE 16, 2026</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
-          </p>
-        </div>
-
-        {/* Right Column: Empty spacer to center the heading */}
-        <div className="hidden lg:block lg:w-64 shrink-0" />
+      {/* ── Center Aligned Header ───────────────────────────────────── */}
+      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-3 flex flex-col items-center justify-center text-center w-full border-b border-white/5 bg-black/20 backdrop-blur-xs shrink-0">
+        <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-wider leading-none"
+            style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+          FIFA WORLD CUP 2026 <span className="text-[#D97706]">HUB</span>
+        </h1>
+        <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
+          SIMULATION DATE: <span className="text-[#D97706]">JUNE 16, 2026</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
+        </p>
       </div>
 
       {/* Main Console Layout: Left Sidebar Deck, Right Match Board */}
-      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-6 flex flex-col lg:flex-row gap-6 items-start w-full">
-        
-        {/* Left-Aligned Control Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0 bg-black/75 border border-white/5 pt-3 px-4 pb-4 rounded-2xl space-y-4 sticky lg:top-[96px] shadow-2xl backdrop-blur-md">
+      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-4 pb-6 w-full">
+        <div className="w-full bg-black/45 border border-white/5 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden grid grid-cols-1 lg:grid-cols-12 lg:h-[720px]">
+          
+          {/* Left-Aligned Control Sidebar */}
+          <aside className="lg:col-span-3 bg-black/15 lg:border-r lg:border-white/5 p-4 flex flex-col space-y-4 overflow-y-auto custom-scrollbar h-full shrink-0" data-lenis-prevent="true">
+            {profile && (
+              <Link href="/football-iq" className="block border border-white/10 hover:border-[#D97706]/40 rounded-xl p-3 bg-gradient-to-b from-black/95 to-black/60 shadow-2xl flex items-center gap-3 transition-all duration-300 group">
+                {/* Hexagonal Shield Badge */}
+                <div className="w-11 h-11 bg-gradient-to-br from-[#D97706] via-[#881337] to-[#D97706] p-[1.5px] clip-path-badge shrink-0 shadow-[0_0_15px_rgba(217,119,6,0.35)] group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-full h-full bg-[#0A0A0A] clip-path-badge flex flex-col items-center justify-center font-display font-black">
+                    <span className="text-white text-sm leading-none">{profile.overallRating}</span>
+                    <span className="text-[6px] text-[#D97706] tracking-tighter leading-none mt-0.5">OVR</span>
+                  </div>
+                </div>
+                <div className="text-left overflow-hidden flex-grow">
+                  <p className="text-[7px] font-black text-[#D97706] uppercase tracking-widest leading-none">Manager Reputation</p>
+                  <p className="font-display font-black text-xs text-white group-hover:text-[#D97706] transition-colors truncate mt-1 leading-none">{profile.username}</p>
+                  <p className="text-[8px] font-bold text-gray-400 mt-1 leading-none tracking-wide">{getTacticalTitle(profile.overallRating)}</p>
+                </div>
+              </Link>
+            )}
 
-          {/* Section 1: Navigation Plinths */}
-          <div className="space-y-1.5">
-            <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Navigation Console</span>
-            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-2">
-              <button
-                onClick={() => setActiveTab('schedule')}
-                className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-center lg:justify-start gap-2 border ${
-                  activeTab === 'schedule'
-                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
-                    : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
-                }`}
-              >
-                <Calendar className="w-3.5 h-3.5 text-[#D97706]" /> Match Schedule
-              </button>
-              <button
-                onClick={() => setActiveTab('groups')}
-                className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-center lg:justify-start gap-2 border ${
-                  activeTab === 'groups'
-                    ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
-                    : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
-                }`}
-              >
-                <Trophy className="w-3.5 h-3.5 text-[#D97706]" /> Group Standings
-              </button>
-            </div>
-          </div>
-
-          {/* Section 2: Fixture Sub-Filters (only active on Schedule tab) */}
-          {activeTab === 'schedule' && (
-            <div className="space-y-2 border-t border-white/5 pt-4">
-              <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
-              <div className="flex flex-row overflow-x-auto gap-2 pb-2 scrollbar-none lg:flex-col lg:overflow-x-visible lg:pb-0 lg:space-y-1.5">
-                {[
-                  { id: 'today', label: 'Today (June 16)' },
-                  { id: 'live', label: 'Live Now' },
-                  { id: 'tomorrow', label: 'Tomorrow' },
-                  { id: 'upcoming', label: 'Upcoming' },
-                  { id: 'completed', label: 'Completed Results' }
-                ].map(sub => (
-                  <button
-                    key={sub.id}
-                    onClick={() => setScheduleFilter(sub.id as any)}
-                    className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer shrink-0 whitespace-nowrap lg:w-full ${
-                      scheduleFilter === sub.id
-                        ? 'bg-[#881337]/25 border-[#881337] text-rose-300 shadow-sm'
-                        : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
-                    }`}
-                  >
-                    <span className="flex items-center justify-between gap-2 w-full">
-                      <span>{sub.label}</span>
-                      {sub.id === 'live' && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      )}
-                    </span>
-                  </button>
-                ))}
+            {/* Section 1: Navigation Plinths */}
+            <div className="space-y-1.5">
+              <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Navigation Console</span>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setActiveTab('schedule')}
+                  className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-start gap-2 border ${
+                    activeTab === 'schedule'
+                      ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
+                      : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5 text-[#D97706]" /> Match Schedule
+                </button>
+                <button
+                  onClick={() => setActiveTab('groups')}
+                  className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-start gap-2 border ${
+                    activeTab === 'groups'
+                      ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
+                      : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
+                  }`}
+                >
+                  <Trophy className="w-3.5 h-3.5 text-[#D97706]" /> Group Standings
+                </button>
               </div>
             </div>
-          )}
-        </aside>
 
-        {/* Right-Aligned Main Content Panel */}
-        <main className="flex-grow w-full">
-          
-          {/* Matches Listings */}
-          {activeTab === 'schedule' && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {filteredMatches.length === 0 ? (
-                <div className="col-span-full glass-panel border border-white/5 rounded-2xl p-12 text-center bg-black/45 flex flex-col justify-center items-center">
-                  <Calendar className="w-8 h-8 text-gray-600 mb-2.5" />
-                  <h3 className="font-display font-black text-sm text-white uppercase tracking-wider">No fixtures found</h3>
-                  <p className="text-[11px] text-gray-500 max-w-xs mt-1 leading-relaxed">
-                    There are no matches matching the filter &quot;{scheduleFilter}&quot; in this stage of the schedule.
-                  </p>
+            {/* Section 2: Fixture Sub-Filters (only active on Schedule tab) */}
+            {activeTab === 'schedule' && (
+              <div className="space-y-2 border-t border-white/5 pt-4">
+                <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
+                <div className="flex flex-col space-y-1.5">
+                  {[
+                    { id: 'today', label: 'Today (June 16)' },
+                    { id: 'live', label: 'Live Now' },
+                    { id: 'tomorrow', label: 'Tomorrow' },
+                    { id: 'upcoming', label: 'Upcoming' },
+                    { id: 'completed', label: 'Completed Results' }
+                  ].map(sub => (
+                    <button
+                      key={sub.id}
+                      onClick={() => setScheduleFilter(sub.id as any)}
+                      className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer shrink-0 whitespace-nowrap w-full ${
+                        scheduleFilter === sub.id
+                          ? 'bg-[#881337]/25 border-[#881337] text-rose-300 shadow-sm'
+                          : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
+                      }`}
+                    >
+                      <span className="flex items-center justify-between gap-2 w-full">
+                        <span>{sub.label}</span>
+                        {sub.id === 'live' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        )}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              ) : (
-                filteredMatches.map(match => {
-                  const homeTeam = teams.find(t => t.id === match.home_team_id);
-                  const awayTeam = teams.find(t => t.id === match.away_team_id);
-                  if (!homeTeam || !awayTeam) return null;
+              </div>
+            )}
+          </aside>
 
-                  const status = getMatchStatus(match);
-                  const hasPredicted = !!userPreds[match.id];
+          {/* Right-Aligned Main Content Panel */}
+          <main className="lg:col-span-9 p-5 overflow-y-auto custom-scrollbar h-full w-full" data-lenis-prevent="true">
+            
+            {/* Matches Listings */}
+            {activeTab === 'schedule' && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {filteredMatches.length === 0 ? (
+                  <div className="col-span-full glass-panel border border-white/5 rounded-2xl p-12 text-center bg-black/45 flex flex-col justify-center items-center">
+                    <Calendar className="w-8 h-8 text-gray-600 mb-2.5" />
+                    <h3 className="font-display font-black text-sm text-white uppercase tracking-wider">No fixtures found</h3>
+                    <p className="text-[11px] text-gray-500 max-w-xs mt-1 leading-relaxed">
+                      There are no matches matching the filter &quot;{scheduleFilter}&quot; in this stage of the schedule.
+                    </p>
+                  </div>
+                ) : (
+                  filteredMatches.map(match => {
+                    const homeTeam = teams.find(t => t.id === match.home_team_id);
+                    const awayTeam = teams.find(t => t.id === match.away_team_id);
+                    if (!homeTeam || !awayTeam) return null;
 
-                  // Left border accent color
-                  const statusBorderClass = {
-                    COMPLETED: 'border-l-4 border-l-emerald-500',
-                    LIVE: 'border-l-4 border-l-amber-500',
-                    UPCOMING: 'border-l-4 border-l-[#881337]'
-                  }[status] || 'border-l-4 border-l-white/5';
+                    const status = getMatchStatus(match);
+                    const hasPredicted = !!userPreds[match.id];
+
+                    // Left border accent color
+                    const statusBorderClass = {
+                      COMPLETED: 'border-l-4 border-l-emerald-500',
+                      LIVE: 'border-l-4 border-l-amber-500',
+                      UPCOMING: 'border-l-4 border-l-[#881337]'
+                    }[status] || 'border-l-4 border-l-white/5';
+
+                    return (
+                      <Link
+                        key={match.id}
+                        href={`/match/${match.id}`}
+                        className={`glass-panel border border-white/5 hover:border-white/15 bg-black/60 hover:bg-black/80 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 shadow-xl group hover:shadow-[0_0_20px_rgba(217,119,6,0.05)] cursor-pointer relative overflow-hidden ${statusBorderClass}`}
+                      >
+                        {/* Match Header metadata */}
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-amber-500 font-mono">
+                            Group {match.group} • Match {match.id}
+                          </span>
+                          
+                          {/* Status Badge */}
+                          <div className="flex items-center gap-1.5">
+                            {hasPredicted && (
+                              <span className="text-[8px] font-black uppercase text-emerald-400 tracking-widest flex items-center bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
+                                <CheckCircle className="w-2.5 h-2.5 mr-0.5 shrink-0" /> Predicted
+                              </span>
+                            )}
+
+                            {status === 'COMPLETED' && (
+                              <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                                Completed
+                              </span>
+                            )}
+                            {status === 'LIVE' && (
+                              <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 animate-pulse flex items-center gap-0.5">
+                                <Play className="w-1.5 h-1.5 fill-current" /> Live
+                              </span>
+                            )}
+                            {status === 'UPCOMING' && (
+                              <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 flex items-center gap-0.5">
+                                <Lock className="w-2 h-2" /> Upcoming
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Teams & Scoreboard */}
+                        <div className="flex items-center justify-between py-2 bg-black/35 border border-white/5 rounded-xl px-4 my-2 shadow-inner">
+                          <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={homeTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
+                            <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate">{homeTeam.name_en}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-center px-3 gap-1 shrink-0">
+                            {status === 'COMPLETED' || status === 'LIVE' ? (
+                              <div className="bg-slate-950/95 border border-white/15 rounded px-2.5 py-1 font-mono font-black text-[#D97706] text-sm tracking-tight shadow-[0_0_8px_rgba(217,119,6,0.15)] flex items-center gap-1.5">
+                                <span>{getResolvedScore(match, 'home')}</span>
+                                <span className="text-gray-600 font-normal">:</span>
+                                <span>{getResolvedScore(match, 'away')}</span>
+                              </div>
+                            ) : (
+                              <div className="bg-white/5 border border-white/5 rounded px-2.5 py-1 font-mono text-gray-600 text-xs font-bold">
+                                VS
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-3 flex-1 justify-end overflow-hidden">
+                            <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate text-right">{awayTeam.name_en}</span>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={awayTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
+                          </div>
+                        </div>
+
+                        {/* Ticket footer row */}
+                        <div className="border-t border-white/5 mt-2.5 pt-2 flex justify-between items-center text-[9px] text-gray-500 font-mono tracking-wider uppercase">
+                          <span>{match.local_date}</span>
+                          {status === 'COMPLETED' ? (
+                            <span className="flex items-center gap-0.5 text-[#D97706] font-bold group-hover:underline">VAR VERDICT <ChevronRight className="w-3 h-3" /></span>
+                          ) : status === 'LIVE' ? (
+                            <span className="flex items-center gap-0.5 text-amber-500 font-bold animate-pulse">MONITOR FEED <ChevronRight className="w-3 h-3" /></span>
+                          ) : (
+                            <span className="flex items-center gap-0.5 text-rose-400 font-bold group-hover:text-white transition-colors">LOCK TACTICS <ChevronRight className="w-3 h-3" /></span>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* Group Standings */}
+            {activeTab === 'groups' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {groupsList.map(g => {
+                  const standings = getGroupStandings(g);
+                  if (standings.length === 0) return null;
 
                   return (
-                    <Link
-                      key={match.id}
-                      href={`/match/${match.id}`}
-                      className={`glass-panel border border-white/5 hover:border-white/15 bg-black/60 hover:bg-black/80 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 shadow-xl group hover:shadow-[0_0_20px_rgba(217,119,6,0.05)] cursor-pointer relative overflow-hidden ${statusBorderClass}`}
-                    >
-                      {/* Match Header metadata */}
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-500 font-mono">
-                          Group {match.group} • Match {match.id}
-                        </span>
-                        
-                        {/* Status Badge */}
-                        <div className="flex items-center gap-1.5">
-                          {hasPredicted && (
-                            <span className="text-[8px] font-black uppercase text-emerald-400 tracking-widest flex items-center bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
-                              <CheckCircle className="w-2.5 h-2.5 mr-0.5 shrink-0" /> Predicted
-                            </span>
-                          )}
-
-                          {status === 'COMPLETED' && (
-                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
-                              Completed
-                            </span>
-                          )}
-                          {status === 'LIVE' && (
-                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 animate-pulse flex items-center gap-0.5">
-                              <Play className="w-1.5 h-1.5 fill-current" /> Live
-                            </span>
-                          )}
-                          {status === 'UPCOMING' && (
-                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 flex items-center gap-0.5">
-                              <Lock className="w-2 h-2" /> Upcoming
-                            </span>
-                          )}
-                        </div>
+                    <div key={g} className="glass-panel border border-white/5 bg-black/60 rounded-2xl overflow-hidden shadow-2xl relative">
+                      {/* Standings plaque header */}
+                      <div className="bg-gradient-to-r from-[#881337]/25 to-[#D97706]/10 border-b border-white/5 px-4 py-3 flex justify-between items-center">
+                        <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">Group {g}</h3>
+                        <span className="text-[8px] font-black text-[#D97706] bg-[#D97706]/15 border border-[#D97706]/20 px-2 py-0.5 rounded uppercase tracking-wider font-mono">Standings</span>
                       </div>
 
-                      {/* Teams & Scoreboard */}
-                      <div className="flex items-center justify-between py-2 bg-black/35 border border-white/5 rounded-xl px-4 my-2 shadow-inner">
-                        <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={homeTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
-                          <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate">{homeTeam.name_en}</span>
-                        </div>
-                        
-                        <div className="flex items-center justify-center px-3 gap-1 shrink-0">
-                          {status === 'COMPLETED' || status === 'LIVE' ? (
-                            <div className="bg-slate-950/95 border border-white/15 rounded px-2.5 py-1 font-mono font-black text-[#D97706] text-sm tracking-tight shadow-[0_0_8px_rgba(217,119,6,0.15)] flex items-center gap-1.5">
-                              <span>{getResolvedScore(match, 'home')}</span>
-                              <span className="text-gray-600 font-normal">:</span>
-                              <span>{getResolvedScore(match, 'away')}</span>
-                            </div>
-                          ) : (
-                            <div className="bg-white/5 border border-white/5 rounded px-2.5 py-1 font-mono text-gray-600 text-xs font-bold">
-                              VS
-                            </div>
-                          )}
-                        </div>
+                      <div className="p-4">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="text-[8px] font-black uppercase text-gray-500 tracking-wider border-b border-white/5">
+                              <th className="pb-2">Team</th>
+                              <th className="pb-2 text-center">PL</th>
+                              <th className="pb-2 text-center">GD</th>
+                              <th className="pb-2 text-right">PTS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {standings.map((st, i) => {
+                              const isPromoted = i < 2;
+                              const rankColorClass = 
+                                i === 0 ? 'bg-amber-500/25 border-amber-500/50 text-[#D97706]' :
+                                i === 1 ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' :
+                                'bg-black/45 border-white/5 text-gray-500';
 
-                        <div className="flex items-center gap-3 flex-1 justify-end overflow-hidden">
-                          <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate text-right">{awayTeam.name_en}</span>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={awayTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
-                        </div>
+                              return (
+                                <tr
+                                  key={st.teamId}
+                                  className={`text-[11px] font-semibold border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors ${
+                                    isPromoted ? 'text-rose-100' : 'text-gray-500'
+                                  }`}
+                                >
+                                  <td className="py-2 flex items-center gap-2 max-w-[130px]">
+                                    <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black font-mono shrink-0 ${rankColorClass}`}>
+                                      {i + 1}
+                                    </span>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={st.flag} alt="" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
+                                    <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
+                                  </td>
+                                  <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.played}</td>
+                                  <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
+                                  <td className={`py-2 text-right font-display font-black text-[12px] ${
+                                    isPromoted ? 'text-[#D97706] drop-shadow-[0_0_4px_rgba(217,119,6,0.15)]' : 'text-gray-500'
+                                  }`}>{st.points}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
-
-                      {/* Ticket footer row */}
-                      <div className="border-t border-white/5 mt-2.5 pt-2 flex justify-between items-center text-[9px] text-gray-500 font-mono tracking-wider uppercase">
-                        <span>{match.local_date}</span>
-                        {status === 'COMPLETED' ? (
-                          <span className="flex items-center gap-0.5 text-[#D97706] font-bold group-hover:underline">VAR VERDICT <ChevronRight className="w-3 h-3" /></span>
-                        ) : status === 'LIVE' ? (
-                          <span className="flex items-center gap-0.5 text-amber-500 font-bold animate-pulse">MONITOR FEED <ChevronRight className="w-3 h-3" /></span>
-                        ) : (
-                          <span className="flex items-center gap-0.5 text-rose-400 font-bold group-hover:text-white transition-colors">LOCK TACTICS <ChevronRight className="w-3 h-3" /></span>
-                        )}
-                      </div>
-                    </Link>
+                    </div>
                   );
-                })
-              )}
-            </div>
-          )}
+                })}
+              </div>
+            )}
 
-          {/* Group Standings */}
-          {activeTab === 'groups' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {groupsList.map(g => {
-                const standings = getGroupStandings(g);
-                if (standings.length === 0) return null;
-
-                return (
-                  <div key={g} className="glass-panel border border-white/5 bg-black/60 rounded-2xl overflow-hidden shadow-2xl relative">
-                    {/* Standings plaque header */}
-                    <div className="bg-gradient-to-r from-[#881337]/25 to-[#D97706]/10 border-b border-white/5 px-4 py-3 flex justify-between items-center">
-                      <h3 className="font-display font-black text-xs text-white uppercase tracking-widest">Group {g}</h3>
-                      <span className="text-[8px] font-black text-[#D97706] bg-[#D97706]/15 border border-[#D97706]/20 px-2 py-0.5 rounded uppercase tracking-wider font-mono">Standings</span>
-                    </div>
-
-                    <div className="p-4">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="text-[8px] font-black uppercase text-gray-500 tracking-wider border-b border-white/5">
-                            <th className="pb-2">Team</th>
-                            <th className="pb-2 text-center">PL</th>
-                            <th className="pb-2 text-center">GD</th>
-                            <th className="pb-2 text-right">PTS</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {standings.map((st, i) => {
-                            const isPromoted = i < 2;
-                            const rankColorClass = 
-                              i === 0 ? 'bg-amber-500/25 border-amber-500/50 text-[#D97706]' :
-                              i === 1 ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' :
-                              'bg-black/45 border-white/5 text-gray-500';
-
-                            return (
-                              <tr
-                                key={st.teamId}
-                                className={`text-[11px] font-semibold border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors ${
-                                  isPromoted ? 'text-rose-100' : 'text-gray-500'
-                                }`}
-                              >
-                                <td className="py-2 flex items-center gap-2 max-w-[130px]">
-                                  <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black font-mono shrink-0 ${rankColorClass}`}>
-                                    {i + 1}
-                                  </span>
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={st.flag} alt="" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
-                                  <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
-                                </td>
-                                <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.played}</td>
-                                <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
-                                <td className={`py-2 text-right font-display font-black text-[12px] ${
-                                  isPromoted ? 'text-[#D97706] drop-shadow-[0_0_4px_rgba(217,119,6,0.15)]' : 'text-gray-500'
-                                }`}>{st.points}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-        </main>
+          </main>
+        </div>
       </div>
 
     </div>

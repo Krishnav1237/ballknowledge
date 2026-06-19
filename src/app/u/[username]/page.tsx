@@ -282,10 +282,14 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8">
         
         {/* Centered Heading (Hanging HUD Panel) */}
-        <div className="pt-[70px] pb-2.5 px-8 flex flex-col items-center text-center max-w-md mx-auto rounded-b-2xl border-x border-b border-white/10 bg-gradient-to-b from-black/80 via-black/55 to-black/10 backdrop-blur-md shadow-[0_8px_25px_rgba(0,0,0,0.8)] relative z-20">
-          <h1 className="font-display font-black text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-200 to-rose-500 uppercase tracking-widest leading-none drop-shadow-[0_2px_8px_rgba(244,63,94,0.2)]">
-            {profile.username}&apos;s Album Binder
+        <div className="pt-[70px] pb-3 px-10 flex flex-col items-center text-center max-w-lg mx-auto rounded-b-3xl border-x border-b border-white/10 bg-gradient-to-b from-black/80 via-black/55 to-black/10 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.85)] relative z-20">
+          <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none"
+              style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+            {profile.username}&apos;S ALBUM <span className="text-[#D97706]">BINDER</span>
           </h1>
+          <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
+            COLLECTIBLES BINDER <span className="text-gray-600 mx-2">•</span> EARNED VERDICT CARDS
+          </p>
         </div>
 
         {/* ────────────────────────────────────────────────────────────────── */}

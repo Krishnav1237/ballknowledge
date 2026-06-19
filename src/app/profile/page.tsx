@@ -343,17 +343,13 @@ export default function ProfileSettingsPage() {
           </div>
 
           <div className="relative z-10 w-full max-w-md text-center">
-            <h1 className="font-display font-black uppercase tracking-tight text-white mb-2 leading-[1.15]"
-                style={{
-                  fontSize: 'clamp(1.8rem, 6vw, 3rem)',
-                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)'
-                }}>
-              Locker Room <br />
-              <span className="text-[#D97706]">Access Gate</span>
+            <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-wider leading-none mb-3"
+                style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+              LOCKER ROOM <span className="text-[#D97706]">ACCESS GATE</span>
             </h1>
             
-            <p className="font-sans text-gray-300 text-xs sm:text-sm max-w-sm mx-auto mb-8 font-medium leading-relaxed">
-              Verify your identity to load your season predictions cockpit, unlock matching card collectibles, and manage licensing contracts.
+            <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none max-w-sm mx-auto mb-8">
+              VERIFY IDENTITY TO ACCESS SEASON PREDICTIONS COCKPIT <span className="text-gray-600 mx-2">•</span> UNLOCK COLLECTIBLES
             </p>
 
             {/* Authenticator Buttons Card */}
@@ -448,12 +444,12 @@ export default function ProfileSettingsPage() {
           {/* Heading HUD Panel: Spacing-aligned */}
           <div className="relative z-20 text-center max-w-xl mx-auto mb-6 bg-gradient-to-b from-black/90 to-black/30 border border-white/5 rounded-2xl p-4 shadow-2xl backdrop-blur-xs">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#881337] via-[#D97706] to-[#881337] rounded-t-2xl" />
-            <h1 className="font-display font-black uppercase tracking-wider text-white mb-1 leading-none text-xl sm:text-2xl"
-                style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
-              Manager <span className="text-[#D97706]">Cockpit</span>
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none mb-1.5"
+                style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
+              MANAGER <span className="text-[#D97706]">COCKPIT</span>
             </h1>
-            <p className="font-sans text-gray-400 text-[10px] max-w-sm mx-auto font-medium leading-normal">
-              Configure your manager details and trigger the AI portrait synthesis model.
+            <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2 font-bold uppercase tracking-widest leading-none">
+              CONFIGURE DETAILS & TRIGGER AI PORTRAIT SYNTHESIS
             </p>
           </div>
 
