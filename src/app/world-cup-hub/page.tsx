@@ -59,8 +59,14 @@ export default function WorldCupHub() {
   const [scheduleFilter, setScheduleFilter] = useState<'today' | 'tomorrow' | 'upcoming' | 'completed' | 'live'>('today');
   const [profile, setProfile] = useState<any>(null);
   const [userPreds, setUserPreds] = useState<any>({});
+  const [todayFormatted, setTodayFormatted] = useState<string>('June 16, 2026');
+  const [todayLabel, setTodayLabel] = useState<string>('Today (June 16)');
 
   useEffect(() => {
+    const dateObj = new Date();
+    setTodayFormatted(dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+    setTodayLabel(`Today (${dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })})`);
+
     // Load local cache first
     setProfile(getStoredProfile());
     setUserPreds(getStoredPredictions());
@@ -269,7 +275,7 @@ export default function WorldCupHub() {
           FIFA WORLD CUP 2026 <span className="text-[#D97706]">HUB</span>
         </h1>
         <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
-          SIMULATION DATE: <span className="text-[#D97706]">JUNE 16, 2026</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
+          TODAY: <span className="text-[#D97706]">{todayFormatted.toUpperCase()}</span> <span className="text-gray-600 mx-2">•</span> LOCK PREDICTIONS & CLAIM VERDICT CARDS
         </p>
       </div>
 
@@ -329,7 +335,7 @@ export default function WorldCupHub() {
                 <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
                 <div className="flex flex-col space-y-1.5">
                   {[
-                    { id: 'today', label: 'Today (June 16)' },
+                    { id: 'today', label: todayLabel },
                     { id: 'live', label: 'Live Now' },
                     { id: 'tomorrow', label: 'Tomorrow' },
                     { id: 'upcoming', label: 'Upcoming' },

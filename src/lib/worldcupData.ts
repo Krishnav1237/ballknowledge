@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const MATCHES_URL = 'https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.matches.json';
-const TEAMS_URL = 'https://raw.githubusercontent.com/rezarahiminia/worldcup2026/main/football.teams.json';
+const MATCHES_URL = 'https://worldcup26.ir/get/games';
+const TEAMS_URL = 'https://worldcup26.ir/get/teams';
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
 
@@ -33,7 +33,8 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
     });
     
     if (res.ok) {
-      const data = await res.json();
+      const json = await res.json();
+      const data = Array.isArray(json) ? json : (json.games || []);
       matchesCache = { data, lastFetched: now };
       return data;
     }
@@ -45,7 +46,8 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
       const filePath = getFallbackPath('football.matches.json');
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf8');
-        const data = JSON.parse(raw);
+        const json = JSON.parse(raw);
+        const data = Array.isArray(json) ? json : (json.games || []);
         // Do not update timestamp so we retry remote fetch on next request
         matchesCache.data = data;
         return data;
@@ -72,7 +74,8 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
     });
 
     if (res.ok) {
-      const data = await res.json();
+      const json = await res.json();
+      const data = Array.isArray(json) ? json : (json.teams || []);
       teamsCache = { data, lastFetched: now };
       return data;
     }
@@ -84,7 +87,8 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
       const filePath = getFallbackPath('football.teams.json');
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf8');
-        const data = JSON.parse(raw);
+        const json = JSON.parse(raw);
+        const data = Array.isArray(json) ? json : (json.teams || []);
         teamsCache.data = data;
         return data;
       }
