@@ -590,10 +590,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   stats: [
                     { label: 'PRD', name: 'Prediction', val: gradingResult.card.statsJson?.predictionPerfScore ?? gradingResult.card.rating },
                     { label: 'HTK', name: 'Hot Take', val: gradingResult.card.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, gradingResult.card.rating + 2)) },
-                    { label: 'TAC', name: 'Tactical', val: Math.max(30, Math.min(99, gradingResult.card.rating - 3)) },
-                    { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - gradingResult.card.rating) },
-                    { label: 'CMY', name: 'Community', val: Math.max(30, Math.min(99, gradingResult.card.rating + 1)) },
-                    { label: 'EXP', name: 'Experience', val: Math.max(30, Math.min(99, gradingResult.card.rating - 2)) }
+                    { label: 'SEL', name: 'Team Selection', val: gradingResult.card.statsJson?.tacticalRating ?? Math.max(30, Math.min(99, gradingResult.card.rating - 3)) },
+                    { label: 'CMY', name: 'Community Banter', val: gradingResult.card.statsJson?.communityRating ?? Math.max(30, Math.min(99, gradingResult.card.rating + 1)) }
                   ],
                   cardTheme: gradingResult.card.cardTheme || 'gold',
                   countryFlag: profile?.favoriteNation ? profile.favoriteNation : '🌍',

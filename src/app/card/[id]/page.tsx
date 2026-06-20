@@ -158,10 +158,8 @@ export default function SharedCardPage({ params }: { params: Promise<{ id: strin
               stats: [
                 { label: 'PRD', name: 'Prediction', val: card.statsJson?.predictionPerfScore ?? card.rating },
                 { label: 'HTK', name: 'Hot Take', val: card.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, card.rating + 2)) },
-                { label: 'TAC', name: 'Tactical', val: Math.max(30, Math.min(99, card.rating - 3)) },
-                { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - card.rating) },
-                { label: 'CMY', name: 'Community', val: Math.max(30, Math.min(99, card.rating + 1)) },
-                { label: 'EXP', name: 'Experience', val: Math.max(30, Math.min(99, card.rating - 2)) }
+                { label: 'SEL', name: 'Team Selection', val: card.statsJson?.tacticalRating ?? Math.max(30, Math.min(99, card.rating - 3)) },
+                { label: 'CMY', name: 'Community Banter', val: card.statsJson?.communityRating ?? Math.max(30, Math.min(99, card.rating + 1)) }
               ],
               cardTheme: card.cardTheme || 'gold',
               countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',

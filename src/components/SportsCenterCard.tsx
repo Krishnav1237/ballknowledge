@@ -181,10 +181,8 @@ function get2Metrics(data: VerdictData): [{ label: string; val: number }, { labe
   ];
 }
 
-// ─── 6 Metric Derivation ─────────────────────────────────────────────────────
-function get6Metrics(data: VerdictData): [
-  { label: string; val: number },
-  { label: string; val: number },
+// ─── 4 Main Metrics Derivation ────────────────────────────────────────────────
+function get4Metrics(data: VerdictData): [
   { label: string; val: number },
   { label: string; val: number },
   { label: string; val: number },
@@ -193,27 +191,21 @@ function get6Metrics(data: VerdictData): [
   const stats = data.stats || [];
   const prdStat = stats.find(s => s.label === 'PRD' || s.name?.toLowerCase().includes('pred') || s.label?.toLowerCase() === 'prd');
   const htkStat = stats.find(s => s.label === 'HTK' || s.name?.toLowerCase().includes('take') || s.label?.toLowerCase() === 'htk');
-  const tacStat = stats.find(s => s.label === 'TAC' || s.name?.toLowerCase().includes('tact') || s.label?.toLowerCase() === 'tac');
-  const delStat = stats.find(s => s.label === 'DEL' || s.name?.toLowerCase().includes('delu') || s.label?.toLowerCase() === 'del');
+  const selStat = stats.find(s => s.label === 'SEL' || s.label === 'TAC' || s.name?.toLowerCase().includes('select') || s.name?.toLowerCase().includes('tact') || s.label?.toLowerCase() === 'sel');
   const cmyStat = stats.find(s => s.label === 'CMY' || s.name?.toLowerCase().includes('comm') || s.label?.toLowerCase() === 'cmy');
-  const expStat = stats.find(s => s.label === 'EXP' || s.name?.toLowerCase().includes('xp') || s.name?.toLowerCase().includes('exp') || s.label?.toLowerCase() === 'exp');
 
   const statsJson = (data as any).statsJson || {};
 
   const prd = prdStat?.val ?? (statsJson.predictionPerfScore ?? (stats.find(s => s.label === 'IQ')?.val ?? data.ovr));
   const htk = htkStat?.val ?? (statsJson.avgTakeOvr ?? Math.max(30, Math.min(99, data.ovr + 2)));
-  const tac = tacStat?.val ?? Math.max(30, Math.min(99, data.ovr - 3));
-  const del = delStat?.val ?? Math.max(1, 99 - data.ovr);
-  const cmy = cmyStat?.val ?? Math.max(30, Math.min(99, data.ovr + 1));
-  const exp = expStat?.val ?? Math.max(30, Math.min(99, data.ovr - 2));
+  const sel = selStat?.val ?? (statsJson.tacticalRating ?? Math.max(30, Math.min(99, data.ovr - 3)));
+  const cmy = cmyStat?.val ?? (statsJson.communityRating ?? Math.max(30, Math.min(99, data.ovr + 1)));
 
   return [
     { label: 'PRD', val: prd },
     { label: 'HTK', val: htk },
-    { label: 'TAC', val: tac },
-    { label: 'DEL', val: del },
+    { label: 'SEL', val: sel },
     { label: 'CMY', val: cmy },
-    { label: 'EXP', val: exp },
   ];
 }
 
@@ -546,7 +538,7 @@ export default function SportsCenterCard({
   const themeLabel = getThemeLabel(data.cardTheme);
   const verdictLabel = getVerdictLabel(data.verdict, data.ovr);
   const verdictColor = getVerdictColor(data.verdict, data.ovr);
-  const metrics = get6Metrics(data);
+  const metrics = get4Metrics(data);
 
   // Truncate take text for card display
   const takeDisplay = data.text.length > 70
@@ -930,9 +922,9 @@ export default function SportsCenterCard({
           </p>
         </div>
 
-        {/* Metrics Section (6 Columns) */}
+        {/* Metrics Section (4 Columns) */}
         <div 
-          className="absolute top-[350px] left-[20px] right-[20px] h-[48px] flex items-center justify-between z-30"
+          className="absolute top-[350px] left-[24px] right-[24px] h-[48px] flex items-center justify-between z-30"
           style={{
             borderTop: '1.5px solid rgba(255,255,255,0.08)',
             borderBottom: '1.5px solid rgba(255,255,255,0.08)',
@@ -941,13 +933,13 @@ export default function SportsCenterCard({
           {metrics.map((m) => (
             <div key={m.label} className="flex flex-col items-center flex-1">
               <span 
-                className="text-[8.5px] font-black tracking-wider uppercase leading-none" 
+                className="text-[9.5px] font-black tracking-widest uppercase leading-none" 
                 style={{ color: colors.textColor || '#FBBF24' }}
               >
                 {m.label}
               </span>
               <span 
-                className="text-[18px] mt-1.5 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
+                className="text-[19px] mt-1.5 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
                 style={{ 
                   fontFamily: "'Oswald', sans-serif",
                   fontWeight: 900

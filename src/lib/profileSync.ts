@@ -88,6 +88,8 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
           overallRating: data.profile.overallRating,
           predictionRating: data.profile.predictionRating,
           hotTakeRating: data.profile.hotTakeRating,
+          tacticalRating: data.profile.tacticalRating,
+          communityRating: data.profile.communityRating,
           role: data.profile.role
         };
         saveStoredProfile(synced);

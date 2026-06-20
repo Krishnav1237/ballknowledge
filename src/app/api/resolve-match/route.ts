@@ -135,6 +135,8 @@ export async function POST(request: Request) {
               overallRating: profile.overallRating || 50,
               predictionRating: profile.predictionRating || 50,
               hotTakeRating: profile.hotTakeRating || 50,
+              tacticalRating: profile.tacticalRating || 50,
+              communityRating: profile.communityRating || 50,
               role: profile.role || 'FREE',
               season: 'World Cup 2026'
             }
@@ -146,6 +148,8 @@ export async function POST(request: Request) {
               overallRating: Math.max(dbProfile.overallRating, profile.overallRating || 50),
               predictionRating: Math.max(dbProfile.predictionRating, profile.predictionRating || 50),
               hotTakeRating: Math.max(dbProfile.hotTakeRating, profile.hotTakeRating || 50),
+              tacticalRating: Math.max(dbProfile.tacticalRating, profile.tacticalRating || 50),
+              communityRating: Math.max(dbProfile.communityRating, profile.communityRating || 50),
               role: profile.role || dbProfile.role
             }
           });
@@ -294,15 +298,41 @@ export async function POST(request: Request) {
     // 3. Football IQ Overall Updates
     const oldPred = profile?.predictionRating ?? 50;
     const oldTake = profile?.hotTakeRating ?? 50;
+    const oldTactical = profile?.tacticalRating ?? 50;
+    const oldCommunity = profile?.communityRating ?? 50;
+
+    // Calculate selection delta (tactical selection MOTM/goalscorer)
+    let tacticalDelta = -2;
+    if (predMotm && predMotm.toLowerCase().trim() === result.motm.toLowerCase()) {
+      tacticalDelta += 6;
+    }
+    if (predScorer && predScorer.toLowerCase().trim() === result.firstGoalscorer.toLowerCase()) {
+      tacticalDelta += 6;
+    }
+    if (tacticalDelta === -2 && (predMotm || predScorer)) {
+      tacticalDelta = 1; // minor participation points
+    }
+
+    // Calculate community delta (banter/voting based on take OVR)
+    let communityDelta = 0;
+    if (avgTakeOvr >= 75) {
+      communityDelta = 6;
+    } else if (avgTakeOvr <= 35) {
+      communityDelta = -4;
+    } else {
+      communityDelta = 2;
+    }
 
     const newPred = Math.max(10, Math.min(99, oldPred + predictionDelta));
     const newTake = Math.max(10, Math.min(99, oldTake + hotTakeDelta));
-    const newOverall = Math.round((newPred * 0.5) + (newTake * 0.5));
+    const newTactical = Math.max(10, Math.min(99, oldTactical + tacticalDelta));
+    const newCommunity = Math.max(10, Math.min(99, oldCommunity + communityDelta));
+    const newOverall = Math.round((newPred + newTake + newTactical + newCommunity) / 4);
 
     const overallDelta = newOverall - (profile?.overallRating ?? 50);
 
     // 4. Card Rarity & Verdict Generation
-    const cardOvr = Math.round((predictionPerfScore * 0.5) + (avgTakeOvr * 0.5));
+    const cardOvr = Math.round((predictionPerfScore + avgTakeOvr + (tacticalDelta >= 0 ? 85 : 50) + (communityDelta >= 0 ? 80 : 55)) / 4);
     let rarity = 'COMMON';
     let cardTheme = 'bottler';
     let verdictText = 'DELUSION MERCHANT';
@@ -342,7 +372,9 @@ export async function POST(request: Request) {
         predictionDelta,
         hotTakeDelta,
         predictionPerfScore,
-        avgTakeOvr
+        avgTakeOvr,
+        tacticalRating: tacticalDelta >= 0 ? 85 : 50,
+        communityRating: communityDelta >= 0 ? 80 : 55
       }
     };
 
@@ -363,6 +395,8 @@ export async function POST(request: Request) {
               overallRating: newOverall,
               predictionRating: newPred,
               hotTakeRating: newTake,
+              tacticalRating: newTactical,
+              communityRating: newCommunity,
               role: profile.role || 'FREE',
               season: 'World Cup 2026'
             }
@@ -374,7 +408,9 @@ export async function POST(request: Request) {
             data: {
               overallRating: newOverall,
               predictionRating: newPred,
-              hotTakeRating: newTake
+              hotTakeRating: newTake,
+              tacticalRating: newTactical,
+              communityRating: newCommunity
             }
           });
         }
@@ -443,6 +479,8 @@ export async function POST(request: Request) {
       profileUpdates: {
         predictionRating: newPred,
         hotTakeRating: newTake,
+        tacticalRating: newTactical,
+        communityRating: newCommunity,
         overallRating: newOverall,
         predictionDelta,
         hotTakeDelta,
