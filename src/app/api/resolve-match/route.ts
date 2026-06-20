@@ -23,6 +23,32 @@ You MUST return a JSON object with this exact structure:
 Be direct, highly cynical, and funny.`;
 
 
+async function callOpenRouter(userPrompt: string) {
+  if (!process.env.OPENROUTER_API_KEY) throw new Error('No OpenRouter key');
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://ballknowledge.vercel.app',
+      'X-Title': 'BallKnowledge World Cup 2026',
+    },
+    body: JSON.stringify({
+      model: 'meta-llama/llama-3.3-70b-instruct',
+      messages: [
+        { role: 'system', content: EVALUATE_TAKE_PROMPT },
+        { role: 'user', content: userPrompt }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 256,
+    }),
+  });
+  if (!response.ok) throw new Error('OpenRouter failed');
+  const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+}
+
 async function callGroq(userPrompt: string) {
   if (!process.env.GROQ_API_KEY) throw new Error('No Groq key');
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -190,39 +216,60 @@ export async function POST(request: Request) {
       };
 
       try {
-        takeGrading = await callGroq(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
-      } catch {
-        try {
+        if (process.env.OPENROUTER_API_KEY) {
+          takeGrading = await callOpenRouter(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
+        } else if (process.env.GROQ_API_KEY) {
+          takeGrading = await callGroq(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
+        } else if (process.env.NVIDIA_API_KEY) {
           takeGrading = await callNvidia(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
-        } catch {
-          // Local fallback heuristic
-          const stmtLower = take.statement.toLowerCase().trim();
-          const isDelusion = stmtLower.includes('antony') || stmtLower.includes('kane');
-          
-          if (stmtLower.includes('messi is the greatest world cup player') || stmtLower.includes('messi is the greatest of all time')) {
-            takeGrading = {
-              ovr: 99,
-              verdict: 'CERTIFIED GOAT DISCUSSION',
-              charge: 'Visionary appraisal of the 2022 Champion.',
-              sentence: 'Awarded lifetime entry to the GOAT debate lobby.'
-            };
-          } else if (
-            stmtLower.includes("ronaldo's aura will carry portugal") || 
-            stmtLower.includes("portugal will secure a last-minute victory")
-          ) {
-            takeGrading = {
-              ovr: 92,
-              verdict: 'AURA COOKING DETECTED',
-              charge: "Overwhelming reliance on the Portuguese captain's charisma.",
-              sentence: 'Sentenced to display SIUUU celebration in public squares.'
-            };
+        } else {
+          throw new Error('No API key provided');
+        }
+      } catch {
+        // Fallback chain
+        try {
+          if (process.env.GROQ_API_KEY) {
+            takeGrading = await callGroq(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
           } else {
-            takeGrading = {
-              ovr: isDelusion ? 20 : (take.statement.length > 40 ? 78 : 55),
-              verdict: isDelusion ? 'GUILTY OF SUPREME DELUSION' : 'MID TAKE GRADED',
-              charge: 'Generated local heuristic ranking.',
-              sentence: 'Banned from commenting for 24 hours.'
-            };
+            throw new Error('Groq not available');
+          }
+        } catch {
+          try {
+            if (process.env.NVIDIA_API_KEY) {
+              takeGrading = await callNvidia(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
+            } else {
+              throw new Error('Nvidia not available');
+            }
+          } catch {
+            // Local fallback heuristic
+            const stmtLower = take.statement.toLowerCase().trim();
+            const isDelusion = stmtLower.includes('antony') || stmtLower.includes('kane');
+            
+            if (stmtLower.includes('messi is the greatest world cup player') || stmtLower.includes('messi is the greatest of all time')) {
+              takeGrading = {
+                ovr: 99,
+                verdict: 'CERTIFIED GOAT DISCUSSION',
+                charge: 'Visionary appraisal of the 2022 Champion.',
+                sentence: 'Awarded lifetime entry to the GOAT debate lobby.'
+              };
+            } else if (
+              stmtLower.includes("ronaldo's aura will carry portugal") || 
+              stmtLower.includes("portugal will secure a last-minute victory")
+            ) {
+              takeGrading = {
+                ovr: 92,
+                verdict: 'AURA COOKING DETECTED',
+                charge: "Overwhelming reliance on the Portuguese captain's charisma.",
+                sentence: 'Sentenced to display SIUUU celebration in public squares.'
+              };
+            } else {
+              takeGrading = {
+                ovr: isDelusion ? 20 : (take.statement.length > 40 ? 78 : 55),
+                verdict: isDelusion ? 'GUILTY OF SUPREME DELUSION' : 'MID TAKE GRADED',
+                charge: 'Generated local heuristic ranking.',
+                sentence: 'Banned from commenting for 24 hours.'
+              };
+            }
           }
         }
       }
