@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useId } from 'react';
+import { useId } from 'react';
 import { VerdictData } from '@/lib/tribunalDB';
 
 

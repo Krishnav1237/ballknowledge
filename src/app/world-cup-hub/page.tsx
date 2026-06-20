@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
-import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import { parseLocalDate, getDeterministicMatchResult, isSameUTCDate } from '@/lib/matchUtils';
 import FlagImage from '@/components/FlagImage';
 import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
 import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
@@ -233,10 +233,10 @@ export default function WorldCupHub() {
     } else if (scheduleFilter === 'live') {
       return status === 'LIVE';
     } else if (scheduleFilter === 'today') {
-      return kickoff.toDateString() === new Date().toDateString() && status !== 'COMPLETED';
+      return isSameUTCDate(kickoff, new Date()) && status !== 'COMPLETED';
     } else {
       // Upcoming
-      return kickoff.getTime() > new Date().getTime() && kickoff.toDateString() !== new Date().toDateString();
+      return kickoff.getTime() > new Date().getTime() && !isSameUTCDate(kickoff, new Date());
     }
   }).sort((a, b) => parseLocalDate(a.local_date).getTime() - parseLocalDate(b.local_date).getTime());
 

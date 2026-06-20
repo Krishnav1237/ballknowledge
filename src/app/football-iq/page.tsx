@@ -6,7 +6,7 @@ import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Trophy, Award, Sparkles, Share2, Eye, ShieldAlert, Lock, Calendar, CheckCircle, ChevronRight, Bookmark } from 'lucide-react';
-import { getFlagEmoji } from '@/lib/matchUtils';
+import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
 import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
@@ -32,14 +32,7 @@ interface Match {
   type: string;
 }
 
-const SYSTEM_DATE = new Date('2026-06-16T19:20:00');
-
-function parseLocalDate(localDateStr: string): Date {
-  const [datePart, timePart] = localDateStr.split(' ');
-  const [month, day, year] = datePart.split('/').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
-  return new Date(year, month - 1, day, hours, minutes);
-}
+const SYSTEM_DATE = new Date('2026-06-16T19:20:00Z');
 
 export default function FootballIQPage() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);

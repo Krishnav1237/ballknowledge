@@ -6,13 +6,23 @@
 
 /**
  * Parses a date string in the format "MM/DD/YYYY HH:MM" (local time, no timezone)
- * into a JavaScript Date object in the browser/server's local timezone.
+ * into a JavaScript Date object in UTC to ensure identical timestamps on server & client.
  */
 export function parseLocalDate(localDateStr: string): Date {
   const [datePart, timePart] = localDateStr.split(' ');
   const [month, day, year] = datePart.split('/').map(Number);
   const [hours, minutes] = timePart.split(':').map(Number);
-  return new Date(year, month - 1, day, hours, minutes);
+  return new Date(Date.UTC(year, month - 1, day, hours, minutes));
+}
+
+/**
+ * Helper to check if two dates fall on the same UTC calendar day.
+ * Eliminates client/server timezone hydration mismatches.
+ */
+export function isSameUTCDate(d1: Date, d2: Date): boolean {
+  return d1.getUTCFullYear() === d2.getUTCFullYear() &&
+         d1.getUTCMonth() === d2.getUTCMonth() &&
+         d1.getUTCDate() === d2.getUTCDate();
 }
 
 /**
