@@ -196,13 +196,34 @@ export async function POST(request: Request) {
           takeGrading = await callNvidia(`Grading statement: "${take.statement}" with confidence ${take.confidence}%`);
         } catch {
           // Local fallback heuristic
-          const isDelusion = take.statement.toLowerCase().includes('antony') || take.statement.toLowerCase().includes('kane');
-          takeGrading = {
-            ovr: isDelusion ? 20 : (take.statement.length > 40 ? 78 : 55),
-            verdict: isDelusion ? 'GUILTY OF SUPREME DELUSION' : 'MID TAKE GRADED',
-            charge: 'Generated local heuristic ranking.',
-            sentence: 'Banned from commenting for 24 hours.'
-          };
+          const stmtLower = take.statement.toLowerCase().trim();
+          const isDelusion = stmtLower.includes('antony') || stmtLower.includes('kane');
+          
+          if (stmtLower.includes('messi is the greatest world cup player') || stmtLower.includes('messi is the greatest of all time')) {
+            takeGrading = {
+              ovr: 99,
+              verdict: 'CERTIFIED GOAT DISCUSSION',
+              charge: 'Visionary appraisal of the 2022 Champion.',
+              sentence: 'Awarded lifetime entry to the GOAT debate lobby.'
+            };
+          } else if (
+            stmtLower.includes("ronaldo's aura will carry portugal") || 
+            stmtLower.includes("portugal will secure a last-minute victory")
+          ) {
+            takeGrading = {
+              ovr: 92,
+              verdict: 'AURA COOKING DETECTED',
+              charge: "Overwhelming reliance on the Portuguese captain's charisma.",
+              sentence: 'Sentenced to display SIUUU celebration in public squares.'
+            };
+          } else {
+            takeGrading = {
+              ovr: isDelusion ? 20 : (take.statement.length > 40 ? 78 : 55),
+              verdict: isDelusion ? 'GUILTY OF SUPREME DELUSION' : 'MID TAKE GRADED',
+              charge: 'Generated local heuristic ranking.',
+              sentence: 'Banned from commenting for 24 hours.'
+            };
+          }
         }
       }
 
