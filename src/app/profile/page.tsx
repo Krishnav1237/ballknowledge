@@ -316,7 +316,9 @@ export default function ProfileSettingsPage() {
     avatarStyle: displayAvatarStyle,
     avatarSeed: avatarSeed,
     stats: [
-      { label: 'IQ', name: 'Ball IQ', val: profile.overallRating },
+      { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
+      { label: 'HTK', name: 'Hot Take', val: profile.hotTakeRating },
+      { label: 'TAC', name: 'Tactical', val: profile.tacticalRating },
       { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - profile.overallRating) }
     ]
   };

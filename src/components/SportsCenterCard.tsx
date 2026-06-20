@@ -181,6 +181,34 @@ function get2Metrics(data: VerdictData): [{ label: string; val: number }, { labe
   ];
 }
 
+// ─── 4 Metric Derivation ─────────────────────────────────────────────────────
+function get4Metrics(data: VerdictData): [
+  { label: string; val: number },
+  { label: string; val: number },
+  { label: string; val: number },
+  { label: string; val: number }
+] {
+  const stats = data.stats || [];
+  const prdStat = stats.find(s => s.label === 'PRD' || s.name?.toLowerCase().includes('pred') || s.label?.toLowerCase() === 'prd');
+  const htkStat = stats.find(s => s.label === 'HTK' || s.name?.toLowerCase().includes('take') || s.label?.toLowerCase() === 'htk');
+  const tacStat = stats.find(s => s.label === 'TAC' || s.name?.toLowerCase().includes('tact') || s.label?.toLowerCase() === 'tac');
+  const delStat = stats.find(s => s.label === 'DEL' || s.name?.toLowerCase().includes('delu') || s.label?.toLowerCase() === 'del');
+
+  const statsJson = (data as any).statsJson || {};
+
+  const prd = prdStat?.val ?? (statsJson.predictionPerfScore ?? (stats.find(s => s.label === 'IQ')?.val ?? data.ovr));
+  const htk = htkStat?.val ?? (statsJson.avgTakeOvr ?? Math.max(30, Math.min(99, data.ovr + 2)));
+  const tac = tacStat?.val ?? Math.max(30, Math.min(99, data.ovr - 3));
+  const del = delStat?.val ?? Math.max(1, 99 - data.ovr);
+
+  return [
+    { label: 'PRD', val: prd },
+    { label: 'HTK', val: htk },
+    { label: 'TAC', val: tac },
+    { label: 'DEL', val: del },
+  ];
+}
+
 // ─── Jersey Details & Custom Avatar Rendering ──────────────────────────────────
 function getJerseyDetails(flag: string) {
   const normalized = flag.trim();
@@ -510,7 +538,7 @@ export default function SportsCenterCard({
   const themeLabel = getThemeLabel(data.cardTheme);
   const verdictLabel = getVerdictLabel(data.verdict, data.ovr);
   const verdictColor = getVerdictColor(data.verdict, data.ovr);
-  const [metric1, metric2] = get2Metrics(data);
+  const metrics = get4Metrics(data);
 
   // Truncate take text for card display
   const takeDisplay = data.text.length > 70
@@ -853,52 +881,34 @@ export default function SportsCenterCard({
           </p>
         </div>
 
-        {/* Metrics Section (BALL IQ and DELUSION Side-by-Side) */}
+        {/* Metrics Section (4 Columns) */}
         <div 
-          className="absolute top-[384px] left-[32px] right-[32px] h-[38px] flex justify-between items-center px-6 rounded-xl z-30"
+          className="absolute top-[384px] left-[24px] right-[24px] h-[38px] flex items-center px-1 rounded-xl z-30"
           style={{
-            background: 'linear-gradient(90deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.01) 100%)',
+            background: 'gradient-to-r from-transparent via-white/5 to-transparent',
             borderTop: '1px solid rgba(255,255,255,0.06)',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}
         >
-          <div className="flex flex-col items-center flex-1">
-            <span 
-              className="text-[7.5px] font-black tracking-widest uppercase leading-none" 
-              style={{ color: colors.textColor }}
-            >
-              BALL IQ
-            </span>
-            <span 
-              className="text-[17px] mt-0.5 leading-none"
-              style={{
-                fontFamily: "'Oswald', sans-serif",
-                fontWeight: '700',
-                color: '#FFFFFF'
-              }}
-            >
-              {metric1.val}
-            </span>
-          </div>
-          <div className="w-[1px] h-5 bg-white/10" />
-          <div className="flex flex-col items-center flex-1">
-            <span 
-              className="text-[7.5px] font-black tracking-widest uppercase leading-none" 
-              style={{ color: colors.textColor }}
-            >
-              DELUSION
-            </span>
-            <span 
-              className="text-[17px] mt-0.5 leading-none"
-              style={{
-                fontFamily: "'Oswald', sans-serif",
-                fontWeight: '700',
-                color: '#FFFFFF'
-              }}
-            >
-              {metric2.val}
-            </span>
-          </div>
+          {metrics.map((m, idx) => (
+            <div key={m.label} className="flex flex-1 items-center justify-between relative">
+              <div className="flex flex-col items-center flex-grow">
+                <span 
+                  className="text-[7.5px] font-black tracking-wider uppercase leading-none" 
+                  style={{ color: colors.textColor }}
+                >
+                  {m.label}
+                </span>
+                <span 
+                  className="text-[15px] mt-0.5 leading-none font-bold text-white"
+                  style={{ fontFamily: "'Oswald', sans-serif" }}
+                >
+                  {m.val}
+                </span>
+              </div>
+              {idx < 3 && <div className="w-[1px] h-4 bg-white/10 shrink-0" />}
+            </div>
+          ))}
         </div>
 
         {/* Footer Section (Charge + Sentence) */}
