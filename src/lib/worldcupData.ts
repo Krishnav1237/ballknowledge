@@ -25,7 +25,7 @@ function getFallbackPath(filename: string): string {
 }
 
 // Helper fetch with timeout to prevent slow remote fetches from blocking page renders
-async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 15000): Promise<Response> {
+async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 2000): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -67,6 +67,7 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
     // 1. In-memory cache fallback (even if expired)
     if (matchesCache.data) {
       console.warn('Returning expired in-memory matches cache.');
+      matchesCache.lastFetched = now; // Prevent retrying remote fetch on every request
       return matchesCache.data;
     }
 
@@ -78,8 +79,8 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
         const raw = fs.readFileSync(filePath, 'utf8');
         const json = JSON.parse(raw);
         const data = Array.isArray(json) ? json : (json.games || []);
-        // Save in cache (without updating lastFetched so we keep attempting remote fetch next time)
-        matchesCache.data = data;
+        // Save in cache and update lastFetched to prevent spamming remote fetches on fallback
+        matchesCache = { data, lastFetched: now };
         return data;
       }
     } catch (fsErr) {
@@ -116,6 +117,7 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
     // 1. In-memory cache fallback (even if expired)
     if (teamsCache.data) {
       console.warn('Returning expired in-memory teams cache.');
+      teamsCache.lastFetched = now; // Prevent retrying remote fetch on every request
       return teamsCache.data;
     }
 
@@ -127,8 +129,8 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
         const raw = fs.readFileSync(filePath, 'utf8');
         const json = JSON.parse(raw);
         const data = Array.isArray(json) ? json : (json.teams || []);
-        // Save in cache
-        teamsCache.data = data;
+        // Save in cache and update lastFetched
+        teamsCache = { data, lastFetched: now };
         return data;
       }
     } catch (fsErr) {

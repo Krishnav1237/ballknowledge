@@ -29,6 +29,10 @@ model FootballIQProfile {
   predictions      MatchPrediction[]
   matchCards       MatchCard[]
   chatMessages     ChatMessage[]
+
+  @@index([overallRating(sort: Desc)])
+  @@index([predictionRating(sort: Desc)])
+  @@index([hotTakeRating(sort: Desc)])
 }
 
 model MatchPrediction {
