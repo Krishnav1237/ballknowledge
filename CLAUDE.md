@@ -89,7 +89,7 @@ POST /api/resolve-match
 | File | What it does |
 |------|-------------|
 | `src/lib/matchUtils.ts` | ✅ Shared utilities (parseLocalDate, getDeterministicMatchResult, getFlagEmoji) |
-| `src/lib/worldcupData.ts` | Server-side match/team fetcher with 5-min in-memory cache + fs fallback |
+| `src/lib/worldcupData.ts` | Server-side match/team fetcher with 5-min in-memory cache |
 | `src/lib/profileSync.ts` | Client-side localStorage ↔ DB sync helpers |
 | `src/lib/db.ts` | Prisma singleton — use this, never `new PrismaClient()` |
 | `src/lib/roster.ts` | 32-team player roster for Best XI squad builder |
