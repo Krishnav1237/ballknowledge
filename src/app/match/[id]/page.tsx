@@ -588,8 +588,12 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   sentence: gradingResult.card.sentence,
                   ach: { title: 'Reputation', desc: 'Graded', badge: '🔥' },
                   stats: [
-                    { label: 'IQ', name: 'Ball IQ', val: gradingResult.card.rating },
-                    { label: 'DEL', name: 'Delusion', val: 100 - gradingResult.card.rating }
+                    { label: 'PRD', name: 'Prediction', val: gradingResult.card.statsJson?.predictionPerfScore ?? gradingResult.card.rating },
+                    { label: 'HTK', name: 'Hot Take', val: gradingResult.card.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, gradingResult.card.rating + 2)) },
+                    { label: 'TAC', name: 'Tactical', val: Math.max(30, Math.min(99, gradingResult.card.rating - 3)) },
+                    { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - gradingResult.card.rating) },
+                    { label: 'CMY', name: 'Community', val: Math.max(30, Math.min(99, gradingResult.card.rating + 1)) },
+                    { label: 'EXP', name: 'Experience', val: Math.max(30, Math.min(99, gradingResult.card.rating - 2)) }
                   ],
                   cardTheme: gradingResult.card.cardTheme || 'gold',
                   countryFlag: profile?.favoriteNation ? profile.favoriteNation : '🌍',

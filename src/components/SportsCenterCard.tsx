@@ -181,8 +181,10 @@ function get2Metrics(data: VerdictData): [{ label: string; val: number }, { labe
   ];
 }
 
-// ─── 4 Metric Derivation ─────────────────────────────────────────────────────
-function get4Metrics(data: VerdictData): [
+// ─── 6 Metric Derivation ─────────────────────────────────────────────────────
+function get6Metrics(data: VerdictData): [
+  { label: string; val: number },
+  { label: string; val: number },
   { label: string; val: number },
   { label: string; val: number },
   { label: string; val: number },
@@ -193,6 +195,8 @@ function get4Metrics(data: VerdictData): [
   const htkStat = stats.find(s => s.label === 'HTK' || s.name?.toLowerCase().includes('take') || s.label?.toLowerCase() === 'htk');
   const tacStat = stats.find(s => s.label === 'TAC' || s.name?.toLowerCase().includes('tact') || s.label?.toLowerCase() === 'tac');
   const delStat = stats.find(s => s.label === 'DEL' || s.name?.toLowerCase().includes('delu') || s.label?.toLowerCase() === 'del');
+  const cmyStat = stats.find(s => s.label === 'CMY' || s.name?.toLowerCase().includes('comm') || s.label?.toLowerCase() === 'cmy');
+  const expStat = stats.find(s => s.label === 'EXP' || s.name?.toLowerCase().includes('xp') || s.name?.toLowerCase().includes('exp') || s.label?.toLowerCase() === 'exp');
 
   const statsJson = (data as any).statsJson || {};
 
@@ -200,12 +204,16 @@ function get4Metrics(data: VerdictData): [
   const htk = htkStat?.val ?? (statsJson.avgTakeOvr ?? Math.max(30, Math.min(99, data.ovr + 2)));
   const tac = tacStat?.val ?? Math.max(30, Math.min(99, data.ovr - 3));
   const del = delStat?.val ?? Math.max(1, 99 - data.ovr);
+  const cmy = cmyStat?.val ?? Math.max(30, Math.min(99, data.ovr + 1));
+  const exp = expStat?.val ?? Math.max(30, Math.min(99, data.ovr - 2));
 
   return [
     { label: 'PRD', val: prd },
     { label: 'HTK', val: htk },
     { label: 'TAC', val: tac },
     { label: 'DEL', val: del },
+    { label: 'CMY', val: cmy },
+    { label: 'EXP', val: exp },
   ];
 }
 
@@ -538,7 +546,7 @@ export default function SportsCenterCard({
   const themeLabel = getThemeLabel(data.cardTheme);
   const verdictLabel = getVerdictLabel(data.verdict, data.ovr);
   const verdictColor = getVerdictColor(data.verdict, data.ovr);
-  const metrics = get4Metrics(data);
+  const metrics = get6Metrics(data);
 
   // Truncate take text for card display
   const takeDisplay = data.text.length > 70
@@ -769,7 +777,7 @@ export default function SportsCenterCard({
       {/* Layer 2: Card Content Overlay - Absolute Positioned */}
       <div className="absolute inset-0 w-full h-full text-white pointer-events-none">
         
-        {/* OVR, Position & VAR Shield */}
+        {/* OVR, Position, Golden Boot & FUT Badge */}
         <div className="absolute top-[25px] left-[22px] w-[55px] flex flex-col items-center pointer-events-none">
           <span 
             className="text-[52px] tracking-tighter leading-none text-white drop-shadow-[0_2.5px_5px_rgba(0,0,0,0.95)]"
@@ -790,33 +798,73 @@ export default function SportsCenterCard({
             {data.playerPosition || 'TKT'}
           </span>
           
-          {/* VAR Badge Shield Graphic */}
-          <svg className="w-[30px] h-[22px] mt-1.5 drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.8)]" viewBox="0 0 24 24" fill="none">
-            <path d="M 12 2 L 2 5 L 2 12 C 2 17 6 21 12 23 C 18 21 22 17 22 12 L 22 5 L 12 2 Z" fill="rgba(0,0,0,0.5)" stroke={colors.accentColor} strokeWidth="1.8" />
-            <text x="12" y="14.5" fill="#FFF" fontSize="7" fontWeight="950" textAnchor="middle" fontFamily="'Space Grotesk', sans-serif">VAR</text>
-          </svg>
-        </div>
-
-        {/* Flag & Theme badge */}
-        <div className="absolute top-[28px] right-[24px] w-[55px] flex flex-col items-center pointer-events-none">
-          <span className="text-[34px] leading-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] select-none">
-            {data.countryFlag || '🌍'}
-          </span>
-          <span 
-            className="text-[7.5px] font-mono font-black tracking-widest px-1.5 py-0.5 rounded border bg-black/65 border-white/10 uppercase leading-none mt-2"
-            style={{ 
-              color: colors.textColor,
-              textShadow: '0 0.5px 1px rgba(0,0,0,0.95)',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.5)'
-            }}
+          {/* Custom SVG Golden Boot Icon */}
+          <svg 
+            className="w-9 h-4 mt-1.5 drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]" 
+            viewBox="0 0 24 12" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
           >
-            {themeLabel}
-          </span>
+            <path 
+              d="M22 6C22 6 20.5 3 17 2.5C14.5 2.1 11.5 4.5 10 5.5L4.5 7C2.5 7.5 1.5 8.5 1 9.5C0.5 10.5 1 11 2 11H20.5C21.5 11 22 9.5 22 9.5L22 6Z" 
+              fill="#FBBF24" 
+            />
+            <path 
+              d="M4 11V12.5M8 11V12.5M12 11V12.5M16 11V12.5M20 11V12.5" 
+              stroke="#FBBF24" 
+              strokeWidth="1.2" 
+              strokeLinecap="round" 
+            />
+          </svg>
+
+          {/* FUT/Theme Crest Badge */}
+          <div className="flex flex-col items-center mt-2">
+            <svg 
+              className="w-[28px] h-[28px] drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.8)]" 
+              viewBox="0 0 32 32" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                d="M16 2 L28 6 L28 16 C28 23.5 22.8 28.5 16 30 C9.2 28.5 4 23.5 4 16 L4 6 Z" 
+                stroke="#FBBF24" 
+                strokeWidth="1.8" 
+                fill="rgba(0,0,0,0.4)" 
+              />
+              <path 
+                d="M16 6 L24 9 L24 16 C24 21 20.5 25 16 26.5 C11.5 25 8 21 8 16 L8 9 Z" 
+                fill="#FBBF24" 
+                opacity="0.15" 
+              />
+              <text 
+                x="16" 
+                y="14.5" 
+                fill="#FBBF24" 
+                fontSize="7" 
+                fontWeight="900" 
+                textAnchor="middle" 
+                fontFamily="'Oswald', sans-serif"
+              >
+                FUT
+              </text>
+              <text 
+                x="16" 
+                y="21.5" 
+                fill="#FFF" 
+                fontSize="6" 
+                fontWeight="900" 
+                textAnchor="middle" 
+                fontFamily="'Oswald', sans-serif"
+              >
+                {themeLabel}
+              </text>
+            </svg>
+          </div>
         </div>
 
         {/* Player Image (Cutout, Center-aligned) */}
         <div 
-          className="absolute top-[62px] left-[15%] w-[70%] h-[216px] flex items-end justify-center z-20 pointer-events-none"
+          className="absolute top-[52px] left-[15%] w-[70%] h-[192px] flex items-end justify-center z-20 pointer-events-none"
         >
           {hasCustomPhoto ? (
             <JerseyAvatar avatarUrl={data.avatarSeed!} flag={data.countryFlag || '🌍'} avatarStyle={data.avatarStyle} />
@@ -825,19 +873,20 @@ export default function SportsCenterCard({
             <img
               src={`https://api.dicebear.com/7.x/${(data.avatarStyle && !data.avatarStyle.startsWith('ai-')) ? data.avatarStyle : 'fun-emoji'}/svg?seed=${encodeURIComponent(data.avatarSeed || data.playerName || 'TAKE MAKER')}`}
               alt="Avatar"
-              className="w-36 h-36 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]"
+              className="w-32 h-32 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]"
               loading="lazy"
             />
           )}
         </div>
 
         {/* Player Name */}
-        <div className="absolute top-[275px] left-0 right-0 text-center z-30 pointer-events-none">
+        <div className="absolute top-[318px] left-0 right-0 text-center z-30 pointer-events-none">
           <h2 
-            className="font-bold text-[24px] text-white tracking-widest uppercase leading-none"
+            className="font-bold text-[24px] tracking-widest uppercase leading-none"
             style={{
               fontFamily: "'Oswald', sans-serif",
               fontWeight: '900',
+              color: '#FFE082', // Gold/champagne color
               textShadow: '0 2.5px 5px rgba(0,0,0,0.95), 0 5px 12px rgba(0,0,0,0.95)'
             }}
           >
@@ -846,7 +895,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* Verdict Stamp (Ink style, tilted, overlaps center) */}
-        <div className="absolute top-[145px] right-[16px] rotate-[-10deg] z-40 pointer-events-none select-none">
+        <div className="absolute top-[140px] right-[16px] rotate-[-10deg] z-40 pointer-events-none select-none">
           <div 
             className="px-3.5 py-1.5 border-4 border-double text-[14px] font-bold tracking-widest uppercase rounded shadow-2xl"
             style={{
@@ -864,13 +913,13 @@ export default function SportsCenterCard({
 
         {/* Hot Take Quote Plaque */}
         <div 
-          className="absolute top-[305px] left-[24px] right-[24px] h-[72px] bg-black/60 border border-white/5 rounded-2xl flex items-center justify-center text-center px-4 py-2 z-30 shadow-inner"
+          className="absolute top-[246px] left-[24px] right-[24px] h-[62px] bg-black/60 border border-white/5 rounded-2xl flex items-center justify-center text-center px-4 py-2 z-30 shadow-inner"
           style={{
             boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.65), 0 4px 10px rgba(0,0,0,0.35)',
           }}
         >
           <p 
-            className="italic text-[11.5px] leading-relaxed line-clamp-3 font-semibold text-zinc-150"
+            className="italic text-[11px] leading-relaxed line-clamp-2 font-semibold text-zinc-150"
             style={{ 
               color: '#FFFFFF',
               fontFamily: "'Outfit', sans-serif",
@@ -881,38 +930,44 @@ export default function SportsCenterCard({
           </p>
         </div>
 
-        {/* Metrics Section (4 Columns) */}
+        {/* Metrics Section (6 Columns) */}
         <div 
-          className="absolute top-[384px] left-[24px] right-[24px] h-[38px] flex items-center px-1 rounded-xl z-30"
+          className="absolute top-[350px] left-[20px] right-[20px] h-[48px] flex items-center justify-between z-30"
           style={{
-            background: 'gradient-to-r from-transparent via-white/5 to-transparent',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderTop: '1.5px solid rgba(255,255,255,0.08)',
+            borderBottom: '1.5px solid rgba(255,255,255,0.08)',
           }}
         >
-          {metrics.map((m, idx) => (
-            <div key={m.label} className="flex flex-1 items-center justify-between relative">
-              <div className="flex flex-col items-center flex-grow">
-                <span 
-                  className="text-[7.5px] font-black tracking-wider uppercase leading-none" 
-                  style={{ color: colors.textColor }}
-                >
-                  {m.label}
-                </span>
-                <span 
-                  className="text-[15px] mt-0.5 leading-none font-bold text-white"
-                  style={{ fontFamily: "'Oswald', sans-serif" }}
-                >
-                  {m.val}
-                </span>
-              </div>
-              {idx < 3 && <div className="w-[1px] h-4 bg-white/10 shrink-0" />}
+          {metrics.map((m) => (
+            <div key={m.label} className="flex flex-col items-center flex-1">
+              <span 
+                className="text-[8.5px] font-black tracking-wider uppercase leading-none" 
+                style={{ color: colors.textColor || '#FBBF24' }}
+              >
+                {m.label}
+              </span>
+              <span 
+                className="text-[18px] mt-1.5 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
+                style={{ 
+                  fontFamily: "'Oswald', sans-serif",
+                  fontWeight: 900
+                }}
+              >
+                {m.val}
+              </span>
             </div>
           ))}
         </div>
 
+        {/* Country Flag at Bottom Center */}
+        <div className="absolute top-[408px] left-0 right-0 flex justify-center items-center z-30 pointer-events-none">
+          <span className="text-[26px] leading-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] select-none">
+            {data.countryFlag || '🌍'}
+          </span>
+        </div>
+
         {/* Footer Section (Charge + Sentence) */}
-        <div className="absolute top-[428px] left-[50px] right-[50px] flex flex-col justify-center items-center gap-0.5 text-center z-30">
+        <div className="absolute top-[436px] left-[50px] right-[50px] flex flex-col justify-center items-center gap-0.5 text-center z-30">
           <p className="margin-0 text-[8.5px] font-bold text-zinc-300 leading-snug line-clamp-1">
             <span className="uppercase mr-1" style={{ color: colors.textColor }}>CHARGE:</span> {chargeDisplay}
           </p>

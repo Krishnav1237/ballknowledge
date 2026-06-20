@@ -610,8 +610,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             sentence: selectedCard.sentence,
                             ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
                             stats: [
-                              { label: 'IQ', name: 'Ball IQ', val: selectedCard.rating },
-                              { label: 'DEL', name: 'Delusion', val: 100 - selectedCard.rating }
+                              { label: 'PRD', name: 'Prediction', val: selectedCard.statsJson?.predictionPerfScore ?? selectedCard.rating },
+                              { label: 'HTK', name: 'Hot Take', val: selectedCard.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
+                              { label: 'TAC', name: 'Tactical', val: Math.max(30, Math.min(99, selectedCard.rating - 3)) },
+                              { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - selectedCard.rating) },
+                              { label: 'CMY', name: 'Community', val: Math.max(30, Math.min(99, selectedCard.rating + 1)) },
+                              { label: 'EXP', name: 'Experience', val: Math.max(30, Math.min(99, selectedCard.rating - 2)) }
                             ],
                             cardTheme: selectedCard.cardTheme || 'gold',
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
@@ -635,8 +639,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             sentence: `Total Matches Predicted: ${cards.length} Resolved`,
                             ach: { title: 'Reputation', desc: 'Active Profile', badge },
                             stats: [
-                              { label: 'IQ', name: 'Ball IQ', val: profile.overallRating },
-                              { label: 'DEL', name: 'Delusion', val: 100 - profile.overallRating }
+                              { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
+                              { label: 'HTK', name: 'Hot Take', val: profile.hotTakeRating },
+                              { label: 'TAC', name: 'Tactical', val: profile.tacticalRating },
+                              { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - profile.overallRating) },
+                              { label: 'CMY', name: 'Community', val: Math.max(30, Math.min(99, profile.overallRating + 1)) },
+                              { label: 'EXP', name: 'Experience', val: Math.max(30, Math.min(99, profile.overallRating - 2)) }
                             ],
                             cardTheme: profile.overallRating >= 85 ? 'toty' : (profile.overallRating >= 70 ? 'gold' : (profile.overallRating >= 45 ? 'var' : 'bottler')),
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',

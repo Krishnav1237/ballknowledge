@@ -319,7 +319,9 @@ export default function ProfileSettingsPage() {
       { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
       { label: 'HTK', name: 'Hot Take', val: profile.hotTakeRating },
       { label: 'TAC', name: 'Tactical', val: profile.tacticalRating },
-      { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - profile.overallRating) }
+      { label: 'DEL', name: 'Delusion', val: Math.max(1, 99 - profile.overallRating) },
+      { label: 'CMY', name: 'Community', val: Math.max(30, Math.min(99, profile.overallRating + 1)) },
+      { label: 'EXP', name: 'Experience', val: Math.max(30, Math.min(99, profile.overallRating - 2)) }
     ]
   };
 
