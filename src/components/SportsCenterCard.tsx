@@ -319,59 +319,7 @@ function JerseyAvatar({
           <stop offset="100%" stopColor="#000" stopOpacity="0.85" />
         </radialGradient>
 
-        {/* Futuristic Hologram Filter (Cyan matrix + scanline grid) */}
-        <filter id={`hologram-filter-${suffix}`}>
-          <feColorMatrix type="matrix" values="
-            0.1 0 0 0 0
-            0 0.85 0 0 0.15
-            0 0.8 0.9 0 0.35
-            0 0 0 1 0
-          "/>
-        </filter>
 
-        {/* Cyberpunk Gold Filter (Golden amber duotone matrix) */}
-        <filter id={`cyber-gold-filter-${suffix}`}>
-          <feColorMatrix type="matrix" values="
-            0.9 0 0 0 0.2
-            0.6 0 0 0 0.1
-            0.1 0 0 0 0
-            0 0 0 1 0
-          "/>
-        </filter>
-
-        {/* VAR Tribunal Sketch (High contrast b&w sketch styling) */}
-        <filter id={`oil-paint-filter-${suffix}`}>
-          <feColorMatrix type="matrix" values="
-            0.33 0.33 0.33 0 0
-            0.33 0.33 0.33 0 0
-            0.33 0.33 0.33 0 0
-            0 0 0 1 0
-          "/>
-          <feComponentTransfer>
-            <feFuncR type="linear" slope="1.4" intercept="-0.15"/>
-            <feFuncG type="linear" slope="1.4" intercept="-0.15"/>
-            <feFuncB type="linear" slope="1.4" intercept="-0.15"/>
-          </feComponentTransfer>
-        </filter>
-
-        {/* 3D Render Filter (High saturation and contrast boost) */}
-        <filter id={`render-filter-${suffix}`}>
-          <feComponentTransfer>
-            <feFuncR type="linear" slope="1.15" />
-            <feFuncG type="linear" slope="1.15" />
-            <feFuncB type="linear" slope="1.15" />
-          </feComponentTransfer>
-        </filter>
-
-        {/* Hologram scanline pattern */}
-        <pattern id={`scanlines-${suffix}`} width="4" height="2" patternUnits="userSpaceOnUse">
-          <rect width="4" height="1" fill="#00FFFF" opacity="0.35" />
-        </pattern>
-
-        {/* Cyberpunk grid pattern */}
-        <pattern id={`cyber-grid-${suffix}`} width="6" height="6" patternUnits="userSpaceOnUse">
-          <rect width="6" height="6" fill="none" stroke="#D97706" strokeWidth="0.5" opacity="0.35" />
-        </pattern>
       </defs>
       
       {/* ─── JERSEY LAYER ─── */}
@@ -483,42 +431,7 @@ function JerseyAvatar({
         height="38" 
         clipPath={`url(#${clipId})`} 
         preserveAspectRatio="xMidYMid slice" 
-        filter={
-          suffix && avatarStyle === 'ai-hologram' ? `url(#hologram-filter-${suffix})` :
-          suffix && avatarStyle === 'ai-cyber-gold' ? `url(#cyber-gold-filter-${suffix})` :
-          suffix && avatarStyle === 'ai-oil-paint' ? `url(#oil-paint-filter-${suffix})` :
-          suffix && avatarStyle === 'ai-3d-render' ? `url(#render-filter-${suffix})` :
-          undefined
-        }
       />
-      
-      {/* Dynamic scanline overlay for hologram model */}
-      {suffix && avatarStyle === 'ai-hologram' && (
-        <rect 
-          x="34" 
-          y="3" 
-          width="32" 
-          height="38" 
-          clipPath={`url(#${clipId})`} 
-          fill={`url(#scanlines-${suffix})`} 
-          opacity="0.25" 
-          pointerEvents="none" 
-        />
-      )}
-
-      {/* Dynamic grid overlay for cyberpunk gold model */}
-      {suffix && avatarStyle === 'ai-cyber-gold' && (
-        <rect 
-          x="34" 
-          y="3" 
-          width="32" 
-          height="38" 
-          clipPath={`url(#${clipId})`} 
-          fill={`url(#cyber-grid-${suffix})`} 
-          opacity="0.2" 
-          pointerEvents="none" 
-        />
-      )}
       
       {/* Ambient shadow overlay on face to blend with cartoonish card */}
       <ellipse cx="50" cy="22" rx="14" ry="17" fill="url(#face-shading)" opacity="0.15" pointerEvents="none" />

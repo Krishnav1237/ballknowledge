@@ -287,7 +287,7 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  const displayAvatarStyle = avatarStyle.startsWith('ai-') ? avatarStyle : 'ai-3d-render';
+  // Removed image presets style fallback
 
   // Build the goated VerdictData object to feed to SportsCenterCard component
   const managerCardData: VerdictData = {
@@ -313,7 +313,7 @@ export default function ProfileSettingsPage() {
     playerName: username.toUpperCase() || 'MANAGER',
     playerPosition: 'MGR',
     clubName: favoriteClub || 'VAR FC',
-    avatarStyle: displayAvatarStyle,
+    avatarStyle: avatarStyle,
     avatarSeed: avatarSeed,
     stats: [
       { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
@@ -518,31 +518,7 @@ export default function ProfileSettingsPage() {
                     />
                   </div>
 
-                  {/* AI Style Model */}
-                  <div>
-                    <label className="flex items-center gap-1.5 text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-1.5">
-                      AI Portrait Style Model
-                    </label>
-                    <select
-                      value={displayAvatarStyle}
-                      onChange={e => {
-                        const val = e.target.value;
-                        setAvatarStyle(val);
-                        if (profile) {
-                          const updated = { ...profile, avatarStyle: val };
-                          setProfile(updated);
-                          saveStoredProfile(updated);
-                          window.dispatchEvent(new Event('storage'));
-                        }
-                      }}
-                      className="w-full h-10 bg-black/45 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:outline-none focus:border-[#D97706] transition-all cursor-pointer"
-                    >
-                      <option value="ai-3d-render">FIFA 3D Render (Default)</option>
-                      <option value="ai-hologram">Futuristic Cyan Hologram</option>
-                      <option value="ai-cyber-gold">Cyberpunk Gold Elite</option>
-                      <option value="ai-oil-paint">VAR Tribunal Sketch</option>
-                    </select>
-                  </div>
+
 
                   {/* License Tier Info */}
                   <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-xl px-3 py-2">
