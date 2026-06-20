@@ -27,10 +27,11 @@ Create `.env` (copy from `.env.example`):
 ```env
 # Required
 DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<db>?schema=public"
-GROQ_API_KEY="gsk_..."
 
-# Optional — Nvidia NIM fallback AI
-NVIDIA_API_KEY="nvapi-..."
+# AI grading — at least one key required
+OPENROUTER_API_KEY="sk-or-..."  # Primary (also powers image generation)
+GROQ_API_KEY="gsk_..."          # Fallback
+NVIDIA_API_KEY="nvapi-..."       # Second fallback
 
 # Required for production
 NEXT_PUBLIC_SITE_URL="https://ballknowledge.vercel.app"
@@ -52,6 +53,16 @@ User Action → localStorage (instant) → DB sync via /api/resolve-match or /ap
 - **localStorage key**: `var_cards_profile` (profile) + `var_match_predictions` (predictions)
 - **DB**: PostgreSQL via Prisma. All DB calls MUST be wrapped in `try/catch` with a localStorage fallback.
 - **Offline mode**: If DB is unreachable, the app still works 100%. DB writes fail silently.
+
+### Match Data — Local JSON (Primary Source)
+```
+Request → fetchWorldCupMatches() → module-level cache → football.matches.json (disk)
+```
+- **Source files**: `src/lib/worldcup2026/football.matches.json` and `football.teams.json`
+- **These are the authoritative source** — they contain every real match result with actual goal scorers.
+- The remote `worldcup26.ir` API is permanently unreachable and has been removed.
+- Data is cached in-process (module-level singleton) — only one disk read per Node process restart.
+- When new match results come in, update the JSON files and restart the server.
 
 ### Shared Utilities — ALWAYS import from here, never duplicate
 | Export | File | Purpose |
@@ -77,9 +88,17 @@ else status = 'UPCOMING';
 ### AI Grading Fallback Chain
 ```
 POST /api/resolve-match
-  → Groq (llama-3.3-70b-specdec)         [Primary — fastest]
-  → Nvidia NIM (llama-3.1-70b-instruct)  [Fallback]
-  → Deterministic local tribunal          [Offline fallback]
+  → OpenRouter (llama-3.3-70b-instruct)  [Primary — if OPENROUTER_API_KEY set]
+  → Groq (llama-3.3-70b-specdec)         [Fallback — if GROQ_API_KEY set]
+  → Nvidia NIM (llama-3.1-70b-instruct)  [Second fallback]
+  → Deterministic local heuristic         [Always-available offline fallback]
+```
+
+### Image Generation
+```
+POST /api/generate-viral-card
+  → OpenRouter /api/v1/images/generations (flux-1-pro)  [if OPENROUTER_API_KEY set]
+  → Card renders without AI background otherwise
 ```
 
 ---
@@ -89,7 +108,7 @@ POST /api/resolve-match
 | File | What it does |
 |------|-------------|
 | `src/lib/matchUtils.ts` | ✅ Shared utilities (parseLocalDate, getDeterministicMatchResult, getFlagEmoji) |
-| `src/lib/worldcupData.ts` | Server-side match/team fetcher with 5-min in-memory cache |
+| `src/lib/worldcupData.ts` | Match/team data from local JSON — module-level process cache, no remote fetch |
 | `src/lib/profileSync.ts` | Client-side localStorage ↔ DB sync helpers |
 | `src/lib/db.ts` | Prisma singleton — use this, never `new PrismaClient()` |
 | `src/lib/roster.ts` | 32-team player roster for Best XI squad builder |
@@ -172,7 +191,8 @@ Roles are stored in localStorage AND synced to PostgreSQL via `POST /api/resolve
 ## Production Checklist (Before Deploy)
 
 - [ ] `DATABASE_URL` set in Vercel environment
-- [ ] `GROQ_API_KEY` set in Vercel environment
+- [ ] `OPENROUTER_API_KEY` set in Vercel environment (for AI grading + image gen)
+- [ ] `GROQ_API_KEY` set in Vercel environment (fallback)
 - [ ] `NEXT_PUBLIC_SITE_URL` set to `https://ballknowledge.vercel.app`
 - [ ] `npx prisma db push` run against production DB
 - [ ] `npm run build` passes with 0 errors

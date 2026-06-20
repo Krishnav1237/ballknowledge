@@ -1,142 +1,60 @@
+/**
+ * World Cup 2026 data service.
+ *
+ * The remote worldcup26.ir API is permanently unreachable (returns empty body,
+ * always aborts). The local JSON files are the authoritative data source —
+ * they contain every real group-stage result with actual scorers.
+ *
+ * This module reads directly from disk on first access, then caches the parsed
+ * objects in module-level singletons for the lifetime of the Node process
+ * (no repeated disk I/O on subsequent requests).
+ */
 
 import fs from 'fs';
 import path from 'path';
 
-if (typeof window === 'undefined') {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+// Module-level singletons — populated once per process.
+let matchesData: any[] | null = null;
+let teamsData: any[] | null = null;
 
-const MATCHES_URL = 'https://worldcup26.ir/get/games';
-const TEAMS_URL = 'https://worldcup26.ir/get/teams';
-
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
-
-interface Cache<T> {
-  data: T | null;
-  lastFetched: number;
-}
-
-let matchesCache: Cache<any[]> = { data: null, lastFetched: 0 };
-let teamsCache: Cache<any[]> = { data: null, lastFetched: 0 };
-
-// Helper to get local fallback path
-function getFallbackPath(filename: string): string {
+function getDataPath(filename: string): string {
   return path.join(process.cwd(), 'src/lib/worldcup2026', filename);
 }
 
-// Helper fetch with timeout to prevent slow remote fetches from blocking page renders
-async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 2000): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      ...init,
-      signal: controller.signal,
-    });
-    clearTimeout(id);
-    return res;
-  } catch (err) {
-    clearTimeout(id);
-    throw err;
-  }
+function readJsonFile(filename: string): any[] {
+  const filePath = getDataPath(filename);
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const json = JSON.parse(raw);
+  return Array.isArray(json) ? json : json.games || json.teams || [];
 }
 
-// Fetch matches with caching and local fallback
+/**
+ * Returns all World Cup 2026 matches.
+ * Reads from disk once per process lifetime, cached in memory thereafter.
+ */
 export async function fetchWorldCupMatches(): Promise<any[]> {
-  const now = Date.now();
-  
-  if (matchesCache.data && (now - matchesCache.lastFetched < CACHE_TTL)) {
-    return matchesCache.data;
+  if (!matchesData) {
+    matchesData = readJsonFile('football.matches.json');
   }
-
-  try {
-    const res = await fetchWithTimeout(MATCHES_URL, {
-      next: { revalidate: 300 } // Next.js level caching fallback
-    });
-    
-    if (res.ok) {
-      const json = await res.json();
-      const data = Array.isArray(json) ? json : (json.games || []);
-      matchesCache = { data, lastFetched: now };
-      return data;
-    }
-    throw new Error(`Failed to fetch matches: status ${res.status}`);
-  } catch (error) {
-    console.warn('Matches remote fetch failed, attempting cache/local fallback:', error);
-    
-    // 1. In-memory cache fallback (even if expired)
-    if (matchesCache.data) {
-      console.warn('Returning expired in-memory matches cache.');
-      matchesCache.lastFetched = now; // Prevent retrying remote fetch on every request
-      return matchesCache.data;
-    }
-
-    // 2. Read local fallback file (packaged with build)
-    try {
-      const filePath = getFallbackPath('football.matches.json');
-      if (fs.existsSync(filePath)) {
-        console.warn('Returning local matches JSON fallback.');
-        const raw = fs.readFileSync(filePath, 'utf8');
-        const json = JSON.parse(raw);
-        const data = Array.isArray(json) ? json : (json.games || []);
-        // Save in cache and update lastFetched to prevent spamming remote fetches on fallback
-        matchesCache = { data, lastFetched: now };
-        return data;
-      }
-    } catch (fsErr) {
-      console.error('Failed to read local matches fallback file:', fsErr);
-    }
-
-    throw error;
-  }
+  return matchesData;
 }
 
-// Fetch teams with caching and local fallback
+/**
+ * Returns all World Cup 2026 teams.
+ * Reads from disk once per process lifetime, cached in memory thereafter.
+ */
 export async function fetchWorldCupTeams(): Promise<any[]> {
-  const now = Date.now();
-
-  if (teamsCache.data && (now - teamsCache.lastFetched < CACHE_TTL)) {
-    return teamsCache.data;
+  if (!teamsData) {
+    teamsData = readJsonFile('football.teams.json');
   }
+  return teamsData;
+}
 
-  try {
-    const res = await fetchWithTimeout(TEAMS_URL, {
-      next: { revalidate: 300 }
-    });
-
-    if (res.ok) {
-      const json = await res.json();
-      const data = Array.isArray(json) ? json : (json.teams || []);
-      teamsCache = { data, lastFetched: now };
-      return data;
-    }
-    throw new Error(`Failed to fetch teams: status ${res.status}`);
-  } catch (error) {
-    console.warn('Teams remote fetch failed, attempting cache/local fallback:', error);
-
-    // 1. In-memory cache fallback (even if expired)
-    if (teamsCache.data) {
-      console.warn('Returning expired in-memory teams cache.');
-      teamsCache.lastFetched = now; // Prevent retrying remote fetch on every request
-      return teamsCache.data;
-    }
-
-    // 2. Read local fallback file (packaged with build)
-    try {
-      const filePath = getFallbackPath('football.teams.json');
-      if (fs.existsSync(filePath)) {
-        console.warn('Returning local teams JSON fallback.');
-        const raw = fs.readFileSync(filePath, 'utf8');
-        const json = JSON.parse(raw);
-        const data = Array.isArray(json) ? json : (json.teams || []);
-        // Save in cache and update lastFetched
-        teamsCache = { data, lastFetched: now };
-        return data;
-      }
-    } catch (fsErr) {
-      console.error('Failed to read local teams fallback file:', fsErr);
-    }
-
-    throw error;
-  }
+/**
+ * Returns a single match by ID. Efficient — no full array allocation beyond
+ * the first call which populates the module-level cache.
+ */
+export async function fetchMatchById(matchId: string): Promise<any | null> {
+  const matches = await fetchWorldCupMatches();
+  return matches.find((m) => m.id === matchId) ?? null;
 }

@@ -15,14 +15,14 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'flagcdn.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'media.api-sports.io',
-      },
+      // Flag CDN for team flags
+      { protocol: 'https', hostname: 'flagcdn.com' },
+      // DiceBear avatar API (used for default avatars)
+      { protocol: 'https', hostname: 'api.dicebear.com' },
+      // OpenRouter / Fal.ai CDN — serves AI-generated card images
+      { protocol: 'https', hostname: '**.fal.media' },
+      { protocol: 'https', hostname: 'fal.media' },
+      { protocol: 'https', hostname: '**.openrouter.ai' },
     ],
   },
   async headers() {
