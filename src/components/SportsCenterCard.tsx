@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { VerdictData } from '@/lib/tribunalDB';
 
 
@@ -258,18 +258,11 @@ function JerseyAvatar({
   avatarStyle?: string; 
 }) {
   const { primary, secondary, collar, style } = getJerseyDetails(flag);
-  const [maskId, setMaskId] = useState('');
-  const [clipId, setClipId] = useState('');
-  const [suffix, setSuffix] = useState('');
-  
-  useEffect(() => {
-    const idSuffix = Math.random().toString(36).substring(2, 9);
-    setSuffix(idSuffix);
-    setMaskId(`jersey-mask-${idSuffix}`);
-    setClipId(`face-clip-${idSuffix}`);
-  }, []);
-
-  if (!maskId || !clipId) return null;
+  const baseId = useId();
+  const cleanId = baseId.replace(/:/g, '');
+  const suffix = cleanId;
+  const maskId = `jersey-mask-${cleanId}`;
+  const clipId = `face-clip-${cleanId}`;
 
   return (
     <svg className="w-[180px] h-[180px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">

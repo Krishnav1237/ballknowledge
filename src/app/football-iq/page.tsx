@@ -7,6 +7,8 @@ import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Trophy, Award, Sparkles, Share2, Eye, ShieldAlert, Lock, Calendar, CheckCircle, ChevronRight, Bookmark } from 'lucide-react';
 import { getFlagEmoji } from '@/lib/matchUtils';
+import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
+import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 interface Team {
   id: string;
@@ -88,10 +90,8 @@ export default function FootballIQPage() {
       } catch (err) {
         console.warn('Failed to fetch remote World Cup data, falling back to local files:', err);
         try {
-          const matchesData = require('@/lib/worldcup2026/football.matches.json');
-          const teamsData = require('@/lib/worldcup2026/football.teams.json');
-          setMatches(matchesData);
-          setTeams(teamsData);
+          setMatches(matchesDataFallback);
+          setTeams(teamsDataFallback);
         } catch (localErr) {
           console.error('Failed to load local data files:', localErr);
         }

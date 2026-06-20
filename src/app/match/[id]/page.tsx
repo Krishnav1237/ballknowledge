@@ -12,6 +12,8 @@ import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
 import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
+import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -115,11 +117,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       } catch (err) {
         console.warn('Failed to load remote match data, falling back to local files:', err);
         try {
-          const matchesData = require('@/lib/worldcup2026/football.matches.json');
-          const teamsData = require('@/lib/worldcup2026/football.teams.json');
-          const foundMatch = matchesData.find((m: any) => m.id === matchId);
-          setMatch(foundMatch);
-          setTeams(teamsData);
+          const foundMatch = matchesDataFallback.find((m: any) => m.id === matchId);
+          setMatch(foundMatch || null);
+          setTeams(teamsDataFallback);
         } catch (localErr) {
           console.error('Failed to load local match details:', localErr);
         }

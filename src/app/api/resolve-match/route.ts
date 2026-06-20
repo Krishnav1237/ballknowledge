@@ -71,6 +71,15 @@ async function callNvidia(userPrompt: string) {
   return JSON.parse(data.choices[0].message.content);
 }
 
+interface GradedTake {
+  statement: string;
+  confidence: number;
+  ovr: number;
+  verdict: string;
+  charge: string;
+  sentence: string;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -168,7 +177,7 @@ export async function POST(request: Request) {
     // 2. Hot Take Grading
     let hotTakeDelta = 0;
     let avgTakeOvr = 50;
-    let gradedTakes: any[] = [];
+    const gradedTakes: GradedTake[] = [];
 
     const statements = hotTakes && hotTakes.length > 0 ? hotTakes : [{ statement: 'No hot take submitted.', confidence: 50 }];
 

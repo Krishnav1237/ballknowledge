@@ -7,6 +7,8 @@ import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
 import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 import FlagImage from '@/components/FlagImage';
+import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
+import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 interface Team {
   id: string;
@@ -95,10 +97,8 @@ export default function WorldCupHub() {
       } catch (err) {
         console.warn('Failed to fetch remote World Cup data, falling back to local files:', err);
         try {
-          const matchesData = require('@/lib/worldcup2026/football.matches.json');
-          const teamsData = require('@/lib/worldcup2026/football.teams.json');
-          setMatches(matchesData);
-          setTeams(teamsData);
+          setMatches(matchesDataFallback);
+          setTeams(teamsDataFallback);
         } catch (localErr) {
           console.error('Failed to load local data files:', localErr);
         }

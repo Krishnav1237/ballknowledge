@@ -6,6 +6,8 @@ import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { Award, ShieldAlert, Trophy, Eye, Lock, Sparkles, Share2, CheckCircle } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
+import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
+import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 interface Team {
   id: string;
@@ -88,10 +90,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       } catch (err) {
         console.warn('Failed to load public profile details, falling back to local files:', err);
         try {
-          const matchesData = require('@/lib/worldcup2026/football.matches.json');
-          const teamsData = require('@/lib/worldcup2026/football.teams.json');
-          setMatches(matchesData);
-          setTeams(teamsData);
+          setMatches(matchesDataFallback);
+          setTeams(teamsDataFallback);
         } catch (localErr) {
           console.error(localErr);
         }

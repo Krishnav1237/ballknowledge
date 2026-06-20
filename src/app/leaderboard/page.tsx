@@ -583,7 +583,7 @@ export default function LeaderboardPage() {
               {!loading && !error && filtered.length === 0 && (
                 <div className="text-center py-24 flex flex-col justify-center items-center h-full text-gray-500">
                   <Search className="w-6 h-6 text-gray-600 mb-2" />
-                  <p className="text-xs">No manager found for "<span className="text-white">{search}</span>"</p>
+                  <p className="text-xs">No manager found for &quot;<span className="text-white">{search}</span>&quot;</p>
                 </div>
               )}
             </div>
