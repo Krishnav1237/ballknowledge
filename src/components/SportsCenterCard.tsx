@@ -45,7 +45,7 @@ function getVerdictColor(verdict: string, ovr: number): { color: string; glow: s
 }
 
 // ─── Theme Selector (Grades, Borders & Glows) ──────────────────────────────────
-function getThemeColors(cardTheme?: string) {
+function getThemeColors() {
   return {
     bgId: 'gold-premium-pat',
     borderId: 'gold-border',
@@ -58,22 +58,11 @@ function getThemeColors(cardTheme?: string) {
 }
 
 // ─── Theme Label ─────────────────────────────────────────────────────────────
-function getThemeLabel(cardTheme?: string): string {
+function getThemeLabel(): string {
   return 'GOLD';
 }
 
 // ─── 2 Metric Derivation ─────────────────────────────────────────────────────
-function get2Metrics(data: VerdictData): [{ label: string; val: number }, { label: string; val: number }] {
-  const stats = data.stats || [];
-  const iqStat = stats.find(s => s.label === 'IQ');
-  const delStat = stats.find(s => s.label === 'DEL');
-  const iq = iqStat?.val ?? data.ovr;
-  const del = delStat?.val ?? Math.max(1, 99 - data.ovr);
-  return [
-    { label: 'BALL IQ', val: iq },
-    { label: 'DELUSION', val: del },
-  ];
-}
 
 // ─── 4 Main Metrics Derivation ────────────────────────────────────────────────
 function get4Metrics(data: VerdictData): [
@@ -170,19 +159,10 @@ function getJerseyDetails(flag: string) {
   return colorFallbacks[code % colorFallbacks.length];
 }
 
-function JerseyAvatar({ 
-  avatarUrl, 
-  flag, 
-  avatarStyle 
-}: { 
-  avatarUrl: string; 
-  flag: string; 
-  avatarStyle?: string; 
-}) {
+function JerseyAvatar({ avatarUrl, flag }: { avatarUrl: string; flag: string; }) {
   const { primary, secondary, collar, style } = getJerseyDetails(flag);
   const baseId = useId();
   const cleanId = baseId.replace(/:/g, '');
-  const suffix = cleanId;
   const maskId = `jersey-mask-${cleanId}`;
   const clipId = `face-clip-${cleanId}`;
 
@@ -341,8 +321,8 @@ export default function SportsCenterCard({
   data: VerdictData;
   cardRef?: React.RefObject<HTMLDivElement | null>;
 }) {
-  const colors = getThemeColors(data.cardTheme);
-  const themeLabel = getThemeLabel(data.cardTheme);
+  const colors = getThemeColors();
+  const themeLabel = getThemeLabel();
   const verdictLabel = getVerdictLabel(data.verdict, data.ovr);
   const verdictColor = getVerdictColor(data.verdict, data.ovr);
   const metrics = get4Metrics(data);
@@ -577,7 +557,7 @@ export default function SportsCenterCard({
           className="absolute top-[52px] left-[15%] w-[70%] h-[192px] flex items-end justify-center z-20 pointer-events-none"
         >
           {hasCustomPhoto ? (
-            <JerseyAvatar avatarUrl={data.avatarSeed!} flag={data.countryFlag || '🌍'} avatarStyle={data.avatarStyle} />
+            <JerseyAvatar avatarUrl={data.avatarSeed!} flag={data.countryFlag || '🌍'} />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img

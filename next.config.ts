@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app';
-
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },

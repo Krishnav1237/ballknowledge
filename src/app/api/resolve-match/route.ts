@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
-import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import { getDeterministicMatchResult } from '@/lib/matchUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -174,8 +174,6 @@ export async function POST(request: Request) {
 
     const homeTeamName = teams.find((t: any) => t.id === match.home_team_id)?.name_en || match.home_team_label || 'Home';
     const awayTeamName = teams.find((t: any) => t.id === match.away_team_id)?.name_en || match.away_team_label || 'Away';
-    const homeTeamFlag = teams.find((t: any) => t.id === match.home_team_id)?.flag || '';
-    const awayTeamFlag = teams.find((t: any) => t.id === match.away_team_id)?.flag || '';
 
     // Get deterministic completed result
     const result = getDeterministicMatchResult(matchId, homeTeamName, awayTeamName, match);
@@ -334,7 +332,7 @@ export async function POST(request: Request) {
     // 4. Card Rarity & Verdict Generation
     const cardOvr = Math.round((predictionPerfScore + avgTakeOvr + (tacticalDelta >= 0 ? 85 : 50) + (communityDelta >= 0 ? 80 : 55)) / 4);
     let rarity = 'COMMON';
-    let cardTheme = 'gold';
+    const cardTheme = 'gold';
     let verdictText = 'DELUSION MERCHANT';
 
     if (cardOvr >= 90) {
@@ -438,6 +436,11 @@ export async function POST(request: Request) {
         });
 
         // Save Hot Takes
+        // Delete existing hot takes first to avoid duplicates on re-submission/resolution
+        await prisma.hotTake.deleteMany({
+          where: { predictionId: dbPrediction.id }
+        });
+
         for (const take of statements) {
           await prisma.hotTake.create({
             data: {
@@ -448,12 +451,28 @@ export async function POST(request: Request) {
           });
         }
 
-        // Save Card
-        await prisma.matchCard.create({
-          data: {
+        // Save Card (upsert to prevent unique constraint crash on re-resolution)
+        await prisma.matchCard.upsert({
+          where: {
+            profileId_matchId: {
+              profileId: dbProfile.id,
+              matchId,
+            },
+          },
+          create: {
             id: cardId,
             profileId: dbProfile.id,
             matchId,
+            rating: cardOvr,
+            verdict: verdictText,
+            charge: cardPayload.charge,
+            evidence: cardPayload.evidence,
+            sentence: cardPayload.sentence,
+            rarity,
+            statsJson: cardPayload.statsJson,
+            cardTheme
+          },
+          update: {
             rating: cardOvr,
             verdict: verdictText,
             charge: cardPayload.charge,

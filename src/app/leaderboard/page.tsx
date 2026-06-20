@@ -183,7 +183,7 @@ function PodiumCard({ entry, config, isMe }: {
 export default function LeaderboardPage() {
   const [entries, setEntries]           = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading]           = useState(true);
-  const [refreshing, setRefreshing]     = useState(false);
+
   const [sortBy, setSortBy]             = useState<SortMode>('overall');
   const [search, setSearch]             = useState('');
   const [myUsername, setMyUsername]     = useState<string | null>(null);
@@ -203,7 +203,7 @@ export default function LeaderboardPage() {
 
   const fetchLeaderboard = useCallback(async (sort: SortMode, quiet = false) => {
     if (!quiet) setLoading(true);
-    else setRefreshing(true);
+    
     setError(false);
     try {
       const res = await fetch(`/api/leaderboard?sort=${sort}&limit=100`, {
@@ -216,7 +216,7 @@ export default function LeaderboardPage() {
       setError(true);
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      
     }
   }, []);
 

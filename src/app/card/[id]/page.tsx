@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { Trophy, ShieldAlert, Sparkles, Share2, CheckCircle, Home } from 'lucide-react';
+import { Trophy, ShieldAlert, Share2, CheckCircle, Home } from 'lucide-react';
 import { getFlagEmoji } from '@/lib/matchUtils';
 
 export default function SharedCardPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +28,7 @@ export default function SharedCardPage({ params }: { params: Promise<{ id: strin
         } else {
           setError('Card not found in the database. Ensure database connection is online and the card has been synced.');
         }
-      } catch (err) {
+      } catch {
         setError('Database connection error occurred. Could not load shared card.');
       } finally {
         setLoading(false);

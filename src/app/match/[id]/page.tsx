@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, use } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, use } from 'react';
 import NextImage from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
-import { Shield, Sparkles, Lock, ArrowLeft, Trophy, Flame, Play, AlertCircle, Share2, Clipboard, Plus, X, MessageCircle, CheckCircle } from 'lucide-react';
+import { Sparkles, Trophy, Flame, AlertCircle, Share2, CheckCircle } from 'lucide-react';
 import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot } from '@/lib/roster';
 import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
@@ -75,12 +74,10 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   // Squad Builder & Modal states
   const [lineup, setLineup] = useState<Record<string, Player>>({});
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [showSelectorModal, setShowSelectorModal] = useState(false);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
 
   // Grading states
   const [resolving, setResolving] = useState(false);
-  const [varStep, setVarStep] = useState(0);
   const [varText, setVarText] = useState('');
   const [gradingResult, setGradingResult] = useState<any>(null);
   const [showProgression, setShowProgression] = useState(false);
@@ -316,22 +313,18 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     }
 
     setResolving(true);
-    setVarStep(1);
     setVarText('VAR official in Stockley Park review in progress...');
     
     // Animate VAR Review
     const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
     
     await sleep(1500);
-    setVarStep(2);
     setVarText('Auditing scoreline predictions against World Cup outcome...');
     
     await sleep(1500);
-    setVarStep(3);
     setVarText('Summoning AI VAR tribunal to grade hot takes and confidence ranges...');
     
     await sleep(1800);
-    setVarStep(4);
     setVarText('Football IQ Reputation algorithms updating overall status...');
     
     await sleep(1500);
@@ -433,7 +426,6 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     saveStoredPredictions(newPreds);
   };
 
-  const hasFilledPredictions = predScorer.trim() !== '' && predMotm.trim() !== '' && predPossession !== '';
   const hasSubmitted = !!predictions[matchId];
   const isResolved = hasSubmitted && predictions[matchId].resolved && gradingResult;
 
