@@ -196,11 +196,81 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* HOW IT WORKS                                                          */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 md:py-20 px-6 bg-white border-t border-[#F3F4F6]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#881337] mb-2">HOW IT WORKS</p>
+            <h2 className="font-serif italic font-black text-3xl sm:text-4xl text-[#0A0A0A] leading-tight">
+              Build Reputation in 3 Steps.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 relative">
+            <div className="hidden sm:block absolute top-8 left-[16.67%] right-[16.67%] h-px bg-[#E5E7EB] z-0" />
+
+            {[
+              {
+                n: '01', color: '#881337', bg: '#FEF2F2',
+                title: 'Lock In Matchday Predictions',
+                body: 'Select a fixture in the World Cup Hub. Submit scorelines and bold hot takes before the match kickoff.',
+                platforms: ['Fixture Hub', 'Match predictions', 'Hot takes'],
+              },
+              {
+                n: '02', color: '#D97706', bg: '#FFFBF0',
+                title: 'Collect Custom Cards',
+                body: 'Once completed, the tribunal grades your performance. Watch your rating evolve and reveal your Verdict Card.',
+                platforms: ['Visionary Card', 'Delusion Card', 'Score Deltas'],
+              },
+              {
+                n: '03', color: '#059669', bg: '#F0FDF4',
+                title: 'Evolve Football IQ',
+                body: 'Accumulate points across fixtures to increase your overall rating. Share cards and show off your public reputation.',
+                platforms: ['WhatsApp Share', 'X / Twitter Link', 'FUT Album'],
+              },
+            ].map((s, i) => (
+              <div key={s.n} className={`relative z-10 flex flex-col items-center text-center px-6 py-6 sm:py-0 ${i < 2 ? 'border-b sm:border-b-0 sm:border-r border-black/5 pb-8 sm:pb-0' : ''}`}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-5 shadow-sm"
+                     style={{ background: s.bg, border: `2px solid ${s.color}` }}>
+                  <span className="font-sans font-black text-xl" style={{ color: s.color }}>{s.n}</span>
+                </div>
+                <h3 className="font-sans font-black text-lg text-[#0A0A0A] mb-2">{s.title}</h3>
+                <p className="font-serif text-[#6B7280] text-sm leading-relaxed mb-4">{s.body}</p>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {s.platforms.map(p => (
+                    <span key={p} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                          style={{ background: s.bg, color: s.color, border: `1px solid ${s.color}30` }}>
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA strip */}
+          <div className="mt-10 py-5 px-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4"
+               style={{ background: '#0A0A0A' }}>
+            <p className="font-serif italic text-white text-base leading-snug">
+              Ready to start? Enter the hub and predict your first fixture.
+            </p>
+            <div className="flex gap-3 shrink-0">
+              <Link href="/world-cup-hub"
+                    className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all bg-gradient-to-r from-[#881337] to-[#D97706]">
+                Enter World Cup Hub
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* TOOLS SHOWCASE: predictions, takes, and cards                        */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-8 px-6 border-t border-[#F3F4F6]">
+      <section className="py-12 px-6 border-t border-[#F3F4F6] bg-slate-50/50">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
 
             {/* TOOL 1: Matchday Takes */}
             <motion.div
@@ -208,13 +278,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6 }}
-              className="rounded-3xl border border-[#881337]/15 overflow-hidden flex flex-col justify-between shadow-xs animate-fadeIn"
-              style={{ background: '#FFF8F9' }}
+              className="rounded-3xl border border-[#881337]/10 overflow-hidden flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_15px_35px_rgba(136,19,55,0.08)] transition-all duration-300 hover:border-[#881337]/35 bg-white"
             >
-              <div className="p-7 flex-1 flex flex-col justify-between space-y-4">
+              <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#881337' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ background: '#881337' }}>
                       <span className="text-white font-black text-xs">01</span>
                     </div>
                     <div>
@@ -226,23 +295,23 @@ export default function Home() {
                     Submit bold takes on fixture matchdays. The Stockley Park VAR tribunal scores them using AI, updating your overall Hot Takes IQ.
                   </p>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Sandbox Take</label>
                       <textarea
                         value={sandboxText}
                         onChange={e => setSandboxText(e.target.value.slice(0, 120))}
                         rows={2}
-                        className="w-full border border-gray-300 rounded-xl p-3.5 font-serif text-sm text-black placeholder-gray-500 focus:outline-none focus:border-[#881337] resize-none leading-relaxed bg-[#FAFAFA]"
+                        className="w-full border border-gray-200 rounded-xl p-3.5 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#881337] focus:ring-4 focus:ring-[#881337]/5 transition-all resize-none leading-relaxed bg-[#FAFAFA]"
                       />
                       <div className="flex items-center justify-between mt-1.5">
                         <div className="flex gap-1.5 flex-wrap max-w-[85%]">
                           {[
-                            { label: '🇦🇷 Messi take', text: 'Messi is the greatest of all time' },
-                            { label: '🇵🇹 Ronaldo take', text: "Ronaldo's Saudi stats don't count" },
+                            { label: '🇦🇷 Messi take', text: 'Messi is the greatest World Cup player of all time' },
+                            { label: '🇵🇹 Ronaldo take', text: "Ronaldo's aura will carry Portugal to the final trophy" },
                           ].map(t => (
                             <button key={t.label} onClick={() => setSandboxText(t.text)}
-                              className="text-[8px] font-bold px-2 py-0.5 rounded-full border border-gray-300 text-gray-700 hover:border-[#881337] hover:text-[#881337] transition-colors bg-white cursor-pointer">
+                              className="text-[9px] font-bold px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[#881337] hover:text-[#881337] hover:bg-[#881337]/5 transition-all bg-white cursor-pointer active:scale-95">
                               {t.label}
                             </button>
                           ))}
@@ -258,15 +327,14 @@ export default function Home() {
                         </label>
                         <input type="range" min="1" max="99" value={sandboxOvr}
                           onChange={e => setSandboxOvr(parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer accent-[#881337]" />
+                          className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-[#881337] transition-all hover:bg-gray-300" />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <Link href={`/world-cup-hub`}
-                      className="block w-full py-3.5 text-center rounded-xl font-black text-sm uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-sm"
-                      style={{ background: '#881337' }}>
+                      className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#881337] to-[#a21c43]">
                   Pick Match & Submit Take →
                 </Link>
               </div>
@@ -278,13 +346,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="rounded-3xl border border-[#D97706]/15 overflow-hidden flex flex-col justify-between shadow-xs animate-fadeIn"
-              style={{ background: '#FFFDF5' }}
+              className="rounded-3xl border border-[#D97706]/10 overflow-hidden flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_15px_35px_rgba(217,119,6,0.08)] transition-all duration-300 hover:border-[#D97706]/35 bg-white"
             >
-              <div className="p-7 flex-1 flex flex-col justify-between space-y-4">
+              <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#D97706' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ background: '#D97706' }}>
                       <span className="text-black font-black text-xs">02</span>
                     </div>
                     <div>
@@ -296,24 +363,25 @@ export default function Home() {
                     Predict scorelines, MOTM, goalscorers, and possession. Earn rating increases: Exact score (+15) or Correct outcome (+5).
                   </p>
 
-                  <div className="space-y-3">
-                    <input type="text" value={predMOTM} onChange={e => setPredMOTM(e.target.value)}
-                      placeholder="Predicted MOTM…"
-                      className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 font-serif text-sm text-black placeholder-gray-500 focus:outline-none focus:border-[#D97706] bg-white" />
+                  <div className="space-y-3.5">
+                    <div className="relative">
+                      <input type="text" value={predMOTM} onChange={e => setPredMOTM(e.target.value)}
+                        placeholder="Predicted MOTM…"
+                        className="w-full border border-gray-200 rounded-xl px-3.5 py-3 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#D97706] focus:ring-4 focus:ring-[#D97706]/5 transition-all bg-[#FAFAFA]" />
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <input type="text" value={predGoalscorer} onChange={e => setPredGoalscorer(e.target.value)}
                         placeholder="First Goalscorer…"
-                        className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 font-serif text-sm text-black placeholder-gray-500 focus:outline-none bg-white" />
+                        className="w-full border border-gray-200 rounded-xl px-3.5 py-3 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#D97706] focus:ring-4 focus:ring-[#D97706]/5 transition-all bg-[#FAFAFA]" />
                       <input type="text" value={predPossession} onChange={e => setPredPossession(e.target.value)}
                         placeholder="Possession Winner…"
-                        className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 font-serif text-sm text-black placeholder-gray-500 focus:outline-none bg-white" />
+                        className="w-full border border-gray-200 rounded-xl px-3.5 py-3 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#D97706] focus:ring-4 focus:ring-[#D97706]/5 transition-all bg-[#FAFAFA]" />
                     </div>
                   </div>
                 </div>
 
                 <Link href={`/world-cup-hub`}
-                      className="block w-full py-3.5 text-center rounded-xl font-black text-sm uppercase tracking-widest text-black transition-all hover:opacity-90"
-                      style={{ background: '#D97706' }}>
+                      className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-black transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#D97706] to-[#F59E0B]">
                   Lock predictions →
                 </Link>
               </div>
@@ -325,13 +393,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="rounded-3xl border border-slate-200/80 overflow-hidden flex flex-col justify-between shadow-xs animate-fadeIn"
-              style={{ background: '#F5F8FA' }}
+              className="rounded-3xl border border-slate-200 overflow-hidden flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_15px_35px_rgba(51,65,85,0.08)] transition-all duration-300 hover:border-slate-400/50 bg-white"
             >
-              <div className="p-7 flex-1 flex flex-col justify-between space-y-4">
+              <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#334155' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ background: '#334155' }}>
                       <span className="text-white font-black text-xs">03</span>
                     </div>
                     <div>
@@ -341,16 +408,16 @@ export default function Home() {
                   </div>
                   
                   {/* Today's Prophecy Ticker */}
-                  <div className="bg-slate-950 border border-[#D97706]/35 rounded-2xl p-4 relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-slate-950 to-slate-900 border border-[#D97706]/35 rounded-2xl p-4.5 relative overflow-hidden shadow-inner">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[9px] font-black uppercase text-[#D97706] tracking-widest flex items-center">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-1.5" />
-                        ACTIVE SEASON FixTURE
+                        ACTIVE SEASON FIXTURE
                       </span>
                       <span className="text-[8px] font-mono text-slate-400">STATUS: OPEN</span>
                     </div>
-                    <p className="text-xs font-mono text-slate-200 leading-relaxed italic">
-                      &quot;{dailyProphecy}&quot;
+                    <p className="text-xs font-mono text-amber-200/90 leading-relaxed italic">
+                      &quot;Portugal will secure a last-minute victory through a controversial penalty locked in by Cristiano Ronaldo&apos;s aura.&quot;
                     </p>
                   </div>
 
@@ -360,8 +427,7 @@ export default function Home() {
                 </div>
 
                 <Link href={`/world-cup-hub`}
-                      className="block w-full py-3.5 text-center rounded-xl font-black text-sm uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-sm"
-                      style={{ background: '#334155' }}>
+                      className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#334155] to-[#475569]">
                   View Fixtures Schedule
                 </Link>
               </div>
@@ -370,6 +436,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* DRAGGABLE DOSSIERS PLATFORM                                            */}
@@ -565,75 +632,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* HOW IT WORKS                                                          */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-12 md:py-16 px-6 bg-white border-t border-[#F3F4F6]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#881337] mb-2">HOW IT WORKS</p>
-            <h2 className="font-serif italic font-black text-3xl sm:text-4xl text-[#0A0A0A] leading-tight">
-              Build Reputation in 3 Steps.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 relative">
-            <div className="hidden sm:block absolute top-8 left-[16.67%] right-[16.67%] h-px bg-[#E5E7EB] z-0" />
-
-            {[
-              {
-                n: '01', color: '#881337', bg: '#FEF2F2',
-                title: 'Lock In Matchday Predictions',
-                body: 'Select a fixture in the World Cup Hub. Submit scorelines and bold hot takes before the match kickoff.',
-                platforms: ['Fixture Hub', 'Match predictions', 'Hot takes'],
-              },
-              {
-                n: '02', color: '#D97706', bg: '#FFFBF0',
-                title: 'Collect Custom Cards',
-                body: 'Once completed, the tribunal grades your performance. Watch your rating evolve and reveal your Verdict Card.',
-                platforms: ['Visionary Card', 'Delusion Card', 'Score Deltas'],
-              },
-              {
-                n: '03', color: '#059669', bg: '#F0FDF4',
-                title: 'Evolve Football IQ',
-                body: 'Accumulate points across fixtures to increase your overall rating. Share cards and show off your public reputation.',
-                platforms: ['WhatsApp Share', 'X / Twitter Link', 'FUT Album'],
-              },
-            ].map((s, i) => (
-              <div key={s.n} className={`relative z-10 flex flex-col items-center text-center px-6 py-6 sm:py-0 ${i < 2 ? 'border-b sm:border-b-0 sm:border-r border-black/5 pb-8 sm:pb-0' : ''}`}>
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-5 shadow-sm"
-                     style={{ background: s.bg, border: `2px solid ${s.color}` }}>
-                  <span className="font-sans font-black text-xl" style={{ color: s.color }}>{s.n}</span>
-                </div>
-                <h3 className="font-sans font-black text-lg text-[#0A0A0A] mb-2">{s.title}</h3>
-                <p className="font-serif text-[#6B7280] text-sm leading-relaxed mb-4">{s.body}</p>
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {s.platforms.map(p => (
-                    <span key={p} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                          style={{ background: s.bg, color: s.color, border: `1px solid ${s.color}30` }}>
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Bottom CTA strip */}
-          <div className="mt-10 py-5 px-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4"
-               style={{ background: '#0A0A0A' }}>
-            <p className="font-serif italic text-white text-base leading-snug">
-              Ready to start? Enter the hub and predict your first fixture.
-            </p>
-            <div className="flex gap-3 shrink-0">
-              <Link href="/world-cup-hub"
-                    className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all bg-gradient-to-r from-[#881337] to-[#D97706]">
-                Enter World Cup Hub
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* FINAL CTA                                                             */}
