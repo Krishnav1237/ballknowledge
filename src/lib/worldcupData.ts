@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 
 if (typeof window === 'undefined') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -35,10 +33,6 @@ async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 800
   }
 }
 
-// Helper to get local fallback path
-function getFallbackPath(filename: string): string {
-  return path.join(process.cwd(), 'src/lib/worldcup2026', filename);
-}
 
 // Fetch matches with caching and local fallback
 export async function fetchWorldCupMatches(): Promise<any[]> {
@@ -57,34 +51,13 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
       const json = await res.json();
       const data = Array.isArray(json) ? json : (json.games || []);
       matchesCache = { data, lastFetched: now };
-      try {
-        const filePath = getFallbackPath('football.matches.json');
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-      } catch (writeErr) {
-        console.warn('Failed to write fetched matches to local file:', writeErr);
-      }
       return data;
     }
     throw new Error(`Failed to fetch matches: status ${res.status}`);
   } catch (error) {
-    console.warn('Matches remote fetch failed, falling back to local dataset:', error);
-    
-    try {
-      const filePath = getFallbackPath('football.matches.json');
-      if (fs.existsSync(filePath)) {
-        const raw = fs.readFileSync(filePath, 'utf8');
-        const json = JSON.parse(raw);
-        const data = Array.isArray(json) ? json : (json.games || []);
-        // Do not update timestamp so we retry remote fetch on next request
-        matchesCache.data = data;
-        return data;
-      }
-    } catch (fsErr) {
-      console.error('Failed to read local matches fallback file:', fsErr);
-    }
+    console.error('Matches remote fetch failed:', error);
+    throw error;
   }
-
-  return matchesCache.data || [];
 }
 
 // Fetch teams with caching and local fallback
@@ -104,31 +77,11 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
       const json = await res.json();
       const data = Array.isArray(json) ? json : (json.teams || []);
       teamsCache = { data, lastFetched: now };
-      try {
-        const filePath = getFallbackPath('football.teams.json');
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-      } catch (writeErr) {
-        console.warn('Failed to write fetched teams to local file:', writeErr);
-      }
       return data;
     }
     throw new Error(`Failed to fetch teams: status ${res.status}`);
   } catch (error) {
-    console.warn('Teams remote fetch failed, falling back to local dataset:', error);
-
-    try {
-      const filePath = getFallbackPath('football.teams.json');
-      if (fs.existsSync(filePath)) {
-        const raw = fs.readFileSync(filePath, 'utf8');
-        const json = JSON.parse(raw);
-        const data = Array.isArray(json) ? json : (json.teams || []);
-        teamsCache.data = data;
-        return data;
-      }
-    } catch (fsErr) {
-      console.error('Failed to read local teams fallback file:', fsErr);
-    }
+    console.error('Teams remote fetch failed:', error);
+    throw error;
   }
-
-  return teamsCache.data || [];
 }

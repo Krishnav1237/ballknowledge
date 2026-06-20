@@ -7,8 +7,6 @@ import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Trophy, Award, Sparkles, Share2, Eye, ShieldAlert, Lock, Calendar, CheckCircle, ChevronRight, Bookmark } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
-import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
-import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 interface Team {
   id: string;
@@ -30,6 +28,9 @@ interface Match {
   finished: string;
   time_elapsed: string;
   type: string;
+  stadium_id: string;
+  home_team_label?: string;
+  away_team_label?: string;
 }
 
 const SYSTEM_DATE = new Date('2026-06-16T19:20:00Z');
@@ -41,6 +42,7 @@ export default function FootballIQPage() {
   const [copiedProfile, setCopiedProfile] = useState(false);
   const [copiedCard, setCopiedCard] = useState(false);
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCopyLink = (platform: string, url: string) => {
     navigator.clipboard.writeText(url);
@@ -81,13 +83,8 @@ export default function FootballIQPage() {
           throw new Error('Remote fetch failed');
         }
       } catch (err) {
-        console.warn('Failed to fetch remote World Cup data, falling back to local files:', err);
-        try {
-          setMatches(matchesDataFallback);
-          setTeams(teamsDataFallback);
-        } catch (localErr) {
-          console.error('Failed to load local data files:', localErr);
-        }
+        console.error('Failed to fetch remote World Cup data:', err);
+        setError('Failed to retrieve tournament standings and matches from the server.');
       } finally {
         setLoadingMatches(false);
       }
@@ -95,6 +92,24 @@ export default function FootballIQPage() {
 
     fetchTournamentData();
   }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center p-6 text-center">
+        <div className="max-w-md bg-[#0B0F19] border border-white/5 p-8 rounded-3xl shadow-2xl">
+          <ShieldAlert className="w-12 h-12 text-red-500 mb-4 mx-auto" />
+          <h2 className="font-display font-black text-xl text-white uppercase mb-2">Connection Failure</h2>
+          <p className="text-gray-400 text-xs leading-relaxed mb-6 font-medium">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-block py-3 px-6 rounded-xl bg-[#881337] text-white font-display font-black text-xs uppercase tracking-wider shadow-md hover:bg-[#881337]/90 transition-colors cursor-pointer"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!profile) {
     return (
@@ -150,7 +165,7 @@ export default function FootballIQPage() {
   }
 
   const getMatchStatus = (match: Match) => {
-    const kickoff = parseLocalDate(match.local_date);
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     const timeDiff = SYSTEM_DATE.getTime() - kickoff.getTime();
     if (timeDiff >= 2 * 60 * 60 * 1000) {
       return 'COMPLETED';

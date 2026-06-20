@@ -12,8 +12,6 @@ import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
 import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
-import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
-import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -49,6 +47,7 @@ interface Match {
   finished: string;
   time_elapsed: string;
   type: string;
+  stadium_id: string;
   home_team_label?: string;
   away_team_label?: string;
 }
@@ -88,6 +87,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const [overallRatingAnimate, setOverallRatingAnimate] = useState(50);
   
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // Inline toast state replaces all browser alert() calls
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -96,6 +97,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   };
 
   useEffect(() => {
+    setMounted(true);
     const fetchMatch = async () => {
       try {
         const [matchesRes, teamsRes] = await Promise.all([
@@ -115,14 +117,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           throw new Error('Fetch failed');
         }
       } catch (err) {
-        console.warn('Failed to load remote match data, falling back to local files:', err);
-        try {
-          const foundMatch = matchesDataFallback.find((m: any) => m.id === matchId);
-          setMatch(foundMatch || null);
-          setTeams(teamsDataFallback);
-        } catch (localErr) {
-          console.error('Failed to load local match details:', localErr);
-        }
+        console.error('Failed to load remote match data:', err);
+        setError('Failed to fetch real-time match details. Please verify your internet connection.');
       } finally {
         setLoading(false);
       }
@@ -176,6 +172,17 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     }
   }, [matchId]);
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
+        <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Tribunal Offline</p>
+        <p className="text-gray-400 text-sm max-w-md">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-6 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Retry Connection</button>
+      </div>
+    );
+  }
+
   if (loading || !match) {
     return (
       <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center">
@@ -189,7 +196,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_label || 'Away', flag: '', groups: 'A' };
 
   // Determine Match Status using real current time
-  const kickoff = parseLocalDate(match.local_date);
+  const kickoff = parseLocalDate(match.local_date, match.stadium_id);
   const timeDiff = new Date().getTime() - kickoff.getTime();
   let status: 'UPCOMING' | 'LIVE' | 'COMPLETED' = 'UPCOMING';
   if (timeDiff >= 2 * 60 * 60 * 1000) {
@@ -711,7 +718,15 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                     }`}>
                       {status === 'LIVE' ? '● LIVE' : status === 'COMPLETED' ? 'FULL TIME' : 'PREDICTIONS OPEN'}
                     </span>
-                    <span className="text-[9px] font-mono text-gray-600">{match.local_date}</span>
+                    <span className="text-[9px] font-mono text-gray-600">
+                      {mounted ? kickoff.toLocaleString(undefined, {
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      }) : match.local_date}
+                    </span>
                   </div>
                 </div>
                 {/* Away Team */}

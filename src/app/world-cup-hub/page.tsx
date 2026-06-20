@@ -7,8 +7,6 @@ import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
 import { parseLocalDate, getDeterministicMatchResult, isSameUTCDate } from '@/lib/matchUtils';
 import FlagImage from '@/components/FlagImage';
-import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
-import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 interface Team {
   id: string;
@@ -30,6 +28,7 @@ interface Match {
   finished: string;
   time_elapsed: string;
   type: string;
+  stadium_id: string;
   home_team_label?: string;
   away_team_label?: string;
 }
@@ -66,8 +65,11 @@ export default function WorldCupHub() {
   const [userPreds, setUserPreds] = useState<any>({});
   const [todayFormatted, setTodayFormatted] = useState<string>('June 16, 2026');
   const [todayLabel, setTodayLabel] = useState<string>('Today (June 16)');
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     const dateObj = new Date();
     setTodayFormatted(dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
     setTodayLabel(`Today (${dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })})`);
@@ -95,13 +97,8 @@ export default function WorldCupHub() {
           throw new Error('Remote fetch failed');
         }
       } catch (err) {
-        console.warn('Failed to fetch remote World Cup data, falling back to local files:', err);
-        try {
-          setMatches(matchesDataFallback);
-          setTeams(teamsDataFallback);
-        } catch (localErr) {
-          console.error('Failed to load local data files:', localErr);
-        }
+        console.error('Failed to fetch remote World Cup data:', err);
+        setError('Failed to fetch real-time tournament standings. Please check your internet connection.');
       } finally {
         setLoading(false);
       }
@@ -109,6 +106,17 @@ export default function WorldCupHub() {
 
     fetchTournamentData();
   }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
+        <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Arena Connection Failure</p>
+        <p className="text-gray-400 text-sm max-w-md">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-6 px-5 py-2 bg-[#881337] hover:bg-[#a21caf] text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Retry Connection</button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -121,7 +129,7 @@ export default function WorldCupHub() {
 
   // Get match status relative to real current time
   const getMatchStatus = (match: Match) => {
-    const kickoff = parseLocalDate(match.local_date);
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     const timeDiff = new Date().getTime() - kickoff.getTime();
     
     if (timeDiff >= 2 * 60 * 60 * 1000) {
@@ -226,7 +234,7 @@ export default function WorldCupHub() {
   // Filter matches for schedule tabs
   const filteredMatches = matches.filter(match => {
     const status = getMatchStatus(match);
-    const kickoff = parseLocalDate(match.local_date);
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     
     if (scheduleFilter === 'completed') {
       return status === 'COMPLETED';
@@ -238,7 +246,7 @@ export default function WorldCupHub() {
       // Upcoming
       return kickoff.getTime() > new Date().getTime() && !isSameUTCDate(kickoff, new Date());
     }
-  }).sort((a, b) => parseLocalDate(a.local_date).getTime() - parseLocalDate(b.local_date).getTime());
+  }).sort((a, b) => parseLocalDate(a.local_date, a.stadium_id).getTime() - parseLocalDate(b.local_date, b.stadium_id).getTime());
 
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-[52px]">
@@ -494,7 +502,15 @@ export default function WorldCupHub() {
 
                           {/* Ticket footer row */}
                           <div className="border-t border-white/5 mt-2.5 pt-2 flex justify-between items-center text-[9px] text-gray-500 font-mono tracking-wider uppercase">
-                            <span>{match.local_date}</span>
+                            <span>
+                              {mounted ? parseLocalDate(match.local_date, match.stadium_id).toLocaleString(undefined, {
+                                month: 'numeric',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                              }) : match.local_date}
+                            </span>
                             {status === 'COMPLETED' ? (
                               <span className="flex items-center gap-0.5 text-[#D97706] font-bold group-hover:underline">VAR VERDICT <ChevronRight className="w-3 h-3" /></span>
                             ) : status === 'LIVE' ? (

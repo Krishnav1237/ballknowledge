@@ -6,8 +6,6 @@ import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { Award, ShieldAlert, Trophy, Eye, Lock, Sparkles, Share2, CheckCircle } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
-import matchesDataFallback from '@/lib/worldcup2026/football.matches.json';
-import teamsDataFallback from '@/lib/worldcup2026/football.teams.json';
 
 interface Team {
   id: string;
@@ -29,6 +27,9 @@ interface Match {
   finished: string;
   time_elapsed: string;
   type: string;
+  stadium_id: string;
+  home_team_label?: string;
+  away_team_label?: string;
 }
 
 
@@ -88,13 +89,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           throw new Error('Remote fetch failed');
         }
       } catch (err) {
-        console.warn('Failed to load public profile details, falling back to local files:', err);
-        try {
-          setMatches(matchesDataFallback);
-          setTeams(teamsDataFallback);
-        } catch (localErr) {
-          console.error(localErr);
-        }
+        console.error('Failed to load public profile details:', err);
+        setError('Failed to retrieve tournament match and team details from the server.');
       } finally {
         setLoading(false);
         setLoadingMatches(false);
@@ -150,7 +146,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   }
 
   const getMatchStatus = (match: Match) => {
-    const kickoff = parseLocalDate(match.local_date);
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     const timeDiff = new Date().getTime() - kickoff.getTime();
     if (timeDiff >= 2 * 60 * 60 * 1000) {
       return 'COMPLETED';

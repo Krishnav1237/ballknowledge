@@ -4,15 +4,55 @@
  * u/[username]/page.tsx, and api/resolve-match/route.ts.
  */
 
+function getStadiumUTCOffset(stadiumId?: string): number {
+  if (!stadiumId) return -4; // Default to EDT (New York)
+  switch (stadiumId.trim()) {
+    // Eastern Daylight Time (EDT / UTC-4)
+    case '7':  // Atlanta
+    case '8':  // Miami
+    case '9':  // Boston
+    case '10': // Philadelphia
+    case '11': // New York/New Jersey
+    case '12': // Toronto
+      return -4;
+
+    // Central Daylight Time (CDT / UTC-5)
+    case '4':  // Dallas
+    case '5':  // Houston
+    case '6':  // Kansas City
+      return -5;
+
+    // Mexico Central Standard Time (CST / UTC-6)
+    case '1':  // Mexico City
+    case '2':  // Guadalajara
+    case '3':  // Monterrey
+      return -6;
+
+    // Pacific Daylight Time (PDT / UTC-7)
+    case '13': // Vancouver
+    case '14': // Seattle
+    case '15': // San Francisco
+    case '16': // Los Angeles
+      return -7;
+
+    default:
+      return -4;
+  }
+}
+
 /**
- * Parses a date string in the format "MM/DD/YYYY HH:MM" (local time, no timezone)
- * into a JavaScript Date object in UTC to ensure identical timestamps on server & client.
+ * Parses a date string in the format "MM/DD/YYYY HH:MM" (stadium local time, no timezone)
+ * into a JavaScript Date object resolved to the correct absolute UTC moment.
  */
-export function parseLocalDate(localDateStr: string): Date {
+export function parseLocalDate(localDateStr: string, stadiumId?: string): Date {
   const [datePart, timePart] = localDateStr.split(' ');
   const [month, day, year] = datePart.split('/').map(Number);
   const [hours, minutes] = timePart.split(':').map(Number);
-  return new Date(Date.UTC(year, month - 1, day, hours, minutes));
+  
+  const offset = getStadiumUTCOffset(stadiumId);
+  // local time = UTC + offset, so UTC = local time - offset
+  const utcMillis = Date.UTC(year, month - 1, day, hours, minutes) - offset * 60 * 60 * 1000;
+  return new Date(utcMillis);
 }
 
 /**
@@ -35,13 +75,10 @@ export function getDeterministicMatchResult(
   awayTeamName: string,
   match?: any
 ) {
-  let hash = 0;
-  const str = matchId + homeTeamName + awayTeamName;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let homeScore = Math.abs((hash >> 4) % 4); // 0–3
-  let awayScore = Math.abs((hash >> 8) % 3); // 0–2
+  let homeScore = 0;
+  let awayScore = 0;
+  let firstGoalscorer = 'None';
+  let motm = 'None';
 
   const hasRealScores = match && 
                         match.home_score !== 'null' && 
@@ -53,16 +90,7 @@ export function getDeterministicMatchResult(
   if (hasRealScores) {
     homeScore = Number(match.home_score);
     awayScore = Number(match.away_score);
-  }
 
-  const scorers = [
-    'Messi', 'Mbappe', 'Ronaldo', 'Bellingham', 'Vinicius',
-    'Kane', 'Musiala', 'Yamal', 'Haaland', 'Griezmann',
-  ];
-  let firstGoalscorer = scorers[Math.abs(hash % scorers.length)];
-  let motm = scorers[Math.abs((hash >> 2) % scorers.length)];
-
-  if (match) {
     const parseScorersWithMinutes = (scorersStr: string) => {
       if (!scorersStr || scorersStr === 'null' || scorersStr === 'undefined') return [];
       const clean = scorersStr.replace(/[{}"“”]/g, '').trim();
@@ -83,11 +111,16 @@ export function getDeterministicMatchResult(
       ...awayGoals.map(g => ({ ...g, team: 'away' }))
     ].sort((a, b) => a.minute - b.minute);
 
+    let hash = 0;
+    const str = matchId + homeTeamName + awayTeamName;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
     if (allGoals.length > 0) {
       firstGoalscorer = allGoals[0].player;
-      // Choose a random goalscorer or the first one as MOTM
       motm = allGoals[Math.abs(hash % allGoals.length)].player;
-    } else if (homeScore === 0 && awayScore === 0 && hasRealScores) {
+    } else if (homeScore === 0 && awayScore === 0) {
       firstGoalscorer = 'None';
       motm = 'Goalkeeper';
     }
