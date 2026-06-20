@@ -35,7 +35,7 @@ const FLAG_EMOJI: Record<string, string> = {
   id: '🇮🇩', cn: '🇨🇳', bh: '🇧🇭', iq: '🇮🇶',
   nz: '🇳🇿', py: '🇵🇾', cl: '🇨🇱', ve: '🇻🇪',
   pe: '🇵🇪', bo: '🇧🇴', pa: '🇵🇦', hn: '🇭🇳',
-  cr: '🇨🇷', jm: '🇯🇲', sv: '🇸🇻', ht: '🇭🇹',
+  cr: '🇨🇷', jm: '🇯🇲', sv: '🇸🇻', ht: '🇭🇹', ba: '🇧🇦', cd: '🇨🇩',
 };
 
 export default function FlagImage({ countryName, size = 'md', className = '' }: FlagImageProps) {

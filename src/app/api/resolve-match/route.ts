@@ -133,13 +133,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Match not found.' }, { status: 404 });
     }
 
-    const homeTeamName = teams.find((t: any) => t.id === match.home_team_id)?.name_en || 'Home';
-    const awayTeamName = teams.find((t: any) => t.id === match.away_team_id)?.name_en || 'Away';
+    const homeTeamName = teams.find((t: any) => t.id === match.home_team_id)?.name_en || match.home_team_label || 'Home';
+    const awayTeamName = teams.find((t: any) => t.id === match.away_team_id)?.name_en || match.away_team_label || 'Away';
     const homeTeamFlag = teams.find((t: any) => t.id === match.home_team_id)?.flag || '';
     const awayTeamFlag = teams.find((t: any) => t.id === match.away_team_id)?.flag || '';
 
     // Get deterministic completed result
-    const result = getDeterministicMatchResult(matchId, homeTeamName, awayTeamName);
+    const result = getDeterministicMatchResult(matchId, homeTeamName, awayTeamName, match);
 
     // 1. Prediction Scoring
     let predictionDelta = 0;

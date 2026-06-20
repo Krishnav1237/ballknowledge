@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
+if (typeof window === 'undefined') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const MATCHES_URL = 'https://worldcup26.ir/get/games';
 const TEAMS_URL = 'https://worldcup26.ir/get/teams';
 

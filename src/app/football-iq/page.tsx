@@ -261,9 +261,20 @@ export default function FootballIQPage() {
 
   // Helper to render a single card slot (larger fonts & modern styling)
   const renderCardSlot = (match: typeof matches[0]) => {
-    const homeTeam = teams.find(t => t.id === match.home_team_id);
-    const awayTeam = teams.find(t => t.id === match.away_team_id);
-    if (!homeTeam || !awayTeam) return null;
+    const homeTeam = teams.find(t => t.id === match.home_team_id) || {
+      id: match.home_team_id,
+      name_en: (match as any).home_team_label || 'Home',
+      flag: 'https://flagcdn.com/w80/un.png',
+      fifa_code: (match as any).home_team_label ? ((match as any).home_team_label.slice(0, 3).toUpperCase()) : 'TBD',
+      groups: match.group || 'A'
+    };
+    const awayTeam = teams.find(t => t.id === match.away_team_id) || {
+      id: match.away_team_id,
+      name_en: (match as any).away_team_label || 'Away',
+      flag: 'https://flagcdn.com/w80/un.png',
+      fifa_code: (match as any).away_team_label ? ((match as any).away_team_label.slice(0, 3).toUpperCase()) : 'TBD',
+      groups: match.group || 'A'
+    };
 
     const userPred = userPreds[match.id];
     const status = getMatchStatus(match);

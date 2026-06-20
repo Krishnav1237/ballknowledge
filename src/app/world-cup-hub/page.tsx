@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { Trophy, Calendar, CheckCircle, Play, Lock, ChevronRight } from 'lucide-react';
 import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import FlagImage from '@/components/FlagImage';
 
 interface Team {
   id: string;
@@ -27,6 +28,8 @@ interface Match {
   finished: string;
   time_elapsed: string;
   type: string;
+  home_team_label?: string;
+  away_team_label?: string;
 }
 
 interface GroupStanding {
@@ -134,9 +137,9 @@ export default function WorldCupHub() {
   const getResolvedScore = (match: Match, team: 'home' | 'away') => {
     const status = getMatchStatus(match);
     if (status === 'COMPLETED' || status === 'LIVE') {
-      const homeTeam = teams.find(t => t.id === match.home_team_id)?.name_en || 'Home';
-      const awayTeam = teams.find(t => t.id === match.away_team_id)?.name_en || 'Away';
-      const result = getDeterministicMatchResult(match.id, homeTeam, awayTeam);
+      const homeTeam = teams.find(t => t.id === match.home_team_id)?.name_en || (match as any).home_team_label || 'Home';
+      const awayTeam = teams.find(t => t.id === match.away_team_id)?.name_en || (match as any).away_team_label || 'Away';
+      const result = getDeterministicMatchResult(match.id, homeTeam, awayTeam, match);
       return team === 'home' ? result.homeScore : result.awayScore;
     }
     return '-';
@@ -169,11 +172,10 @@ export default function WorldCupHub() {
     groupMatches.forEach(match => {
       const status = getMatchStatus(match);
       if (status === 'COMPLETED') {
-        const homeTeam = teams.find(t => t.id === match.home_team_id);
-        const awayTeam = teams.find(t => t.id === match.away_team_id);
-        if (!homeTeam || !awayTeam) return;
+        const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: (match as any).home_team_label || 'Home' };
+        const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: (match as any).away_team_label || 'Away' };
 
-        const result = getDeterministicMatchResult(match.id, homeTeam.name_en, awayTeam.name_en);
+        const result = getDeterministicMatchResult(match.id, homeTeam.name_en, awayTeam.name_en, match);
 
         // Update home team
         const home = standings[match.home_team_id];
@@ -405,9 +407,16 @@ export default function WorldCupHub() {
                     </div>
                   ) : (
                     filteredMatches.map(match => {
-                      const homeTeam = teams.find(t => t.id === match.home_team_id);
-                      const awayTeam = teams.find(t => t.id === match.away_team_id);
-                      if (!homeTeam || !awayTeam) return null;
+                      const homeTeam = teams.find(t => t.id === match.home_team_id) || {
+                        id: match.home_team_id,
+                        name_en: (match as any).home_team_label || 'Home',
+                        flag: ''
+                      };
+                      const awayTeam = teams.find(t => t.id === match.away_team_id) || {
+                        id: match.away_team_id,
+                        name_en: (match as any).away_team_label || 'Away',
+                        flag: ''
+                      };
 
                       const status = getMatchStatus(match);
                       const hasPredicted = !!userPreds[match.id];
@@ -460,8 +469,7 @@ export default function WorldCupHub() {
                           {/* Teams & Scoreboard */}
                           <div className="flex items-center justify-between py-2 bg-black/35 border border-white/5 rounded-xl px-4 my-2 shadow-inner">
                             <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={homeTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
+                              <FlagImage countryName={homeTeam.name_en} size="sm" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0 flex items-center justify-center bg-black/40" />
                               <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate">{homeTeam.name_en}</span>
                             </div>
                             
@@ -481,8 +489,7 @@ export default function WorldCupHub() {
 
                             <div className="flex items-center gap-3 flex-1 justify-end overflow-hidden">
                               <span className="font-display font-black text-[10px] sm:text-xs uppercase tracking-wider text-white group-hover:text-[#D97706] transition-colors truncate text-right">{awayTeam.name_en}</span>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={awayTeam.flag} alt="" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0" />
+                              <FlagImage countryName={awayTeam.name_en} size="sm" className="w-7 h-7 rounded-full object-cover border-2 border-white/10 group-hover:scale-105 group-hover:border-[#D97706]/40 transition-all shrink-0 flex items-center justify-center bg-black/40" />
                             </div>
                           </div>
 
@@ -548,8 +555,7 @@ export default function WorldCupHub() {
                                       <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black font-mono shrink-0 ${rankColorClass}`}>
                                         {i + 1}
                                       </span>
-                                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                                      <img src={st.flag} alt="" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
+                                      <FlagImage countryName={st.name} size="xs" className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0 flex items-center justify-center bg-black/40" />
                                       <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
                                     </td>
                                     <td className="py-2 text-center font-mono text-[10px] text-gray-400">{st.played}</td>

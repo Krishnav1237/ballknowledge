@@ -47,6 +47,8 @@ interface Match {
   finished: string;
   time_elapsed: string;
   type: string;
+  home_team_label?: string;
+  away_team_label?: string;
 }
 
 
@@ -183,8 +185,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     );
   }
 
-  const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: 'Home', flag: '', groups: 'A' };
-  const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: 'Away', flag: '', groups: 'A' };
+  const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_label || 'Home', flag: '', groups: 'A' };
+  const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_label || 'Away', flag: '', groups: 'A' };
 
   // Determine Match Status using real current time
   const kickoff = parseLocalDate(match.local_date);
@@ -428,7 +430,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const hasSubmitted = !!predictions[matchId];
   const isResolved = hasSubmitted && predictions[matchId].resolved && gradingResult;
 
-  const actualResult = getDeterministicMatchResult(matchId, homeTeam.name_en, awayTeam.name_en);
+  const actualResult = getDeterministicMatchResult(matchId, homeTeam.name_en, awayTeam.name_en, match);
 
   const handleCopyLink = () => {
     if (isResolved && gradingResult?.card?.id) {

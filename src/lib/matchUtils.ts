@@ -22,22 +22,67 @@ export function parseLocalDate(localDateStr: string): Date {
 export function getDeterministicMatchResult(
   matchId: string,
   homeTeamName: string,
-  awayTeamName: string
+  awayTeamName: string,
+  match?: any
 ) {
   let hash = 0;
   const str = matchId + homeTeamName + awayTeamName;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const homeScore = Math.abs((hash >> 4) % 4); // 0–3
-  const awayScore = Math.abs((hash >> 8) % 3); // 0–2
+  let homeScore = Math.abs((hash >> 4) % 4); // 0–3
+  let awayScore = Math.abs((hash >> 8) % 3); // 0–2
+
+  const hasRealScores = match && 
+                        match.home_score !== 'null' && 
+                        match.home_score !== undefined &&
+                        match.away_score !== 'null' && 
+                        match.away_score !== undefined &&
+                        match.time_elapsed !== 'notstarted';
+
+  if (hasRealScores) {
+    homeScore = Number(match.home_score);
+    awayScore = Number(match.away_score);
+  }
 
   const scorers = [
     'Messi', 'Mbappe', 'Ronaldo', 'Bellingham', 'Vinicius',
     'Kane', 'Musiala', 'Yamal', 'Haaland', 'Griezmann',
   ];
-  const firstGoalscorer = scorers[Math.abs(hash % scorers.length)];
-  const motm = scorers[Math.abs((hash >> 2) % scorers.length)];
+  let firstGoalscorer = scorers[Math.abs(hash % scorers.length)];
+  let motm = scorers[Math.abs((hash >> 2) % scorers.length)];
+
+  if (match) {
+    const parseScorersWithMinutes = (scorersStr: string) => {
+      if (!scorersStr || scorersStr === 'null' || scorersStr === 'undefined') return [];
+      const clean = scorersStr.replace(/[{}"“”]/g, '').trim();
+      if (!clean) return [];
+      return clean.split(',').map(s => {
+        const matchGroup = s.trim().match(/^([^0-9]+)\s+(\d+)'/);
+        if (matchGroup) {
+          return { player: matchGroup[1].trim(), minute: parseInt(matchGroup[2], 10) };
+        }
+        return { player: s.trim().replace(/\s+\d+'.*$/, ''), minute: 90 };
+      });
+    };
+
+    const homeGoals = parseScorersWithMinutes(match.home_scorers);
+    const awayGoals = parseScorersWithMinutes(match.away_scorers);
+    const allGoals = [
+      ...homeGoals.map(g => ({ ...g, team: 'home' })),
+      ...awayGoals.map(g => ({ ...g, team: 'away' }))
+    ].sort((a, b) => a.minute - b.minute);
+
+    if (allGoals.length > 0) {
+      firstGoalscorer = allGoals[0].player;
+      // Choose a random goalscorer or the first one as MOTM
+      motm = allGoals[Math.abs(hash % allGoals.length)].player;
+    } else if (homeScore === 0 && awayScore === 0 && hasRealScores) {
+      firstGoalscorer = 'None';
+      motm = 'Goalkeeper';
+    }
+  }
+
   const possessionWinner =
     homeScore > awayScore
       ? homeTeamName
@@ -113,5 +158,7 @@ export function getFlagEmoji(countryName: string): string {
   if (n.includes('pan') || n.includes('pnm')) return '🇵🇦';
   if (n.includes('costa')) return '🇨🇷';
   if (n.includes('jam')) return '🇯🇲';
+  if (n.includes('bosnia') || n.includes('bih')) return '🇧🇦';
+  if (n.includes('congo') || n.includes('cod')) return '🇨🇩';
   return '🏳️';
 }
