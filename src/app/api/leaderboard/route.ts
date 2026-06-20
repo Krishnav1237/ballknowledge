@@ -79,6 +79,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ entries, total: entries.length, sortBy });
   } catch (error) {
     console.error('[Leaderboard API] DB error:', error);
-    return NextResponse.json({ entries: [], total: 0, sortBy, error: 'Database error' }, { status: 500 });
+    return NextResponse.json({ entries: [], total: 0, sortBy, error: 'Database error (offline mode)' });
   }
 }
