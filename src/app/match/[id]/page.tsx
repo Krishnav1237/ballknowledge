@@ -797,22 +797,22 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                                 <div
                                   key={idx}
                                   onClick={() => { if (!isChosenElsewhere) handleSelectPlayer(player); }}
-                                  className={`flex items-center justify-between px-2.5 py-2 rounded-xl border transition-all ${
+                                  className={`flex items-center justify-between px-4.5 py-3.5 rounded-xl border transition-all ${
                                     isChosenHere ? 'bg-amber-500/10 border-amber-500/40'
                                     : isChosenElsewhere ? 'bg-gray-900/30 border-white/5 opacity-40 cursor-not-allowed'
                                     : 'bg-black/30 border-white/5 hover:bg-white/5 hover:border-white/10 cursor-pointer'
                                   }`}
                                 >
-                                  <div className="flex items-center gap-2.5">
+                                  <div className="flex items-center gap-3.5">
                                     {/* Player Headshot with Flag Badge */}
-                                    <div className="relative w-8 h-8 shrink-0">
+                                    <div className="relative w-12 h-12 shrink-0">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
                                         src={getPlayerImageUrl(player.name)}
                                         alt={player.name}
                                         className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
                                         onError={(e) => {
-                                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=0f172a,1e1b4b,111827`;
+                                          (e.target as HTMLImageElement).src = `https://media.api-sports.io/football/players/154.png`;
                                         }}
                                       />
                                       <div className="absolute -bottom-1 -right-1 shadow-sm">
@@ -820,14 +820,14 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                                       </div>
                                     </div>
                                     <div>
-                                      <div className="font-display font-black text-[11px] uppercase tracking-wide text-white leading-tight">{player.name}</div>
-                                      <div className="text-[8px] text-gray-400 font-bold uppercase leading-tight mt-0.5">{player.team} • {player.specificPosition}</div>
+                                      <div className="font-display font-black text-sm uppercase tracking-wide text-white leading-tight">{player.name}</div>
+                                      <div className="text-[10px] text-gray-400 font-bold uppercase leading-tight mt-1">{player.team} • {player.specificPosition}</div>
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-1.5 shrink-0">
-                                    {isChosenElsewhere && <span className="text-[7px] font-black uppercase bg-gray-800 text-gray-500 px-1 py-0.5 rounded">Used</span>}
-                                    {isChosenHere && <span className="text-[7px] font-black uppercase bg-amber-500/20 text-amber-400 px-1 py-0.5 rounded">✓</span>}
-                                    <span className="font-mono font-black text-sm text-amber-400">{player.rating}</span>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {isChosenElsewhere && <span className="text-[9px] font-black uppercase bg-gray-800 text-gray-500 px-2 py-1 rounded">Used</span>}
+                                    {isChosenHere && <span className="text-[9px] font-black uppercase bg-amber-500/20 text-amber-400 px-2 py-1 rounded">✓</span>}
+                                    <span className="font-mono font-black text-base text-amber-400">{player.rating}</span>
                                   </div>
                                 </div>
                               );

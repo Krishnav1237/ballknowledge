@@ -272,7 +272,7 @@ export default function WorldCupHub() {
 
       {/* Main Console Layout: Unified Header & Two-Column Grid */}
       <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-6 w-full">
-        <div className="w-full bg-black/45 border border-white/5 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden flex flex-col lg:h-[720px]">
+        <div className="w-full bg-black/45 border border-white/5 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden flex flex-col lg:h-[840px]">
           
           {/* Unified Header Panel */}
           <div className="shrink-0 border-b border-white/5 bg-black/25 backdrop-blur-xs p-4 flex flex-row items-center justify-between gap-4">
@@ -305,16 +305,16 @@ export default function WorldCupHub() {
 
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden h-full">
             {/* Left-Aligned Control Sidebar */}
-            <aside className="lg:col-span-4 bg-black/15 lg:border-r lg:border-white/5 p-4 flex flex-col space-y-4 lg:overflow-y-visible overflow-y-auto custom-scrollbar h-full shrink-0" data-lenis-prevent="true">
+            <aside className="lg:col-span-3 bg-black/15 lg:border-r lg:border-white/5 p-4 flex flex-col space-y-4 lg:overflow-y-visible overflow-y-auto custom-scrollbar h-full shrink-0" data-lenis-prevent="true">
 
 
             {/* Section 1: Navigation Plinths */}
             <div className="space-y-1.5">
-              <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Navigation Console</span>
+              <span className="block text-[11px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Navigation Console</span>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setActiveTab('schedule')}
-                  className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-start gap-2 border ${
+                  className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-xs uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-start gap-2 border ${
                     activeTab === 'schedule'
                       ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
                       : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
@@ -324,7 +324,7 @@ export default function WorldCupHub() {
                 </button>
                 <button
                   onClick={() => setActiveTab('groups')}
-                  className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-start gap-2 border ${
+                  className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-xs uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-start gap-2 border ${
                     activeTab === 'groups'
                       ? 'bg-gradient-to-r from-[#881337]/20 to-[#D97706]/15 border-[#D97706] text-white shadow-[0_0_15px_rgba(217,119,6,0.15)]'
                       : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
@@ -338,7 +338,7 @@ export default function WorldCupHub() {
             {/* Section 2: Fixture Sub-Filters (only active on Schedule tab) */}
             {activeTab === 'schedule' && (
               <div className="space-y-2 border-t border-white/5 pt-4">
-                <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
+                <span className="block text-[11px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
                 <div className="flex flex-col space-y-1.5">
                   {[
                     { id: 'today', label: todayLabel },
@@ -349,7 +349,7 @@ export default function WorldCupHub() {
                     <button
                       key={sub.id}
                       onClick={() => setScheduleFilter(sub.id as any)}
-                      className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer shrink-0 whitespace-nowrap w-full ${
+                      className={`px-3 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider text-left transition-all border cursor-pointer shrink-0 whitespace-nowrap w-full ${
                         scheduleFilter === sub.id
                           ? 'bg-[#881337]/25 border-[#881337] text-rose-300 shadow-sm'
                           : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10'
@@ -369,8 +369,8 @@ export default function WorldCupHub() {
 
             {/* Section 3: Gameplay Guide */}
             <div className="space-y-2 border-t border-white/5 pt-4">
-              <span className="block text-[8.5px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Gameplay Guide</span>
-              <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2.5 text-[10px] leading-relaxed text-gray-400">
+              <span className="block text-[11px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Gameplay Guide</span>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2.5 text-xs leading-relaxed text-gray-400">
                 <div className="flex gap-1.5">
                   <span className="text-[#D97706] font-black">1.</span>
                   <span>Select any active fixture from the match schedule.</span>
@@ -388,7 +388,7 @@ export default function WorldCupHub() {
           </aside>
 
           {/* Right-Aligned Main Content Panel */}
-          <main className="lg:col-span-8 flex flex-col h-full w-full overflow-hidden" data-lenis-prevent="true">
+          <main className="lg:col-span-9 flex flex-col h-full w-full overflow-hidden" data-lenis-prevent="true">
 
             {/* Scrollable match listings / group standings */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-5">

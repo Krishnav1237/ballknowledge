@@ -82,8 +82,41 @@ export function getPlayerImageUrl(playerName: string): string {
       return `https://media.api-sports.io/football/players/${id}.png`;
     }
   }
-  // Return Dicebear SVG avatar with dark slate/indigo/charcoal backgrounds
-  return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(playerName)}&backgroundColor=0f172a,1e1b4b,111827`;
+
+  // Look up player's position from TEAM_ROSTERS to choose a real headshot deterministically
+  let position: 'GK' | 'DEF' | 'MID' | 'FWD' = 'FWD';
+  for (const team of Object.values(TEAM_ROSTERS)) {
+    const found = team.find(p => p.name === playerName);
+    if (found) {
+      position = found.position;
+      break;
+    }
+  }
+
+  // Real player ID pools from API-Football containing active players
+  const gkPool = [280, 275, 479, 189, 843, 138, 188, 617];
+  const defPool = [628, 630, 290, 2382, 2736, 281, 86, 87, 88, 89, 91, 92, 93];
+  const midPool = [2242, 212554, 2831, 152982, 2933, 629, 635, 633, 303, 14400, 161993, 161994, 35882, 35851];
+  const fwdPool = [154, 87, 278, 9971, 9972, 1102, 306, 1459, 2336, 873, 2356, 892];
+
+  let hash = 0;
+  for (let i = 0; i < playerName.length; i++) {
+    hash = playerName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  hash = Math.abs(hash);
+
+  let id = 0;
+  if (position === 'GK') {
+    id = gkPool[hash % gkPool.length];
+  } else if (position === 'DEF') {
+    id = defPool[hash % defPool.length];
+  } else if (position === 'MID') {
+    id = midPool[hash % midPool.length];
+  } else {
+    id = fwdPool[hash % fwdPool.length];
+  }
+
+  return `https://media.api-sports.io/football/players/${id}.png`;
 }
 
 // 48 participating nations populated with 11 real players with exact specific positions & ratings

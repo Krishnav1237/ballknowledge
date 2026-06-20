@@ -106,7 +106,7 @@ export default function PlayerSelectorModal({
                   if (isChosenElsewhere) return;
                   onSelect(player);
                 }}
-                className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                 className={`flex items-center justify-between p-4.5 rounded-2xl border transition-all ${
                   isChosenInCurrentSlot
                     ? 'bg-amber-500/10 border-amber-500/40 text-white'
                     : isChosenElsewhere
@@ -114,39 +114,39 @@ export default function PlayerSelectorModal({
                     : 'bg-black/40 border-white/5 hover:border-white/10 hover:bg-white/5 cursor-pointer text-white'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4.5">
                   {/* Player Image with flag overlay */}
-                  <div className="relative w-10 h-10 shrink-0">
+                  <div className="relative w-14 h-14 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={getPlayerImageUrl(player.name)}
                       alt={player.name}
                       className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=0f172a,1e1b4b,111827`;
+                        (e.target as HTMLImageElement).src = `https://media.api-sports.io/football/players/154.png`;
                       }}
                     />
-                    <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-0.5 shadow-sm leading-none">
+                    <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-1 shadow-sm leading-none">
                       {getFlagEmoji(player.team)}
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-display font-black text-sm uppercase tracking-wide text-white">
+                    <h4 className="font-display font-black text-base uppercase tracking-wide text-white">
                       {player.name}
                     </h4>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">
+                    <p className="text-xs text-gray-400 font-bold uppercase mt-1.5">
                       {player.team} • {player.specificPosition}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                   {isChosenElsewhere && (
-                    <span className="text-[9px] font-black uppercase bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-black uppercase bg-gray-800 text-gray-400 px-2.5 py-1 rounded">
                       In Lineup
                     </span>
                   )}
-                  <span className="font-mono font-black text-base text-amber-400">
+                  <span className="font-mono font-black text-lg text-amber-400">
                     {player.rating}
                   </span>
                 </div>
