@@ -19,7 +19,7 @@ let matchesCache: Cache<any[]> = { data: null, lastFetched: 0 };
 let teamsCache: Cache<any[]> = { data: null, lastFetched: 0 };
 
 // Helper fetch with timeout to prevent slow remote fetches from blocking page renders
-async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 1000): Promise<Response> {
+async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 8000): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -57,6 +57,12 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
       const json = await res.json();
       const data = Array.isArray(json) ? json : (json.games || []);
       matchesCache = { data, lastFetched: now };
+      try {
+        const filePath = getFallbackPath('football.matches.json');
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+      } catch (writeErr) {
+        console.warn('Failed to write fetched matches to local file:', writeErr);
+      }
       return data;
     }
     throw new Error(`Failed to fetch matches: status ${res.status}`);
@@ -98,6 +104,12 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
       const json = await res.json();
       const data = Array.isArray(json) ? json : (json.teams || []);
       teamsCache = { data, lastFetched: now };
+      try {
+        const filePath = getFallbackPath('football.teams.json');
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+      } catch (writeErr) {
+        console.warn('Failed to write fetched teams to local file:', writeErr);
+      }
       return data;
     }
     throw new Error(`Failed to fetch teams: status ${res.status}`);
