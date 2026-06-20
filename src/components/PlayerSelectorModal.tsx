@@ -96,7 +96,7 @@ export default function PlayerSelectorModal({
         {/* Modal Body: Scrollable list of players */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
           {sortedRoster.map((player, idx) => {
-            const isChosenElsewhere = Object.entries(lineup).some(([pos, p]) => p.name === player.name && p.team === player.team);
+            const isChosenElsewhere = Object.entries(lineup).some(([, p]) => p.name === player.name && p.team === player.team);
             const isChosenInCurrentSlot = lineup[activeSlot.id]?.name === player.name && lineup[activeSlot.id]?.team === player.team;
 
             return (

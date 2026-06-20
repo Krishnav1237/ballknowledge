@@ -1,0 +1,112 @@
+
+> football-court-app@0.1.0 lint
+> eslint
+
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/next.config.ts
+  3:7  warning  'SITE_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/api/resolve-match/route.ts
+    5:10  warning  'parseLocalDate' is defined but never used            @typescript-eslint/no-unused-vars
+  177:11  warning  'homeTeamFlag' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  178:11  warning  'awayTeamFlag' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  337:9   error    'cardTheme' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/card/[id]/page.tsx
+   8:31  warning  'Sparkles' is defined but never used  @typescript-eslint/no-unused-vars
+  31:16  warning  'err' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/football-iq/page.tsx
+    3:31   warning  'useRef' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    8:10   warning  'Trophy' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    8:18   warning  'Award' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+    8:25   warning  'Sparkles' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    8:43   warning  'Eye' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    8:67   warning  'Calendar' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    8:90   warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+    8:104  warning  'Bookmark' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  237:9    warning  'handleCopyProfile' is assigned a value but never used                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  243:9    warning  'handleCopyCard' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  312:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  349:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  351:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  382:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  383:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  412:15   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  413:15   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/leaderboard/page.tsx
+  186:10  warning  'refreshing' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/match/[id]/page.tsx
+    3:31   warning  'useRef' is defined but never used                         @typescript-eslint/no-unused-vars
+    4:8    warning  'Link' is defined but never used                           @typescript-eslint/no-unused-vars
+    8:10   warning  'Shield' is defined but never used                         @typescript-eslint/no-unused-vars
+    8:28   warning  'Lock' is defined but never used                           @typescript-eslint/no-unused-vars
+    8:34   warning  'ArrowLeft' is defined but never used                      @typescript-eslint/no-unused-vars
+    8:60   warning  'Play' is defined but never used                           @typescript-eslint/no-unused-vars
+    8:87   warning  'Clipboard' is defined but never used                      @typescript-eslint/no-unused-vars
+    8:98   warning  'Plus' is defined but never used                           @typescript-eslint/no-unused-vars
+    8:104  warning  'X' is defined but never used                              @typescript-eslint/no-unused-vars
+    8:107  warning  'MessageCircle' is defined but never used                  @typescript-eslint/no-unused-vars
+   78:10   warning  'showSelectorModal' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   78:29   warning  'setShowSelectorModal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   83:10   warning  'varStep' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  436:9    warning  'hasFilledPredictions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/page.tsx
+   9:63  warning  'flags' is defined but never used                   @typescript-eslint/no-unused-vars
+  20:10  warning  'dailyProphecy' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  51:18  warning  'e' is defined but never used                       @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/profile/page.tsx
+    3:31  warning  'useRef' is defined but never used                       @typescript-eslint/no-unused-vars
+   11:3   warning  'Settings' is defined but never used                     @typescript-eslint/no-unused-vars
+   12:3   warning  'ShieldAlert' is defined but never used                  @typescript-eslint/no-unused-vars
+   14:3   warning  'CheckCircle' is defined but never used                  @typescript-eslint/no-unused-vars
+   16:3   warning  'Trophy' is defined but never used                       @typescript-eslint/no-unused-vars
+   17:3   warning  'Flag' is defined but never used                         @typescript-eslint/no-unused-vars
+   18:3   warning  'Shield' is defined but never used                       @typescript-eslint/no-unused-vars
+   19:3   warning  'Fingerprint' is defined but never used                  @typescript-eslint/no-unused-vars
+   20:3   warning  'Crown' is defined but never used                        @typescript-eslint/no-unused-vars
+   21:3   warning  'Sparkle' is defined but never used                      @typescript-eslint/no-unused-vars
+   22:3   warning  'BadgeAlert' is defined but never used                   @typescript-eslint/no-unused-vars
+   23:3   warning  'Coins' is defined but never used                        @typescript-eslint/no-unused-vars
+   24:3   warning  'Calendar' is defined but never used                     @typescript-eslint/no-unused-vars
+   25:3   warning  'Lock' is defined but never used                         @typescript-eslint/no-unused-vars
+   26:3   warning  'ChevronRight' is defined but never used                 @typescript-eslint/no-unused-vars
+   27:15  warning  'SparklesIcon' is defined but never used                 @typescript-eslint/no-unused-vars
+   29:10  warning  'motion' is defined but never used                       @typescript-eslint/no-unused-vars
+   29:18  warning  'AnimatePresence' is defined but never used              @typescript-eslint/no-unused-vars
+   47:10  warning  'saveSuccess' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  247:9   warning  'handleSaveSettings' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/app/u/[username]/page.tsx
+    7:10  warning  'Award' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+    7:38  warning  'Eye' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    7:43  warning  'Lock' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    7:49  warning  'Sparkles' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  222:9   warning  'handleCopyProfile' is assigned a value but never used                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  228:9   warning  'handleCopyCard' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  470:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  507:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  508:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  537:35  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  538:35  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/components/MatchLiveChat.tsx
+  4:38  warning  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/components/PlayerSelectorModal.tsx
+  99:69  warning  'pos' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/HP/.gemini/antigravity/brain/4fd3f907-6589-49f8-9814-19863317ad12/.system_generated/worktrees/subagent-Code-Quality-Auditor-codebase-auditor-b5f9a5bd/src/components/SportsCenterCard.tsx
+   48:25  warning  'cardTheme' is defined but never used        @typescript-eslint/no-unused-vars
+   61:24  warning  'cardTheme' is defined but never used        @typescript-eslint/no-unused-vars
+   66:10  warning  'get2Metrics' is defined but never used      @typescript-eslint/no-unused-vars
+  176:3   warning  'avatarStyle' is defined but never used      @typescript-eslint/no-unused-vars
+  185:9   warning  'suffix' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 80 problems (1 error, 79 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

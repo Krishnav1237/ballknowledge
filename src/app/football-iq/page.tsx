@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
-import { Trophy, Award, Sparkles, Share2, Eye, ShieldAlert, Lock, Calendar, CheckCircle, ChevronRight, Bookmark } from 'lucide-react';
+import { Share2, ShieldAlert, CheckCircle, Lock } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
 interface Team {
@@ -39,8 +39,7 @@ export default function FootballIQPage() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
   const [userPreds, setUserPreds] = useState<any>({});
   const [selectedCard, setSelectedCard] = useState<any>(null);
-  const [copiedProfile, setCopiedProfile] = useState(false);
-  const [copiedCard, setCopiedCard] = useState(false);
+
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -234,19 +233,7 @@ export default function FootballIQPage() {
       : `${window.location.origin}/card/${idStr}`;
   };
 
-  const handleCopyProfile = () => {
-    navigator.clipboard.writeText(getShareUrl('profile'));
-    setCopiedProfile(true);
-    setTimeout(() => setCopiedProfile(false), 2000);
-  };
 
-  const handleCopyCard = () => {
-    if (selectedCard) {
-      navigator.clipboard.writeText(getShareUrl('card', selectedCard.id));
-      setCopiedCard(true);
-      setTimeout(() => setCopiedCard(false), 2000);
-    }
-  };
 
   // Filter matches for active matchday
   const matchdayMatches = matches.filter(m => m.matchday === selectedMatchday && m.type === 'group');
@@ -697,7 +684,7 @@ export default function FootballIQPage() {
                     </span>
                     
                     {/* Copy notification overlay */}
-                    {(selectedCard ? copiedCard : copiedProfile) && (
+                    {copiedPlatform !== null && (
                       <div className="absolute top-1/2 left-[-90px] -translate-y-1/2 px-2.5 py-1 bg-green-500 text-black text-[9px] font-black uppercase rounded shadow-lg animate-bounce z-40">
                         Copied!
                       </div>
@@ -813,7 +800,7 @@ export default function FootballIQPage() {
                       className="social-share-btn social-share-btn-sm social-btn-copy cursor-pointer"
                       title="Copy URL"
                     >
-                      {(selectedCard ? copiedCard : copiedProfile) ? (
+                      {copiedPlatform === 'copy' ? (
                         <CheckCircle className="w-3.5 h-3.5 text-green-400" />
                       ) : (
                         <Share2 className="w-3.5 h-3.5" />

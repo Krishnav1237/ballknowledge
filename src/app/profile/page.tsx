@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, FootballIQProfile } from '@/lib/profileSync';
@@ -8,25 +8,9 @@ import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
   User, 
-  Settings, 
-  ShieldAlert, 
   Sparkles, 
-  CheckCircle, 
-  RotateCcw, 
-  Trophy, 
-  Flag, 
-  Shield, 
-  Fingerprint, 
-  Crown,
-  Sparkle,
-  BadgeAlert,
-  Coins,
-  Calendar,
-  Lock,
-  ChevronRight,
-  Sparkles as SparklesIcon
+  RotateCcw
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
@@ -44,7 +28,6 @@ export default function ProfileSettingsPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authStage, setAuthStage] = useState('');
   const [authProgress, setAuthProgress] = useState(0);
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // AI synthesis states
   const [isSynthesizing, setIsSynthesizing] = useState(false);
@@ -244,39 +227,7 @@ export default function ProfileSettingsPage() {
     }, 2200);
   };
 
-  const handleSaveSettings = () => {
-    if (!profile) return;
-    if (!username.trim()) {
-      alert('Username cannot be empty!');
-      return;
-    }
 
-    const updated: FootballIQProfile = {
-      ...profile,
-      username: username.trim().replace(/\s+/g, '_'),
-      favoriteClub,
-      favoriteNation,
-      role,
-      avatarSeed,
-      avatarStyle
-    };
-
-    setProfile(updated);
-    saveStoredProfile(updated);
-    
-    // Sync with DB if online
-    fetch('/api/resolve-match', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        syncOnly: true,
-        profile: updated
-      })
-    }).catch(err => console.warn('Offline sync skipped on save:', err));
-
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-  };
 
   const handleResetCampaign = () => {
     if (confirm('🚨 RED CARD DECISION: This will permanently terminate your manager contract, delete all predictions, wipe your collected verdict cards, and reset your rating to 50 OVR. This action cannot be undone. Are you sure you want to proceed?')) {

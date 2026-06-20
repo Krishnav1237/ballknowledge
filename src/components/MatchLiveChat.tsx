@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Flame, MessageCircle, Zap, AlertCircle } from 'lucide-react';
+import { Send, Flame, MessageCircle, AlertCircle } from 'lucide-react';
 
 interface ChatMessage {
   id: string;

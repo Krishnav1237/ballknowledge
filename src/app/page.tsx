@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 
-import { BREAKING_NEWS, DAILY_PROPHECIES, PLAYERS, COUNTRIES, flags } from '@/lib/landingData';
+import { BREAKING_NEWS, PLAYERS, COUNTRIES } from '@/lib/landingData';
 
 
 
@@ -17,7 +17,6 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const yBg = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
-  const [dailyProphecy, setDailyProphecy] = useState(DAILY_PROPHECIES[0]);
 
   // ── Form sandboxes ────────────────────────────────────────────────────────────
   const [sandboxText,  setSandboxText]  = useState('Messi is the greatest World Cup player of all time');
@@ -34,8 +33,6 @@ export default function Home() {
   
   useEffect(() => {
     setMounted(true);
-    const day = new Date().getDate();
-    setDailyProphecy(DAILY_PROPHECIES[day % DAILY_PROPHECIES.length]);
 
     let timer: NodeJS.Timeout | undefined;
 
@@ -48,7 +45,7 @@ export default function Home() {
         setLoading(false);
         try {
           sessionStorage.setItem('bk_preloaded', 'true');
-        } catch (e) {
+        } catch {
           // ignore session storage exceptions
         }
       }, 400); // Fast initial splash

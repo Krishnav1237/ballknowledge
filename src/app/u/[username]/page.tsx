@@ -4,7 +4,7 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { Award, ShieldAlert, Trophy, Eye, Lock, Sparkles, Share2, CheckCircle } from 'lucide-react';
+import { ShieldAlert, Trophy, Share2, CheckCircle } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
 interface Team {
@@ -51,8 +51,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   // 3D Tilt states
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
   const [miniCardTilts, setMiniCardTilts] = useState<Record<string, any>>({});
-  const [copiedProfile, setCopiedProfile] = useState(false);
-  const [copiedCard, setCopiedCard] = useState(false);
+
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
 
   const handleCopyLink = (platform: string, url: string) => {
@@ -219,19 +218,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       : `${window.location.origin}/card/${idStr}`;
   };
 
-  const handleCopyProfile = () => {
-    navigator.clipboard.writeText(getShareUrl('profile'));
-    setCopiedProfile(true);
-    setTimeout(() => setCopiedProfile(false), 2000);
-  };
 
-  const handleCopyCard = () => {
-    if (selectedCard) {
-      navigator.clipboard.writeText(getShareUrl('card', selectedCard.id));
-      setCopiedCard(true);
-      setTimeout(() => setCopiedCard(false), 2000);
-    }
-  };
 
   // Filter matches for matchday
   const matchdayMatches = matches.filter(m => m.matchday === selectedMatchday && m.type === 'group');
@@ -650,7 +637,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                     </span>
                     
                     {/* Copy notification overlay */}
-                    {((selectedCard ? copiedCard : copiedProfile) || copiedPlatform === 'copy') && (
+                    {copiedPlatform !== null && (
                       <div className="absolute top-1/2 left-[-90px] -translate-y-1/2 px-2.5 py-1 bg-green-500 text-black text-[9px] font-black uppercase rounded shadow-lg animate-bounce z-40">
                         Copied!
                       </div>
@@ -766,7 +753,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                       className="social-share-btn social-share-btn-sm social-btn-copy cursor-pointer"
                       title="Copy URL"
                     >
-                      {(selectedCard ? copiedCard : copiedProfile) ? (
+                      {copiedPlatform === 'copy' ? (
                         <CheckCircle className="w-3.5 h-3.5 text-green-400" />
                       ) : (
                         <Share2 className="w-3.5 h-3.5" />
