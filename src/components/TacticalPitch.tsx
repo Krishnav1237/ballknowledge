@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
-import { Player } from '@/lib/roster';
+import { Player, getPlayerImageUrl } from '@/lib/roster';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK', left: '50%', top: '88%' },
@@ -102,23 +102,34 @@ export default function TacticalPitch({
                   selectedPlayer.team === homeTeamName ? 'border-amber-500/40 hover:border-amber-400' : 'border-[#881337]/50 hover:border-[#881337]'
                 } shadow-[0_0_8px_rgba(0,0,0,0.5)] flex flex-col items-center justify-between p-0.5 sm:p-1 cursor-pointer active:scale-95 transition-transform`}
               >
-                {/* Rating / Position */}
-                <div className="w-full flex items-center justify-between text-[7px] min-[370px]:text-[8px] sm:text-[10px] font-black text-gray-300">
+                 {/* Rating / Position */}
+                <div className="w-full flex items-center justify-between text-[7px] min-[370px]:text-[8px] sm:text-[10px] font-black text-gray-300 shrink-0">
                   <span className="font-mono text-amber-400">{selectedPlayer.rating}</span>
                   <span className="uppercase text-[6px] min-[370px]:text-[7px] sm:text-[9px] text-gray-400">{slot.label}</span>
                 </div>
 
-                {/* Flag emoji */}
-                <div className="text-[10px] min-[370px]:text-[12px] sm:text-sm">
-                  {getFlagEmoji(selectedPlayer.team)}
+                {/* Player image container with flag overlay */}
+                <div className="relative w-6 h-6 min-[370px]:w-8 min-[370px]:h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getPlayerImageUrl(selectedPlayer.name)}
+                    alt={selectedPlayer.name}
+                    className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(selectedPlayer.name)}&backgroundColor=0f172a,1e1b4b,111827`;
+                    }}
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 text-[7px] min-[370px]:text-[9px] sm:text-[11px] bg-black/60 rounded-full px-0.5 shadow-sm leading-none">
+                    {getFlagEmoji(selectedPlayer.team)}
+                  </div>
                 </div>
 
                 {/* Player Name */}
-                <div className="w-full text-center">
-                  <p className="font-display font-black text-[5.5px] min-[370px]:text-[7px] sm:text-[9px] text-white truncate uppercase tracking-tighter">
+                <div className="w-full text-center shrink-0">
+                  <p className="font-display font-black text-[5.5px] min-[370px]:text-[7px] sm:text-[9px] text-white truncate uppercase tracking-tighter leading-none">
                     {selectedPlayer.name.split(' ').pop()}
                   </p>
-                  <p className="text-[4.5px] min-[370px]:text-[5.5px] sm:text-[7px] text-gray-500 font-bold truncate">
+                  <p className="text-[4px] min-[370px]:text-[5px] sm:text-[7px] text-gray-500 font-bold truncate leading-none mt-0.5">
                     {selectedPlayer.team}
                   </p>
                 </div>

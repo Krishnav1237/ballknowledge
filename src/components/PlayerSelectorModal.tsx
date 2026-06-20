@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Player, getRosterForTeam } from '@/lib/roster';
+import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot } from '@/lib/roster';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -69,8 +69,8 @@ export default function PlayerSelectorModal({
   const awayRoster = getRosterForTeam(awayTeam.name_en, awayTeam.flag);
   const combinedRoster = [...homeRoster, ...awayRoster];
   
-  // Filter by category
-  const filteredRoster = combinedRoster.filter(p => p.position === activeSlot.category);
+  // Filter by specific position
+  const filteredRoster = combinedRoster.filter(p => isPlayerAllowedForSlot(p, activeSlot.id));
   // Sort by rating descending
   const sortedRoster = [...filteredRoster].sort((a, b) => b.rating - a.rating);
 
@@ -82,7 +82,7 @@ export default function PlayerSelectorModal({
           <div>
             <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Select Player</span>
             <h3 className="font-display font-black text-base uppercase tracking-wider text-white mt-0.5">
-              Position: {activeSlot.label} ({activeSlot.category})
+              Position: {activeSlot.label}
             </h3>
           </div>
           <button
@@ -115,13 +115,27 @@ export default function PlayerSelectorModal({
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xl shrink-0">{getFlagEmoji(player.team)}</span>
+                  {/* Player Image with flag overlay */}
+                  <div className="relative w-10 h-10 shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getPlayerImageUrl(player.name)}
+                      alt={player.name}
+                      className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=0f172a,1e1b4b,111827`;
+                      }}
+                    />
+                    <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-0.5 shadow-sm leading-none">
+                      {getFlagEmoji(player.team)}
+                    </div>
+                  </div>
                   <div>
-                    <h4 className="font-display font-black text-sm uppercase tracking-wide">
+                    <h4 className="font-display font-black text-sm uppercase tracking-wide text-white">
                       {player.name}
                     </h4>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase">
-                      {player.team} • {player.position}
+                    <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">
+                      {player.team} • {player.specificPosition}
                     </p>
                   </div>
                 </div>

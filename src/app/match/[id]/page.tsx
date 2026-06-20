@@ -6,7 +6,7 @@ import NextImage from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
 import { Shield, Sparkles, Lock, ArrowLeft, Trophy, Flame, Play, AlertCircle, Share2, Clipboard, Plus, X, MessageCircle, CheckCircle } from 'lucide-react';
-import { Player, getRosterForTeam } from '@/lib/roster';
+import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot } from '@/lib/roster';
 import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
@@ -787,20 +787,12 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                               ...getRosterForTeam(homeTeam.name_en, homeTeam.flag),
                               ...getRosterForTeam(awayTeam.name_en, awayTeam.flag)
                             ]
-                              .filter(p => p.position === activeSlot.category)
+                              .filter(p => isPlayerAllowedForSlot(p, activeSlot.id))
                               .sort((a, b) => b.rating - a.rating);
-
-                            const POS_COLORS: Record<string, string> = {
-                              GK: 'bg-amber-500 text-black',
-                              DEF: 'bg-blue-600 text-white',
-                              MID: 'bg-emerald-600 text-white',
-                              FWD: 'bg-rose-600 text-white',
-                            };
 
                             return sortedRoster.map((player, idx) => {
                               const isChosenElsewhere = Object.entries(lineup).some(([, p]) => p.name === player.name && p.team === player.team);
                               const isChosenHere = lineup[selectedSlot]?.name === player.name && lineup[selectedSlot]?.team === player.team;
-                              const initials = player.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
                               return (
                                 <div
                                   key={idx}
@@ -811,16 +803,25 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                                     : 'bg-black/30 border-white/5 hover:bg-white/5 hover:border-white/10 cursor-pointer'
                                   }`}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    {/* Position avatar */}
-                                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-black shrink-0 ${POS_COLORS[player.position] || 'bg-gray-700 text-white'}`}>
-                                      {initials}
+                                  <div className="flex items-center gap-2.5">
+                                    {/* Player Headshot with Flag Badge */}
+                                    <div className="relative w-8 h-8 shrink-0">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={getPlayerImageUrl(player.name)}
+                                        alt={player.name}
+                                        className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=0f172a,1e1b4b,111827`;
+                                        }}
+                                      />
+                                      <div className="absolute -bottom-1 -right-1 shadow-sm">
+                                        <FlagImage countryName={player.team} size="xs" />
+                                      </div>
                                     </div>
-                                    {/* Flag */}
-                                    <FlagImage countryName={player.team} size="xs" className="shrink-0" />
                                     <div>
                                       <div className="font-display font-black text-[11px] uppercase tracking-wide text-white leading-tight">{player.name}</div>
-                                      <div className="text-[8px] text-gray-500 font-bold uppercase leading-tight">{player.team}</div>
+                                      <div className="text-[8px] text-gray-400 font-bold uppercase leading-tight mt-0.5">{player.team} • {player.specificPosition}</div>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1.5 shrink-0">

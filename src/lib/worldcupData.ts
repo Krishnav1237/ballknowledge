@@ -18,6 +18,23 @@ interface Cache<T> {
 let matchesCache: Cache<any[]> = { data: null, lastFetched: 0 };
 let teamsCache: Cache<any[]> = { data: null, lastFetched: 0 };
 
+// Helper fetch with timeout to prevent slow remote fetches from blocking page renders
+async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 1000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return res;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
+
 // Helper to get local fallback path
 function getFallbackPath(filename: string): string {
   return path.join(process.cwd(), 'src/lib/worldcup2026', filename);
@@ -32,7 +49,7 @@ export async function fetchWorldCupMatches(): Promise<any[]> {
   }
 
   try {
-    const res = await fetch(MATCHES_URL, {
+    const res = await fetchWithTimeout(MATCHES_URL, {
       next: { revalidate: 300 } // Next.js level caching fallback
     });
     
@@ -73,7 +90,7 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
   }
 
   try {
-    const res = await fetch(TEAMS_URL, {
+    const res = await fetchWithTimeout(TEAMS_URL, {
       next: { revalidate: 300 }
     });
 

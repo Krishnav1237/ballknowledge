@@ -305,7 +305,7 @@ export default function WorldCupHub() {
 
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden h-full">
             {/* Left-Aligned Control Sidebar */}
-            <aside className="lg:col-span-3 bg-black/15 lg:border-r lg:border-white/5 p-4 flex flex-col space-y-4 lg:overflow-y-visible overflow-y-auto custom-scrollbar h-full shrink-0" data-lenis-prevent="true">
+            <aside className="lg:col-span-4 bg-black/15 lg:border-r lg:border-white/5 p-4 flex flex-col space-y-4 lg:overflow-y-visible overflow-y-auto custom-scrollbar h-full shrink-0" data-lenis-prevent="true">
 
 
             {/* Section 1: Navigation Plinths */}
@@ -343,7 +343,6 @@ export default function WorldCupHub() {
                   {[
                     { id: 'today', label: todayLabel },
                     { id: 'live', label: 'Live Now' },
-                    { id: 'tomorrow', label: 'Tomorrow' },
                     { id: 'upcoming', label: 'Upcoming' },
                     { id: 'completed', label: 'Completed Results' }
                   ].map(sub => (
@@ -389,7 +388,7 @@ export default function WorldCupHub() {
           </aside>
 
           {/* Right-Aligned Main Content Panel */}
-          <main className="lg:col-span-9 flex flex-col h-full w-full overflow-hidden" data-lenis-prevent="true">
+          <main className="lg:col-span-8 flex flex-col h-full w-full overflow-hidden" data-lenis-prevent="true">
 
             {/* Scrollable match listings / group standings */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
