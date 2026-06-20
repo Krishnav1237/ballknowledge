@@ -46,126 +46,20 @@ function getVerdictColor(verdict: string, ovr: number): { color: string; glow: s
 
 // ─── Theme Selector (Grades, Borders & Glows) ──────────────────────────────────
 function getThemeColors(cardTheme?: string) {
-  const theme = cardTheme || 'gold';
-  switch (theme) {
-    case 'toty':
-      return {
-        bgId: 'toty-premium-pat',
-        borderId: 'toty-border',
-        accentColor: '#FBBF24',
-        textColor: '#60A5FA',
-        glow: 'rgba(59,130,246,0.5)',
-        glowId: 'toty-glow',
-        bgFilter: 'none',
-      };
-    case 'tots':
-      return {
-        bgId: 'toty-premium-pat',
-        borderId: 'tots-border',
-        accentColor: '#22D3EE',
-        textColor: '#22D3EE',
-        glow: 'rgba(6,182,212,0.45)',
-        glowId: 'tots-glow',
-        bgFilter: 'hue-rotate(50deg) saturate(1.2)',
-      };
-    case 'icon':
-      return {
-        bgId: 'gold-premium-pat',
-        borderId: 'icon-border',
-        accentColor: '#D97706',
-        textColor: '#E2E8F0',
-        glow: 'rgba(255,255,255,0.25)',
-        glowId: 'icon-glow',
-        bgFilter: 'saturate(0.05) brightness(0.95)',
-      };
-    case 'hero':
-      return {
-        bgId: 'toty-premium-pat',
-        borderId: 'hero-border',
-        accentColor: '#EC4899',
-        textColor: '#EC4899',
-        glow: 'rgba(236,72,153,0.5)',
-        glowId: 'hero-glow',
-        bgFilter: 'hue-rotate(125deg) saturate(1.2) contrast(1.1)',
-      };
-    case 'wc_legend':
-      return {
-        bgId: 'gold-premium-pat',
-        borderId: 'wc-legend-border',
-        accentColor: '#34D399',
-        textColor: '#34D399',
-        glow: 'rgba(5,150,105,0.4)',
-        glowId: 'wc-glow',
-        bgFilter: 'hue-rotate(-50deg) saturate(0.8) contrast(1.15)',
-      };
-    case 'ballon_dor':
-      return {
-        bgId: 'gold-premium-pat',
-        borderId: 'ballon-dor-border',
-        accentColor: '#FBBF24',
-        textColor: '#FBBF24',
-        glow: 'rgba(251,191,36,0.5)',
-        glowId: 'ballon-glow',
-        bgFilter: 'brightness(1.1) contrast(1.1)',
-      };
-    case 'var':
-      return {
-        bgId: 'toty-premium-pat',
-        borderId: 'red-border',
-        accentColor: '#EF4444',
-        textColor: '#FCA5A5',
-        glow: 'rgba(220,38,38,0.5)',
-        glowId: 'var-glow',
-        bgFilter: 'hue-rotate(195deg) saturate(1.8) brightness(0.7)',
-      };
-    case 'spinner':
-      return {
-        bgId: 'toty-premium-pat',
-        borderId: 'green-border',
-        accentColor: '#10B981',
-        textColor: '#A7F3D0',
-        glow: 'rgba(16,185,129,0.45)',
-        glowId: 'spinner-glow',
-        bgFilter: 'hue-rotate(95deg) saturate(1.3) brightness(0.7)',
-      };
-    case 'bottler':
-      return {
-        bgId: 'gold-premium-pat',
-        borderId: 'silver-border',
-        accentColor: '#64748B',
-        textColor: '#CBD5E1',
-        glow: 'rgba(100,116,139,0.3)',
-        glowId: 'bottler-glow',
-        bgFilter: 'saturate(0) brightness(0.6)',
-      };
-    case 'gold':
-    default:
-      return {
-        bgId: 'gold-premium-pat',
-        borderId: 'gold-border',
-        accentColor: '#D97706',
-        textColor: '#FFE082',
-        glow: 'rgba(217,119,6,0.4)',
-        glowId: 'gold-glow',
-        bgFilter: 'none',
-      };
-  }
+  return {
+    bgId: 'gold-premium-pat',
+    borderId: 'gold-border',
+    accentColor: '#D97706',
+    textColor: '#FFE082',
+    glow: 'rgba(217,119,6,0.4)',
+    glowId: 'gold-glow',
+    bgFilter: 'none',
+  };
 }
 
 // ─── Theme Label ─────────────────────────────────────────────────────────────
 function getThemeLabel(cardTheme?: string): string {
-  switch (cardTheme) {
-    case 'toty': return 'TOTY';
-    case 'tots': return 'TOTS';
-    case 'icon': return 'ICON';
-    case 'hero': return 'HERO';
-    case 'wc_legend': return 'WC';
-    case 'ballon_dor': return 'BdO';
-    case 'var': return 'VAR';
-    case 'spinner': return 'SPR';
-    case 'bottler': return 'BOT';
-    default: return 'GOLD';
-  }
+  return 'GOLD';
 }
 
 // ─── 2 Metric Derivation ─────────────────────────────────────────────────────
@@ -488,110 +382,21 @@ export default function SportsCenterCard({
       >
         <defs>
           {/* Patterns for background images */}
-          <pattern id="toty-premium-pat" width="340" height="480" patternUnits="userSpaceOnUse">
-            <image href="/images/toty_bg_premium.webp" x="0" y="0" width="340" height="480" preserveAspectRatio="xMidYMid slice" />
-          </pattern>
           <pattern id="gold-premium-pat" width="340" height="480" patternUnits="userSpaceOnUse">
             <image href="/images/card_bg.webp" x="0" y="0" width="340" height="480" preserveAspectRatio="xMidYMid slice" />
           </pattern>
 
-
           {/* Theme Border Gradients */}
-          <linearGradient id="toty-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#1E3A8A" />
-            <stop offset="30%" stopColor="#3B82F6" />
-            <stop offset="70%" stopColor="#FBBF24" />
-            <stop offset="100%" stopColor="#1E3A8A" />
-          </linearGradient>
-          <linearGradient id="tots-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#0F172A" />
-            <stop offset="30%" stopColor="#06B6D4" />
-            <stop offset="70%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#0F172A" />
-          </linearGradient>
-          <linearGradient id="icon-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="50%" stopColor="#D97706" />
-            <stop offset="100%" stopColor="#E2E8F0" />
-          </linearGradient>
-          <linearGradient id="hero-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#F97316" />
-            <stop offset="50%" stopColor="#EC4899" />
-            <stop offset="100%" stopColor="#8B5CF6" />
-          </linearGradient>
-          <linearGradient id="wc-legend-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#059669" />
-            <stop offset="50%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#047857" />
-          </linearGradient>
-          <linearGradient id="ballon-dor-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#000000" />
-            <stop offset="25%" stopColor="#FBBF24" />
-            <stop offset="50%" stopColor="#FFF" />
-            <stop offset="75%" stopColor="#FBBF24" />
-            <stop offset="100%" stopColor="#000000" />
-          </linearGradient>
           <linearGradient id="gold-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#FFE082" />
             <stop offset="50%" stopColor="#D97706" />
             <stop offset="100%" stopColor="#B45309" />
           </linearGradient>
-          <linearGradient id="red-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FCA5A5" />
-            <stop offset="50%" stopColor="#DC2626" />
-            <stop offset="100%" stopColor="#7F1D1D" />
-          </linearGradient>
-          <linearGradient id="green-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#86EFAC" />
-            <stop offset="50%" stopColor="#16A34A" />
-            <stop offset="100%" stopColor="#14532D" />
-          </linearGradient>
-          <linearGradient id="silver-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#F1F5F9" />
-            <stop offset="50%" stopColor="#64748B" />
-            <stop offset="100%" stopColor="#334155" />
-          </linearGradient>
 
           {/* Radial glow definitions */}
-          <radialGradient id="toty-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#3B82F6" stopOpacity="1" />
-            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-          </radialGradient>
           <radialGradient id="gold-glow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#D97706" stopOpacity="1" />
             <stop offset="100%" stopColor="#D97706" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="tots-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#06B6D4" stopOpacity="1" />
-            <stop offset="100%" stopColor="#06B6D4" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="icon-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="hero-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#EC4899" stopOpacity="1" />
-            <stop offset="100%" stopColor="#EC4899" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="wc-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#059669" stopOpacity="1" />
-            <stop offset="100%" stopColor="#059669" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="ballon-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#FBBF24" stopOpacity="1" />
-            <stop offset="100%" stopColor="#FBBF24" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="var-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#EF4444" stopOpacity="1" />
-            <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="spinner-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#10B981" stopOpacity="1" />
-            <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="bottler-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#64748B" stopOpacity="1" />
-            <stop offset="100%" stopColor="#64748B" stopOpacity="0" />
           </radialGradient>
 
           {/* Football Goal Net Hexagonal Pattern */}

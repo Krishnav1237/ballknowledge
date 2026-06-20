@@ -290,19 +290,8 @@ export default function FootballIQPage() {
     // Case A: Card Unlocked / Claimed
     if (userPred?.resolved && userPred?.card) {
       const card = userPred.card;
-      const miniThemeClass = {
-        LEGENDARY: 'card-mini-toty',
-        EPIC: 'card-mini-var',
-        RARE: 'card-mini-gold',
-        COMMON: 'card-mini-bottler'
-      }[card.rarity as 'LEGENDARY'|'EPIC'|'RARE'|'COMMON'] || 'card-mini-bottler';
-
-      const textGlow = {
-        LEGENDARY: 'text-amber-500 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]',
-        EPIC: 'text-rose-500 drop-shadow-[0_0_4px_rgba(244,63,94,0.5)]',
-        RARE: 'text-amber-400',
-        COMMON: 'text-gray-400'
-      }[card.rarity as 'LEGENDARY'|'EPIC'|'RARE'|'COMMON'] || 'text-gray-400';
+      const miniThemeClass = 'card-mini-default';
+      const textGlow = 'text-amber-400';
 
       return (
         <div
@@ -689,7 +678,7 @@ export default function FootballIQPage() {
                               { label: 'SEL', name: 'Team Selection', val: profile.tacticalRating },
                               { label: 'CMY', name: 'Community Banter', val: profile.communityRating }
                             ],
-                            cardTheme: profile.overallRating >= 85 ? 'toty' : (profile.overallRating >= 70 ? 'gold' : (profile.overallRating >= 45 ? 'var' : 'bottler')),
+                            cardTheme: 'gold',
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
                             playerName: profile.username,
                             playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM',

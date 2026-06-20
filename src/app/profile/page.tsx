@@ -308,7 +308,7 @@ export default function ProfileSettingsPage() {
       desc: 'Registered tactician.',
       badge: 'trophy'
     },
-    cardTheme: role === 'ADMIN' ? 'toty' : role === 'PREMIUM' ? 'gold' : 'silver',
+    cardTheme: 'gold',
     countryFlag: favoriteNation ? getFlagEmoji(favoriteNation) : '🏳️',
     playerName: username.toUpperCase() || 'MANAGER',
     playerPosition: 'MGR',

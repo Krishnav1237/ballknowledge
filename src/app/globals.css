@@ -140,69 +140,7 @@ html.lenis, html.lenis body {
   justify-content: space-between;
 }
 
-/* Card Rarity Design Overlays */
-.card-wc-champion {
-  background: linear-gradient(135deg, #FFE082 0%, #D97706 50%, #B45309 100%);
-  box-shadow: 0 15px 45px rgba(217, 119, 6, 0.35);
-}
-.card-wc-champion .fut-shield-inner {
-  background: radial-gradient(circle at 50% 20%, #0d1527 0%, #030712 100%);
-}
-.card-wc-champion .fut-shield-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(217, 119, 6, 0.15) 1px, transparent 0);
-  background-size: 24px 24px;
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-.card-wc-bottler {
-  background: linear-gradient(135deg, #F1F5F9 0%, #64748B 50%, #334155 100%);
-  box-shadow: 0 15px 35px rgba(100, 116, 139, 0.25);
-}
-.card-wc-bottler .fut-shield-inner {
-  background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 100%);
-}
-.card-wc-bottler .fut-shield-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
-}
-
-.card-wc-var {
-  background: linear-gradient(135deg, #FCA5A5 0%, #DC2626 50%, #7F1D1D 100%);
-  box-shadow: 0 15px 45px rgba(220, 38, 38, 0.35);
-}
-.card-wc-var .fut-shield-inner {
-  background: radial-gradient(circle at 50% 20%, #3b0712 0%, #050508 100%);
-}
-.card-wc-var .fut-shield-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(45deg, rgba(220, 38, 38, 0.03) 0px, rgba(220, 38, 38, 0.03) 2px, transparent 2px, transparent 8px);
-  pointer-events: none;
-}
-
-.card-wc-spinner {
-  background: linear-gradient(135deg, #86EFAC 0%, #16A34A 50%, #14532D 100%);
-  box-shadow: 0 15px 35px rgba(22, 163, 74, 0.3);
-}
-.card-wc-spinner .fut-shield-inner {
-  background: radial-gradient(circle at 50% 20%, #022c22 0%, #020617 100%);
-}
-.card-wc-spinner .fut-shield-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle, rgba(22, 163, 74, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
+/* Card Rarity Design Overlays - Cleared for custom implementation */
 
 /* Holographic Sheen Overlay */
 .holographic-sheen {
@@ -447,36 +385,12 @@ html.lenis, html.lenis body {
 }
 
 /* Mini Rarity Themes & Special Slot Cover States */
-.card-mini-toty {
-  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #FBBF24 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-}
-.card-mini-toty .card-mini-fut-inner {
-  background: radial-gradient(circle at 50% 20%, #0c152b 0%, #03060d 100%);
-}
-
-.card-mini-gold {
+.card-mini-default {
   background: linear-gradient(135deg, #FFE082 0%, #D97706 50%, #B45309 100%);
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
 }
-.card-mini-gold .card-mini-fut-inner {
+.card-mini-default .card-mini-fut-inner {
   background: radial-gradient(circle at 50% 20%, #1e1305 0%, #090602 100%);
-}
-
-.card-mini-var {
-  background: linear-gradient(135deg, #FCA5A5 0%, #DC2626 50%, #7F1D1D 100%);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
-}
-.card-mini-var .card-mini-fut-inner {
-  background: radial-gradient(circle at 50% 20%, #2b040c 0%, #0c0204 100%);
-}
-
-.card-mini-bottler {
-  background: linear-gradient(135deg, #F1F5F9 0%, #64748B 50%, #334155 100%);
-  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.15);
-}
-.card-mini-bottler .card-mini-fut-inner {
-  background: radial-gradient(circle at 50% 20%, #171c26 0%, #080a0f 100%);
 }
 
 /* Premium Card Back Holographic States for Empty, Locked, & Missed slots */

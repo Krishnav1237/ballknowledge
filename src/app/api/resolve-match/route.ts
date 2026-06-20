@@ -334,24 +334,20 @@ export async function POST(request: Request) {
     // 4. Card Rarity & Verdict Generation
     const cardOvr = Math.round((predictionPerfScore + avgTakeOvr + (tacticalDelta >= 0 ? 85 : 50) + (communityDelta >= 0 ? 80 : 55)) / 4);
     let rarity = 'COMMON';
-    let cardTheme = 'bottler';
+    let cardTheme = 'gold';
     let verdictText = 'DELUSION MERCHANT';
 
     if (cardOvr >= 90) {
       rarity = 'LEGENDARY';
-      cardTheme = 'toty';
       verdictText = 'VISIONARY';
     } else if (cardOvr >= 75) {
       rarity = 'EPIC';
-      cardTheme = 'gold';
       verdictText = 'BALL KNOWLEDGE SUPREME';
     } else if (cardOvr >= 60) {
       rarity = 'RARE';
-      cardTheme = 'var';
       verdictText = 'MID TAKE APPROVED';
     } else {
       rarity = 'COMMON';
-      cardTheme = 'bottler';
       verdictText = cardOvr < 35 ? 'FOOTBALL TERRORIST' : 'DELUSION MERCHANT';
     }
 
