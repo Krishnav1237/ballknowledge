@@ -65,9 +65,22 @@ export function isSameUTCDate(d1: Date, d2: Date): boolean {
          d1.getUTCDate() === d2.getUTCDate();
 }
 
+import { TEAM_ROSTERS } from './roster';
+
+function findTeamRosterKey(teamName: string): string | undefined {
+  const normalized = teamName.toLowerCase().trim();
+  let found = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === normalized);
+  if (found) return found;
+
+  found = Object.keys(TEAM_ROSTERS).find(k => {
+    const keyNorm = k.toLowerCase();
+    return keyNorm.includes(normalized) || normalized.includes(keyNorm);
+  });
+  return found;
+}
+
 /**
- * Derives a deterministic (fake) match result from the match ID and team names.
- * Used for completed matches until real results are integrated from the data source.
+ * Derives a realistic match result from the match data, or simulates it if missing.
  */
 export function getDeterministicMatchResult(
   matchId: string,
@@ -79,6 +92,9 @@ export function getDeterministicMatchResult(
   let awayScore = 0;
   let firstGoalscorer = 'None';
   let motm = 'None';
+
+  const kickoff = match?.local_date ? parseLocalDate(match.local_date, match.stadium_id) : null;
+  const hasEndedByTime = kickoff && (new Date().getTime() - kickoff.getTime() >= 2 * 60 * 60 * 1000);
 
   const hasRealScores = match && 
                         match.home_score !== 'null' && 
@@ -111,18 +127,148 @@ export function getDeterministicMatchResult(
       ...awayGoals.map(g => ({ ...g, team: 'away' }))
     ].sort((a, b) => a.minute - b.minute);
 
-    let hash = 0;
-    const str = matchId + homeTeamName + awayTeamName;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    if (allGoals.length > 0) {
+      firstGoalscorer = allGoals[0].player;
+      
+      // Determine MOTM: player who scored the most goals
+      const goalCounts: Record<string, number> = {};
+      const firstGoalTime: Record<string, number> = {};
+      allGoals.forEach((g) => {
+        goalCounts[g.player] = (goalCounts[g.player] || 0) + 1;
+        if (firstGoalTime[g.player] === undefined) {
+          firstGoalTime[g.player] = g.minute;
+        }
+      });
+      
+      let bestPlayer = allGoals[0].player;
+      let maxGoals = 0;
+      Object.keys(goalCounts).forEach((player) => {
+        const goals = goalCounts[player];
+        if (goals > maxGoals) {
+          maxGoals = goals;
+          bestPlayer = player;
+        } else if (goals === maxGoals) {
+          if (firstGoalTime[player] < firstGoalTime[bestPlayer]) {
+            bestPlayer = player;
+          }
+        }
+      });
+      motm = bestPlayer;
+    } else if (homeScore === 0 && awayScore === 0) {
+      firstGoalscorer = 'None';
+      
+      // Get home/away goalkeeper for MOTM in 0-0 draw
+      const homeKey = findTeamRosterKey(homeTeamName);
+      const awayKey = findTeamRosterKey(awayTeamName);
+      const homeRoster = homeKey ? TEAM_ROSTERS[homeKey] : [];
+      const awayRoster = awayKey ? TEAM_ROSTERS[awayKey] : [];
+      const homeGk = homeRoster.find(p => p.position === 'GK');
+      const awayGk = awayRoster.find(p => p.position === 'GK');
+      
+      if (homeGk && awayGk) {
+        motm = homeGk.rating >= awayGk.rating ? homeGk.name : awayGk.name;
+      } else {
+        motm = homeGk?.name || awayGk?.name || 'Goalkeeper';
+      }
     }
+  } else if (hasEndedByTime) {
+    // Determine simulated results deterministically using matchId as a seed
+    let seed = 0;
+    for (let i = 0; i < matchId.length; i++) {
+      seed = matchId.charCodeAt(i) + ((seed << 5) - seed);
+    }
+    const random = () => {
+      const x = Math.sin(seed++) * 10000;
+      return x - Math.floor(x);
+    };
+
+    const homeKey = findTeamRosterKey(homeTeamName);
+    const awayKey = findTeamRosterKey(awayTeamName);
+    const homeRoster = homeKey ? TEAM_ROSTERS[homeKey] : [];
+    const awayRoster = awayKey ? TEAM_ROSTERS[awayKey] : [];
+
+    const homeRating = homeRoster.length > 0 ? (homeRoster.reduce((sum, p) => sum + p.rating, 0) / homeRoster.length) : 75;
+    const awayRating = awayRoster.length > 0 ? (awayRoster.reduce((sum, p) => sum + p.rating, 0) / awayRoster.length) : 75;
+
+    const homeExpected = 1.3 + (homeRating - awayRating) * 0.1 + 0.2;
+    const awayExpected = 1.1 + (awayRating - homeRating) * 0.1;
+
+    const getGoalsCount = (expected: number) => {
+      const r = random();
+      if (r < Math.exp(-expected)) return 0;
+      if (r < Math.exp(-expected) * (1 + expected)) return 1;
+      if (r < Math.exp(-expected) * (1 + expected + expected * expected / 2)) return 2;
+      if (r < Math.exp(-expected) * (1 + expected + expected * expected / 2 + expected * expected * expected / 6)) return 3;
+      return 4;
+    };
+
+    homeScore = getGoalsCount(homeExpected);
+    awayScore = getGoalsCount(awayExpected);
+
+    const getScorers = (roster: any[], count: number, team: 'home' | 'away') => {
+      if (roster.length === 0) return [];
+      const pool = roster.filter(p => p.position === 'FWD' || p.position === 'MID');
+      const activePool = pool.length > 0 ? pool : roster;
+      
+      const goalsList: { player: string; minute: number; team: 'home' | 'away' }[] = [];
+      for (let i = 0; i < count; i++) {
+        const totalWeight = activePool.reduce((sum, p) => sum + (p.position === 'FWD' ? p.rating * 1.5 : p.rating), 0);
+        let r = random() * totalWeight;
+        let selectedPlayer = activePool[0];
+        for (const p of activePool) {
+          const weight = p.position === 'FWD' ? p.rating * 1.5 : p.rating;
+          if (r <= weight) {
+            selectedPlayer = p;
+            break;
+          }
+          r -= weight;
+        }
+        
+        const minute = Math.floor(random() * 90) + 1;
+        goalsList.push({ player: selectedPlayer.name, minute, team });
+      }
+      return goalsList;
+    };
+
+    const homeGoals = getScorers(homeRoster, homeScore, 'home');
+    const awayGoals = getScorers(awayRoster, awayScore, 'away');
+    const allGoals = [...homeGoals, ...awayGoals].sort((a, b) => a.minute - b.minute);
 
     if (allGoals.length > 0) {
       firstGoalscorer = allGoals[0].player;
-      motm = allGoals[Math.abs(hash % allGoals.length)].player;
-    } else if (homeScore === 0 && awayScore === 0) {
+      
+      const goalCounts: Record<string, number> = {};
+      const firstGoalTime: Record<string, number> = {};
+      allGoals.forEach((g) => {
+        goalCounts[g.player] = (goalCounts[g.player] || 0) + 1;
+        if (firstGoalTime[g.player] === undefined) {
+          firstGoalTime[g.player] = g.minute;
+        }
+      });
+      
+      let bestPlayer = allGoals[0].player;
+      let maxGoals = 0;
+      Object.keys(goalCounts).forEach((player) => {
+        const goals = goalCounts[player];
+        if (goals > maxGoals) {
+          maxGoals = goals;
+          bestPlayer = player;
+        } else if (goals === maxGoals) {
+          if (firstGoalTime[player] < firstGoalTime[bestPlayer]) {
+            bestPlayer = player;
+          }
+        }
+      });
+      motm = bestPlayer;
+    } else {
       firstGoalscorer = 'None';
-      motm = 'Goalkeeper';
+      const homeGk = homeRoster.find(p => p.position === 'GK');
+      const awayGk = awayRoster.find(p => p.position === 'GK');
+      if (homeGk && awayGk) {
+        motm = homeGk.rating >= awayGk.rating ? homeGk.name : awayGk.name;
+      } else {
+        motm = homeGk?.name || awayGk?.name || 'Goalkeeper';
+      }
     }
   }
 
