@@ -7,7 +7,7 @@
   --surface: #0B0F19;
   --surface-elevated: #111827;
   --primary: #881337; /* Prestigious World Cup Burgundy / Maroon */
-  --secondary: #D97706; /* Warm Gold / Amber */
+  --secondary: #E11D48; /* Vibrant World Cup Red instead of Gold */
   --muted: #9CA3AF;
 }
 
@@ -75,35 +75,35 @@ html.lenis, html.lenis body {
   box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
-/* Premium Card Rarity Outlines & Frames in Light Mode */
+/* Premium Card Rarity Outlines & Frames */
 .card-common {
-  border: 2px solid #E2E8F0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 2px solid #374151;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, #0B0F19 0%, #030712 100%);
 }
 
 .card-rare {
-  border: 2px solid #D97706; /* Gold */
-  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.08);
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFFDF0 100%);
+  border: 2px solid var(--secondary); /* Red */
+  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.25);
+  background: linear-gradient(135deg, #1E070F 0%, #0B0F19 100%);
 }
 
 .card-hating {
   border: 2px solid #EF4444;
-  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F5 100%);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.25);
+  background: linear-gradient(135deg, #1E0C0C 0%, #0B0F19 100%);
 }
 
 .card-cooking {
   border: 2px solid #16A34A; /* Grass Green */
-  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.08);
-  background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.25);
+  background: linear-gradient(135deg, #0B1E12 0%, #0B0F19 100%);
 }
 
 .card-rivalry {
   border: 2px dashed #EF4444;
-  box-shadow: 0 12px 35px rgba(239, 68, 68, 0.12);
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF1F2 100%);
+  box-shadow: 0 12px 35px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, #1E070F 0%, #0B0F19 100%);
   position: relative;
   overflow: hidden;
 }
@@ -115,7 +115,7 @@ html.lenis, html.lenis body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #EF4444, #D97706);
+  background: linear-gradient(90deg, #EF4444, var(--secondary));
 }
 
 /* FIFA FUT Card Shield Layouts */
@@ -386,24 +386,24 @@ html.lenis, html.lenis body {
 
 /* Mini Rarity Themes & Special Slot Cover States */
 .card-mini-default {
-  background: linear-gradient(135deg, #FFE082 0%, #D97706 50%, #B45309 100%);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+  background: linear-gradient(135deg, #FFE4E6 0%, var(--secondary) 50%, #9F1239 100%);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
 }
 .card-mini-default .card-mini-fut-inner {
-  background: radial-gradient(circle at 50% 20%, #1e1305 0%, #090602 100%);
+  background: radial-gradient(circle at 50% 20%, #1e050b 0%, #090204 100%);
 }
 
 /* Premium Card Back Holographic States for Empty, Locked, & Missed slots */
 .card-mini-locked {
-  background: linear-gradient(135deg, #D97706 0%, #78350F 100%);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+  background: linear-gradient(135deg, var(--secondary) 0%, #4C0519 100%);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
 }
 .card-mini-locked .card-mini-fut-inner {
   background: 
-    linear-gradient(rgba(15, 10, 2, 0.75), rgba(15, 10, 2, 0.75)),
+    linear-gradient(rgba(15, 2, 5, 0.75), rgba(15, 2, 5, 0.75)),
     url('/images/card_back_holographic.webp') no-repeat center center;
   background-size: cover;
-  border: 1px solid rgba(217, 119, 6, 0.25);
+  border: 1px solid rgba(225, 29, 72, 0.25);
 }
 
 .card-mini-missed {
@@ -430,7 +430,7 @@ html.lenis, html.lenis body {
   transition: all 0.3s ease;
 }
 .card-mini-empty:hover {
-  background: linear-gradient(135deg, #D97706 0%, #FFE082 100%);
+  background: linear-gradient(135deg, var(--secondary) 0%, #FFE4E6 100%);
 }
 .card-mini-empty:hover .card-mini-fut-inner {
   background: 

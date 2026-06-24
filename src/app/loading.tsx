@@ -6,7 +6,7 @@ export default function Loading() {
       <div className="flex flex-col items-center gap-4 text-center px-6">
         {/* Spinning Golden & Burgundy Rings */}
         <div className="relative w-14 h-14 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border-2 border-t-[#D97706] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '0.8s' }} />
+          <div className="absolute inset-0 rounded-full border-2 border-t-[#E11D48] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '0.8s' }} />
           <div className="absolute inset-1.5 rounded-full border-2 border-b-[#881337] border-t-transparent border-r-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.2s', animationDirection: 'reverse' }} />
           <span className="font-display font-black text-[9px] text-white/80 uppercase tracking-widest animate-pulse">VAR</span>
         </div>

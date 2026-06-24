@@ -22,10 +22,10 @@ const SORT_TABS = [
 type SortMode = 'overall' | 'prediction' | 'hottake';
 
 function getRarityBand(ovr: number) {
-  if (ovr >= 90) return { label: 'LEGENDARY', colour: 'text-amber-400', border: 'border-amber-400/40', bg: 'bg-amber-400/8' };
-  if (ovr >= 75) return { label: 'EPIC',      colour: 'text-purple-400', border: 'border-purple-400/30', bg: 'bg-purple-400/8' };
-  if (ovr >= 60) return { label: 'RARE',      colour: 'text-blue-400',   border: 'border-blue-400/30',   bg: 'bg-blue-400/8'  };
-  return                { label: 'COMMON',    colour: 'text-gray-400',   border: 'border-white/8',       bg: 'bg-white/3'      };
+  if (ovr >= 90) return { label: 'LEGENDARY', colour: 'text-[#E11D48]', border: 'border-[#E11D48]/40', bg: 'bg-[#E11D48]/8' };
+  if (ovr >= 75) return { label: 'EPIC',      colour: 'text-purple-600', border: 'border-purple-600/30', bg: 'bg-purple-600/8' };
+  if (ovr >= 60) return { label: 'RARE',      colour: 'text-blue-605',   border: 'border-blue-600/30',   bg: 'bg-blue-600/8'  };
+  return                { label: 'COMMON',    colour: 'text-zinc-400',   border: 'border-white/5',      bg: 'bg-white/5'      };
 }
 
 function getCountryAbbreviation(countryName: string): string {
@@ -67,10 +67,10 @@ function getCountryAbbreviation(countryName: string): string {
 }
 
 const getRatingBadgeStyle = (ovr: number) => {
-  if (ovr >= 90) return 'bg-amber-400/10 border-amber-400/20 text-amber-400';
-  if (ovr >= 75) return 'bg-purple-400/10 border-purple-400/20 text-purple-400';
-  if (ovr >= 60) return 'bg-blue-400/10 border-blue-400/20 text-blue-400';
-  return 'bg-white/[0.03] border-white/5 text-gray-400';
+  if (ovr >= 90) return 'bg-[#E11D48]/10 border-[#E11D48]/20 text-[#E11D48]';
+  if (ovr >= 75) return 'bg-purple-500/10 border-purple-500/20 text-purple-600';
+  if (ovr >= 60) return 'bg-blue-500/10 border-blue-500/20 text-blue-600';
+  return 'bg-white/5 border-white/10 text-gray-400';
 };
 
 const PODIUM_CONFIG = [
@@ -78,31 +78,31 @@ const PODIUM_CONFIG = [
     pos: 1, 
     size: 'h-14', 
     order: 'order-2', 
-    crown: 'text-amber-400', 
-    glow: 'shadow-amber-400/25', 
-    ring: 'ring-amber-400/50', 
+    crown: 'text-[#E11D48]', 
+    glow: 'shadow-rose-500/20', 
+    ring: 'ring-[#E11D48]/50', 
     label: '1ST',
-    colorClass: 'from-amber-400/25 via-amber-400/10 to-transparent border-t border-t-amber-400/40 border-x border-b border-amber-400/10'
+    colorClass: 'from-[#E11D48]/15 via-[#E11D48]/5 to-transparent border-t border-t-[#E11D48]/30 border-x border-b border-white/10'
   },
   { 
     pos: 2, 
     size: 'h-10', 
     order: 'order-1', 
-    crown: 'text-slate-300', 
-    glow: 'shadow-slate-300/15', 
-    ring: 'ring-slate-300/40', 
+    crown: 'text-zinc-500', 
+    glow: 'shadow-zinc-400/15', 
+    ring: 'ring-zinc-400/40', 
     label: '2ND',
-    colorClass: 'from-slate-300/25 via-slate-300/10 to-transparent border-t border-t-slate-300/45 border-x border-b border-slate-300/10'
+    colorClass: 'from-white/10 via-white/5 to-transparent border-t border-t-white/20 border-x border-b border-white/10'
   },
   { 
     pos: 3, 
     size: 'h-7', 
     order: 'order-3', 
-    crown: 'text-amber-700', 
-    glow: 'shadow-amber-700/15', 
-    ring: 'ring-amber-700/40', 
+    crown: 'text-[#881337]', 
+    glow: 'shadow-[#881337]/15', 
+    ring: 'ring-[#881337]/40', 
     label: '3RD',
-    colorClass: 'from-amber-700/25 via-amber-700/10 to-transparent border-t border-t-amber-700/45 border-x border-b border-amber-700/10'
+    colorClass: 'from-[#881337]/15 via-[#881337]/5 to-transparent border-t border-t-[#881337]/35 border-x border-b border-white/10'
   },
 ];
 
@@ -110,7 +110,7 @@ const PODIUM_CONFIG = [
 
 function RatingBar({ value, colour }: { value: number; colour: string }) {
   return (
-    <div className="relative h-1 w-12 rounded-full bg-white/8 overflow-hidden mx-auto">
+    <div className="relative h-1 w-12 rounded-full bg-white/10 overflow-hidden mx-auto">
       <motion.div
         className={`absolute inset-y-0 left-0 rounded-full ${colour}`}
         initial={{ width: 0 }}
@@ -148,10 +148,10 @@ function PodiumCard({ entry, config, isMe }: {
       transition={{ delay: config.pos * 0.08 }}
     >
       {/* Avatar ring */}
-      <div className={`relative ring-2 ${config.ring} rounded-full p-0.5 shadow-md ${config.glow} ${isMe ? 'ring-[#D97706]' : ''}`}>
+      <div className={`relative ring-2 ${config.ring} rounded-full p-0.5 shadow-md ${config.glow} ${isMe ? 'ring-[#E11D48]' : ''}`}>
         <Avatar style={entry.avatarStyle} seed={entry.avatarSeed} size={config.pos === 1 ? 38 : 30} />
         {isMe && (
-          <span className="absolute -top-1 -right-1 text-[6px] font-black uppercase tracking-wider bg-[#D97706] text-black rounded-full px-1.5 py-0.2 leading-none">
+          <span className="absolute -top-1 -right-1 text-[6px] font-black uppercase tracking-wider bg-[#E11D48] text-white rounded-full px-1.5 py-0.2 leading-none">
             YOU
           </span>
         )}
@@ -162,8 +162,8 @@ function PodiumCard({ entry, config, isMe }: {
         <p className="font-display font-black text-[9px] md:text-[10px] uppercase tracking-wide text-white truncate px-0.5">
           {entry.username}
         </p>
-        <p className="font-black text-[10px] md:text-xs leading-none text-gray-300 mt-0.5">{entry.overallRating}</p>
-        <p className={`text-[7px] font-black uppercase tracking-widest ${rarity.colour} opacity-60 leading-none mt-0.5`}>
+        <p className="font-black text-[10px] md:text-xs leading-none text-gray-350 mt-0.5">{entry.overallRating}</p>
+        <p className={`text-[7px] font-black uppercase tracking-widest ${rarity.colour} opacity-80 leading-none mt-0.5`}>
           {rarity.label.substring(0, 3)}
         </p>
       </div>
@@ -268,19 +268,19 @@ export default function LeaderboardPage() {
         <Link
           href={`/u/${entry.username}`}
           className={`relative group grid grid-cols-[40px_1fr_60px] sm:grid-cols-[48px_1fr_60px_60px_60px_52px] gap-2 items-center
-            px-4 py-3.5 transition-all hover:bg-white/[0.03] hover:shadow-[inset_0_0_12px_rgba(217,119,6,0.03)]
-            ${isMe ? 'bg-[#D97706]/4 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-[#D97706]' : ''}`}
+            px-4 py-3.5 transition-all hover:bg-white/5 border-b border-white/5
+            ${isMe ? 'bg-rose-950/20 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-[#E11D48]' : ''}`}
         >
           {/* Rank */}
           <div className="text-center font-display font-black text-sm md:text-base">
             {entry.rank <= 3 ? (
-              <span className={`text-sm md:text-base leading-none px-2 py-0.5 rounded bg-white/[0.03] border ${
-                entry.rank === 1 ? 'text-amber-400 border-amber-400/20 bg-amber-400/5' 
-                : entry.rank === 2 ? 'text-slate-300 border-slate-300/20 bg-slate-300/5' 
-                : 'text-amber-700 border-amber-700/20 bg-amber-700/5'
+              <span className={`text-sm md:text-base leading-none px-2 py-0.5 rounded border ${
+                entry.rank === 1 ? 'text-[#E11D48] border-[#E11D48]/20 bg-[#E11D48]/5' 
+                : entry.rank === 2 ? 'text-zinc-400 border-white/10 bg-white/5' 
+                : 'text-[#881337] border-[#881337]/20 bg-[#881337]/5'
               }`}>{entry.rank}</span>
             ) : (
-              <span className={entry.rank <= 10 ? 'text-[#D97706]' : 'text-gray-500'}>
+              <span className={entry.rank <= 10 ? 'text-[#E11D48]' : 'text-zinc-400'}>
                 {entry.rank}
               </span>
             )}
@@ -291,35 +291,35 @@ export default function LeaderboardPage() {
             <div className="relative flex-shrink-0">
               <Avatar style={entry.avatarStyle} seed={entry.avatarSeed} size={32} />
               {isMe && (
-                <span className="absolute -top-0.5 -right-0.5 text-[6px] font-black uppercase bg-[#D97706] text-black rounded-full px-0.5 leading-tight">
+                <span className="absolute -top-0.5 -right-0.5 text-[6px] font-black uppercase bg-[#E11D48] text-white rounded-full px-0.5 leading-tight">
                   ME
                 </span>
               )}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 leading-none mb-1">
-                <span className="font-display font-black text-sm md:text-base text-white uppercase truncate group-hover:text-[#D97706] transition-colors">
+                <span className="font-display font-black text-sm md:text-base text-white uppercase truncate group-hover:text-[#E11D48] transition-colors">
                   {entry.username}
                 </span>
                 {entry.role === 'ADMIN' && (
-                  <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20 flex-shrink-0 animate-pulse" aria-label="Admin" />
+                  <Crown className="w-3.5 h-3.5 text-[#E11D48] fill-[#E11D48]/10 flex-shrink-0 animate-pulse" aria-label="Admin" />
                 )}
                 {entry.role === 'PREMIUM' && (
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20 flex-shrink-0" aria-label="Premium" />
+                  <Sparkles className="w-3.5 h-3.5 text-purple-500 fill-purple-500/10 flex-shrink-0" aria-label="Premium" />
                 )}
               </div>
               <div className="flex items-center gap-2 leading-none">
                 {entry.favoriteNation && (
-                  <span className="text-[10px] md:text-[11px] font-extrabold uppercase bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-gray-400 shadow-sm">
+                  <span className="text-[10px] md:text-[11px] font-extrabold uppercase bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-gray-400 shadow-xs">
                     {getCountryAbbreviation(entry.favoriteNation)}
                   </span>
                 )}
-                <span className="text-[10px] md:text-xs text-gray-500 truncate">
+                <span className="text-[10px] md:text-xs text-zinc-400 truncate">
                   {entry.matchesPlayed} match{entry.matchesPlayed !== 1 ? 'es' : ''}
                 </span>
                 {entry.legendaryCards > 0 && (
-                  <span className="text-[10px] md:text-xs text-amber-400 font-bold flex items-center gap-1">
-                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  <span className="text-[10px] md:text-xs text-[#E11D48] font-bold flex items-center gap-1">
+                    <Star className="w-3 h-3 text-[#E11D48] fill-[#E11D48]" />
                     <span>×{entry.legendaryCards}</span>
                   </span>
                 )}
@@ -332,24 +332,24 @@ export default function LeaderboardPage() {
             <span className={`font-display font-black text-sm md:text-base leading-none px-2.5 py-1 border rounded shadow-md ${getRatingBadgeStyle(entry.overallRating)}`}>
               {entry.overallRating}
             </span>
-            <RatingBar value={entry.overallRating} colour="bg-gradient-to-r from-[#881337] to-[#D97706]" />
+            <RatingBar value={entry.overallRating} colour="bg-gradient-to-r from-[#881337] to-[#E11D48]" />
           </div>
 
           {/* Prediction Rating */}
           <div className="hidden sm:flex flex-col items-center gap-1.5">
-            <span className="font-bold text-xs md:text-sm text-sky-400 px-2 py-0.5 rounded bg-sky-500/5 border border-sky-500/10">{entry.predictionRating}</span>
+            <span className="font-bold text-xs md:text-sm text-sky-400 px-2 py-0.5 rounded bg-sky-950/20 border border-sky-900/30">{entry.predictionRating}</span>
             <RatingBar value={entry.predictionRating} colour="bg-sky-500" />
           </div>
 
           {/* Hot Take Rating */}
           <div className="hidden sm:flex flex-col items-center gap-1.5">
-            <span className="font-bold text-xs md:text-sm text-orange-400 px-2 py-0.5 rounded bg-orange-500/5 border border-orange-500/10">{entry.hotTakeRating}</span>
-            <RatingBar value={entry.hotTakeRating} colour="bg-orange-500" />
+            <span className="font-bold text-xs md:text-sm text-[#E11D48] px-2 py-0.5 rounded bg-rose-950/20 border border-rose-900/30">{entry.hotTakeRating}</span>
+            <RatingBar value={entry.hotTakeRating} colour="bg-rose-500" />
           </div>
 
           {/* Cards */}
           <div className="hidden sm:flex flex-col items-center">
-            <span className="font-bold text-xs md:text-sm text-gray-300 px-2 py-0.5 rounded bg-white/5 border border-white/5">{entry.cardsEarned}</span>
+            <span className="font-bold text-xs md:text-sm text-white px-2 py-0.5 rounded bg-white/5 border border-white/10">{entry.cardsEarned}</span>
           </div>
 
           {/* Mobile Rating */}
@@ -357,7 +357,7 @@ export default function LeaderboardPage() {
             <span className={`font-display font-black text-base md:text-lg ${rarity.colour}`}>
               {sortVal}
             </span>
-            <p className={`text-[8px] font-black uppercase tracking-widest ${rarity.colour} opacity-60`}>
+            <p className={`text-[8px] font-black uppercase tracking-widest ${rarity.colour} opacity-80`}>
               {rarity.label.substring(0, 3)}
             </p>
           </div>
@@ -366,10 +366,8 @@ export default function LeaderboardPage() {
     );
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white pb-16 overflow-hidden pt-[68px] flex flex-col">
+    <div className="relative min-h-screen bg-background text-foreground pb-16 overflow-hidden pt-[52px] flex flex-col">
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
@@ -382,7 +380,7 @@ export default function LeaderboardPage() {
           border-radius: 9999px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(217, 119, 6, 0.3);
+          background: rgba(225, 29, 72, 0.3);
         }
       `}</style>
 
@@ -392,46 +390,44 @@ export default function LeaderboardPage() {
           src="/images/world_cup_stadium.webp" 
           alt="Stadium background"
           fill
-          className="object-cover opacity-25 object-center scale-102 filter saturate-110 contrast-105"
+          className="object-cover opacity-[0.40] object-center scale-102 filter saturate-100 contrast-100"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-[#0A0A0A]/55 to-[#0A0A0A]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-background/35 to-background" />
         
         {/* Glow effects - Football pitch lighting vibe */}
-        <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px] opacity-60" />
-        <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-amber-500/5 rounded-full blur-[120px] opacity-60" />
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#881337]/15 rounded-full blur-3xl opacity-60" />
-        <div className="absolute top-1/3 left-0 w-96 h-96 bg-[#D97706]/10 rounded-full blur-3xl opacity-50" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-955/20 rounded-full blur-[150px] opacity-50" />
-      </div>
-
-      {/* ── Center Aligned Header ───────────────────────────────────── */}
-      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-3 flex flex-col items-center justify-center text-center w-full border-b border-white/5 bg-black/20 backdrop-blur-xs shrink-0">
-        <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-wider leading-none"
-            style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
-          GLOBAL MANAGER <span className="text-[#D97706]">LEADERBOARD</span>
-        </h1>
-        <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
-          WORLD CUP 2026 SEASON <span className="text-gray-600 mx-2">•</span> RANKED BY FOOTBALL IQ
-        </p>
+        <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px] opacity-40" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-rose-500/5 rounded-full blur-[120px] opacity-40" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#881337]/5 rounded-full blur-3xl opacity-40" />
       </div>
 
       {/* ── Main Layout Connected Console (Unified Grid) ─────────────── */}
-      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-3 pb-4 w-full">
+      <div className="relative z-10 max-w-8xl mx-auto px-6 pt-1 pb-4 w-full flex-grow flex flex-col min-h-0">
         
-        <div className="w-full bg-black/45 border border-white/5 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden grid grid-cols-1 lg:grid-cols-12 lg:h-[700px]">
+        <div className="w-full bg-[#0B0F19]/85 border border-white/10 rounded-2xl shadow-xl overflow-hidden flex flex-col flex-grow min-h-0">
           
-          {/* ── Left Panel: Sidebar Deck (lg:col-span-3) ───────────────── */}
-          <aside className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-white/5 p-5 flex flex-col gap-5 h-full overflow-y-auto custom-scrollbar">
+          {/* ── Unified Header Panel ── */}
+          <div className="shrink-0 border-b border-white/10 bg-black/20 backdrop-blur-xs p-4 flex flex-col items-center justify-center text-center w-full">
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
+              GLOBAL MANAGER <span className="text-[#E11D48]">LEADERBOARD</span>
+            </h1>
+            <p className="text-zinc-400 text-[9px] sm:text-[10px] mt-1.5 font-bold uppercase tracking-widest leading-none">
+              WORLD CUP 2026 SEASON <span className="text-zinc-500 mx-2">•</span> RANKED BY FOOTBALL IQ
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 lg:h-[650px] flex-grow min-h-0">
+            {/* ── Left Panel: Sidebar Deck (lg:col-span-3) ───────────────── */}
+          <aside className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-white/10 p-5 flex flex-col gap-5 h-full overflow-y-auto custom-scrollbar bg-black/10">
             
             {/* Manager Profile card */}
             {myProfile && (
-              <div className="relative bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col items-center text-center overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#881337] to-[#D97706]" />
+              <div className="relative bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col items-center text-center overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#881337] to-[#E11D48]" />
                 <div className="relative mb-2">
                   <Avatar style={myProfile.avatarStyle} seed={myProfile.avatarSeed} size={52} />
                   <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                    myProfile.role === 'ADMIN' ? 'bg-[#D97706] text-black' : myProfile.role === 'PREMIUM' ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-300'
+                    myProfile.role === 'ADMIN' ? 'bg-[#E11D48] text-white' : myProfile.role === 'PREMIUM' ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'
                   }`}>
                     {myProfile.role}
                   </span>
@@ -439,31 +435,31 @@ export default function LeaderboardPage() {
                 <h3 className="font-display font-black text-sm md:text-base text-white uppercase mt-2.5 leading-none">
                   {myProfile.username}
                 </h3>
-                <p className="text-[9px] text-gray-500 font-bold uppercase tracking-wider mt-1.5">
+                <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mt-1.5">
                   Manager Status
                 </p>
                 
                 <div className="grid grid-cols-2 gap-2.5 w-full mt-3.5 border-t border-white/5 pt-3 text-left">
                   <div>
-                    <span className="block text-[8px] text-gray-500 uppercase tracking-widest font-black leading-none">Rank</span>
-                    <span className="font-display font-black text-xs md:text-sm text-[#D97706] leading-none mt-1 block">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Rank</span>
+                    <span className="font-display font-black text-xs md:text-sm text-[#E11D48] leading-none mt-1 block">
                       {myRank ? `#${myRank}` : 'Unranked'}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[8px] text-gray-500 uppercase tracking-widest font-black leading-none">Football IQ</span>
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Football IQ</span>
                     <span className="font-display font-black text-xs md:text-sm text-white leading-none mt-1 block">
                       {myProfile.overallRating}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[8px] text-gray-500 uppercase tracking-widest font-black leading-none">Nation</span>
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Nation</span>
                     <span className="text-[10px] font-black uppercase text-gray-400 mt-1 block leading-none">
                       {myProfile.favoriteNation ? getCountryAbbreviation(myProfile.favoriteNation) : 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[8px] text-gray-500 uppercase tracking-widest font-black leading-none">Club</span>
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Club</span>
                     <span className="text-[10px] font-black uppercase text-gray-400 truncate mt-1 block leading-none max-w-[80px]" title={myProfile.favoriteClub}>
                       {myProfile.favoriteClub || 'N/A'}
                     </span>
@@ -474,7 +470,7 @@ export default function LeaderboardPage() {
 
             {/* Section 2: Sort Category */}
             <div className="space-y-1.5">
-              <span className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Sort Console</span>
+              <span className="block text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] px-0.5">Sort Console</span>
               <div className="grid grid-cols-3 lg:flex lg:flex-col gap-2">
                 {SORT_TABS.map(tab => {
                   const Icon = tab.icon;
@@ -485,11 +481,11 @@ export default function LeaderboardPage() {
                       onClick={() => setSortBy(tab.id as SortMode)}
                       className={`w-full px-3 py-2.5 rounded-xl font-display font-black text-[10px] lg:text-[11px] uppercase tracking-widest text-left transition-all cursor-pointer flex items-center justify-center lg:justify-start gap-2 border ${
                         active
-                          ? 'bg-gradient-to-r from-[#881337]/35 to-[#D97706]/20 border-[#D97706] text-white shadow-[0_0_20px_rgba(217,119,6,0.25)] scale-[1.01]'
-                          : 'bg-black/35 border-white/5 text-gray-400 hover:text-white hover:border-white/10 hover:bg-white/5'
+                          ? 'bg-gradient-to-r from-[#881337]/5 to-[#E11D48]/10 border-[#E11D48] text-[#E11D48] shadow-sm scale-[1.01]'
+                          : 'bg-black/30 border-white/5 text-gray-400 hover:text-white hover:border-white/15 hover:bg-black/50'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5 text-[#D97706]" /> 
+                      <Icon className={`w-3.5 h-3.5 ${active ? 'text-[#E11D48]' : 'text-zinc-400'}`} /> 
                       <span className="hidden sm:inline lg:inline">{tab.label}</span>
                       <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                     </button>
@@ -500,34 +496,34 @@ export default function LeaderboardPage() {
 
             {/* Section 3: Search input */}
             <div className="space-y-1.5">
-              <span className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] px-0.5">Search Manager</span>
+              <span className="block text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] px-0.5">Search Manager</span>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Manager name…"
-                  className="w-full pl-9 pr-7 py-2.5 rounded-xl bg-black/35 border border-white/5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706]/20 transition-all"
+                  className="w-full pl-9 pr-7 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/20 transition-all"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors text-[9px]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors text-[9px]"
                   >✕</button>
                 )}
               </div>
             </div>
 
             {/* Section 4: Activity Console */}
-            <div className="relative bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 rounded-xl p-4 text-center mt-auto overflow-hidden">
-              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Activity Console</p>
-              <p className="text-gray-500 text-[10px] mt-1.5 leading-normal">
+            <div className="relative bg-gradient-to-b from-black/40 to-transparent border border-white/5 rounded-xl p-4 text-center mt-auto overflow-hidden">
+              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Activity Console</p>
+              <p className="text-zinc-450 text-[10px] mt-1.5 leading-normal">
                 Submit predictions and hot takes in the match console to raise your rank.
               </p>
               <Link
                 href="/world-cup-hub"
-                className="mt-3 block w-full py-2 rounded-lg bg-gradient-to-r from-[#881337] to-[#D97706] hover:opacity-90 text-white font-display font-black text-[10px] uppercase tracking-widest text-center transition-all shadow-md active:scale-98"
+                className="mt-3 block w-full py-2 rounded-lg bg-gradient-to-r from-[#881337] to-[#E11D48] hover:opacity-90 text-white font-display font-black text-[10px] uppercase tracking-widest text-center transition-all shadow-md active:scale-98"
               >
                 Enter World Cup Hub
               </Link>
@@ -535,39 +531,39 @@ export default function LeaderboardPage() {
           </aside>
 
           {/* ── Middle Panel: Leaderboard Table (lg:col-span-6) ────────── */}
-          <div className="lg:col-span-6 border-b lg:border-b-0 lg:border-r border-white/5 flex flex-col h-full overflow-hidden">
+          <div className="lg:col-span-6 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col h-full overflow-hidden">
             
             {/* Header row (Sticky) */}
-            <div className="bg-white/[0.01] border-b border-white/5 py-3 px-4 shrink-0">
+            <div className="bg-black/20 border-b border-white/5 py-3 px-4 shrink-0">
               <div className="grid grid-cols-[40px_1fr_60px] sm:grid-cols-[48px_1fr_60px_60px_60px_52px] gap-2 items-center">
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-center">#</p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-left">Manager</p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-right sm:hidden">OVR</p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-center hidden sm:block">OVR</p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-center hidden sm:block">Pred</p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-center hidden sm:block">Takes</p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-black text-center hidden sm:block">Cards</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-center">#</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-left">Manager</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-right sm:hidden">OVR</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-center hidden sm:block">OVR</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-center hidden sm:block">Pred</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-center hidden sm:block">Takes</p>
+                <p className="text-xs uppercase tracking-widest text-zinc-400 font-black text-center hidden sm:block">Cards</p>
               </div>
             </div>
 
             {/* List content (Independent Scroll with Lenis Prevent) */}
-            <div className="flex-grow overflow-y-auto custom-scrollbar divide-y divide-white/5" data-lenis-prevent>
+            <div className="flex-grow overflow-y-auto custom-scrollbar divide-y divide-zinc-100" data-lenis-prevent>
               {loading && (
                 <div className="flex flex-col items-center justify-center py-32 gap-4 h-full">
                   <div className="relative w-14 h-14">
-                    <div className="absolute inset-0 rounded-full border-2 border-[#D97706]/20 animate-ping" />
-                    <div className="w-14 h-14 rounded-full border-2 border-t-[#D97706] border-[#881337]/20 animate-spin" />
+                    <div className="absolute inset-0 rounded-full border-2 border-[#E11D48]/20 animate-ping" />
+                    <div className="w-14 h-14 rounded-full border-2 border-t-[#E11D48] border-[#881337]/20 animate-spin" />
                   </div>
                 </div>
               )}
 
               {!loading && error && (
-                <div className="text-center py-24 bg-black/25 flex flex-col justify-center items-center h-full gap-4">
-                  <Shield className="w-12 h-12 text-[#881337]/50" />
-                  <p className="font-display font-black text-xl uppercase text-gray-400">Tribunal Offline</p>
+                <div className="text-center py-24 bg-black/20 flex flex-col justify-center items-center h-full gap-4">
+                  <Shield className="w-12 h-12 text-[#881337]/30" />
+                  <p className="font-display font-black text-xl uppercase text-zinc-450">Tribunal Offline</p>
                   <button
                     onClick={() => fetchLeaderboard(sortBy)}
-                    className="px-5 py-2.5 rounded-xl bg-[#881337]/80 hover:bg-[#881337] text-white text-sm font-bold transition-all"
+                    className="px-5 py-2.5 rounded-xl bg-[#881337] hover:bg-[#881337]/90 text-white text-sm font-bold transition-all"
                   >
                     Retry
                   </button>
@@ -581,9 +577,9 @@ export default function LeaderboardPage() {
               )}
 
               {!loading && !error && filtered.length === 0 && (
-                <div className="text-center py-24 flex flex-col justify-center items-center h-full text-gray-500">
-                  <Search className="w-6 h-6 text-gray-600 mb-2" />
-                  <p className="text-xs">No manager found for &quot;<span className="text-white">{search}</span>&quot;</p>
+                <div className="text-center py-24 flex flex-col justify-center items-center h-full text-zinc-450">
+                  <Search className="w-6 h-6 text-zinc-500 mb-2" />
+                  <p className="text-xs">No manager found for &quot;<span className="text-white font-semibold">{search}</span>&quot;</p>
                 </div>
               )}
             </div>
@@ -591,16 +587,16 @@ export default function LeaderboardPage() {
           </div>
 
           {/* ── Right Panel: Podium & Stats Showcase (lg:col-span-3) ───── */}
-          <section className="lg:col-span-3 p-5 flex flex-col items-center gap-5 h-full overflow-y-auto custom-scrollbar">
+          <section className="lg:col-span-3 p-5 flex flex-col items-center gap-5 h-full overflow-y-auto custom-scrollbar bg-black/15">
             
             {/* Champions Podium Title */}
             <div className="w-full text-center pb-2 border-b border-white/5">
-              <p className="text-[10px] font-black uppercase tracking-wider text-gray-500">Champions Podium</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Champions Podium</p>
             </div>
 
             {/* Stepped Podium */}
             {entries.length >= 3 && (
-              <div className="flex items-end justify-center gap-2 pt-2 pb-4 border-b border-white/5 w-full">
+              <div className="flex items-end justify-center gap-2 pt-2 pb-4 border-b border-white/10 w-full">
                 {PODIUM_CONFIG.map(cfg => {
                   const entry = top3[cfg.pos - 1];
                   if (!entry) return null;
@@ -619,27 +615,27 @@ export default function LeaderboardPage() {
             {/* Analytics/Summary Panel */}
             {!loading && !error && entries.length > 0 && (
               <div className="w-full pt-2 space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-wider text-gray-500 text-center">Leaderboard Stats</p>
+                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Leaderboard Stats</p>
                 
                 <div className="grid grid-cols-2 gap-3 text-center">
-                  <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2.5 shadow-inner">
-                    <span className="block text-[8px] text-gray-500 uppercase tracking-widest font-black leading-none">Active Managers</span>
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-2.5 shadow-md">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Active Managers</span>
                     <span className="font-display font-black text-sm text-white mt-1.5 block leading-none">{entries.length}</span>
                   </div>
-                  <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2.5 shadow-inner">
-                    <span className="block text-[8px] text-gray-500 uppercase tracking-widest font-black leading-none">Average IQ</span>
-                    <span className="font-display font-black text-sm text-[#D97706] mt-1.5 block leading-none">
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-2.5 shadow-md">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Average IQ</span>
+                    <span className="font-display font-black text-sm text-[#E11D48] mt-1.5 block leading-none">
                       {entries.length ? Math.round(entries.reduce((acc, curr) => acc + curr.overallRating, 0) / entries.length) : 0}
                     </span>
                   </div>
                 </div>
                 
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 flex justify-between items-center px-3.5 shadow-md">
+                <div className="bg-rose-950/25 border border-rose-900/35 rounded-lg p-2.5 flex justify-between items-center px-3.5 shadow-md">
                   <div className="flex items-center gap-2">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
-                    <span className="text-[9px] text-amber-400/80 uppercase tracking-wider font-extrabold">Legendary Status</span>
+                    <Star className="w-3.5 h-3.5 text-[#E11D48] fill-[#E11D48] animate-pulse" />
+                    <span className="text-[9px] text-[#E11D48]/80 uppercase tracking-wider font-extrabold">Legendary Status</span>
                   </div>
-                  <span className="font-display font-black text-xs text-amber-400 leading-none">
+                  <span className="font-display font-black text-xs text-[#E11D48] leading-none">
                     {entries.filter(e => e.overallRating >= 90).length} / {entries.length}
                   </span>
                 </div>
@@ -648,7 +644,8 @@ export default function LeaderboardPage() {
 
           </section>
 
-        </div>
+          </div> {/* Closes grid */}
+        </div> {/* Closes unified container */}
 
       </div>
     </div>

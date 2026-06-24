@@ -747,9 +747,6 @@ export const TEAM_ROSTERS: Record<string, { name: string; position: 'GK' | 'DEF'
     { name: 'F. Chiesa', position: 'FWD', specificPosition: 'LW', rating: 83, team: 'Italy' },
     { name: 'G. Scamacca', position: 'FWD', specificPosition: 'ST', rating: 81, team: 'Italy' },
     { name: 'Matteo Darmian', position: 'DEF', specificPosition: 'RB', rating: 80, team: 'Italy' }
-  ],
-  Uruguay_dup: [
-    // Duplicate key protection
   ]
 };
 

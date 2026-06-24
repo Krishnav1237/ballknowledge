@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -41,6 +43,7 @@ export async function GET(
         sentence: card.sentence,
         rarity: card.rarity,
         cardTheme: card.cardTheme,
+        aiImageUrl: card.aiImageUrl,
         statsJson: card.statsJson,
         createdAt: card.createdAt
       },

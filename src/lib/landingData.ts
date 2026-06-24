@@ -7,17 +7,6 @@ export const BREAKING_NEWS = [
   'LIVE NOW: Matches are underway. Check live group standings on the Hub.',
 ];
 
-export const DAILY_PROPHECIES = [
-  "Argentina shall dominate possession against Canada, yet a late offside decision will spark absolute chaos in the VAR room.",
-  "Mbappe will tear through the left wing but face a stubborn low block, leading to a nail-biting penalty shootout.",
-  "England will cruise through the group stages only to face their eternal nemesis in a dramatic penalty shootout exit.",
-  "Brazil's samba football will dazzle, but a critical counter-attack vulnerability will expose them in the Quarter Finals.",
-  "Portugal will secure a last-minute victory through a controversial penalty locked in by Cristiano Ronaldo's aura.",
-  "A dark horse team from Africa will surprise everyone in the Round of 16, completely breaking current possession models.",
-  "France will face internal squad friction, causing a shock group-stage draw that turns their World Cup path chaotic.",
-  "Germany's midfield machine will hum flawlessly until a refereeing controversy halts them in the Semi Final."
-];
-
 export const PLAYERS = [
   {
     src: '/images/messi.jpeg',
@@ -138,15 +127,4 @@ export const COUNTRIES = [
   { flag: '🇲🇦', name: 'Morocco',      color: '#C1272D', story: 'The historic semi-finalists of 2022. No longer underdogs, they return to prove their fairy tale was pure ball knowledge.',      verdict: 'ATLAS SUNRISE', href: '/world-cup-hub' },
   { flag: '🇯🇵', name: 'Japan',        color: '#BC002D', story: 'Slayed giants, clean-swept the dressing room, and won the world\'s respect. The court issues a decree of supreme class.',           verdict: 'SUPREME CLASS',    href: '/world-cup-hub' },
   { flag: '🇸🇦', name: 'Saudi Arabia', color: '#006C35', story: 'Slayed Messi on day three of Qatar. A result that still defies logical explanation. Can they cook another miracle?', verdict: 'GREEN MIRACLE', href: '/world-cup-hub' },
-];
-
-export const flags = [
-  { label: 'Brazil',      emoji: '🇧🇷' },
-  { label: 'Argentina',   emoji: '🇦🇷' },
-  { label: 'Portugal',    emoji: '🇵🇹' },
-  { label: 'England',     emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-  { label: 'France',      emoji: '🇫🇷' },
-  { label: 'Germany',     emoji: '🇩🇪' },
-  { label: 'Spain',       emoji: '🇪🇸' },
-  { label: 'Netherlands', emoji: '🇳🇱' },
 ];

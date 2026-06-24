@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import NextImage from 'next/image';
+import Link from 'next/link';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
 import { Sparkles, Trophy, Flame, AlertCircle, Share2, CheckCircle } from 'lucide-react';
@@ -66,7 +67,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const [predAwayScore, setPredAwayScore] = useState<number>(0);
   const [predScorer, setPredScorer] = useState<string>('');
   const [predMotm, setPredMotm] = useState<string>('');
-  const [predPossession, setPredPossession] = useState<string>('');
+  const [predPossession, setPredPossession] = useState<string>('3');
   const [takes, setTakes] = useState<{ statement: string; confidence: number }[]>([
     { statement: '', confidence: 50 }
   ]);
@@ -138,7 +139,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       setPredAwayScore(matchPred.awayScore);
       setPredScorer(matchPred.firstGoalscorer);
       setPredMotm(matchPred.motm);
-      setPredPossession(matchPred.possessionWinner);
+      setPredPossession(matchPred.possessionWinner || '3');
       if (matchPred.hotTakes && matchPred.hotTakes.length > 0) {
         setTakes(matchPred.hotTakes);
       }
@@ -171,20 +172,20 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
+      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
         <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Tribunal Offline</p>
-        <p className="text-gray-400 text-sm max-w-md">{error}</p>
-        <button onClick={() => window.location.reload()} className="mt-6 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Retry Connection</button>
+        <p className="text-zinc-500 text-sm max-w-md">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-6 px-5 py-2 bg-[#E11D48] hover:bg-[#E11D48]/90 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Retry Connection</button>
       </div>
     );
   }
 
   if (loading || !match) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-gray-500">Entering VAR Match Room...</p>
+      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center">
+        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Entering VAR Match Room...</p>
       </div>
     );
   }
@@ -282,7 +283,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
     // Also check score/prediction forms are filled
     if (predScorer.trim() === '' || predMotm.trim() === '' || predPossession === '') {
-      showToast('Fill out all predictions (Goalscorer, MOTM, Possession Winner) first!', 'error');
+      showToast('Fill out all predictions (Goalscorer, MOTM, Confidence) first!', 'error');
       return;
     }
 
@@ -441,7 +442,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
+    <div className="relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden pt-[52px]">
 
       {/* ── Inline Toast Notification ── */}
       {toast && (
@@ -458,37 +459,37 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {/* Futuristic Dugout Stadium Backdrop */}
+      {/* Premium Light Stadium Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <NextImage 
           src="/images/match_details_bg.webp" 
           alt="Match Dugout Background" 
           fill 
-          className="object-cover opacity-35 object-center scale-102" 
+          className="object-cover opacity-[0.25] object-center scale-102" 
           priority 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#0A0A0A]/40 to-[#0A0A0A]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-background/20 to-background" />
       </div>
 
       {/* VAR Simulation Loading Screen */}
       {resolving && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col justify-center items-center p-6 text-center">
+        <div className="fixed inset-0 bg-zinc-950/60 backdrop-blur-md z-50 flex flex-col justify-center items-center p-6 text-center">
           <div className="relative w-24 h-24 mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-dashed border-[#881337] animate-spin" />
-            <div className="absolute inset-2 rounded-full border-4 border-double border-[#D97706] animate-pulse flex items-center justify-center">
+            <div className="absolute inset-2 rounded-full border-4 border-double border-[#E11D48] animate-pulse flex items-center justify-center">
               <span className="font-display font-black text-xs text-white">VAR</span>
             </div>
           </div>
           <h2 className="font-display font-black text-2xl text-white uppercase tracking-wider mb-2">Stockley Park Auditing</h2>
-          <p className="text-gray-400 text-sm max-w-md leading-relaxed animate-pulse">{varText}</p>
+          <p className="text-zinc-200 text-sm max-w-md leading-relaxed animate-pulse">{varText}</p>
         </div>
       )}
 
       {/* Football IQ Progression Reveal Panel */}
       {showProgression && gradingResult && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex flex-col justify-center items-center p-6 text-center overflow-y-auto">
-          <div className="max-w-md w-full bg-[#0B0F19] border border-white/5 rounded-3xl p-8 shadow-2xl">
-            <div className="inline-flex items-center gap-1.5 bg-[#D97706]/15 border border-[#D97706]/30 text-amber-500 rounded-full px-3.5 py-1 text-[10px] font-black uppercase tracking-widest mb-4">
+        <div className="fixed inset-0 bg-zinc-950/65 backdrop-blur-sm z-50 flex flex-col justify-center items-center p-6 text-center overflow-y-auto text-white">
+          <div className="max-w-md w-full bg-[#0B0F19]/90 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-md">
+            <div className="inline-flex items-center gap-1.5 bg-[#E11D48]/10 border border-[#E11D48]/20 text-[#E11D48] rounded-full px-3.5 py-1 text-[10px] font-black uppercase tracking-widest mb-4">
               <Sparkles className="w-3.5 h-3.5" /> Football IQ Progression
             </div>
             
@@ -500,30 +501,30 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
             {/* Rating Evolution Visualizer */}
             <div className="flex justify-center items-center gap-8 mb-8">
               <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Old IQ</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Old IQ</span>
                 <span className="font-display font-black text-3xl text-gray-400">{profile?.overallRating - (gradingResult.profileUpdates.overallDelta || 0)}</span>
               </div>
 
-              <div className="relative w-28 h-28 rounded-full border-4 border-double border-[#D97706] bg-black flex flex-col justify-center items-center shadow-lg">
-                <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Overall IQ</span>
+              <div className="relative w-28 h-28 rounded-full border-4 border-double border-[#E11D48] bg-black/40 flex flex-col justify-center items-center shadow-md">
+                <span className="text-[9px] font-black text-[#E11D48] uppercase tracking-widest">Overall IQ</span>
                 <span className="font-display font-black text-4xl text-white leading-none mt-1 animate-pulse-slow">
                   {overallRatingAnimate}
                 </span>
                 <span className={`text-[10px] font-black uppercase mt-1 px-1.5 py-0.5 rounded ${
-                  gradingResult.profileUpdates.overallDelta >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                  gradingResult.profileUpdates.overallDelta >= 0 ? 'bg-green-950/40 text-green-400 border border-green-900/30' : 'bg-red-950/40 text-red-400 border border-red-900/30'
                 }`}>
                   {gradingResult.profileUpdates.overallDelta >= 0 ? `+${gradingResult.profileUpdates.overallDelta}` : gradingResult.profileUpdates.overallDelta}
                 </span>
               </div>
 
               <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">New IQ</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">New IQ</span>
                 <span className="font-display font-black text-3xl text-white">{gradingResult.profileUpdates.overallRating}</span>
               </div>
             </div>
 
             {/* Scorecard Deltas */}
-            <div className="space-y-3 mb-8 text-left bg-black/40 border border-white/5 rounded-2xl p-4">
+            <div className="space-y-3 mb-8 text-left bg-black/30 border border-white/5 rounded-2xl p-4">
               <div className="flex justify-between items-center text-xs font-semibold">
                 <span className="text-gray-400">Prediction Rating Delta:</span>
                 <span className={gradingResult.profileUpdates.predictionDelta >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
@@ -536,24 +537,32 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   {gradingResult.profileUpdates.hotTakeDelta >= 0 ? `+${gradingResult.profileUpdates.hotTakeDelta}` : gradingResult.profileUpdates.hotTakeDelta}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-xs font-semibold border-t border-white/5 pt-2 mt-2">
-                <span className="text-amber-500 font-bold uppercase tracking-wider">Card Rarity Claimed:</span>
+              <div className="flex justify-between items-center text-xs font-semibold border-t border-white/10 pt-2 mt-2">
+                <span className="text-[#E11D48] font-bold uppercase tracking-wider">Card Rarity Claimed:</span>
                 <span className="text-white font-black uppercase tracking-wider">{gradingResult.card.rarity}</span>
               </div>
             </div>
 
-            <button
-              onClick={() => setShowProgression(false)}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-[#881337] to-[#D97706] text-white font-display font-black text-sm uppercase tracking-widest shadow-md hover:opacity-95 active:scale-[0.98] transition-all"
-            >
-              Collect Verdict Card & View Card
-            </button>
+            <div className="flex flex-col gap-2.5 w-full">
+              <Link
+                href={`/card/${gradingResult.card.id}`}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-sm uppercase tracking-widest shadow-md hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer text-center block"
+              >
+                Go to Card Customization Page →
+              </Link>
+              <button
+                onClick={() => setShowProgression(false)}
+                className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 font-display font-black text-xs uppercase tracking-widest hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Stay on Match Center
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Main Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 pt-[80px]">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 pt-6">
 
         {isResolved ? (
           /* Resolved View: Card & Progression Details */
@@ -580,12 +589,13 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   sentence: gradingResult.card.sentence,
                   ach: { title: 'Reputation', desc: 'Graded', badge: '🔥' },
                   stats: [
-                    { label: 'PRD', name: 'Prediction', val: gradingResult.card.statsJson?.predictionPerfScore ?? gradingResult.card.rating },
-                    { label: 'HTK', name: 'Hot Take', val: gradingResult.card.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, gradingResult.card.rating + 2)) },
-                    { label: 'SEL', name: 'Team Selection', val: gradingResult.card.statsJson?.tacticalRating ?? Math.max(30, Math.min(99, gradingResult.card.rating - 3)) },
-                    { label: 'CMY', name: 'Community Banter', val: gradingResult.card.statsJson?.communityRating ?? Math.max(30, Math.min(99, gradingResult.card.rating + 1)) }
+                    { label: 'PRD', name: 'Prediction', val: (gradingResult.card.statsJson as any)?.prd ?? (gradingResult.card.statsJson as any)?.predictionPerfScore ?? gradingResult.card.rating },
+                    { label: 'MGR', name: 'Manager Score', val: (gradingResult.card.statsJson as any)?.mgr ?? (gradingResult.card.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, gradingResult.card.rating - 3)) },
+                    { label: 'HOT', name: 'Hot Take', val: (gradingResult.card.statsJson as any)?.hot ?? (gradingResult.card.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, gradingResult.card.rating + 2)) },
+                    { label: 'RST', name: 'Roast Score', val: (gradingResult.card.statsJson as any)?.rst ?? (gradingResult.card.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, gradingResult.card.rating + 1)) }
                   ],
                   cardTheme: gradingResult.card.cardTheme || 'gold',
+                  aiImageUrl: gradingResult.card.aiImageUrl,
                   countryFlag: profile?.favoriteNation ? profile.favoriteNation : '🌍',
                   playerName: profile?.username || 'MANAGER',
                   playerPosition: gradingResult.card.rating >= 75 ? 'CF' : 'DM',
@@ -595,38 +605,44 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
               </div>
 
               {/* Share Card Block */}
-              <div className="mt-6 flex gap-3 w-full max-w-[340px]">
+              <div className="mt-6 flex flex-col gap-2.5 w-full max-w-[340px]">
                 <button
                   onClick={handleCopyLink}
-                  className="flex-1 py-3 px-4 rounded-xl bg-surface border border-white/10 hover:border-[#D97706]/40 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-white/10 text-gray-300 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <Share2 className="w-4 h-4 text-amber-500" />
-                  {copied ? 'Link Copied!' : 'Share Card Link'}
+                  <Share2 className="w-4 h-4 text-[#E11D48]" />
+                  {copied ? 'Link Copied!' : 'Copy Shareable Link'}
                 </button>
+                <Link
+                  href={`/card/${gradingResult.card.id}`}
+                  className="w-full py-3 px-4 rounded-xl bg-[#E11D48]/10 hover:bg-[#E11D48]/20 border border-[#E11D48]/30 hover:border-[#E11D48]/55 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all text-center block animate-pulse-slow"
+                >
+                  View & Customise Card Page →
+                </Link>
               </div>
             </div>
 
             {/* Right Column: Dynamic Breakdown */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="glass-panel border-white/5 bg-[#0B0F19]/40 rounded-3xl p-6 md:p-8">
+              <div className="glass-panel border border-white/10 bg-[#0B0F19]/80 rounded-3xl p-6 md:p-8 text-white shadow-sm backdrop-blur-md">
                 <h3 className="font-display font-black text-xl text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-amber-500" /> Graded Performance Summary
+                  <Trophy className="w-5 h-5 text-[#E11D48]" /> Graded Performance Summary
                 </h3>
 
                 <div className="space-y-4">
                   {/* Actual Score vs Prediction */}
-                  <div className="bg-black/40 border border-white/5 rounded-2xl p-4 flex justify-between items-center">
+                  <div className="bg-black/30 border border-white/5 rounded-2xl p-4 flex justify-between items-center">
                     <div>
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Score Prediction Outcome</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Score Prediction Outcome</p>
                       <p className="text-sm font-bold text-white">
-                        Your Prediction: <span className="text-amber-500">{predHomeScore} - {predAwayScore}</span>
+                        Your Prediction: <span className="text-[#E11D48]">{predHomeScore} - {predAwayScore}</span>
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        Actual Outcome: <span className="text-white font-semibold">{actualResult.homeScore} - {actualResult.awayScore}</span>
+                        Actual Outcome: <span className="text-gray-200 font-semibold">{actualResult.homeScore} - {actualResult.awayScore}</span>
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-mono font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg">
+                      <span className="text-xs font-mono font-bold text-green-400 bg-green-950/20 border border-green-900/30 px-3 py-1.5 rounded-lg">
                         {predHomeScore === actualResult.homeScore && predAwayScore === actualResult.awayScore ? 'Exact Score (+15)' : (
                           (predHomeScore > predAwayScore && actualResult.homeScore > actualResult.awayScore) ||
                           (predHomeScore < predAwayScore && actualResult.homeScore < actualResult.awayScore) ||
@@ -637,22 +653,22 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   </div>
 
                   {/* Hot Take AI Grading Summary */}
-                  <div className="bg-black/40 border border-white/5 rounded-2xl p-4 space-y-3">
-                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Hot Take VAR Grader Result</p>
+                  <div className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hot Take VAR Grader Result</p>
                     {takes.map((t, idx) => (
                       <div key={idx} className="border-b border-white/5 last:border-0 pb-3 last:pb-0">
-                        <p className="text-sm italic font-medium text-white leading-relaxed">&ldquo;{t.statement}&rdquo;</p>
+                        <p className="text-sm italic font-medium text-gray-200 leading-relaxed">&ldquo;{t.statement}&rdquo;</p>
                         <div className="flex items-center gap-4 mt-2">
-                          <span className="text-[10px] font-mono text-gray-400">Confidence: <span className="text-white font-bold">{t.confidence}%</span></span>
-                          <span className="text-[10px] font-mono text-gray-400">VAR rating: <span className="text-amber-500 font-bold">{gradingResult.gradedTakes?.[idx]?.ovr ?? 50} OVR</span></span>
+                          <span className="text-[10px] font-mono text-gray-400">Confidence: <span className="text-gray-200 font-bold">{t.confidence}%</span></span>
+                          <span className="text-[10px] font-mono text-gray-400">VAR rating: <span className="text-[#E11D48] font-bold">{gradingResult.gradedTakes?.[idx]?.ovr ?? 50} OVR</span></span>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Settings Override Bypasser Info */}
-                  <div className="flex items-center gap-2 text-xs text-gray-500 italic mt-4">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
+                  <div className="flex items-center gap-2 text-xs text-gray-400 italic mt-4">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-gray-500" />
                     Permanently saved to your World Cup 2026 Season record. View total progress in &quot;My Card&quot;.
                   </div>
                 </div>
@@ -662,7 +678,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
             {/* Best XI Showcase pitch */}
             <div className="lg:col-span-12 mt-8 space-y-4">
               <div className="flex flex-col items-center text-center">
-                <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">Tactical Retrospective</span>
+                <span className="text-[10px] font-black text-[#E11D48] uppercase tracking-wider">Tactical Retrospective</span>
                 <h3 className="font-display font-black text-xl uppercase tracking-wider text-white mt-1">
                   Your Best XI Locked Lineup
                 </h3>
@@ -689,7 +705,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
             style={{ height: 'calc(100vh - 88px)' }}
           >
             {/* ══ Row 1: Full-width Match Scoreboard with BIG score ══ */}
-            <div className="shrink-0 bg-[#0B0F19]/80 border border-white/[0.08] rounded-2xl px-5 py-3 mb-3 backdrop-blur-sm">
+            <div className="shrink-0 bg-[#0B0F19]/80 border border-white/10 rounded-2xl px-5 py-3 mb-3 shadow-md backdrop-blur-md">
               <div className="flex items-center gap-4">
                 {/* Home Team */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -704,15 +720,15 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                       : <span className="text-white">{match.home_score} : {match.away_score}</span>}
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{match.group} · {match.matchday}</span>
+                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{match.group} · {match.matchday}</span>
                     <span className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${
-                      status === 'LIVE' ? 'text-red-400 bg-red-500/10 border-red-500/30'
-                      : status === 'COMPLETED' ? 'text-gray-400 bg-gray-500/10 border-gray-500/20'
-                      : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                      status === 'LIVE' ? 'text-red-400 bg-red-950/20 border-red-900/30'
+                      : status === 'COMPLETED' ? 'text-gray-400 bg-black/30 border-white/10'
+                      : 'text-[#E11D48] bg-[#E11D48]/10 border-[#E11D48]/20'
                     }`}>
                       {status === 'LIVE' ? '● LIVE' : status === 'COMPLETED' ? 'FULL TIME' : 'PREDICTIONS OPEN'}
                     </span>
-                    <span className="text-[9px] font-mono text-gray-600">
+                    <span className="text-[9px] font-mono text-zinc-500">
                       {mounted ? kickoff.toLocaleString(undefined, {
                         month: 'numeric',
                         day: 'numeric',
@@ -731,9 +747,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                 {/* Edit Predictions button */}
                 <button
                   onClick={() => setShowPredictionModal(true)}
-                  className="shrink-0 py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-amber-500/40 hover:bg-amber-500/5 text-white font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="shrink-0 py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-[#E11D48]/5 text-gray-300 font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <Flame className="w-3.5 h-3.5 text-[#E11D48]" />
                   Edit Picks
                 </button>
               </div>
@@ -759,7 +775,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
                 {/* ── LIVE / COMPLETED → Chat Panel ── */}
                 {(status === 'LIVE' || status === 'COMPLETED') ? (
-                  <div className="flex-1 bg-[#0B0F19]/60 border border-white/5 rounded-2xl backdrop-blur-sm overflow-hidden flex flex-col min-h-0">
+                  <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-0 backdrop-blur-md">
                     <MatchLiveChat
                       matchId={matchId}
                       isLive={status === 'LIVE'}
@@ -771,18 +787,18 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   </div>
                 ) : (
                   /* ── UPCOMING → Player Selector ── */
-                  <div className="flex-1 bg-[#0B0F19]/60 border border-white/5 rounded-2xl backdrop-blur-sm flex flex-col overflow-hidden min-h-0">
+                  <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-0 backdrop-blur-md">
                     {selectedSlot ? (
                       <>
                         {/* Selector header */}
-                        <div className="px-3 py-2.5 border-b border-white/5 flex justify-between items-center shrink-0">
+                        <div className="px-3 py-2.5 border-b border-white/10 flex justify-between items-center shrink-0 bg-black/20">
                           <div>
-                            <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Select Player</span>
+                            <span className="text-[8px] font-black text-[#E11D48] uppercase tracking-widest">Select Player</span>
                             <div className="font-display font-black text-xs uppercase tracking-wider text-white">
                               {selectedSlot} — {PITCH_SLOTS.find(s => s.id === selectedSlot)?.category}
                             </div>
                           </div>
-                          <div className="text-[9px] font-mono font-bold text-gray-400 bg-black/40 border border-white/5 px-2 py-0.5 rounded-full">
+                          <div className="text-[9px] font-mono font-bold text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
                             {Object.keys(lineup).length}/11
                           </div>
                         </div>
@@ -807,9 +823,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                                   key={idx}
                                   onClick={() => { if (!isChosenElsewhere) handleSelectPlayer(player); }}
                                   className={`flex items-center justify-between px-4.5 py-3.5 rounded-xl border transition-all ${
-                                    isChosenHere ? 'bg-amber-500/10 border-amber-500/40'
-                                    : isChosenElsewhere ? 'bg-gray-900/30 border-white/5 opacity-40 cursor-not-allowed'
-                                    : 'bg-black/30 border-white/5 hover:bg-white/5 hover:border-white/10 cursor-pointer'
+                                    isChosenHere ? 'bg-[#E11D48]/10 border-[#E11D48]'
+                                    : isChosenElsewhere ? 'bg-black/20 border-white/5 opacity-45 cursor-not-allowed'
+                                    : 'bg-black/10 border-white/5 hover:bg-white/5 hover:border-white/15 cursor-pointer'
                                   }`}
                                 >
                                   <div className="flex items-center gap-3.5">
@@ -819,7 +835,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                                       <img
                                         src={getPlayerImageUrl(player.name)}
                                         alt={player.name}
-                                        className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
+                                        className="w-full h-full object-contain rounded-full bg-black/20 border border-white/10"
                                         onError={(e) => {
                                           (e.target as HTMLImageElement).src = `https://media.api-sports.io/football/players/154.png`;
                                         }}
@@ -834,9 +850,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
-                                    {isChosenElsewhere && <span className="text-[9px] font-black uppercase bg-gray-800 text-gray-500 px-2 py-1 rounded">Used</span>}
-                                    {isChosenHere && <span className="text-[9px] font-black uppercase bg-amber-500/20 text-amber-400 px-2 py-1 rounded">✓</span>}
-                                    <span className="font-mono font-black text-base text-amber-400">{player.rating}</span>
+                                    {isChosenElsewhere && <span className="text-[9px] font-black uppercase bg-black/30 text-gray-400 px-2 py-1 rounded">Used</span>}
+                                    {isChosenHere && <span className="text-[9px] font-black uppercase bg-[#E11D48]/15 text-[#E11D48] px-2 py-1 rounded">✓</span>}
+                                    <span className="font-mono font-black text-base text-[#E11D48]">{player.rating}</span>
                                   </div>
                                 </div>
                               );
@@ -847,8 +863,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                     ) : (
                       <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
                         <Sparkles className="w-7 h-7 text-green-500/25 mb-2" />
-                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Tap a position</p>
-                        <p className="text-[10px] text-gray-600 mt-1 max-w-[160px] leading-normal">Click any slot on the pitch to see players for that position.</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Tap a position</p>
+                        <p className="text-[10px] text-zinc-500 mt-1 max-w-[160px] leading-normal">Click any slot on the pitch to see players for that position.</p>
                       </div>
                     )}
                   </div>
@@ -857,13 +873,13 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                 {/* Action Buttons — always visible at bottom */}
                 <div className="shrink-0 space-y-1.5">
                   {status === 'LIVE' && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-2 rounded-xl flex items-center gap-2 text-[9px] font-semibold">
+                    <div className="bg-red-950/20 border border-red-900/30 text-red-400 px-3 py-2 rounded-xl flex items-center gap-2 text-[9px] font-semibold">
                       <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
                       Match is LIVE — predictions locked. Join the chat! 💬
                     </div>
                   )}
                   {status === 'COMPLETED' && !hasSubmitted && (
-                    <div className="bg-gray-800/60 border border-white/5 text-gray-500 px-3 py-2 rounded-xl flex items-center gap-2 text-[9px] font-semibold">
+                    <div className="bg-black/30 border border-white/10 text-gray-400 px-3 py-2 rounded-xl flex items-center gap-2 text-[9px] font-semibold">
                       <AlertCircle className="w-3 h-3 shrink-0" /> Match ended — no submission made.
                     </div>
                   )}
@@ -879,7 +895,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                     <button
                       onClick={handleResolveMatch}
                       disabled={resolving}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#881337] to-[#D97706] text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                     >
                       {resolving ? 'VAR In Progress...' : 'VAR Tribunal: Grade Match'}
                     </button>

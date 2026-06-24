@@ -7,7 +7,7 @@ export default function NotFound() {
       {/* Background orbs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-[#881337]/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 bg-[#D97706]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 bg-[#E11D48]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center gap-6 max-w-md">
@@ -16,7 +16,7 @@ export default function NotFound() {
           <span
             className="font-display font-black text-[10rem] leading-none select-none"
             style={{
-              background: 'linear-gradient(135deg, #881337 0%, #D97706 100%)',
+              background: 'linear-gradient(135deg, #881337 0%, #E11D48 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -26,13 +26,13 @@ export default function NotFound() {
             404
           </span>
           <div className="absolute inset-0 flex items-center justify-center">
-            <Trophy className="w-16 h-16 text-[#D97706]/60" />
+            <Trophy className="w-16 h-16 text-[#E11D48]/60" />
           </div>
         </div>
 
         {/* Copy */}
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-[#D97706] font-black mb-2">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-[#E11D48] font-black mb-2">
             VAR Reviewed — Not Found
           </p>
           <h1 className="font-display font-black text-3xl uppercase tracking-tight mb-3">

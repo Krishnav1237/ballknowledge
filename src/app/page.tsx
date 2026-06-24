@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { Target, Users, Flame, MessageSquare, Award } from 'lucide-react';
 
 
 import { BREAKING_NEWS, PLAYERS, COUNTRIES } from '@/lib/landingData';
@@ -76,32 +77,32 @@ export default function Home() {
 
 
   return (
-    <div ref={containerRef} className="relative bg-white text-[#0A0A0A] min-h-screen overflow-hidden">
+    <div ref={containerRef} className="relative bg-[#030712] text-[#F3F4F6] min-h-screen overflow-hidden">
 
       {/* ── IMMERSIVE PRELOADER SCREEN ──────────────────────────────────────── */}
       <div 
-        className={`fixed inset-0 z-[100] bg-[#0A0A0A] flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
+        className={`fixed inset-0 z-[100] bg-[#030712] flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
           !loading ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         <div className="flex flex-col items-center gap-4 text-center px-6">
-          {/* Spinning Golden & Burgundy Rings */}
+          {/* Spinning Burgundy & Red Rings */}
           <div className="relative w-16 h-16 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full border-2 border-t-[#D97706] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '1s' }} />
+            <div className="absolute inset-0 rounded-full border-2 border-t-[#E11D48] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '1s' }} />
             <div className="absolute inset-1.5 rounded-full border-2 border-b-[#881337] border-t-transparent border-r-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }} />
             <span className="font-display font-black text-xs text-white uppercase tracking-wider">VAR</span>
           </div>
           
           <h2 className="font-display font-black text-2xl tracking-[0.2em] text-white uppercase mt-2">
-            BALL<span className="text-[#D97706]">KNOWLEDGE</span>
+            BALL<span className="text-[#E11D48]">KNOWLEDGE</span>
           </h2>
 
           
-          <div className="w-44 h-[2px] bg-white/10 rounded-full overflow-hidden relative mt-1">
-            <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#881337] to-[#D97706] w-full animate-loading-bar" />
+          <div className="w-44 h-[2px] bg-zinc-800 rounded-full overflow-hidden relative mt-1">
+            <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#881337] to-[#E11D48] w-full animate-loading-bar" />
           </div>
           
-          <p className="text-[9px] font-sans font-black text-gray-500 uppercase tracking-[0.2em] mt-1">
+          <p className="text-[9px] font-sans font-black text-zinc-500 uppercase tracking-[0.2em] mt-1">
             Connecting to World Cup Matchday Server...
           </p>
         </div>
@@ -111,14 +112,14 @@ export default function Home() {
 
       <div className="fixed top-[52px] left-0 w-full h-9 z-30 flex items-center overflow-hidden select-none"
            style={{ background: '#881337' }}>
-        <div className="shrink-0 px-4 h-full flex items-center bg-black border-r border-white/10 relative z-10">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#D97706]">2026 LIVE</span>
+        <div className="shrink-0 px-4 h-full flex items-center bg-zinc-950 border-r border-white/10 relative z-10">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#E11D48]">2026 LIVE</span>
         </div>
         <div className="flex w-max">
           <div className="animate-marquee whitespace-nowrap flex space-x-12 pr-12 text-[11px] font-semibold text-white/90 uppercase tracking-wide items-center">
             {BREAKING_NEWS.concat(BREAKING_NEWS).map((n, i) => (
               <span key={i} className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-[#D97706] animate-pulse" />{n}
+                <span className="w-1 h-1 rounded-full bg-[#E11D48] animate-pulse" />{n}
               </span>
             ))}
           </div>
@@ -128,11 +129,13 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* HERO                                                                  */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#0A0A0A] text-white">
+      <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#030712] text-white">
         <motion.div style={{ y: yBg }} className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-55" sizes="100vw" priority />
-
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-[#0A0A0A]" />
+          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" priority />
+          {/* Dark vignette — lighter in the middle so the stadium is visible */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/20 to-[#030712]/90" />
+          {/* Side vignettes for readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/60 via-transparent to-[#030712]/60" />
         </motion.div>
 
         <motion.div 
@@ -143,32 +146,31 @@ export default function Home() {
         >
 
           {/* Live badge */}
-          <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-4 shadow-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse" />
+          <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-6 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48] animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">World Cup 2026 • Season Active</span>
           </div>
 
           <h1 className="font-display font-black uppercase tracking-tight text-white mb-4 text-center leading-[1.05]"
               style={{
                 fontSize: 'clamp(2rem, 6vw, 4.5rem)',
-                textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)'
               }}>
             Build Your<br />
-            Football <span className="text-[#D97706]">Reputation</span>
+            Football <span className="text-[#E11D48]">Reputation</span>
           </h1>
 
-          <p className="font-sans text-gray-200 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8 font-medium text-center">
-            Predict FIFA World Cup 2026 match scores, build your custom Best XI lineups on our interactive tactical pitch, write bold hot takes, and run the AI VAR review to earn holographic Verdict Cards. Evolve your Football IQ and climb the global leaderboard!
+          <p className="font-sans text-zinc-400 text-[12.5px] sm:text-sm md:text-base leading-relaxed max-w-xl mx-auto mb-8 font-semibold text-center">
+            Lock in predictions, construct your Best XI squad, drop bold hot takes, and survive the AI VAR Tribunal to collect dynamic Verdict Cards.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             <Link href="/world-cup-hub"
-                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:opacity-90 shadow-md text-center bg-gradient-to-r from-[#881337] to-[#D97706]">
+                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:opacity-90 shadow-md text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
               Enter World Cup Hub
             </Link>
             <Link href="/football-iq"
-                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:opacity-90 shadow-md border border-white/20 bg-white/10 hover:bg-white/20 text-center">
+                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-gray-300 transition-all hover:scale-105 hover:opacity-90 shadow-md border border-white/10 bg-white/5 hover:bg-white/10 text-center">
               View My Card
             </Link>
           </div>
@@ -181,9 +183,9 @@ export default function Home() {
                 { v: stats.cards.toLocaleString(), l: 'Cards Generated' },
                 { v: stats.cases.toLocaleString(), l: 'Reputations Synced' },
               ].map(s => (
-                <div key={s.l} className="bg-white/10 backdrop-blur-md border border-white/10 px-6 py-3 rounded-2xl shadow-lg text-center min-w-[155px] transition-transform duration-300 hover:scale-105 flex flex-col justify-center">
-                  <div className="font-display font-black text-2xl sm:text-3xl text-[#D97706]">{s.v}</div>
-                  <div className="text-[9px] font-sans font-black uppercase tracking-widest text-gray-400 mt-1">{s.l}</div>
+                <div key={s.l} className="bg-[#0B0F19]/80 border border-white/10 px-6 py-3 rounded-2xl shadow-md text-center min-w-[155px] transition-transform duration-300 hover:scale-105 flex flex-col justify-center backdrop-blur-md">
+                  <div className="font-display font-black text-2xl sm:text-3xl text-[#E11D48]">{s.v}</div>
+                  <div className="text-[9px] font-sans font-black uppercase tracking-widest text-zinc-500 mt-1">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -195,69 +197,134 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* HOW IT WORKS                                                          */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-20 px-6 bg-white border-t border-[#F3F4F6]">
-        <div className="max-w-5xl mx-auto">
+      {/* ── HOW IT WORKS — Light Section ─────────────────────────────────────── */}
+      <section className="py-16 md:py-20 px-6 bg-white border-t border-gray-100 relative overflow-hidden">
+        {/* Subtle stadium texture at very low opacity for depth */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.04] object-center" sizes="100vw" />
+        </div>
+        <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-12">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#881337] mb-2">HOW IT WORKS</p>
-            <h2 className="font-serif italic font-black text-3xl sm:text-4xl text-[#0A0A0A] leading-tight">
-              Build Reputation in 3 Steps.
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] bg-[#E11D48]/10 px-3 py-1 rounded-full border border-[#E11D48]/20">
+              HOW IT WORKS
+            </span>
+            <h2 className="font-display font-black text-2xl sm:text-3xl text-gray-900 uppercase tracking-wider mt-4">
+              Build Your Reputation in <span className="text-[#E11D48]">5 Steps</span>
             </h2>
+            <p className="text-gray-500 text-xs sm:text-sm mt-3 max-w-lg mx-auto font-bold">
+              Every step earns you points across 4 unique metrics to build your overall Football IQ card.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 relative">
-            <div className="hidden sm:block absolute top-8 left-[16.67%] right-[16.67%] h-px bg-[#E5E7EB] z-0" />
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
               {
-                n: '01', color: '#881337', bg: '#FEF2F2',
-                title: 'Lock In Matchday Predictions',
-                body: 'Select a fixture in the World Cup Hub. Submit scorelines and bold hot takes before the match kickoff.',
-                platforms: ['Fixture Hub', 'Match predictions', 'Hot takes'],
+                n: '01',
+                icon: Target,
+                color: '#E11D48',
+                metric: 'PRD',
+                title: 'Lock In Predictions',
+                body: 'Predict scorelines, goalscorers, and MOTM to build your Predictor rating.',
               },
               {
-                n: '02', color: '#D97706', bg: '#FFFBF0',
-                title: 'Collect Custom Cards',
-                body: 'Once completed, the tribunal grades your performance. Watch your rating evolve and reveal your Verdict Card.',
-                platforms: ['Visionary Card', 'Delusion Card', 'Score Deltas'],
+                n: '02',
+                icon: Users,
+                color: '#3B82F6',
+                metric: 'MGR',
+                title: 'Build Best XI',
+                body: 'Assemble your tactical team. Real-world ratings determine your Manager Score.',
               },
               {
-                n: '03', color: '#059669', bg: '#F0FDF4',
-                title: 'Evolve Football IQ',
-                body: 'Accumulate points across fixtures to increase your overall rating. Share cards and show off your public reputation.',
-                platforms: ['WhatsApp Share', 'X / Twitter Link', 'FUT Album'],
+                n: '03',
+                icon: Flame,
+                color: '#E11D48',
+                metric: 'HOT',
+                title: 'Drop Hot Takes',
+                body: 'Submit takes graded by the AI VAR Tribunal multiplied by your confidence.',
               },
-            ].map((s, i) => (
-              <div key={s.n} className={`relative z-10 flex flex-col items-center text-center px-6 py-6 sm:py-0 ${i < 2 ? 'border-b sm:border-b-0 sm:border-r border-black/5 pb-8 sm:pb-0' : ''}`}>
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-5 shadow-sm"
-                     style={{ background: s.bg, border: `2px solid ${s.color}` }}>
-                  <span className="font-sans font-black text-xl" style={{ color: s.color }}>{s.n}</span>
+              {
+                n: '04',
+                icon: MessageSquare,
+                color: '#8B5CF6',
+                metric: 'RST',
+                title: 'Banter & Roast',
+                body: 'Engage in the Roast Zone. Upvotes and chat activity boost your Roast Score.',
+              },
+              {
+                n: '05',
+                icon: Award,
+                color: '#10B981',
+                metric: 'OVR',
+                title: 'Get Verdict Card',
+                body: 'Claim your Ultimate Team style card showing your overall Football IQ.',
+              },
+            ].map((s) => {
+              const IconComponent = s.icon;
+              return (
+                <div
+                  key={s.n}
+                  className="relative group flex flex-col items-center text-center p-5 rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:border-gray-300 shadow-sm"
+                >
+                  {/* Icon Capsule */}
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:rotate-[6deg]"
+                    style={{ background: `${s.color}12`, border: `1.5px solid ${s.color}30` }}
+                  >
+                    <IconComponent className="w-5.5 h-5.5" style={{ color: s.color }} />
+                  </div>
+
+                  <span
+                    className="text-[9px] font-black uppercase tracking-[0.2em] mb-1.5"
+                    style={{ color: s.color }}
+                  >
+                    STEP {s.n} &middot; {s.metric}
+                  </span>
+                  <h3 className="font-display font-black text-sm text-gray-900 mb-2 uppercase tracking-wide">{s.title}</h3>
+                  <p className="font-sans text-gray-500 text-[11.5px] leading-relaxed font-bold">{s.body}</p>
                 </div>
-                <h3 className="font-sans font-black text-lg text-[#0A0A0A] mb-2">{s.title}</h3>
-                <p className="font-serif text-[#6B7280] text-sm leading-relaxed mb-4">{s.body}</p>
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {s.platforms.map(p => (
-                    <span key={p} className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                          style={{ background: s.bg, color: s.color, border: `1px solid ${s.color}30` }}>
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Bottom CTA strip */}
-          <div className="mt-10 py-5 px-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4"
-               style={{ background: '#0A0A0A' }}>
-            <p className="font-serif italic text-white text-base leading-snug">
-              Ready to start? Enter the hub and predict your first fixture.
-            </p>
-            <div className="flex gap-3 shrink-0">
-              <Link href="/world-cup-hub"
-                    className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all bg-gradient-to-r from-[#881337] to-[#D97706]">
-                Enter World Cup Hub
-              </Link>
+          {/* Formula Strip - Light card style */}
+          <div className="mt-10 py-4 px-6 rounded-2xl border border-gray-200 bg-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 flex-wrap justify-center text-[10px] sm:text-xs font-black uppercase tracking-wider">
+              {/* PRD */}
+              <div className="flex items-center gap-1.5 bg-[#E11D48]/8 border border-[#E11D48]/20 text-[#E11D48] px-3 py-1 rounded-full font-black">
+                <Target className="w-3.5 h-3.5" />
+                <span>35% PRD</span>
+              </div>
+              <span className="text-gray-400 font-bold">+</span>
+              {/* MGR */}
+              <div className="flex items-center gap-1.5 bg-blue-500/8 border border-blue-500/20 text-[#3B82F6] px-3 py-1 rounded-full font-black">
+                <Users className="w-3.5 h-3.5" />
+                <span>25% MGR</span>
+              </div>
+              <span className="text-gray-400 font-bold">+</span>
+              {/* HOT */}
+              <div className="flex items-center gap-1.5 bg-[#E11D48]/8 border border-[#E11D48]/20 text-[#E11D48] px-3 py-1 rounded-full font-black">
+                <Flame className="w-3.5 h-3.5" />
+                <span>25% HOT</span>
+              </div>
+              <span className="text-gray-400 font-bold">+</span>
+              {/* RST */}
+              <div className="flex items-center gap-1.5 bg-purple-500/8 border border-purple-500/20 text-[#8B5CF6] px-3 py-1 rounded-full font-black">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>15% RST</span>
+              </div>
+              <span className="text-gray-400 font-bold">=</span>
+              {/* OVR */}
+              <div className="flex items-center gap-1.5 bg-[#E11D48]/10 border border-[#E11D48]/30 text-[#E11D48] px-4 py-1.5 rounded-full">
+                <Award className="w-4 h-4" />
+                <span>FOOTBALL IQ OVR</span>
+              </div>
             </div>
+            <Link
+              href="/world-cup-hub"
+              className="shrink-0 px-6 py-3 rounded-full font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all bg-gradient-to-r from-[#881337] to-[#E11D48] shadow-[0_4px_12px_rgba(225,29,72,0.25)]"
+            >
+              Enter World Cup Hub
+            </Link>
           </div>
         </div>
       </section>
@@ -265,7 +332,12 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* TOOLS SHOWCASE: predictions, takes, and cards                        */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-12 px-6 border-t border-[#F3F4F6] bg-slate-50/50">
+      <section className="py-12 px-6 border-t border-white/10 bg-[#030712] relative overflow-hidden">
+        {/* Faint stadium in the background for dark sections */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Image src="/images/game_stadium_showcase.webp" alt="" fill className="object-cover opacity-[0.10] object-center" sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/80 via-transparent to-[#030712]/80" />
+        </div>
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
 
@@ -275,7 +347,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6 }}
-              className="rounded-3xl border border-[#881337]/10 overflow-hidden flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_15px_35px_rgba(136,19,55,0.08)] transition-all duration-300 hover:border-[#881337]/35 bg-white"
+              className="rounded-3xl border border-white/10 overflow-hidden flex flex-col justify-between shadow-xl hover:border-[#881337]/45 bg-[#0B0F19]/80 backdrop-blur-md"
             >
               <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-4">
@@ -284,22 +356,22 @@ export default function Home() {
                       <span className="text-white font-black text-xs">01</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">MODULE 01</p>
-                      <h2 className="font-sans font-black text-xl text-black">Matchday Hot Takes</h2>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">MODULE 01</p>
+                      <h2 className="font-sans font-black text-xl text-white">Matchday Hot Takes</h2>
                     </div>
                   </div>
-                  <p className="font-serif text-gray-600 text-sm leading-relaxed">
+                  <p className="font-serif text-gray-400 text-sm leading-relaxed">
                     Submit bold takes on fixture matchdays. The Stockley Park VAR tribunal scores them using AI, updating your overall Hot Takes IQ.
                   </p>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Sandbox Take</label>
+                      <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Sandbox Take</label>
                       <textarea
                         value={sandboxText}
                         onChange={e => setSandboxText(e.target.value.slice(0, 120))}
                         rows={2}
-                        className="w-full border border-gray-200 rounded-xl p-3.5 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#881337] focus:ring-4 focus:ring-[#881337]/5 transition-all resize-none leading-relaxed bg-[#FAFAFA]"
+                        className="w-full border border-white/10 rounded-xl p-3.5 font-serif text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#881337] transition-all resize-none leading-relaxed bg-black/40"
                       />
                       <div className="flex items-center justify-between mt-1.5">
                         <div className="flex gap-1.5 flex-wrap max-w-[85%]">
@@ -308,23 +380,23 @@ export default function Home() {
                             { label: '🇵🇹 Ronaldo take', text: "Ronaldo's aura will carry Portugal to the final trophy" },
                           ].map(t => (
                             <button key={t.label} onClick={() => setSandboxText(t.text)}
-                              className="text-[9px] font-bold px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[#881337] hover:text-[#881337] hover:bg-[#881337]/5 transition-all bg-white cursor-pointer active:scale-95">
+                              className="text-[9px] font-bold px-2.5 py-1 rounded-full border border-white/10 text-gray-400 hover:border-[#E11D48] hover:text-white hover:bg-[#E11D48]/10 transition-all bg-white/5 cursor-pointer active:scale-95">
                               {t.label}
                             </button>
                           ))}
                         </div>
-                        <span className="text-[9px] text-gray-400 font-semibold shrink-0">{sandboxText.length}/120</span>
+                        <span className="text-[9px] text-gray-500 font-semibold shrink-0">{sandboxText.length}/120</span>
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">
-                          Confidence <span className="text-[#881337] font-bold">{sandboxOvr}</span>
+                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
+                          Confidence <span className="text-[#E11D48] font-bold">{sandboxOvr}</span>
                         </label>
                         <input type="range" min="1" max="99" value={sandboxOvr}
                           onChange={e => setSandboxOvr(parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-[#881337] transition-all hover:bg-gray-300" />
+                          className="w-full h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-[#E11D48] transition-all" />
                       </div>
                     </div>
                   </div>
@@ -343,20 +415,20 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="rounded-3xl border border-[#D97706]/10 overflow-hidden flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_15px_35px_rgba(217,119,6,0.08)] transition-all duration-300 hover:border-[#D97706]/35 bg-white"
+              className="rounded-3xl border border-white/10 overflow-hidden flex flex-col justify-between shadow-xl hover:border-[#E11D48]/45 bg-[#0B0F19]/80 backdrop-blur-md"
             >
               <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ background: '#D97706' }}>
-                      <span className="text-black font-black text-xs">02</span>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm" style={{ background: '#E11D48' }}>
+                      <span className="text-white font-black text-xs">02</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">MODULE 02</p>
-                      <h2 className="font-sans font-black text-xl text-black">Fixture Predictions</h2>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">MODULE 02</p>
+                      <h2 className="font-sans font-black text-xl text-white">Fixture Predictions</h2>
                     </div>
                   </div>
-                  <p className="font-serif text-gray-600 text-sm leading-relaxed">
+                  <p className="font-serif text-gray-400 text-sm leading-relaxed">
                     Predict scorelines, MOTM, goalscorers, and possession. Earn rating increases: Exact score (+15) or Correct outcome (+5).
                   </p>
 
@@ -364,21 +436,21 @@ export default function Home() {
                     <div className="relative">
                       <input type="text" value={predMOTM} onChange={e => setPredMOTM(e.target.value)}
                         placeholder="Predicted MOTM…"
-                        className="w-full border border-gray-200 rounded-xl px-3.5 py-3 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#D97706] focus:ring-4 focus:ring-[#D97706]/5 transition-all bg-[#FAFAFA]" />
+                        className="w-full border border-white/10 rounded-xl px-3.5 py-3 font-serif text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#E11D48] transition-all bg-black/40" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <input type="text" value={predGoalscorer} onChange={e => setPredGoalscorer(e.target.value)}
                         placeholder="First Goalscorer…"
-                        className="w-full border border-gray-200 rounded-xl px-3.5 py-3 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#D97706] focus:ring-4 focus:ring-[#D97706]/5 transition-all bg-[#FAFAFA]" />
+                        className="w-full border border-white/10 rounded-xl px-3.5 py-3 font-serif text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#E11D48] transition-all bg-black/40" />
                       <input type="text" value={predPossession} onChange={e => setPredPossession(e.target.value)}
                         placeholder="Possession Winner…"
-                        className="w-full border border-gray-200 rounded-xl px-3.5 py-3 font-serif text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#D97706] focus:ring-4 focus:ring-[#D97706]/5 transition-all bg-[#FAFAFA]" />
+                        className="w-full border border-white/10 rounded-xl px-3.5 py-3 font-serif text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#E11D48] transition-all bg-black/40" />
                     </div>
                   </div>
                 </div>
 
                 <Link href={`/world-cup-hub`}
-                      className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-black transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#D97706] to-[#F59E0B]">
+                      className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#E11D48] to-[#EF4444]">
                   Lock predictions →
                 </Link>
               </div>
@@ -390,7 +462,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="rounded-3xl border border-slate-200 overflow-hidden flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_15px_35px_rgba(51,65,85,0.08)] transition-all duration-300 hover:border-slate-400/50 bg-white"
+              className="rounded-3xl border border-white/10 overflow-hidden flex flex-col justify-between shadow-xl hover:border-white/20 bg-[#0B0F19]/80 backdrop-blur-md"
             >
               <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-4">
@@ -399,26 +471,26 @@ export default function Home() {
                       <span className="text-white font-black text-xs">03</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">MODULE 03</p>
-                      <h2 className="font-sans font-black text-xl text-black">Verdict Cards</h2>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">MODULE 03</p>
+                      <h2 className="font-sans font-black text-xl text-white">Verdict Cards</h2>
                     </div>
                   </div>
                   
                   {/* Today's Prophecy Ticker */}
-                  <div className="bg-gradient-to-br from-slate-950 to-slate-900 border border-[#D97706]/35 rounded-2xl p-4.5 relative overflow-hidden shadow-inner">
+                  <div className="bg-gradient-to-br from-slate-950 to-slate-900 border border-[#E11D48]/35 rounded-2xl p-4.5 relative overflow-hidden shadow-inner">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[9px] font-black uppercase text-[#D97706] tracking-widest flex items-center">
+                      <span className="text-[9px] font-black uppercase text-[#E11D48] tracking-widest flex items-center">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-1.5" />
                         ACTIVE SEASON FIXTURE
                       </span>
                       <span className="text-[8px] font-mono text-slate-400">STATUS: OPEN</span>
                     </div>
-                    <p className="text-xs font-mono text-amber-200/90 leading-relaxed italic">
+                    <p className="text-xs font-mono text-rose-200/90 leading-relaxed italic">
                       &quot;Portugal will secure a last-minute victory through a controversial penalty locked in by Cristiano Ronaldo&apos;s aura.&quot;
                     </p>
                   </div>
 
-                  <p className="font-serif text-gray-600 text-sm leading-relaxed">
+                  <p className="font-serif text-gray-400 text-sm leading-relaxed">
                     Earn collectible FUT-style Verdict Cards for completed matches. Album count increases dynamically: Common, Rare, Epic, and Legendary.
                   </p>
                 </div>
@@ -438,11 +510,16 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* DRAGGABLE DOSSIERS PLATFORM                                            */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative py-12 md:py-16 px-6 border-t border-[#F3F4F6]">
-        <div className="max-w-[1400px] mx-auto">
+      {/* ── DOSSIERS — Light Section ──────────────────────────────────────────── */}
+      <section className="relative py-12 md:py-16 px-6 border-t border-gray-200 bg-slate-50 text-gray-900">
+        {/* Trophy image bleed at very low opacity for editorial feel */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Image src="/images/trophy_moment.webp" alt="" fill className="object-cover opacity-[0.05] object-top" sizes="100vw" />
+        </div>
+        <div className="max-w-[1400px] mx-auto relative z-10">
           <div className="mb-8 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#881337] mb-2">FIXTURE STORYLINES</p>
-            <h2 className="font-serif italic font-black text-4xl sm:text-5xl text-[#0A0A0A] leading-tight">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-2">FIXTURE STORYLINES</p>
+            <h2 className="font-serif italic font-black text-4xl sm:text-5xl text-gray-900 leading-tight">
               Predict the scripts of key stars.
             </h2>
             <p className="text-sm text-gray-500 font-sans mt-2 hidden lg:block">
@@ -451,20 +528,20 @@ export default function Home() {
           </div>
 
           {/* Desktop Draggable dossiers canvas desk */}
-          <div ref={deskRef} className="relative w-full h-[980px] border border-black/5 rounded-3xl bg-[#FAF9F6] overflow-hidden p-6 hidden lg:block"
-               style={{ backgroundImage: 'radial-gradient(rgba(0,0,0,0.03) 1.5px, transparent 1.5px)', backgroundSize: '20px 20px' }}>
+          <div ref={deskRef} className="relative w-full h-[980px] border border-gray-300 rounded-3xl bg-white/80 backdrop-blur-sm overflow-hidden p-6 hidden lg:block shadow-inner"
+               style={{ backgroundImage: 'radial-gradient(rgba(0,0,0,0.06) 1.5px, transparent 1.5px)', backgroundSize: '20px 20px' }}>
             
             <div className="absolute top-4 right-4 z-20 flex gap-2">
               <button
                 onClick={() => setIsTidied(!isTidied)}
-                className="px-4.5 py-2 rounded-full font-black text-xs uppercase tracking-widest text-black bg-white hover:bg-gray-100 transition-colors shadow-md border border-gray-200 cursor-pointer flex items-center gap-1.5"
+                className="px-4.5 py-2 rounded-full font-black text-xs uppercase tracking-widest text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm border border-gray-300 cursor-pointer flex items-center gap-1.5"
               >
                 {isTidied ? 'Scatter Dossiers' : 'Tidy Up Desk'}
               </button>
             </div>
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <span className="text-[10rem] font-sans font-black text-black/[0.015]">DOSSIER</span>
+              <span className="text-[10rem] font-sans font-black text-black/[0.025]">DOSSIER</span>
             </div>
 
             {PLAYERS.map((p, i) => {
@@ -485,16 +562,16 @@ export default function Home() {
                   dragElastic={0.06}
                   initial={{ opacity: 0, scale: 0.9, rotate: initialRotate, x: initialX, y: initialY }}
                   animate={{
-                    rotate: isTidied ? 0 : initialRotate,
-                    x: isTidied ? 0 : initialX,
-                    y: isTidied ? 0 : initialY,
-                    scale: 1,
+                     rotate: isTidied ? 0 : initialRotate,
+                     x: isTidied ? 0 : initialX,
+                     y: isTidied ? 0 : initialY,
+                     scale: 1,
                   }}
                   transition={{ type: 'spring', stiffness: 120, damping: 18 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  whileDrag={{ scale: 1.05, zIndex: 50, cursor: 'grabbing', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' }}
-                  className="absolute w-[320px] h-[430px] group flex flex-col rounded-2xl overflow-hidden shadow-sm bg-white cursor-grab select-none hover:shadow-md transition-shadow border border-black/5"
+                  whileDrag={{ scale: 1.05, zIndex: 50, cursor: 'grabbing', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3)' }}
+                  className="absolute w-[320px] h-[430px] group flex flex-col rounded-2xl overflow-hidden shadow-md bg-white cursor-grab select-none hover:shadow-xl transition-shadow border border-gray-200"
                   style={{
                     left: `${leftPercent}%`,
                     top: `${topPercent}%`,
@@ -523,7 +600,7 @@ export default function Home() {
                   </div>
 
                   <div className="p-5 flex flex-col gap-3 justify-between flex-grow">
-                    <p className="font-serif text-[#374151] text-xs sm:text-sm leading-relaxed select-none">{p.hook}</p>
+                    <p className="font-serif text-gray-600 text-xs sm:text-sm leading-relaxed select-none">{p.hook}</p>
                     <Link href={p.href}
                           className="text-[10px] sm:text-xs font-black uppercase tracking-widest inline-flex items-center gap-1 transition-all hover:translate-x-0.5"
                           style={{ color: p.accent }}>
@@ -544,7 +621,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="group flex flex-col rounded-2xl overflow-hidden shadow-sm bg-white w-full h-[430px] sm:h-[460px]"
+                className="group flex flex-col rounded-2xl overflow-hidden shadow-md bg-white w-full h-[430px] sm:h-[460px] border border-gray-200"
                 style={{ border: `1.5px solid ${p.border}30` }}
               >
                 <div className="relative w-full overflow-hidden" style={{ height: 230, flexShrink: 0 }}>
@@ -555,7 +632,7 @@ export default function Home() {
                     className="object-cover object-top"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
                   />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)' }} />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.12) 60%, transparent 100%)' }} />
                   <div className="absolute top-3 left-3 px-2 py-0.5 rounded text-[8px] font-black tracking-widest text-white"
                        style={{ background: p.accent }}>
                     {p.verdict}
@@ -568,7 +645,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="p-5 flex flex-col gap-3 justify-between flex-grow">
-                  <p className="font-serif text-[#374151] text-xs sm:text-sm leading-relaxed flex-1">{p.hook}</p>
+                  <p className="font-serif text-gray-600 text-xs sm:text-sm leading-relaxed flex-1">{p.hook}</p>
                   <Link href={p.href}
                         className="text-[10px] sm:text-xs font-black uppercase tracking-widest inline-flex items-center gap-1"
                         style={{ color: p.accent }}>
@@ -578,21 +655,27 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* NATIONS: select country narrative                                      */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 px-6" style={{ background: '#0A0A0A' }}>
-        <div className="max-w-7xl mx-auto">
+      <section className="py-16 md:py-24 px-6 bg-[#030712] border-t border-gray-800 relative overflow-hidden">
+        {/* Nations: stadium at visible opacity */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Image src="/images/world_cup_hub_bg.webp" alt="" fill className="object-cover opacity-[0.12] object-center" sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/80 via-[#030712]/40 to-[#030712]/80" />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="mb-12 md:mb-16 text-center">
-            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#D97706] mb-3">NATIONS · SELECT FIXTURE CAMPAIGN</p>
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">NATIONS · SELECT FIXTURE CAMPAIGN</p>
             <h2 className="font-serif italic font-black text-4xl sm:text-5xl md:text-6xl text-white leading-tight">
               Pick your nation.<br />
-              <span style={{ color: '#D97706' }}>Own the narrative.</span>
+              <span className="text-[#E11D48]">Own the narrative.</span>
             </h2>
-            <p className="font-serif text-[#CBD5E1] text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
+            <p className="font-serif text-zinc-400 text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed font-medium">
               Every fanbase has its delusions. Select your nation to forecast upcoming fixtures, submit hot takes, and defend your country narrative.
             </p>
           </div>
@@ -607,8 +690,8 @@ export default function Home() {
                 transition={{ delay: i * 0.04, duration: 0.45 }}
               >
                 <Link href={c.href}
-                  className="group flex flex-col p-5 sm:p-6 rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full"
-                  style={{ background: '#161616', border: `1px solid ${c.color}33` }}>
+                  className="group flex flex-col p-5 sm:p-6 rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full shadow-lg bg-[#0B0F19]/90 backdrop-blur-sm border hover:border-white/20 hover:bg-[#111827] text-white"
+                  style={{ border: `1px solid ${c.color}30` }}>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-3xl sm:text-4xl">{c.flag}</span>
                     <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded"
@@ -617,7 +700,8 @@ export default function Home() {
                     </span>
                   </div>
                   <h3 className="font-sans font-black text-base sm:text-lg md:text-xl text-white mb-2">{c.name}</h3>
-                  <p className="font-serif text-[#CBD5E1] text-xs sm:text-sm leading-relaxed flex-1">{c.story}</p>
+                  <p className="font-serif text-zinc-400 text-xs sm:text-sm leading-relaxed flex-1">{c.story}</p>
+
                   <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mt-4 group-hover:translate-x-1 transition-transform inline-block"
                         style={{ color: c.color }}>
                     Predict fixture →
@@ -635,24 +719,23 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="relative py-20 md:py-28 px-6 overflow-hidden text-left bg-black">
         <div className="absolute inset-0">
-          <Image src="/images/trophy_moment.webp" alt="" fill className="object-cover opacity-100" sizes="100vw" />
-
-          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
+          <Image src="/images/trophy_moment.webp" alt="" fill className="object-cover opacity-[0.80]" sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="max-w-xl">
-            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#D97706] mb-3">WORLD CUP 2026 • SEASON ACTIVE</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">WORLD CUP 2026 • SEASON ACTIVE</p>
             <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white uppercase tracking-tight mb-4">
               The Tournament is Active.<br />
-              <span className="text-[#D97706]">Build your reputation.</span>
+              <span className="text-[#E11D48]">Build your reputation.</span>
             </h2>
             <p className="font-sans text-gray-300 text-sm sm:text-base mb-8 max-w-lg leading-relaxed">
               Grade your matchday predictions. Evolve your Overall Rating and verify your football reputation in the community.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/world-cup-hub"
-                    className="px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:scale-105 transition-all shadow-lg text-center bg-gradient-to-r from-[#881337] to-[#D97706]">
+                    className="px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:scale-105 transition-all shadow-lg text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
                 Enter World Cup Hub
               </Link>
               <Link href="/football-iq"

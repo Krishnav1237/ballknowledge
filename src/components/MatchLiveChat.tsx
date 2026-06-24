@@ -67,6 +67,12 @@ const SIMULATED_BANTER = [
   'VAR is saving them again, unbelievable 🙄'
 ];
 
+/**
+ * Retrieves cached chat messages for a specific match from local storage.
+ * 
+ * @param {string} matchId - The unique match ID.
+ * @returns {ChatMessage[]} Array of cached messages.
+ */
 function getStoredMessages(matchId: string): ChatMessage[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -77,15 +83,24 @@ function getStoredMessages(matchId: string): ChatMessage[] {
   }
 }
 
+/**
+ * Saves chat messages back to local storage.
+ * Caps the messages at the latest 200 items to prevent bloating the local storage quota.
+ * 
+ * @param {string} matchId - The unique match ID.
+ * @param {ChatMessage[]} messages - Array of chat messages.
+ */
 function saveMessages(matchId: string, messages: ChatMessage[]) {
   if (typeof window === 'undefined') return;
   try {
-    // Keep last 200 messages
+    // Keep last 200 messages to respect browser storage limits
     const trimmed = messages.slice(-200);
     localStorage.setItem(`bk_chat_${matchId}`, JSON.stringify(trimmed));
-  } catch { /* ignore */ }
+  } catch { /* ignore local storage full errors */ }
 }
 
+
+// Format time
 function formatTime(ts: number): string {
   const d = new Date(ts);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -110,7 +125,7 @@ export default function MatchLiveChat({
   const inputRef = useRef<HTMLInputElement>(null);
   const alias = managerAlias || 'Anonymous';
 
-  // Load messages on mount with initial seeded banter to make it feel alive!
+  // Load messages on mount with initial seeded banter
   useEffect(() => {
     let msgs = getStoredMessages(matchId);
     if (msgs.length === 0) {
@@ -121,7 +136,7 @@ export default function MatchLiveChat({
         text: isLive
           ? `⚽ ${homeTeam} vs ${awayTeam} is LIVE! The banter zone is open. Predictions are locked.`
           : `⚽ ${homeTeam} vs ${awayTeam} chat log.`,
-        timestamp: Date.now() - 3600000, // 1 hour ago
+        timestamp: Date.now() - 3600000,
         reactions: {},
         type: 'system',
       };
@@ -151,11 +166,12 @@ export default function MatchLiveChat({
     setMessages(msgs);
   }, [matchId, isLive, homeTeam, awayTeam]);
 
-  // Poll for new messages every 3 seconds (simulates real-time client sync)
+  // Poll for new messages every 3 seconds to pick up chat changes from other tabs or mock sources
   useEffect(() => {
     const interval = setInterval(() => {
       const latest = getStoredMessages(matchId);
       setMessages(prev => {
+        // Only trigger react state update if message count changes
         if (latest.length !== prev.length) return latest;
         return prev;
       });
@@ -163,12 +179,12 @@ export default function MatchLiveChat({
     return () => clearInterval(interval);
   }, [matchId]);
 
-  // Simulates other live managers joining the banter in real-time if match is LIVE!
+  // Simulates other live managers joining the banter room in real-time during live matches
   useEffect(() => {
     if (!isLive) return;
 
     const interval = setInterval(() => {
-      // 35% chance to post simulated banter every 10 seconds
+      // 35% chance to post a message every 10 seconds to create active tournament feel
       if (Math.random() > 0.35) return;
 
       const randomManager = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
@@ -186,7 +202,7 @@ export default function MatchLiveChat({
       };
 
       setMessages(prev => {
-        // Prevent immediate duplicates
+        // Prevent inserting identical duplicate messages
         if (prev.some(m => m.text === msg.text && m.author === msg.author)) return prev;
         const updated = [...prev, msg];
         saveMessages(matchId, updated);
@@ -197,7 +213,7 @@ export default function MatchLiveChat({
     return () => clearInterval(interval);
   }, [matchId, isLive]);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -243,27 +259,27 @@ export default function MatchLiveChat({
   const isReadOnly = isCompleted && !isLive;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden bg-[#0B0F19] text-white">
       {/* Chat header */}
-      <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/5">
+      <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/5 bg-[#111827]/85">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500 animate-pulse' : 'bg-gray-600'}`} />
+          <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-[#E11D48] animate-pulse' : 'bg-zinc-500'}`} />
           <span className="text-[9px] font-black uppercase tracking-widest text-white">
             {isLive ? 'LIVE BANTER ZONE' : isCompleted ? 'MATCH CHAT LOG' : 'BANTER ZONE'}
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <MessageCircle className="w-3 h-3 text-gray-500" />
-          <span className="text-[8px] font-mono text-gray-500">{messages.filter(m => m.type === 'message').length} msgs</span>
+        <div className="flex items-center gap-1.5 text-zinc-400">
+          <MessageCircle className="w-3 h-3 text-zinc-450" />
+          <span className="text-[8px] font-mono">{messages.filter(m => m.type === 'message').length} msgs</span>
         </div>
       </div>
 
       {/* Messages list */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-0">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-0 bg-[#0B0F19]">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
-            <Flame className="w-8 h-8 text-amber-500/30 mb-2" />
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-600">
+            <Flame className="w-8 h-8 text-[#E11D48]/30 mb-2" />
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
               {isLive ? 'Be the first to drop a hot take!' : 'Chat opens when match goes LIVE'}
             </p>
           </div>
@@ -276,7 +292,7 @@ export default function MatchLiveChat({
           if (isSystem) {
             return (
               <div key={msg.id} className="flex justify-center">
-                <span className="text-[9px] font-semibold text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-3 py-1 rounded-full">
+                <span className="text-[9px] font-semibold text-[#E11D48] bg-[#E11D48]/5 border border-[#E11D48]/10 px-3 py-1 rounded-full text-center max-w-[90%]">
                   {msg.text}
                 </span>
               </div>
@@ -289,20 +305,20 @@ export default function MatchLiveChat({
               <div className={`flex items-center gap-1.5 ${isMe ? 'flex-row-reverse' : ''}`}>
                 {/* Avatar circle */}
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black ${
-                  isMe ? 'bg-amber-500 text-black' : 'bg-[#1b2030] text-gray-300 border border-white/10'
+                  isMe ? 'bg-[#E11D48] text-white' : 'bg-[#1b2030] text-gray-300 border border-white/10'
                 }`}>
                   {msg.author.slice(0, 2).toUpperCase()}
                 </div>
-                <span className="text-[8px] font-black text-gray-500 uppercase tracking-wide">{isMe ? 'You' : msg.author}</span>
-                <span className="text-[7px] font-mono text-gray-700">{formatTime(msg.timestamp)}</span>
+                <span className="text-[8px] font-black text-gray-550 uppercase tracking-wide">{isMe ? 'You' : msg.author}</span>
+                <span className="text-[7px] font-mono text-gray-600">{formatTime(msg.timestamp)}</span>
               </div>
 
               {/* Bubble */}
               <div
                 className={`max-w-[85%] px-3 py-2 rounded-2xl text-[11px] leading-relaxed font-medium ${
                   isMe
-                    ? 'bg-amber-500/15 border border-amber-500/20 text-white rounded-tr-sm'
-                    : 'bg-[#0d1321] border border-white/5 text-gray-200 rounded-tl-sm'
+                    ? 'bg-[#E11D48]/15 border border-[#E11D48]/20 text-white rounded-tr-sm'
+                    : 'bg-white/5 border border-white/5 text-gray-200 rounded-tl-sm'
                 }`}
               >
                 {msg.text}
@@ -321,7 +337,7 @@ export default function MatchLiveChat({
                   </button>
                 ))}
                 {/* Quick reaction row */}
-                <div className="flex gap-0.5 opacity-0 hover:opacity-100 transition-opacity group-hover:opacity-100">
+                <div className="flex gap-0.5 opacity-0 hover:opacity-100 transition-opacity">
                   {REACTIONS.map(emoji => (
                     <button
                       key={emoji}
@@ -341,13 +357,13 @@ export default function MatchLiveChat({
 
       {/* Quick banter buttons */}
       {!isReadOnly && (
-        <div className="shrink-0 border-t border-white/5 p-2">
+        <div className="shrink-0 border-t border-white/5 p-2 bg-[#111827]/70">
           <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
             {BANTER_BUTTONS.map(btn => (
               <button
                 key={btn.label}
                 onClick={() => sendMessage(btn.text)}
-                className="shrink-0 text-[8px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/5 border border-amber-500/15 hover:border-amber-500/40 hover:bg-amber-500/10 px-2 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                className="shrink-0 text-[8px] font-black uppercase tracking-wider text-[#E11D48] bg-[#E11D48]/5 border border-[#E11D48]/15 hover:border-[#E11D48]/40 hover:bg-[#E11D48]/10 px-2.5 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap"
               >
                 {btn.label}
               </button>
@@ -365,23 +381,23 @@ export default function MatchLiveChat({
               placeholder={isLive ? 'Drop your hot take...' : isCompleted ? 'Match ended — chat is read-only' : 'Chat opens at kick-off'}
               disabled={!isLive}
               maxLength={280}
-              className="flex-1 bg-[#0d1321] border border-white/10 rounded-xl px-3 py-2 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/30 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex-1 bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-[#E11D48] disabled:opacity-40 disabled:cursor-not-allowed"
             />
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || !isLive}
-              className="shrink-0 w-9 h-9 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              className="shrink-0 w-9 h-9 rounded-xl bg-[#E11D48] hover:bg-rose-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer active:scale-95"
             >
-              <Send className="w-4 h-4 text-black" />
+              <Send className="w-4 h-4 text-white" />
             </button>
           </div>
-          <p className="text-[7px] font-mono text-gray-700 mt-1">Chatting as <span className="text-amber-600">{alias}</span> · {input.length}/280</p>
+          <p className="text-[7px] font-mono text-gray-500 mt-1">Chatting as <span className="text-[#E11D48] font-bold">{alias}</span> · {input.length}/280</p>
         </div>
       )}
 
       {isReadOnly && (
-        <div className="shrink-0 border-t border-white/5 p-3">
-          <div className="flex items-center gap-2 text-[9px] text-gray-600 font-semibold">
+        <div className="shrink-0 border-t border-white/5 p-3 bg-[#111827]/70">
+          <div className="flex items-center gap-2 text-[9px] text-gray-400 font-semibold">
             <AlertCircle className="w-3 h-3" />
             Match ended — chat is now read-only.
           </div>

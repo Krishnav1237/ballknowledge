@@ -50,11 +50,4 @@ export async function fetchWorldCupTeams(): Promise<any[]> {
   return teamsData;
 }
 
-/**
- * Returns a single match by ID. Efficient — no full array allocation beyond
- * the first call which populates the module-level cache.
- */
-export async function fetchMatchById(matchId: string): Promise<any | null> {
-  const matches = await fetchWorldCupMatches();
-  return matches.find((m) => m.id === matchId) ?? null;
-}
+

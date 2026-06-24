@@ -76,11 +76,11 @@ export default function PlayerSelectorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
-      <div className="bg-[#0B0F19] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh] shadow-[0_0_30px_rgba(217,119,6,0.15)] animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-[#0B0F19] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh] shadow-[0_0_30px_rgba(225,29,72,0.15)] animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
         <div className="p-5 border-b border-white/5 flex justify-between items-center shrink-0">
           <div>
-            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Select Player</span>
+            <span className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">Select Player</span>
             <h3 className="font-display font-black text-base uppercase tracking-wider text-white mt-0.5">
               Position: {activeSlot.label}
             </h3>
@@ -106,9 +106,9 @@ export default function PlayerSelectorModal({
                   if (isChosenElsewhere) return;
                   onSelect(player);
                 }}
-                 className={`flex items-center justify-between p-4.5 rounded-2xl border transition-all ${
+                className={`flex items-center justify-between p-4.5 rounded-2xl border transition-all ${
                   isChosenInCurrentSlot
-                    ? 'bg-amber-500/10 border-amber-500/40 text-white'
+                    ? 'bg-[#E11D48]/10 border-[#E11D48]/40 text-white'
                     : isChosenElsewhere
                     ? 'bg-gray-900/40 border-white/5 opacity-40 cursor-not-allowed text-gray-500'
                     : 'bg-black/40 border-white/5 hover:border-white/10 hover:bg-white/5 cursor-pointer text-white'
@@ -126,7 +126,7 @@ export default function PlayerSelectorModal({
                         (e.target as HTMLImageElement).src = `https://media.api-sports.io/football/players/154.png`;
                       }}
                     />
-                    <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-1 shadow-sm leading-none">
+                    <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-1 shadow-sm leading-none text-white">
                       {getFlagEmoji(player.team)}
                     </div>
                   </div>
@@ -146,7 +146,7 @@ export default function PlayerSelectorModal({
                       In Lineup
                     </span>
                   )}
-                  <span className="font-mono font-black text-lg text-amber-400">
+                  <span className="font-mono font-black text-lg text-[#E11D48]">
                     {player.rating}
                   </span>
                 </div>

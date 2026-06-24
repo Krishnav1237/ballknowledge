@@ -18,10 +18,10 @@ model FootballIQProfile {
   favoriteClub     String?
   favoriteNation   String?
   overallRating    Int               @default(50)
-  predictionRating Int               @default(50)
-  hotTakeRating    Int               @default(50)
-  tacticalRating   Int               @default(50)
-  communityRating  Int               @default(50)
+  predictionRating Int               @default(50)  // PRD — Predictor Score (0-100)
+  hotTakeRating    Int               @default(50)  // HOT — Hot Take Score (0-100)
+  managerRating    Int               @default(50)  // MGR — Manager Score (0-99)
+  roastScore       Int               @default(50)  // RST — Roast Score (50-100)
   role             String            @default("FREE") // "FREE" | "PREMIUM" | "ADMIN"
   season           String            @default("World Cup 2026")
   createdAt        DateTime          @default(now())
@@ -56,7 +56,7 @@ model HotTake {
   predictionId   String
   prediction     MatchPrediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
   statement      String
-  confidence     Int
+  confidence     Int             // 1-5
   createdAt      DateTime        @default(now())
 }
 
@@ -77,14 +77,15 @@ model MatchCard {
   profileId       String
   profile         FootballIQProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   matchId         String
-  rating          Int               // Match score (0-99)
+  rating          Int               // Match OVR score (0-99)
   verdict         String            // e.g. "Guilty" | "Acquitted"
   charge          String            // e.g. "Delusion Merchant" | "Certified Chef"
   evidence        String
   sentence        String
   rarity          String            // COMMON | RARE | EPIC | LEGENDARY
-  statsJson       Json              // stores the deltas or stats
+  statsJson       Json              // { prd, mgr, hot, rst, ovr } V1 scores
   cardTheme       String?
+  aiImageUrl      String?
   createdAt       DateTime          @default(now())
 
   @@unique([profileId, matchId])

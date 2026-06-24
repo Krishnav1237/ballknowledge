@@ -20,7 +20,7 @@ export default function GlobalError({
       {/* Background Orbs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#881337]/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#D97706]/6 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#E11D48]/6 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center gap-6 max-w-md">
@@ -31,7 +31,7 @@ export default function GlobalError({
 
         {/* VAR Review styling */}
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-[#D97706] font-black mb-2">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-[#E11D48] font-black mb-2">
             VAR Review — System Error
           </p>
           <h1 className="font-display font-black text-3xl uppercase tracking-tight mb-3">

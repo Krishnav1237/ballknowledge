@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,44 +7,35 @@ export const dynamic = 'force-dynamic';
  * Generates a personalised viral football card image via OpenRouter.
  *
  * Uses the correct OpenRouter image generation endpoint:
- *   POST /api/v1/images/generations
+ *   POST /api/v1/images
  *
- * Best models for photorealistic football cards (in order of preference):
- *   1. black-forest-labs/flux-1-pro        — best quality, photorealistic
- *   2. black-forest-labs/flux-1-schnell    — fast, good quality
- *   3. stabilityai/stable-diffusion-3-5    — high fidelity, slower
- *
- * The client renders the FUT card SVG independently — this API only provides
- * the AI-generated photorealistic background/player image overlay.
+ * Best models for photorealistic football cards:
+ *   - black-forest-labs/flux-1-pro        — best quality, photorealistic (default)
+ *   - black-forest-labs/flux-1-schnell    — fast, good quality
  */
 
 const IMAGE_MODEL = 'black-forest-labs/flux-1-pro';
 
 function buildCardPrompt(params: {
-  username: string;
   nation: string;
   ovr: number;
-  verdict: string;
 }) {
-  const { username, nation, ovr, verdict } = params;
+  const { nation } = params;
 
-  // A highly specific prompt tuned for football card aesthetics
+  // A highly specific prompt tuned for FIFA card abstract backgrounds
   return (
-    `Hyper-realistic premium FIFA Ultimate Team trading card illustration. ` +
-    `A passionate ${nation} football fan named ${username} wearing the official ${nation} national team jersey, ` +
-    `standing in a dramatic stadium pose with arms raised. ` +
-    `Dark stadium background with golden spotlight, bokeh crowd, dramatic lens flare. ` +
-    `Card rating ${ovr} OVR shown in large gold numerals. ` +
-    `Verdict badge reads "${verdict}". ` +
-    `Ultra HD, photorealistic, cinematic lighting, gold foil card border, ` +
-    `Panini sticker aesthetic, highly detailed face, authentic jersey fabric texture, ` +
-    `professional sports photography style. 4K quality. Sharp focus.`
+    `Premium soccer trading card background artwork inspired by the colors and pride of ${nation}. ` +
+    `EA Sports FIFA Team of the Year (TOTY) card art style, featuring abstract cosmic swirling dark blue and gold/bronze rings, ` +
+    `glowing sapphire blue crystals, dynamic 3D stadium spotlight beams, floating particle effects, professional sports graphic design. ` +
+    `High-contrast glowing texture, cinematic lighting, ultra-detailed 8k render. ` +
+    `Strictly abstract background texture, NO people, NO faces, NO player cutouts, NO text.`
   );
 }
 
 export async function POST(request: Request) {
   try {
     const {
+      cardId,           // optional database MatchCard ID to persist to
       username,
       faceImage,        // base64 face upload (used client-side; echoed back for card render)
       favoriteNation,
@@ -51,7 +43,9 @@ export async function POST(request: Request) {
       predictionRating,
       hotTakeRating,
       tacticalRating,
+      managerRating,
       communityRating,
+      roastScore,
       verdict,
       charge,
       sentence,
@@ -64,17 +58,17 @@ export async function POST(request: Request) {
     const nation = favoriteNation || 'Argentina';
     const ovr    = overallRating   ?? 50;
     const prd    = predictionRating ?? 50;
-    const htk    = hotTakeRating    ?? 50;
-    const sel    = tacticalRating   ?? 50;
-    const cmy    = communityRating  ?? Math.max(30, Math.min(99, ovr + 1));
+    const hot    = hotTakeRating    ?? 50;
+    const mgr    = managerRating    ?? tacticalRating ?? 50;
+    const rst    = roastScore       ?? communityRating ?? Math.max(50, Math.min(99, ovr + 1));
 
     let aiImageUrl = '';
 
     if (process.env.OPENROUTER_API_KEY) {
       try {
-        const prompt = buildCardPrompt({ username, nation, ovr, verdict: verdict || 'BALL KNOWLEDGE DETECTED' });
+        const prompt = buildCardPrompt({ nation, ovr });
 
-        const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
+        const response = await fetch('https://openrouter.ai/api/v1/images', {
           method: 'POST',
           headers: {
             'Authorization':  `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -86,19 +80,29 @@ export async function POST(request: Request) {
             model:  IMAGE_MODEL,
             prompt,
             n:      1,
-            size:   '768x1024',     // Portrait card aspect ratio
-            quality: 'standard',
+            aspect_ratio: '3:4',
           }),
           signal: AbortSignal.timeout(25_000), // 25s — Flux Pro can be slow
         });
 
         if (response.ok) {
           const data = await response.json();
-          // Standard OpenAI-compatible image response: data[0].url
           aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
           if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
             // Some models return base64; prefix it so the client can use it directly
             aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+          }
+
+          // If a cardId is provided, persist it to the database so it's shared permanently
+          if (aiImageUrl && cardId) {
+            try {
+              await prisma.matchCard.update({
+                where: { id: cardId },
+                data: { aiImageUrl }
+              });
+            } catch (dbError) {
+              console.warn('Failed to update MatchCard with aiImageUrl:', dbError);
+            }
           }
         } else {
           const errText = await response.text();
@@ -119,7 +123,8 @@ export async function POST(request: Request) {
         faceImage,              // echoed back for client-side JerseyAvatar render
         nation,
         ovr,
-        stats: { prd, htk, sel, cmy },
+        stats: { prd, htk: hot, sel: mgr, cmy: rst },
+        statsJson: { prd, mgr, hot, rst },
         verdict,
         charge,
         sentence,

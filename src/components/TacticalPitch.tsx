@@ -2,6 +2,11 @@ import React from 'react';
 import { Plus, X } from 'lucide-react';
 import { Player, getPlayerImageUrl } from '@/lib/roster';
 
+/**
+ * Coordinates and category classification of the 11 player slots
+ * representing a standard 4-3-3 formation grid on the tactical pitch.
+ * Positions are defined in percentages relative to the pitch container width/height.
+ */
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK', left: '50%', top: '88%' },
   { id: 'LB', label: 'LB', category: 'DEF', left: '15%', top: '70%' },
@@ -98,13 +103,13 @@ export default function TacticalPitch({
                   if (activeIsLocked) return;
                   onSlotClick(slot.id);
                 }}
-                className={`group relative w-[38px] h-[54px] min-[370px]:w-[48px] min-[370px]:h-[68px] sm:w-[60px] sm:h-[86px] md:w-[68px] md:h-[96px] lg:w-[72px] lg:h-[102px] rounded-lg sm:rounded-xl bg-gradient-to-b from-[#1b1f2e] to-[#090b11] border ${
-                  selectedPlayer.team === homeTeamName ? 'border-amber-500/40 hover:border-amber-400' : 'border-[#881337]/50 hover:border-[#881337]'
+                 className={`group relative w-[38px] h-[54px] min-[370px]:w-[48px] min-[370px]:h-[68px] sm:w-[60px] sm:h-[86px] md:w-[68px] md:h-[96px] lg:w-[72px] lg:h-[102px] rounded-lg sm:rounded-xl bg-gradient-to-b from-[#1b1f2e] to-[#090b11] border ${
+                  selectedPlayer.team === homeTeamName ? 'border-[#E11D48]/40 hover:border-[#E11D48]' : 'border-[#881337]/50 hover:border-[#881337]'
                 } shadow-[0_0_8px_rgba(0,0,0,0.5)] flex flex-col items-center justify-between p-0.5 sm:p-1 cursor-pointer active:scale-95 transition-transform`}
               >
                  {/* Rating / Position */}
                 <div className="w-full flex items-center justify-between text-[7px] min-[370px]:text-[8px] sm:text-[10px] font-black text-gray-300 shrink-0">
-                  <span className="font-mono text-amber-400">{selectedPlayer.rating}</span>
+                  <span className="font-mono text-[#E11D48]">{selectedPlayer.rating}</span>
                   <span className="uppercase text-[6px] min-[370px]:text-[7px] sm:text-[9px] text-gray-400">{slot.label}</span>
                 </div>
 

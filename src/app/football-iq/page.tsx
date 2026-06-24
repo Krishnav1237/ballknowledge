@@ -94,14 +94,14 @@ export default function FootballIQPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center p-6 text-center">
-        <div className="max-w-md bg-[#0B0F19] border border-white/5 p-8 rounded-3xl shadow-2xl">
-          <ShieldAlert className="w-12 h-12 text-red-500 mb-4 mx-auto" />
+      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center pt-[52px]">
+        <div className="max-w-md bg-[#0B0F19]/80 border border-white/10 p-8 rounded-3xl shadow-xl backdrop-blur-md">
+          <ShieldAlert className="w-12 h-12 text-[#E11D48] mb-4 mx-auto" />
           <h2 className="font-display font-black text-xl text-white uppercase mb-2">Connection Failure</h2>
           <p className="text-gray-400 text-xs leading-relaxed mb-6 font-medium">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="inline-block py-3 px-6 rounded-xl bg-[#881337] text-white font-display font-black text-xs uppercase tracking-wider shadow-md hover:bg-[#881337]/90 transition-colors cursor-pointer"
+            className="inline-block py-3 px-6 rounded-xl bg-[#E11D48] text-white font-display font-black text-xs uppercase tracking-wider shadow-md hover:bg-rose-700 transition-colors cursor-pointer"
           >
             Retry Connection
           </button>
@@ -112,9 +112,9 @@ export default function FootballIQPage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-gray-500">Retrieving Football reputation card...</p>
+      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center">
+        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Retrieving Football reputation card...</p>
       </div>
     );
   }
@@ -278,7 +278,7 @@ export default function FootballIQPage() {
     if (userPred?.resolved && userPred?.card) {
       const card = userPred.card;
       const miniThemeClass = 'card-mini-default';
-      const textGlow = 'text-amber-400';
+      const textGlow = 'text-[#E11D48]';
 
       return (
         <div
@@ -296,7 +296,7 @@ export default function FootballIQPage() {
                 <span className="font-card-fut font-bold text-xl sm:text-2.2xl leading-none text-white">
                   {card.rating}
                 </span>
-                <img src={homeTeam.flag} alt="" className="w-5 h-3.5 object-cover rounded shadow-xs mt-1 shrink-0 border border-white/5" />
+                <Image src={homeTeam.flag} alt="" width={20} height={14} className="w-5 h-3.5 object-cover rounded shadow-xs mt-1 shrink-0 border border-white/5" />
               </div>
               <span className={`text-[6.5px] sm:text-[7.5px] font-black uppercase tracking-wider px-1 py-0.5 rounded bg-black/60 border border-white/5 ${textGlow}`}>
                 {card.rarity.slice(0, 3)}
@@ -311,7 +311,7 @@ export default function FootballIQPage() {
 
             <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] sm:text-[8.5px] font-bold text-gray-400 uppercase tracking-widest">
               <span>MD {selectedMatchday}</span>
-              <span className="text-amber-400 group-hover:underline">OPEN</span>
+              <span className="text-[#E11D48] group-hover:underline">OPEN</span>
             </div>
           </div>
         </div>
@@ -327,23 +327,23 @@ export default function FootballIQPage() {
         >
           <div className="card-mini-fut-inner">
             <div className="flex justify-between items-start">
-              <span className="text-[8px] sm:text-[9px] font-black uppercase text-amber-500 tracking-wider">LOCKED</span>
-              <Lock className="w-3 h-3 text-amber-500 animate-pulse" />
+              <span className="text-[8px] sm:text-[9px] font-black uppercase text-[#E11D48] tracking-wider">LOCKED</span>
+              <Lock className="w-3 h-3 text-[#E11D48] animate-pulse" />
             </div>
 
             <div className="text-center my-auto">
               <div className="flex gap-1.5 justify-center mb-1">
-                <img src={homeTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
-                <span className="text-[9.5px] font-black text-amber-500/60">VS</span>
-                <img src={awayTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
+                <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
+                <span className="text-[9.5px] font-black text-[#E11D48]/60">VS</span>
+                <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
               </div>
-              <p className="text-[9.5px] sm:text-[10px] font-black text-amber-200/90 leading-tight">PRED LOCK</p>
-              <p className="text-[9px] sm:text-[9.5px] font-mono font-bold text-amber-400 mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] font-black text-rose-200/90 leading-tight">PRED LOCK</p>
+              <p className="text-[9px] sm:text-[9.5px] font-mono font-bold text-[#E11D48] mt-0.5">
                 {userPred.homeScore} - {userPred.awayScore}
               </p>
             </div>
 
-            <div className="text-center text-[8px] sm:text-[9px] font-black text-amber-500/70 uppercase tracking-wide">
+            <div className="text-center text-[8px] sm:text-[9px] font-black text-[#E11D48]/70 uppercase tracking-wide">
               Awaiting outcome
             </div>
           </div>
@@ -366,8 +366,8 @@ export default function FootballIQPage() {
 
             <div className="text-center my-auto flex flex-col items-center relative z-10">
               <div className="flex gap-1.5 grayscale opacity-30 mb-1">
-                <img src={homeTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded border border-white/5" />
-                <img src={awayTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded border border-white/5" />
+                <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded border border-white/5" />
+                <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded border border-white/5" />
               </div>
               <div className="stamp-expired-mini absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                 EXPIRED
@@ -396,15 +396,15 @@ export default function FootballIQPage() {
 
           <div className="text-center my-auto flex flex-col items-center">
             <div className="flex gap-1.5 mb-1">
-              <img src={homeTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
-              <img src={awayTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
+              <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
+              <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
             </div>
             <p className="text-[9.5px] sm:text-[10px] font-bold text-gray-300 truncate w-full max-w-[95px]">{homeTeam.fifa_code} vs {awayTeam.fifa_code}</p>
           </div>
 
           <Link 
             href={`/match/${match.id}`} 
-            className="text-center py-1 rounded bg-amber-500/10 hover:bg-amber-500/25 text-[8.5px] sm:text-[9.5px] font-black text-amber-500 hover:text-white transition-all uppercase tracking-widest border border-amber-500/20 relative z-30"
+            className="text-center py-1 rounded bg-[#E11D48]/10 hover:bg-[#E11D48]/25 text-[8.5px] sm:text-[9.5px] font-black text-[#E11D48] hover:text-white transition-all uppercase tracking-widest border border-[#E11D48]/20 relative z-30"
           >
             CHALLENGE
           </Link>
@@ -414,7 +414,7 @@ export default function FootballIQPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground pb-20 overflow-hidden">
+    <div className="relative min-h-screen bg-background text-foreground pb-20 overflow-hidden pt-[52px]">
 
       {/* Immersive Game-style Stadium Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -422,37 +422,35 @@ export default function FootballIQPage() {
           src="/images/game_stadium_showcase.webp" 
           alt="World Cup Stadium background" 
           fill 
-          className="object-cover opacity-65 object-center" 
+          className="object-cover opacity-[0.35] object-center" 
           priority 
         />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#030712]/50 to-[#030712]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-background/45 to-background" />
       </div>
 
-      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8">
+      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8 pt-1 pb-4 w-full flex-grow flex flex-col min-h-0">
         
-        {/* Centered Heading (Hanging HUD Panel) */}
-        <div className="pt-[70px] pb-3 px-10 flex flex-col items-center text-center max-w-lg mx-auto rounded-b-3xl border-x border-b border-white/10 bg-gradient-to-b from-black/80 via-black/55 to-black/10 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.85)] relative z-20">
-          <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none"
-              style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
-            COLLECTIBLES <span className="text-[#D97706]">BINDER</span>
-          </h1>
-          <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
-            YOUR SHIELD COLLECTION <span className="text-gray-600 mx-2">•</span> EARNED VERDICT CARDS
-          </p>
-        </div>
+        <div className="relative w-full bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-xl flex flex-col flex-grow min-h-0 mt-3">
+          
+          {/* ── Unified Header Panel ── */}
+          <div className="shrink-0 border-b border-white/10 bg-black/20 backdrop-blur-xs p-4 flex flex-col items-center justify-center text-center w-full rounded-t-2xl">
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
+              COLLECTIBLES <span className="text-[#E11D48]">BINDER</span>
+            </h1>
+            <p className="text-zinc-400 text-[9px] sm:text-[10px] mt-1.5 font-bold uppercase tracking-widest leading-none">
+              YOUR SHIELD COLLECTION <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
+            </p>
+          </div>
 
-        {/* ────────────────────────────────────────────────────────────────── */}
-        {/* LEATHER BINDER SYSTEM                                             */}
-        {/* ────────────────────────────────────────────────────────────────── */}
-        <div className="mt-6 relative">
+          <div className="p-4 relative">
           
           {/* Protruding binder Divider Tabs */}
           <div className="binder-tabs-container">
             {[
-              { id: '1', label: 'MD 1', bg: 'bg-[#881337]/90 text-rose-100 hover:bg-[#881337]' },
-              { id: '2', label: 'MD 2', bg: 'bg-[#D97706]/90 text-amber-100 hover:bg-[#D97706]' },
-              { id: '3', label: 'MD 3', bg: 'bg-[#059669]/90 text-emerald-100 hover:bg-[#059669]' },
+              { id: '1', label: 'MD 1', bg: 'bg-[#881337] text-white hover:opacity-90' },
+              { id: '2', label: 'MD 2', bg: 'bg-[#E11D48] text-white hover:opacity-90' },
+              { id: '3', label: 'MD 3', bg: 'bg-emerald-600 text-white hover:opacity-90' },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -462,7 +460,7 @@ export default function FootballIQPage() {
                 }}
                 className={`binder-index-tab cursor-pointer text-center font-black ${tab.bg} ${
                   selectedMatchday === tab.id 
-                    ? 'scale-x-[1.25] shadow-2xl border-l border-white/25 z-10' 
+                    ? 'scale-x-[1.25] shadow-md border-l border-white/25 z-10' 
                     : 'opacity-70'
                 }`}
               >
@@ -483,19 +481,19 @@ export default function FootballIQPage() {
               {/* ──────────────────────────────────────────────────────── */}
               {/* LEFT PAGE: ALBUM SLOTS GRID                               */}
               {/* ──────────────────────────────────────────────────────── */}
-              <div className="lg:col-span-7 binder-page-left p-3.5 sm:p-4.5 flex flex-col gap-3 border border-white/5 bg-black/55">
+              <div className="lg:col-span-7 binder-page-left p-3.5 sm:p-4.5 flex flex-col gap-3 border border-white/10 bg-[#0B0F19]/80 backdrop-blur-md shadow-xl">
                 
                 {/* Album Page Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-2 gap-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-2 gap-2">
                   <div>
                     <h2 className="font-display font-black text-base text-white uppercase tracking-wider">
                       Matchday {selectedMatchday} — Sticker Slots
                     </h2>
-                    <div className="flex gap-2.5 mt-1 text-[8.5px] font-black uppercase text-gray-500">
-                      <span className="text-amber-500">🏆 {legendaryCount} LEG</span>
-                      <span className="text-rose-500">🔥 {epicCount} EPC</span>
-                      <span className="text-blue-400">⚡ {rareCount} RRE</span>
-                      <span className="text-gray-400">🪙 {commonCount} CMN</span>
+                    <div className="flex gap-2.5 mt-1 text-[8.5px] font-black uppercase text-zinc-400">
+                      <span className="text-[#E11D48]">🏆 {legendaryCount} LEG</span>
+                      <span className="text-purple-600">🔥 {epicCount} EPC</span>
+                      <span className="text-blue-600">⚡ {rareCount} RRE</span>
+                      <span className="text-zinc-500">🪙 {commonCount} CMN</span>
                     </div>
                   </div>
 
@@ -504,36 +502,36 @@ export default function FootballIQPage() {
                       setSelectedCard(null);
                       setFilterRarity('ALL');
                     }}
-                    className="px-3 py-1.5 text-[9px] font-black text-amber-500 bg-amber-500/10 border border-amber-500/25 rounded-md uppercase tracking-wider hover:bg-amber-500/20 transition-all cursor-pointer shrink-0"
+                    className="px-3 py-1.5 text-[9px] font-black text-[#E11D48] bg-[#E11D48]/10 border border-[#E11D48]/25 rounded-md uppercase tracking-wider hover:bg-[#E11D48]/20 transition-all cursor-pointer shrink-0"
                   >
                     Reset Slots
                   </button>
                 </div>
 
                 {/* Compact Stats Row */}
-                <div className="grid grid-cols-2 gap-2 bg-black/40 border border-white/5 rounded-xl p-2.5 shadow-inner">
+                <div className="grid grid-cols-2 gap-2 bg-black/40 border border-white/5 rounded-xl p-2.5 shadow-md">
                   <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-[8.5px] font-black text-gray-500 uppercase tracking-widest">
+                    <div className="flex justify-between items-center text-[8.5px] font-black text-zinc-550 uppercase tracking-widest">
                       <span>Progress</span>
                       <span className="font-mono text-white font-bold">{totalMatches}/{totalAlbumSlots}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
+                      <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
                       </div>
-                      <span className="font-mono text-[9px] font-black text-amber-400 shrink-0">{albumProgressPercent}%</span>
+                      <span className="font-mono text-[9px] font-black text-[#E11D48] shrink-0">{albumProgressPercent}%</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-[8.5px] font-black text-gray-500 uppercase tracking-widest">
+                    <div className="flex justify-between items-center text-[8.5px] font-black text-zinc-550 uppercase tracking-widest">
                       <span>Accuracy</span>
                       <span className="font-mono text-white font-bold">{accuracy}% exact</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${accuracy}%` }} />
                       </div>
-                      <span className="font-mono text-[9px] font-black text-rose-400 shrink-0">EXACT</span>
+                      <span className="font-mono text-[9px] font-black text-rose-600 shrink-0">EXACT</span>
                     </div>
                   </div>
                 </div>
@@ -554,8 +552,8 @@ export default function FootballIQPage() {
                       onClick={() => setFilterRarity(f.id)}
                       className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
                         filterRarity === f.id
-                          ? 'bg-[#881337]/15 border-[#881337] text-rose-300 shadow-sm'
-                          : 'bg-black/30 border-white/5 text-gray-400 hover:text-white'
+                          ? 'bg-[#E11D48]/10 border-[#E11D48] text-[#E11D48] shadow-sm'
+                          : 'bg-black/30 border-white/5 text-gray-400 hover:bg-black/50 hover:text-white'
                       }`}
                     >
                       {f.label}
@@ -567,13 +565,13 @@ export default function FootballIQPage() {
                 <div className="flex-1 overflow-y-auto">
                   {loadingMatches ? (
                     <div className="text-center py-20 flex flex-col items-center justify-center">
-                      <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-3" />
-                      <p className="text-xs text-gray-500 font-semibold uppercase">Consulting database...</p>
+                      <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-3" />
+                      <p className="text-xs text-zinc-500 font-semibold uppercase">Consulting database...</p>
                     </div>
                   ) : filteredMatches.length === 0 ? (
-                    <div className="text-center py-16 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl bg-black/10">
-                      <ShieldAlert className="w-8 h-8 text-gray-600 mb-2.5" />
-                      <p className="font-display font-black text-xs text-gray-500 uppercase tracking-widest">No matching slots on page</p>
+                    <div className="text-center py-16 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-2xl bg-black/10">
+                      <ShieldAlert className="w-8 h-8 text-zinc-550 mb-2.5" />
+                      <p className="font-display font-black text-xs text-zinc-550 uppercase tracking-widest">No matching slots on page</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -583,7 +581,7 @@ export default function FootballIQPage() {
                 </div>
 
                 {/* Footer notes */}
-                <div className="border-t border-white/5 pt-2 flex justify-between items-center text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                <div className="border-t border-white/5 pt-2 flex justify-between items-center text-[9px] font-bold text-zinc-500 uppercase tracking-wider">
                   <span>Matchday {selectedMatchday} group stage</span>
                   <span>VAR Album v1.02</span>
                 </div>
@@ -592,10 +590,10 @@ export default function FootballIQPage() {
               {/* ──────────────────────────────────────────────────────── */}
               {/* RIGHT PAGE: THE STICKY PEDESTAL SHOWCASE & SHARE INTENTS  */}
               {/* ──────────────────────────────────────────────────────── */}
-              <div className="lg:col-span-5 p-3.5 sm:p-4.5 border border-white/5 bg-black/55 rounded-2xl flex flex-col justify-between lg:sticky lg:top-[95px] lg:h-[calc(100vh-185px)] overflow-hidden">
+              <div className="lg:col-span-5 p-3.5 sm:p-4.5 border border-white/10 bg-[#0B0F19]/80 rounded-2xl flex flex-col justify-between lg:sticky lg:top-[95px] lg:h-[calc(100vh-185px)] overflow-hidden shadow-xl backdrop-blur-md">
                 
                 {/* Spotlight glowing effect */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[160px] bg-gradient-to-b from-amber-500/15 via-amber-500/5 to-transparent blur-xl rounded-full pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[160px] bg-gradient-to-b from-[#E11D48]/10 via-[#E11D48]/5 to-transparent blur-xl rounded-full pointer-events-none" />
 
                 {/* Pedestal and Card display side-by-side with vertical Share dock */}
                 <div className="flex flex-row items-center justify-center gap-3 sm:gap-4.5 w-full relative">
@@ -604,10 +602,10 @@ export default function FootballIQPage() {
                   <div className="relative flex justify-center items-center py-1">
                     
                     {/* Glowing Aura Ring */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[400px] rounded-full blur-[85px] pointer-events-none -z-10 opacity-70 bg-gradient-to-tr from-[#881337]/35 via-transparent to-[#D97706]/35" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[400px] rounded-full blur-[85px] pointer-events-none -z-10 opacity-70 bg-gradient-to-tr from-[#881337]/20 via-transparent to-[#E11D48]/25" />
                     
                     {/* Metal pedestal base glow */}
-                    <div className="absolute bottom-1 w-60 h-2.5 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent blur-md rounded-full pointer-events-none" />
+                    <div className="absolute bottom-1 w-60 h-2.5 bg-gradient-to-r from-transparent via-[#E11D48]/20 to-transparent blur-md rounded-full pointer-events-none" />
 
                     {/* Bounding box wrapper with exact layout size of the scaled card */}
                     <div className="relative flex items-center justify-center h-[360px] w-[255px] sm:h-[384px] sm:w-[272px] md:h-[408px] md:w-[289px] lg:h-[396px] lg:w-[280px] xl:h-[420px] xl:w-[297px] shrink-0">
@@ -633,10 +631,10 @@ export default function FootballIQPage() {
                             sentence: selectedCard.sentence,
                             ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
                             stats: [
-                              { label: 'PRD', name: 'Prediction', val: selectedCard.statsJson?.predictionPerfScore ?? selectedCard.rating },
-                              { label: 'HTK', name: 'Hot Take', val: selectedCard.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
-                              { label: 'SEL', name: 'Team Selection', val: selectedCard.statsJson?.tacticalRating ?? Math.max(30, Math.min(99, selectedCard.rating - 3)) },
-                              { label: 'CMY', name: 'Community Banter', val: selectedCard.statsJson?.communityRating ?? Math.max(30, Math.min(99, selectedCard.rating + 1)) }
+                              { label: 'PRD', name: 'Prediction', val: (selectedCard.statsJson as any)?.prd ?? (selectedCard.statsJson as any)?.predictionPerfScore ?? selectedCard.rating },
+                              { label: 'MGR', name: 'Manager Score', val: (selectedCard.statsJson as any)?.mgr ?? (selectedCard.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, selectedCard.rating - 3)) },
+                              { label: 'HOT', name: 'Hot Take', val: (selectedCard.statsJson as any)?.hot ?? (selectedCard.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
+                              { label: 'RST', name: 'Roast Score', val: (selectedCard.statsJson as any)?.rst ?? (selectedCard.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, selectedCard.rating + 1)) }
                             ],
                             cardTheme: selectedCard.cardTheme || 'gold',
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
@@ -661,9 +659,9 @@ export default function FootballIQPage() {
                             ach: { title: 'Reputation', desc: 'Active Profile', badge },
                             stats: [
                               { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
-                              { label: 'HTK', name: 'Hot Take', val: profile.hotTakeRating },
-                              { label: 'SEL', name: 'Team Selection', val: profile.tacticalRating },
-                              { label: 'CMY', name: 'Community Banter', val: profile.communityRating }
+                              { label: 'MGR', name: 'Manager Score', val: profile.managerRating },
+                              { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating },
+                              { label: 'RST', name: 'Roast Score', val: profile.roastScore }
                             ],
                             cardTheme: 'gold',
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
@@ -678,9 +676,9 @@ export default function FootballIQPage() {
                   </div>
 
                   {/* Vertical Branded Social Share Dock (Placed to the Right of the Card) */}
-                  <div className="flex flex-col items-center gap-2 p-2 rounded-2xl border border-white/5 bg-black/45 shadow-2xl backdrop-blur-md shrink-0 relative z-30">
-                    <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest select-none pb-0.5">
-                      <Share2 className="w-3 h-3 text-gray-500" />
+                  <div className="flex flex-col items-center gap-2 p-2 rounded-2xl border border-white/10 bg-black/40 shadow-xl shrink-0 relative z-30">
+                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest select-none pb-0.5">
+                      <Share2 className="w-3 h-3 text-zinc-400" />
                     </span>
                     
                     {/* Copy notification overlay */}
@@ -777,7 +775,7 @@ export default function FootballIQPage() {
                       {copiedPlatform === 'instagram' ? (
                         <CheckCircle className="w-3.5 h-3.5 text-green-400" />
                       ) : (
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z" /></svg>
                       )}
                     </button>
 
@@ -816,6 +814,7 @@ export default function FootballIQPage() {
         </div>
         
       </div>
+    </div>
     </div>
     </div>
   );

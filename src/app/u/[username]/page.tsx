@@ -101,9 +101,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-gray-500">Retrieving Football IQ profile...</p>
+      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center">
+        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Retrieving Football IQ profile...</p>
       </div>
     );
   }
@@ -247,7 +247,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const commonCount = cards.filter((c: any) => c.rarity === 'COMMON').length;
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground pb-20 overflow-hidden">
+    <div className="relative min-h-screen bg-[#030712] text-white pb-20 overflow-hidden pt-[52px]">
 
       {/* Immersive Game-style Stadium Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -255,37 +255,35 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           src="/images/game_stadium_showcase.webp" 
           alt="World Cup Stadium background" 
           fill 
-          className="object-cover opacity-65 object-center" 
+          className="object-cover opacity-[0.25] object-center" 
           priority 
         />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#030712]/50 to-[#030712]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/40 via-background/50 to-background" />
       </div>
 
-      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8">
+      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8 pt-1 pb-4 w-full flex-grow flex flex-col min-h-0">
         
-        {/* Centered Heading (Hanging HUD Panel) */}
-        <div className="pt-[70px] pb-3 px-10 flex flex-col items-center text-center max-w-lg mx-auto rounded-b-3xl border-x border-b border-white/10 bg-gradient-to-b from-black/80 via-black/55 to-black/10 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.85)] relative z-20">
-          <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none"
-              style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.85)' }}>
-            {profile.username}&apos;S ALBUM <span className="text-[#D97706]">BINDER</span>
-          </h1>
-          <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none">
-            COLLECTIBLES BINDER <span className="text-gray-600 mx-2">•</span> EARNED VERDICT CARDS
-          </p>
-        </div>
+        <div className="relative w-full bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-xl flex flex-col flex-grow min-h-0 mt-3">
+          
+          {/* ── Unified Header Panel ── */}
+          <div className="shrink-0 border-b border-white/10 bg-black/20 backdrop-blur-xs p-4 flex flex-col items-center justify-center text-center w-full rounded-t-2xl">
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
+              {profile.username}&apos;S ALBUM <span className="text-[#E11D48]">BINDER</span>
+            </h1>
+            <p className="text-zinc-400 text-[9px] sm:text-[10px] mt-1.5 font-bold uppercase tracking-widest leading-none">
+              COLLECTIBLES BINDER <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
+            </p>
+          </div>
 
-        {/* ────────────────────────────────────────────────────────────────── */}
-        {/* LEATHER BINDER SYSTEM                                             */}
-        {/* ────────────────────────────────────────────────────────────────── */}
-        <div className="mt-6 relative">
+          <div className="p-4 relative">
           
           {/* Protruding divider Tabs */}
           <div className="binder-tabs-container">
             {[
-              { id: '1', label: 'MD 1', bg: 'bg-[#881337]/90 text-rose-100 hover:bg-[#881337]' },
-              { id: '2', label: 'MD 2', bg: 'bg-[#D97706]/90 text-amber-100 hover:bg-[#D97706]' },
-              { id: '3', label: 'MD 3', bg: 'bg-[#059669]/90 text-emerald-100 hover:bg-[#059669]' },
+              { id: '1', label: 'MD 1', bg: 'bg-[#881337] text-white hover:opacity-90' },
+              { id: '2', label: 'MD 2', bg: 'bg-[#E11D48] text-white hover:opacity-90' },
+              { id: '3', label: 'MD 3', bg: 'bg-emerald-600 text-white hover:opacity-90' },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -295,7 +293,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 }}
                 className={`binder-index-tab cursor-pointer text-center font-black ${tab.bg} ${
                   selectedMatchday === tab.id 
-                    ? 'scale-x-[1.25] shadow-2xl border-l border-white/25 z-10' 
+                    ? 'scale-x-[1.25] shadow-md border-l border-white/25 z-10' 
                     : 'opacity-70'
                 }`}
               >
@@ -312,65 +310,65 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 relative z-10">
               
               {/* LEFT PAGE: STICKER BINDER GRID */}
-              <div className="lg:col-span-7 binder-page-left p-3.5 sm:p-4.5 flex flex-col justify-between border border-white/5 bg-black/55">
+              <div className="lg:col-span-7 binder-page-left p-3.5 sm:p-4.5 flex flex-col justify-between border border-white/10 bg-[#0B0F19]/95 text-white backdrop-blur-md shadow-xl">
                 
                 <div>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-2 mb-3 gap-2">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-2 mb-3 gap-2">
                     <div>
                       <h2 className="font-display font-black text-base text-white uppercase tracking-wider">
                         Page Matchday {selectedMatchday} Slots
                       </h2>
                       {/* FUT Inventory counts */}
-                      <div className="flex gap-2.5 mt-1 text-[8.5px] font-black uppercase text-gray-500">
-                        <span className="text-amber-500">🏆 {legendaryCount} LEG</span>
-                        <span className="text-rose-500">🔥 {epicCount} EPC</span>
-                        <span className="text-blue-400">⚡ {rareCount} RRE</span>
-                        <span className="text-gray-400">🪙 {commonCount} CMN</span>
+                      <div className="flex gap-2.5 mt-1 text-[8.5px] font-black uppercase text-zinc-400">
+                        <span className="text-[#E11D48]">🏆 {legendaryCount} LEG</span>
+                        <span className="text-purple-600">🔥 {epicCount} EPC</span>
+                        <span className="text-blue-600">⚡ {rareCount} RRE</span>
+                        <span className="text-zinc-500">🪙 {commonCount} CMN</span>
                       </div>
                     </div>
                   </div>
 
                   {/* System Log / Public Profile Description */}
-                  <div className="bg-black/25 border border-white/5 rounded-xl px-3 py-2.5 mb-3 text-[10px] text-gray-400 leading-relaxed flex items-start gap-2.5">
-                    <span className="text-[#F43F5E] font-black tracking-wider uppercase shrink-0 mt-0.5 text-[8.5px] bg-[#F43F5E]/10 px-1 py-0.5 rounded border border-[#F43F5E]/20">PUBLIC LOG</span>
+                  <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 mb-3 text-[10px] text-zinc-300 leading-relaxed flex items-start gap-2.5">
+                    <span className="text-[#E11D48] font-black tracking-wider uppercase shrink-0 mt-0.5 text-[8.5px] bg-[#E11D48]/10 px-1 py-0.5 rounded border border-[#E11D48]/20">PUBLIC LOG</span>
                     <p>
                       Explore this collector&apos;s persistent reputation card cabinet. Check their predictions outcome, hot takes verdicts, and see if they know ball.
                     </p>
                   </div>
 
                   {/* FUT Album & Rank Statistics Dashboard */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 bg-black/40 border border-white/5 rounded-xl p-3 shadow-inner">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 bg-white/5 border border-white/10 rounded-xl p-3 shadow-inner text-white">
                     {/* Album Completion */}
-                    <div className="flex flex-col gap-1 border-b sm:border-b-0 sm:border-r border-white/5 pb-2 sm:pb-0 sm:pr-3">
-                      <div className="flex justify-between items-center text-[9px] font-black text-gray-500 uppercase tracking-widest">
+                    <div className="flex flex-col gap-1 border-b sm:border-b-0 sm:border-r border-white/10 pb-2 sm:pb-0 sm:pr-3">
+                      <div className="flex justify-between items-center text-[9px] font-black text-zinc-400 uppercase tracking-widest">
                         <span>Binder Progress</span>
-                        <span className="font-mono text-white text-[10.5px] font-bold">{cards.length} / {totalAlbumSlots} STICKERS</span>
+                        <span className="font-mono text-zinc-300 text-[10.5px] font-bold">{cards.length} / {totalAlbumSlots} STICKERS</span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-gradient-to-r from-rose-500 to-rose-300 rounded-full transition-all duration-700" 
                             style={{ width: `${albumProgressPercent}%` }}
                           />
                         </div>
-                        <span className="font-mono text-[10px] font-black text-rose-400 shrink-0">{albumProgressPercent}%</span>
+                        <span className="font-mono text-[10px] font-black text-rose-500 shrink-0">{albumProgressPercent}%</span>
                       </div>
                     </div>
 
                     {/* Platform Ranking */}
                     <div className="flex flex-col gap-1 sm:pl-1">
-                      <div className="flex justify-between items-center text-[9px] font-black text-gray-500 uppercase tracking-widest">
+                      <div className="flex justify-between items-center text-[9px] font-black text-zinc-400 uppercase tracking-widest">
                         <span>Platform Rank</span>
-                        <span className="font-mono text-white text-[10.5px] font-bold">{profile.overallRating} OVR</span>
+                        <span className="font-mono text-zinc-300 text-[10.5px] font-bold">{profile.overallRating} OVR</span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-700" 
+                            className="h-full bg-gradient-to-r from-[#881337] to-[#E11D48] rounded-full transition-all duration-700" 
                             style={{ width: `${profile.overallRating}%` }}
                           />
                         </div>
-                        <span className="font-mono text-[10px] font-black text-amber-400 shrink-0">{playstyle}</span>
+                        <span className="font-mono text-[10px] font-black text-[#E11D48] shrink-0">{playstyle}</span>
                       </div>
                     </div>
                   </div>
@@ -392,8 +390,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         onClick={() => setFilterRarity(f.id)}
                         className={`px-3.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest border transition-all cursor-pointer ${
                           filterRarity === f.id
-                            ? 'bg-[#881337]/15 border-[#881337] text-rose-300 shadow-sm'
-                            : 'bg-black/30 border-white/5 text-gray-400 hover:text-white'
+                            ? 'bg-[#E11D48]/15 border-[#E11D48] text-[#E11D48] shadow-sm'
+                            : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
                         }`}
                       >
                         {f.label}
@@ -404,13 +402,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   {/* Slots Grid */}
                   {loadingMatches ? (
                     <div className="text-center py-24 flex flex-col items-center justify-center">
-                      <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#D97706] animate-spin mb-3" />
-                      <p className="text-xs text-gray-500 font-semibold uppercase">Consulting database...</p>
+                      <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-3" />
+                      <p className="text-xs text-zinc-400 font-semibold uppercase">Consulting database...</p>
                     </div>
                   ) : filteredMatches.length === 0 ? (
-                    <div className="text-center py-20 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl bg-black/10">
-                      <ShieldAlert className="w-8 h-8 text-gray-600 mb-2.5" />
-                      <p className="font-display font-black text-xs text-gray-500 uppercase tracking-widest">No matching slots on page</p>
+                    <div className="text-center py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-2xl bg-[#0B0F19]/40">
+                      <ShieldAlert className="w-8 h-8 text-zinc-500 mb-2.5" />
+                      <p className="font-display font-black text-xs text-zinc-400 uppercase tracking-widest">No matching slots on page</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -436,7 +434,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         // ─── Case A: Card claimed ──────────────────────────────────
                         if (card) {
                           const miniThemeClass = 'card-mini-default';
-                          const textGlow = 'text-amber-400';
+                          const textGlow = 'text-[#E11D48]';
 
                           return (
                             <div
@@ -454,7 +452,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                                     <span className="font-card-fut font-bold text-xl leading-none text-white">
                                       {card.rating}
                                     </span>
-                                    <img src={homeTeam.flag} alt="" className="w-5 h-3.5 object-cover rounded shadow-xs mt-1 shrink-0 border border-white/5" />
+                                    <Image src={homeTeam.flag} alt="" width={20} height={14} className="w-5 h-3.5 object-cover rounded shadow-xs mt-1 shrink-0 border border-white/5" />
                                   </div>
                                   <span className={`text-[6.5px] font-black uppercase tracking-wider px-1 py-0.5 rounded bg-black/60 border border-white/5 ${textGlow}`}>
                                     {card.rarity.slice(0, 3)}
@@ -469,7 +467,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
                                 <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7px] font-bold text-gray-400 uppercase tracking-widest">
                                   <span>MD {selectedMatchday}</span>
-                                  <span className="text-amber-400 group-hover:underline">INSPECT</span>
+                                  <span className="text-[#E11D48] group-hover:underline">INSPECT</span>
                                 </div>
                               </div>
                             </div>
@@ -491,8 +489,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
                                 <div className="text-center my-auto flex flex-col items-center relative z-10">
                                   <div className="flex gap-1.5 grayscale opacity-30 mb-1">
-                                    <img src={homeTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded border border-white/5" />
-                                    <img src={awayTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded border border-white/5" />
+                                    <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded border border-white/5" />
+                                    <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded border border-white/5" />
                                   </div>
                                   <div className="stamp-expired-mini absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                                     EXPIRED
@@ -521,13 +519,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
                               <div className="text-center my-auto flex flex-col items-center">
                                 <div className="flex gap-1.5 mb-1">
-                                  <img src={homeTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
-                                  <img src={awayTeam.flag} alt="" className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
+                                  <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
+                                  <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
                                 </div>
                                 <p className="text-[9.5px] font-bold text-gray-300 truncate w-full max-w-[95px]">{homeTeam.fifa_code} vs {awayTeam.fifa_code}</p>
                               </div>
 
-                              <div className="text-center text-[8px] font-black text-gray-500/60 uppercase tracking-wider">
+                              <div className="text-center text-[8px] font-black text-gray-400 uppercase tracking-wider">
                                 Upcoming game
                               </div>
                             </div>
@@ -538,7 +536,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   )}
                 </div>
 
-                <div className="border-t border-white/5 mt-8 pt-4 flex justify-between items-center text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                <div className="border-t border-white/10 mt-8 pt-4 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
                   <span>Matchday {selectedMatchday} group stage page</span>
                   <span>VAR Album v1.02</span>
                 </div>
@@ -548,7 +546,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
               <div className="lg:col-span-5 p-2 sm:p-4 flex flex-col justify-start items-center lg:sticky lg:top-[95px] lg:h-[calc(100vh-185px)] overflow-hidden pt-2 gap-2">
                 
                 {/* Spotlight glowing effect */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[160px] bg-gradient-to-b from-amber-500/15 via-amber-500/5 to-transparent blur-xl rounded-full pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[160px] bg-gradient-to-b from-[#E11D48]/10 via-[#E11D48]/5 to-transparent blur-xl rounded-full pointer-events-none" />
 
                 {/* Pedestal and Card display side-by-side with vertical Share dock */}
                 <div className="flex flex-row items-center justify-center gap-3 sm:gap-4.5 w-full relative">
@@ -557,10 +555,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   <div className="relative flex justify-center items-center py-1">
                     
                     {/* Glowing Aura Ring */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[360px] rounded-full blur-[80px] pointer-events-none -z-10 opacity-70 bg-gradient-to-tr from-[#881337]/35 via-transparent to-[#D97706]/35" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[360px] rounded-full blur-[80px] pointer-events-none -z-10 opacity-70 bg-gradient-to-tr from-[#881337]/20 via-transparent to-[#E11D48]/25" />
                     
                     {/* Metal pedestal base glow */}
-                    <div className="absolute bottom-1 w-60 h-2.5 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent blur-md rounded-full pointer-events-none" />
+                    <div className="absolute bottom-1 w-60 h-2.5 bg-gradient-to-r from-transparent via-[#E11D48]/20 to-transparent blur-md rounded-full pointer-events-none" />
 
                     {/* Bounding box wrapper with exact layout size of the scaled card */}
                     <div className="relative flex items-center justify-center h-[360px] w-[255px] sm:h-[384px] sm:w-[272px] md:h-[408px] md:w-[289px] lg:h-[384px] lg:w-[272px] xl:h-[408px] xl:w-[289px] shrink-0">
@@ -586,10 +584,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             sentence: selectedCard.sentence,
                             ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
                             stats: [
-                              { label: 'PRD', name: 'Prediction', val: selectedCard.statsJson?.predictionPerfScore ?? selectedCard.rating },
-                              { label: 'HTK', name: 'Hot Take', val: selectedCard.statsJson?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
-                              { label: 'SEL', name: 'Team Selection', val: selectedCard.statsJson?.tacticalRating ?? Math.max(30, Math.min(99, selectedCard.rating - 3)) },
-                              { label: 'CMY', name: 'Community Banter', val: selectedCard.statsJson?.communityRating ?? Math.max(30, Math.min(99, selectedCard.rating + 1)) }
+                              { label: 'PRD', name: 'Prediction', val: (selectedCard.statsJson as any)?.prd ?? (selectedCard.statsJson as any)?.predictionPerfScore ?? selectedCard.rating },
+                              { label: 'MGR', name: 'Manager Score', val: (selectedCard.statsJson as any)?.mgr ?? (selectedCard.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, selectedCard.rating - 3)) },
+                              { label: 'HOT', name: 'Hot Take', val: (selectedCard.statsJson as any)?.hot ?? (selectedCard.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
+                              { label: 'RST', name: 'Roast Score', val: (selectedCard.statsJson as any)?.rst ?? (selectedCard.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, selectedCard.rating + 1)) }
                             ],
                             cardTheme: selectedCard.cardTheme || 'gold',
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
@@ -614,9 +612,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             ach: { title: 'Reputation', desc: 'Active Profile', badge },
                             stats: [
                               { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
-                              { label: 'HTK', name: 'Hot Take', val: profile.hotTakeRating },
-                              { label: 'SEL', name: 'Team Selection', val: profile.tacticalRating },
-                              { label: 'CMY', name: 'Community Banter', val: profile.communityRating }
+                              { label: 'MGR', name: 'Manager Score', val: profile.managerRating },
+                              { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating },
+                              { label: 'RST', name: 'Roast Score', val: profile.roastScore }
                             ],
                             cardTheme: 'gold',
                             countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
@@ -631,9 +629,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   </div>
 
                   {/* Vertical Branded Social Share Dock (Placed to the Right of the Card) */}
-                  <div className="flex flex-col items-center gap-2 p-2 rounded-2xl border border-white/5 bg-black/45 shadow-2xl backdrop-blur-md shrink-0 relative z-30">
-                    <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest select-none pb-0.5">
-                      <Share2 className="w-3 h-3 text-gray-500" />
+                  <div className="flex flex-col items-center gap-2 p-2 rounded-2xl border border-white/10 bg-white/5 shadow-md shrink-0 relative z-30">
+                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest select-none pb-0.5">
+                      <Share2 className="w-3 h-3 text-zinc-400" />
                     </span>
                     
                     {/* Copy notification overlay */}
@@ -730,7 +728,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                       {copiedPlatform === 'instagram' ? (
                         <CheckCircle className="w-3.5 h-3.5 text-green-400" />
                       ) : (
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z" /></svg>
                       )}
                     </button>
 
@@ -772,18 +770,19 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
         {/* Guest invitation call to action */}
         <div className="mt-12 text-center max-w-sm mx-auto relative z-10">
-          <p className="text-xs text-gray-400 mb-4 font-semibold">
+          <p className="text-xs text-zinc-400 mb-4 font-semibold">
             Think you have better tactical ball knowledge than {profile.username}?
           </p>
           <Link
             href="/world-cup-hub"
-            className="inline-flex items-center gap-2 py-4 px-8 rounded-xl bg-gradient-to-r from-[#881337] to-[#D97706] text-white font-display font-black text-xs uppercase tracking-widest shadow-md hover:scale-[1.02] hover:opacity-95 active:scale-[0.98] transition-all"
+            className="inline-flex items-center gap-2 py-4 px-8 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-md hover:scale-[1.02] hover:opacity-95 active:scale-[0.98] transition-all"
           >
             <Trophy className="w-4 h-4 text-white" /> Challenge Them / Build Your IQ
           </Link>
         </div>
 
       </div>
+    </div>
     </div>
   );
 }
