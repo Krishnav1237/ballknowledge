@@ -45,7 +45,7 @@ export default function FootballIQPage() {
   const [selectedMatchday, setSelectedMatchday] = useState('1');
   const [filterRarity, setFilterRarity] = useState('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
-  const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('deck');
+  const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
   
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
   const [miniCardTilts, setMiniCardTilts] = useState<Record<string, any>>({});
@@ -69,8 +69,8 @@ export default function FootballIQPage() {
         if (resM.ok && resT.ok) {
           const datM = await resM.json();
           const datT = await resT.json();
-          setMatches(datM.matches || []);
-          setTeams(datT.teams || []);
+          setMatches(Array.isArray(datM) ? datM : (datM.matches || []));
+          setTeams(Array.isArray(datT) ? datT : (datT.teams || []));
         }
       } catch (e) {
         console.error('Failed to load matches/teams', e);
@@ -217,29 +217,11 @@ export default function FootballIQPage() {
     }
   };
 
-  const matchdayMatches = matches.filter(m => m.matchday === selectedMatchday && m.type === 'group');
-
-  const filteredMatches = matchdayMatches.filter(match => {
-    const userPred = userPreds[match.id];
-    const status = getMatchStatus(match);
-
-    if (filterRarity === 'ALL') return true;
-    if (filterRarity === 'LOCKED') return userPred && !userPred.resolved;
-    if (filterRarity === 'MISSED') return status === 'COMPLETED' && (!userPred || !userPred.resolved);
-    
-    if (!userPred || !userPred.resolved) return false;
-    const ovr = userPred.cardRating || 50;
-    let rarity = 'COMMON';
-    if (ovr >= 85) rarity = 'LEGENDARY';
-    else if (ovr >= 70) rarity = 'EPIC';
-    else if (ovr >= 45) rarity = 'RARE';
-
-    return rarity === filterRarity;
-  });
+  const matchdayMatches = matches.filter(m => String(m.matchday) === String(selectedMatchday) && (m.type === 'group' || !m.type));
 
   const constructMatchCardObj = (match: Match) => {
-    const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_label || 'Home', flag: '' };
-    const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_label || 'Away', flag: '' };
+    const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: '' };
+    const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: '' };
     const userPred = userPreds[match.id];
 
     const ovr = userPred?.cardRating || (profile.overallRating >= 80 ? 88 : profile.overallRating >= 70 ? 76 : profile.overallRating >= 50 ? 62 : 42);
@@ -270,9 +252,21 @@ export default function FootballIQPage() {
     };
   };
 
+  const filteredMatches = matchdayMatches.filter(match => {
+    const cardObj = constructMatchCardObj(match);
+    const userPred = userPreds[match.id];
+    const status = getMatchStatus(match);
+
+    if (filterRarity === 'ALL') return true;
+    if (filterRarity === 'LOCKED') return !userPred;
+    if (filterRarity === 'MISSED') return status === 'COMPLETED' && (!userPred || !userPred.resolved);
+
+    return cardObj.rarity === filterRarity;
+  });
+
   const renderCardSlot = (match: Match) => {
-    const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_label || 'Home', flag: 'https://flagcdn.com/w80/un.png' };
-    const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_label || 'Away', flag: 'https://flagcdn.com/w80/un.png' };
+    const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: 'https://flagcdn.com/w80/un.png' };
+    const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: 'https://flagcdn.com/w80/un.png' };
     const cardObj = constructMatchCardObj(match);
     const isSelected = selectedCard?.matchId === match.id;
 
@@ -303,9 +297,9 @@ export default function FootballIQPage() {
               <span className="font-mono font-black text-lg leading-none text-white">{cardObj.rating}</span>
               <div className="flex gap-1 mt-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={homeTeam.flag} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={awayTeam.flag} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
               </div>
             </div>
             <span className={`text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
@@ -328,8 +322,7 @@ export default function FootballIQPage() {
     );
   };
 
-  // Default active card for verdict tab if not selected yet
-  const activeVerdictCard = selectedCard || (filteredMatches.length > 0 ? constructMatchCardObj(filteredMatches[0]) : null);
+  const activeVerdictCard = selectedCard || (matchdayMatches.length > 0 ? constructMatchCardObj(matchdayMatches[0]) : null);
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] pb-8 select-none">

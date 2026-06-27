@@ -50,10 +50,9 @@ export default function SportsCenterCard({
   const hasAiImage = Boolean(data.aiImageUrl);
   const isVerdictCard = data.mode === 'take' || Boolean(data.charge) || Boolean(data.sentence) || Boolean(data.matchTitle);
 
-  // Determine Category Theme based on Rarity / Rating
   const ovr = data.ovr || 50;
-  const rarity = data.rarity || (ovr >= 85 ? 'LEGENDARY' : ovr >= 70 ? 'EPIC' : ovr >= 45 ? 'RARE' : 'COMMON');
 
+  // Distinct Themes: Verdict Card (VAR Crimson) vs Tournament Manager Deck (Champagne Gold)
   let themeId = 'gold';
   let borderStops = (
     <>
@@ -69,37 +68,7 @@ export default function SportsCenterCard({
   let primaryTextColor = 'text-amber-300';
   let primaryBorderColor = 'border-amber-400/40';
 
-  if (rarity === 'LEGENDARY' || (!isVerdictCard && ovr >= 85)) {
-    themeId = 'gold';
-    borderStops = (
-      <>
-        <stop offset="0%" stopColor="#FFFBEB" />
-        <stop offset="30%" stopColor="#F59E0B" />
-        <stop offset="70%" stopColor="#D97706" />
-        <stop offset="100%" stopColor="#78350F" />
-      </>
-    );
-    glowColor = '#F59E0B';
-    bgGradient = 'bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]';
-    badgeStyle = 'text-amber-300 bg-amber-400/15 border-amber-400/40';
-    primaryTextColor = 'text-amber-300';
-    primaryBorderColor = 'border-amber-400/40';
-  } else if (rarity === 'EPIC' || ovr >= 70) {
-    themeId = 'purple';
-    borderStops = (
-      <>
-        <stop offset="0%" stopColor="#F3E8FF" />
-        <stop offset="40%" stopColor="#C084FC" />
-        <stop offset="80%" stopColor="#7E22CE" />
-        <stop offset="100%" stopColor="#3B0764" />
-      </>
-    );
-    glowColor = '#C084FC';
-    bgGradient = 'bg-gradient-to-b from-[#1E0B2B] via-[#0B0F19] to-[#030712]';
-    badgeStyle = 'text-purple-300 bg-purple-500/15 border-purple-500/40';
-    primaryTextColor = 'text-purple-300';
-    primaryBorderColor = 'border-purple-500/40';
-  } else if (rarity === 'RARE' || ovr >= 45 || isVerdictCard) {
+  if (isVerdictCard) {
     themeId = 'crimson';
     borderStops = (
       <>
@@ -111,24 +80,9 @@ export default function SportsCenterCard({
     );
     glowColor = '#E11D48';
     bgGradient = 'bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712]';
-    badgeStyle = 'text-rose-300 bg-rose-500/15 border-rose-500/40';
+    badgeStyle = 'text-rose-300 bg-rose-500/20 border-rose-500/50';
     primaryTextColor = 'text-rose-400';
-    primaryBorderColor = 'border-rose-500/40';
-  } else {
-    themeId = 'cyan';
-    borderStops = (
-      <>
-        <stop offset="0%" stopColor="#E0F2FE" />
-        <stop offset="40%" stopColor="#38BDF8" />
-        <stop offset="80%" stopColor="#0369A1" />
-        <stop offset="100%" stopColor="#0C4A6E" />
-      </>
-    );
-    glowColor = '#38BDF8';
-    bgGradient = 'bg-gradient-to-b from-[#06192A] via-[#0B0F19] to-[#030712]';
-    badgeStyle = 'text-sky-300 bg-sky-500/15 border-sky-500/40';
-    primaryTextColor = 'text-sky-400';
-    primaryBorderColor = 'border-sky-500/40';
+    primaryBorderColor = 'border-rose-500/50';
   }
 
   return (
@@ -157,7 +111,7 @@ export default function SportsCenterCard({
               dy="8" 
               stdDeviation="14" 
               floodColor={glowColor} 
-              floodOpacity="0.45" 
+              floodOpacity="0.5" 
             />
           </filter>
         </defs>
@@ -241,10 +195,10 @@ export default function SportsCenterCard({
             className="text-[46px] tracking-tighter leading-none text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.95)]"
             style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
           >
-            {data.ovr}
+            {ovr}
           </span>
           <span className={`text-[10px] font-black tracking-widest uppercase mt-0.5 drop-shadow ${primaryTextColor}`}>
-            {data.playerPosition || (isVerdictCard ? 'VAR' : 'MGR')}
+            {isVerdictCard ? 'VAR' : 'MGR'}
           </span>
         </div>
 
@@ -258,7 +212,7 @@ export default function SportsCenterCard({
               className="w-4 h-4 object-contain rounded-full drop-shadow" 
             />
             <span className="text-[8.5px] font-black tracking-widest uppercase text-white">
-              BALL<span className={primaryTextColor}>KNOWLEDGE</span>
+              {isVerdictCard ? 'VAR' : 'BALL'}<span className={primaryTextColor}>{isVerdictCard ? ' TRIBUNAL' : 'KNOWLEDGE'}</span>
             </span>
           </div>
         </div>
