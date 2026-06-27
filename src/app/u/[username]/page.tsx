@@ -214,6 +214,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     }
   };
 
+  const handleInstaShare = async (urlStr: string) => {
+    await handleDownloadPng();
+    handleCopyLink('insta', urlStr);
+  };
+
   const matchdayMatches = matches.filter(m => String(m.matchday) === String(selectedMatchday) && (m.type === 'group' || !m.type));
 
   const getPublicCardForMatch = (matchId: string) => {
@@ -444,7 +449,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             <div className={`h-28 w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2.5 flex flex-col justify-between backdrop-blur-md shadow-lg`}>
                               <div className="flex justify-between items-start">
                                 <div className="flex flex-col items-center">
-                                  <span className="font-mono font-black text-lg leading-none text-white">{cardObj.rating}</span>
+                                  <span className="font-mono font-black text-lg leading-none text-[#FFFFFF]">{cardObj.rating}</span>
                                   <div className="flex gap-1 mt-1">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
@@ -569,11 +574,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   </div>
                 </div>
 
-                {/* HIGH-SET SHARE PLINTH (VISIBLE WITHOUT ANY SCROLL) */}
+                {/* HIGH-SET SHARE PLINTH WITH ALL SOCIAL PLATFORMS */}
                 <div className="mt-1 border-t border-white/10 pt-2 z-20 flex flex-col gap-2">
                   <div className="flex justify-between items-center bg-black/70 border border-white/15 rounded-2xl p-2.5 backdrop-blur-md shadow-lg">
                     <span className="text-[9.5px] font-black text-gray-300 uppercase tracking-widest pl-1">
-                      Share {activeRightTab === 'verdict' && activeVerdictCard ? 'Verdict Card' : 'Tournament Deck'}:
+                      Instant Share:
                     </span>
 
                     <div className="flex gap-1.5 items-center">
@@ -582,9 +587,18 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         onClick={handleDownloadPng}
                         disabled={downloading}
                         className="p-2 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-300 rounded-xl transition-all cursor-pointer shadow-sm"
-                        title="Download Card PNG"
+                        title="Download High-Res Card PNG"
                       >
                         <Download className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Instagram Stories */}
+                      <button
+                        onClick={() => handleInstaShare(activeShareUrl)}
+                        className="p-2 bg-gradient-to-tr from-yellow-500 via-rose-500 to-purple-600 text-white rounded-xl transition-all cursor-pointer shadow-sm hover:opacity-90"
+                        title="Share on Instagram Stories (Downloads PNG + Copies Link)"
+                      >
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                       </button>
 
                       {/* X / Twitter */}
@@ -618,6 +632,17 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         title="Share on Telegram"
                       >
                         <Send className="w-3.5 h-3.5" />
+                      </a>
+
+                      {/* Reddit */}
+                      <a
+                        href={`https://www.reddit.com/submit?url=${encodeURIComponent(activeShareUrl)}&title=${encodeURIComponent(activeShareText)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 bg-orange-500/20 hover:bg-orange-500/35 border border-orange-500/40 text-orange-400 rounded-xl transition-all cursor-pointer shadow-sm"
+                        title="Post on Reddit"
+                      >
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.196-.491.957 0 1.73.774 1.73 1.73 0 .727-.447 1.347-1.08 1.604.024.208.037.42.037.636 0 3.208-3.707 5.81-8.281 5.81-4.575 0-8.282-2.602-8.282-5.81 0-.212.012-.422.036-.628A1.73 1.73 0 0 1 3.27 12.5c0-.956.773-1.73 1.73-1.73.473 0 .898.188 1.209.503 1.192-.852 2.84-1.416 4.66-1.493l.93-4.359c.032-.15.158-.261.31-.261l3.056.644c.164-.537.665-.933 1.25-.933zM9.25 13c-.552 0-1 .448-1 1s.448 1 1 1 1-.448 1-1-.448-1-1-1zm5.5 0c-.552 0-1 .448-1 1s.448 1 1 1 1-.448 1-1-.448-1-1-1zm-4.75 3.5c-.265 0-.424.16-.424.32 0 1.06 1.09 1.68 2.424 1.68 1.333 0 2.424-.62 2.424-1.68 0-.16-.159-.32-.424-.32z"/></svg>
                       </a>
 
                       {/* Copy Link */}

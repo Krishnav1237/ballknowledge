@@ -58,7 +58,7 @@ export default function SportsCenterCard({
 
   if (isVerdictCard) {
     /* =========================================================================
-       VERDICT CARD DESIGN: VAR CYBER-SHIELD PLAQUE WITH CUSTOM MANAGER AVATAR
+       VERDICT CARD DESIGN: VAR CYBER-SHIELD PLAQUE WITH HIGH-VISIBILITY STATS
        ========================================================================= */
     return (
       <div
@@ -110,7 +110,7 @@ export default function SportsCenterCard({
         <div 
           className="absolute inset-0 w-full h-full overflow-hidden"
           style={{
-            clipPath: 'polygon(3% 9%, 15% 4%, 35% 4%, 50% 1%, 65% 4%, 85% 4%, 97% 9%, 98% 76%, 50% 98%, 2% 76%)'
+            clipPath: 'polygon(3% 9%, 15% 4%, 35% 4%, 50% 1%, 65% 4%, 85% 4%, 97% 9%, 98% 88%, 50% 99%, 2% 88%)'
           }}
         >
           {hasAiImage ? (
@@ -125,7 +125,7 @@ export default function SportsCenterCard({
                 <div className="flex flex-col items-center gap-1.5 w-full">
                   
                   {/* Custom Manager Avatar Feature */}
-                  <div className="w-14 h-14 rounded-full border-2 border-rose-500/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(244,63,94,0.5)] overflow-hidden shrink-0 mb-0.5">
+                  <div className="w-13 h-13 rounded-full border-2 border-rose-500/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(244,63,94,0.5)] overflow-hidden shrink-0 mb-0.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full" />
                   </div>
@@ -168,7 +168,7 @@ export default function SportsCenterCard({
                 </div>
               </div>
 
-              <div className="h-16" />
+              <div className="h-20" />
             </div>
           )}
 
@@ -203,11 +203,11 @@ export default function SportsCenterCard({
             </div>
           </div>
 
-          {/* 4. High-Contrast Stats Panel (Bottom Row) */}
-          <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
-            <div className="w-full h-[52px] bg-[#020612]/95 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)] border border-rose-500/50">
+          {/* 4. High-Contrast Stats Panel (Fully Visible Bottom Row) */}
+          <div className="absolute bottom-[54px] left-[24px] right-[24px] z-50 pointer-events-none">
+            <div className="w-full h-[52px] bg-[#040814]/98 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.95)] border-2 border-rose-500/80">
               {metrics.map(m => (
-                <div key={m.label} className="flex flex-col items-center flex-1 border-r last:border-r-0 border-white/10">
+                <div key={m.label} className="flex flex-col items-center flex-1 border-r last:border-r-0 border-white/15">
                   <span className="text-[8.5px] font-black tracking-widest uppercase drop-shadow text-rose-400">
                     {m.label}
                   </span>
