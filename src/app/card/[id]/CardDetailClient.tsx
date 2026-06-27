@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { Trophy, Share2, CheckCircle, Home } from 'lucide-react';
+import { Trophy, Share2, CheckCircle, Home, Download } from 'lucide-react';
 import { getFlagEmoji } from '@/lib/matchUtils';
 
 interface CardDetailClientProps {
@@ -18,11 +19,32 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
   const [tiltStyle, setTiltStyle] = useState({});
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const cardNodeRef = useRef<HTMLDivElement>(null);
 
   const showStatus = (text: string, type: 'success' | 'error' | 'info') => {
     setStatusMsg({ text, type });
     setTimeout(() => setStatusMsg(null), 4000);
+  };
+
+  const handleDownloadPng = async () => {
+    if (!cardNodeRef.current) return;
+    setDownloading(true);
+    showStatus('Preparing high-resolution PNG export...', 'info');
+    try {
+      const dataUrl = await toPng(cardNodeRef.current, { cacheBust: true, quality: 0.95 });
+      const link = document.createElement('a');
+      link.download = `${profile.username.replace(/\s+/g, '_')}_FIFA_Card.png`;
+      link.href = dataUrl;
+      link.click();
+      showStatus('Card PNG exported successfully!', 'success');
+    } catch (err) {
+      console.error('Export failed:', err);
+      showStatus('Failed to export card image.', 'error');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleGenerateAiBg = async () => {
@@ -138,15 +160,12 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
       <main className="relative z-10 flex-grow w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center py-6 overflow-hidden">
         
         {/* Left Column: Card floating exactly on the pedestal in background image */}
-        <div className="flex flex-col items-center justify-center relative h-full">
-          {/* Subtle neon platform glow on screen */}
-          <div className="absolute bottom-[20%] w-60 h-2 bg-[#E11D48]/10 blur-md rounded-full pointer-events-none" />
-          
+        <div className="flex justify-center items-center relative z-20">
           <motion.div
-            initial={{ scale: 0.3, rotateY: 180, opacity: 0 }}
-            animate={{ scale: 0.95, rotateY: 0, opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.85, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ 
-              type: 'spring', 
+              type: "spring", 
               damping: 15, 
               stiffness: 70, 
               duration: 1.2 
@@ -156,7 +175,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
             style={tiltStyle}
             className="relative card-3d-tilt filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] origin-center"
           >
-            <SportsCenterCard data={{
+            <SportsCenterCard cardRef={cardNodeRef} data={{
               text: card.evidence ? card.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', '') : 'No evidence submitted.',
               mode: 'take',
               caseId: 2026,
@@ -245,11 +264,21 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
             <div className="border-t border-white/10 pt-4 mt-4 flex justify-between items-center">
               <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Share Verdict:</span>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                {/* Download PNG Button */}
+                <button
+                  onClick={handleDownloadPng}
+                  disabled={downloading}
+                  className="p-2 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-lg transition-colors cursor-pointer"
+                  title="Download Card PNG"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+
                 {/* X/Twitter Share */}
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                    `Check out this Football IQ Verdict card! Graded at ${card.rating} OVR: ${card.verdict.toUpperCase()}. Can you beat this level of ball knowledge?`
+                    `Check out my Football IQ Verdict card! Graded at ${card.rating} OVR: ${card.verdict.toUpperCase()}. Can you beat this level of ball knowledge?`
                   )}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -262,7 +291,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 {/* WhatsApp Share */}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                    `Check out this Football IQ Verdict card! Graded at ${card.rating} OVR: ${card.verdict.toUpperCase()}. Can you beat this level of ball knowledge? ${shareUrl}`
+                    `Check out my Football IQ Verdict card! Graded at ${card.rating} OVR: ${card.verdict.toUpperCase()}. Can you beat this level of ball knowledge? ${shareUrl}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
