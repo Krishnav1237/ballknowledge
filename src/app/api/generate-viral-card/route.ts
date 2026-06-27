@@ -30,7 +30,7 @@ function buildCompleteFifacardPrompt(params: {
   return (
     `Full official EA Sports FIFA Ultimate Team (FUT) special edition football trading card graphic artwork. ` +
     `The card features a high-quality athletic football player cutout wearing the official ${nation} national team kit/jersey in a dynamic pose. ` +
-    `Card design: Glowing futuristic FUT shield card shape with metallic crimson red and champagne gold borders, 3D stadium spotlights, and glowing cosmic energy aura. ` +
+    `Card design: Glowing futuristic FUT shield card shape with metallic crimson red and champagne gold borders, 3D stadium spotlights, and glowing cosmic energy aura taking up the entire card space. ` +
     `Integrated card graphic details rendered clearly on the card face: ` +
     `Top-left overall rating number '${ovr}' and position '${pos}' in bold FUT font. ` +
     `Bold player name '${username}' centered below the portrait. ` +
@@ -64,6 +64,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Username is required' }, { status: 400 });
     }
 
+    // Gracefully check if OpenRouter API Key is configured
+    if (!process.env.OPENROUTER_API_KEY) {
+      return NextResponse.json(
+        {
+          error: 'OpenRouter API key is not configured on the server. Please set OPENROUTER_API_KEY in environment variables.',
+          code: 'OPENROUTER_KEY_MISSING'
+        },
+        { status: 503 }
+      );
+    }
+
     const nation = favoriteNation || 'Argentina';
     const ovr    = overallRating   ?? 50;
     const prd    = predictionRating ?? 50;
@@ -73,63 +84,67 @@ export async function POST(request: Request) {
 
     let aiImageUrl = '';
 
-    if (process.env.OPENROUTER_API_KEY) {
-      try {
-        const prompt = buildCompleteFifacardPrompt({
-          username: username.toUpperCase(),
-          nation,
-          ovr,
-          prd,
-          mgr,
-          hot,
-          rst,
-          verdict,
-          playerPosition,
-        });
+    try {
+      const prompt = buildCompleteFifacardPrompt({
+        username: username.toUpperCase(),
+        nation,
+        ovr,
+        prd,
+        mgr,
+        hot,
+        rst,
+        verdict,
+        playerPosition,
+      });
 
-        const response = await fetch('https://openrouter.ai/api/v1/images', {
-          method: 'POST',
-          headers: {
-            'Authorization':  `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type':   'application/json',
-            'HTTP-Referer':   'https://ballknowledge.vercel.app',
-            'X-Title':        'BallKnowledge World Cup 2026',
-          },
-          body: JSON.stringify({
-            model:  IMAGE_MODEL,
-            prompt,
-            n:      1,
-            aspect_ratio: '3:4',
-          }),
-          signal: AbortSignal.timeout(25_000), // 25s
-        });
+      const response = await fetch('https://openrouter.ai/api/v1/images', {
+        method: 'POST',
+        headers: {
+          'Authorization':  `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type':   'application/json',
+          'HTTP-Referer':   'https://ballknowledge.vercel.app',
+          'X-Title':        'BallKnowledge World Cup 2026',
+        },
+        body: JSON.stringify({
+          model:  IMAGE_MODEL,
+          prompt,
+          n:      1,
+          aspect_ratio: '3:4',
+        }),
+        signal: AbortSignal.timeout(25_000), // 25s timeout
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
-          if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
-            aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
-          }
-
-          if (aiImageUrl && cardId) {
-            try {
-              await prisma.matchCard.update({
-                where: { id: cardId },
-                data: { aiImageUrl }
-              });
-            } catch (dbError) {
-              console.warn('Failed to update MatchCard with aiImageUrl:', dbError);
-            }
-          }
-        } else {
-          const errText = await response.text();
-          console.warn(`OpenRouter image gen failed (${response.status}):`, errText);
+      if (response.ok) {
+        const data = await response.json();
+        aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
+        if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
+          aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
         }
-      } catch (err) {
-        console.warn('OpenRouter image generation failed:', err);
+
+        if (aiImageUrl && cardId) {
+          try {
+            await prisma.matchCard.update({
+              where: { id: cardId },
+              data: { aiImageUrl }
+            });
+          } catch (dbError) {
+            console.warn('Failed to update MatchCard with aiImageUrl:', dbError);
+          }
+        }
+      } else {
+        const errText = await response.text();
+        console.warn(`OpenRouter image gen failed (${response.status}):`, errText);
+        return NextResponse.json(
+          { error: `OpenRouter AI Image Generation failed: ${response.statusText}`, details: errText },
+          { status: response.status }
+        );
       }
-    } else {
-      console.info('OPENROUTER_API_KEY not set — skipping AI image generation.');
+    } catch (err: any) {
+      console.error('OpenRouter image generation error:', err);
+      return NextResponse.json(
+        { error: 'OpenRouter AI image generation timed out or failed to complete', details: err?.message },
+        { status: 504 }
+      );
     }
 
     return NextResponse.json({

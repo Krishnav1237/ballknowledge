@@ -120,14 +120,14 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  const runAISynthesis = () => {
+  const runAISynthesis = async () => {
     if (!profile) return;
     if (!username.trim()) {
       alert('Please fill out your Manager Alias registration ID first!');
       return;
     }
     if (!favoriteNation.trim()) {
-      alert('Please fill out your National Allegiance to style the jersey colors!');
+      alert('Please fill out your Supporting Country first!');
       return;
     }
     if (!pendingPhoto) {
@@ -137,19 +137,39 @@ export default function ProfileSettingsPage() {
 
     setIsSynthesizing(true);
 
-    setTimeout(async () => {
+    try {
+      const res = await fetch('/api/generate-viral-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.trim().replace(/\s+/g, '_'),
+          faceImage: pendingPhoto,
+          favoriteNation,
+          overallRating: profile.overallRating,
+          predictionRating: profile.predictionRating,
+          hotTakeRating: profile.hotTakeRating,
+          managerRating: profile.managerRating,
+          roastScore: profile.roastScore,
+          verdict: 'CERTIFIED CHEF',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        alert(`🚨 AI Card Generation Notice: ${data.error || 'Server error occurred'}`);
+        setIsSynthesizing(false);
+        return;
+      }
+
       setAvatarSeed(pendingPhoto);
-      setAvatarStyle(avatarStyle);
       setIsSynthesizing(false);
-      
+
       const updated: FootballIQProfile = {
         ...profile,
         username: username.trim().replace(/\s+/g, '_'),
-        favoriteClub,
         favoriteNation,
-        role,
         avatarSeed: pendingPhoto,
-        avatarStyle: avatarStyle
       };
       setProfile(updated);
       saveStoredProfile(updated);
@@ -160,7 +180,14 @@ export default function ProfileSettingsPage() {
       } catch (err) {
         console.warn('DB sync failed after synthesis:', err);
       }
-    }, 3000);
+
+      if (data.aiImageUrl) {
+        alert('✨ Immersion Complete! High-quality AI FIFA trading card generated successfully.');
+      }
+    } catch (err: any) {
+      setIsSynthesizing(false);
+      alert(`🚨 Generation Error: ${err?.message || 'Failed to connect to AI image synthesis engine.'}`);
+    }
   };
 
   const handleSaveSettings = async () => {
