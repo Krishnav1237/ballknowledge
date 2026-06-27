@@ -64,7 +64,6 @@ export default function SportsCenterCard({
 
   const score: string | undefined = data.matchScore;
   const verdictLabel = (data.verdict || 'KNOWS BALL').toUpperCase();
-  const managerName = (data.playerName || 'TACTICIAN').toUpperCase();
 
   if (isVerdictCard) {
     const glow = tok.glow;
@@ -131,25 +130,25 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG
-            y: 24 – 70
+            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG (Aligned with Season Card)
+            y: 44 / 46
             ══════════════════════════════════════════ */}
 
         {/* A1 — OVR stack (top-left) */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 24, left: 24 }}>
+        <div className="absolute top-[44px] left-[26px] z-40 pointer-events-none flex flex-col items-center">
           <span
-            className="block text-white leading-none font-black"
-            style={{ fontFamily: "'Oswald', sans-serif", fontSize: 44, textShadow: '0 4px 10px rgba(0,0,0,0.9)' }}
+            className="block text-white leading-none font-black text-[44px]"
+            style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.9)' }}
           >
             {ovr}
           </span>
-          <span className="block text-center font-black text-[9px] tracking-[0.22em] uppercase mt-[-2px]" style={{ color: glow }}>
+          <span className="block text-center font-black text-[10px] tracking-[0.2em] uppercase mt-0.5" style={{ color: glow }}>
             VAR
           </span>
         </div>
 
-        {/* A2 — Rarity Badge (top-center) — Replaced MGR pill for clean layout */}
-        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 32, left: 0, right: 0 }}>
+        {/* A2 — Rarity Badge (top-center) */}
+        <div className="absolute top-[46px] left-0 right-0 z-40 pointer-events-none flex justify-center">
           <div
             className="flex items-center gap-1.5 rounded-full px-4 py-[5px]"
             style={{
@@ -166,10 +165,10 @@ export default function SportsCenterCard({
         </div>
 
         {/* A3 — Country flag (top-right) */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 28, right: 24 }}>
+        <div className="absolute top-[46px] right-[26px] z-40 pointer-events-none">
           <div
-            className="flex items-center justify-center rounded-full"
-            style={{ width: 32, height: 32, background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}55`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
+            className="flex items-center justify-center rounded-full w-8 h-8"
+            style={{ background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}555`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
           >
             <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
@@ -177,9 +176,9 @@ export default function SportsCenterCard({
 
         {/* ══════════════════════════════════════════
             ZONE B — USER AVATAR (Upper Center)
-            y: 84 – 184
+            y: 96 – 196
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 84, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+        <div className="absolute z-40 pointer-events-none" style={{ top: 96, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
           <div
             style={{
               width: 100, height: 100,
@@ -197,40 +196,35 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE C — MANAGER USERNAME (Below Avatar)
-            y: 198 – 220
+            ZONE C — VERDICT HEADLINE (Below Avatar, Replaced rookie_tactician)
+            y: 206 – 232
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 198, left: 16, right: 16 }}>
+        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 206, left: 16, right: 16 }}>
           <h2
-            className="text-white uppercase leading-none font-black text-[22px] tracking-[0.05em]"
-            style={{ fontFamily: "'Oswald', sans-serif" }}
+            className="text-white uppercase leading-none font-black text-[24px] tracking-[0.05em]"
+            style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.95)' }}
           >
-            {managerName}
+            {verdictLabel}
           </h2>
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE D — VERDICT TITLE
-            y: 226 – 250
+            ZONE D — VERDICT SENTENCE / DETAIL
+            y: 236 – 258
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none flex justify-center animate-pulse" style={{ top: 226, left: 0, right: 0 }}>
-          <span
-            className="inline-block text-[9px] font-black tracking-[0.2em] uppercase px-3 py-1 rounded border"
-            style={{
-              background: `${glow}12`,
-              borderColor: `${glow}40`,
-              color: glow,
-            }}
-          >
-            👑 {verdictLabel}
-          </span>
-        </div>
+        {data.charge && (
+          <div className="absolute z-40 pointer-events-none text-center" style={{ top: 236, left: 24, right: 24 }}>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest line-clamp-1 italic">
+              &ldquo;{data.charge}&rdquo;
+            </p>
+          </div>
+        )}
 
         {/* ══════════════════════════════════════════
             ZONE E — MATCH FIXTURE & SCORE (Just above Stats)
-            y: 308 – 348
+            y: 304 – 344
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 308, left: 0, right: 0 }}>
+        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 304, left: 0, right: 0 }}>
           <div
             className="rounded-lg px-4 py-2 flex items-center gap-3 backdrop-blur-md"
             style={{
@@ -270,7 +264,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE F — STATS PANEL (Bottom Position)
+            ZONE F — STATS PANEL (Bottom Position - Aligned with Season Card)
             y: 364 – 416 (absolute bottom-[64px])
             ══════════════════════════════════════════ */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
