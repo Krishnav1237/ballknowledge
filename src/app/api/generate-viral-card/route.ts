@@ -22,9 +22,9 @@ function buildCompleteFifacardPrompt(params: {
   const vLabel = verdict || 'KNOWS BALL';
 
   return (
-    `Extremely immersive, high-quality, photorealistic action portrait of a professional football player. ` +
-    `The athlete is wearing the official custom ${nation} football national team jersey/kit, confidently posing in the upper-center of the card. ` +
-    `The player's facial features must be realistically integrated and seamlessly immersed into the jersey collar and athletic body, matching the lighting. ` +
+    `Extremely high-quality, photorealistic portrait of a professional football player, upper-body view, wearing the official custom ${nation} national team jersey/kit in a heroic pose. ` +
+    `The player's face should be clearly visible, center frame, realistic skin, matching lighting, with the jersey collar and logo fully visible. ` +
+    `The face must be seamlessly and realistically immersed into the athlete's body and jersey collar with no obvious paste-over. ` +
     `Background: Deep midnight sapphire blue textured background with 3D metallic gold swirling rings, glowing blue sapphire crystals, and dynamic stadium spotlights taking up the entire card space. ` +
     `Card Graphic Overlays: Double metallic champagne gold border frame outline in curved FUT shield shape. ` +
     `Integrated card graphics on card face: Top-left overall rating '${ovr}' and position '${pos}' in bold white FUT typography. ` +
@@ -155,7 +155,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux-1-pro';
+      const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-schnell';
 
       try {
         const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
