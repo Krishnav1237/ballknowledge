@@ -48,7 +48,6 @@ export default function FootballIQPage() {
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
   
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
-  const [miniCardTilts, setMiniCardTilts] = useState<Record<string, any>>({});
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -159,34 +158,6 @@ export default function FootballIQPage() {
     });
   };
 
-  const handleMiniMouseMove = (e: React.MouseEvent<HTMLDivElement>, matchId: string) => {
-    const card = e.currentTarget;
-    const box = card.getBoundingClientRect();
-    const x = e.clientX - box.left - box.width / 2;
-    const y = e.clientY - box.top - box.height / 2;
-    const tiltX = -(y / (box.height / 2)) * 12;
-    const tiltY = (x / (box.width / 2)) * 12;
-    setMiniCardTilts(prev => ({
-      ...prev,
-      [matchId]: {
-        transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.05, 1.05, 1.05)`,
-        zIndex: 10,
-        transition: 'transform 0.05s ease'
-      }
-    }));
-  };
-
-  const handleMiniMouseLeave = (matchId: string) => {
-    setMiniCardTilts(prev => ({
-      ...prev,
-      [matchId]: {
-        transform: 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-        zIndex: 1,
-        transition: 'transform 0.3s ease'
-      }
-    }));
-  };
-
   const getShareUrl = (type: 'profile' | 'card', idStr?: string) => {
     if (typeof window === 'undefined') return '';
     return type === 'profile' 
@@ -280,18 +251,15 @@ export default function FootballIQPage() {
     return (
       <div
         key={match.id}
-        onMouseMove={(e) => handleMiniMouseMove(e, match.id)}
-        onMouseLeave={() => handleMiniMouseLeave(match.id)}
-        style={miniCardTilts[match.id] || {}}
         onClick={() => {
           setSelectedCard(cardObj);
           setActiveRightTab('verdict');
         }}
-        className={`card-mini-fut-slot card-3d-tilt cursor-pointer relative z-10 group filter drop-shadow-md transition-all ${
-          isSelected ? 'ring-2 ring-amber-400 scale-[1.03]' : ''
+        className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
+          isSelected ? 'ring-2 ring-amber-400 scale-[1.02]' : ''
         }`}
       >
-        <div className={`h-full w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2 flex flex-col justify-between backdrop-blur-md`}>
+        <div className={`h-28 w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2.5 flex flex-col justify-between backdrop-blur-md shadow-lg`}>
           <div className="flex justify-between items-start">
             <div className="flex flex-col items-center">
               <span className="font-mono font-black text-lg leading-none text-white">{cardObj.rating}</span>
@@ -302,14 +270,14 @@ export default function FootballIQPage() {
                 <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
               </div>
             </div>
-            <span className={`text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
+            <span className={`text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
               {cardObj.rarity.slice(0, 3)}
             </span>
           </div>
 
           <div className="text-center my-auto py-1">
             <p className="font-sans font-black text-[9.5px] text-white tracking-wide uppercase leading-tight line-clamp-2 px-0.5">
-              {cardObj.verdict.split(' MERCHANT')[0].split(' PROPHET')[0]}
+              {cardObj.verdict}
             </p>
           </div>
 
@@ -381,7 +349,7 @@ export default function FootballIQPage() {
           <div className="p-4 sm:p-6 relative flex-grow flex flex-col">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow items-start">
               
-              {/* LEFT PAGE: ALBUM SLOTS GRID WITH DEDICATED SCROLL CONTAINER */}
+              {/* LEFT PAGE: ALBUM SLOTS GRID WITH SMOOTH TRACKPAD SCROLL CONTAINER */}
               <div className="lg:col-span-7 p-4 sm:p-6 flex flex-col gap-4 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
@@ -457,8 +425,11 @@ export default function FootballIQPage() {
                   ))}
                 </div>
 
-                {/* Fixed Height Scroll Container for Verdict Stickers */}
-                <div className="overflow-y-auto max-h-[520px] pr-1.5 space-y-3 custom-scrollbar">
+                {/* Trackpad & Touch Native Scroll Container */}
+                <div 
+                  className="overflow-y-auto max-h-[540px] pr-2 space-y-3 custom-scrollbar touch-pan-y overscroll-contain"
+                  style={{ WebkitOverflowScrolling: 'touch' }}
+                >
                   {loadingMatches ? (
                     <div className="text-center py-20 flex flex-col items-center justify-center">
                       <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-3" />

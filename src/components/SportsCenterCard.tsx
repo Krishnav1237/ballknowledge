@@ -79,7 +79,7 @@ export default function SportsCenterCard({
       </>
     );
     glowColor = '#E11D48';
-    bgGradient = 'bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712]';
+    bgGradient = 'bg-gradient-to-b from-[#2A0813] via-[#12050B] to-[#030712]';
     badgeStyle = 'text-rose-300 bg-rose-500/20 border-rose-500/50';
     primaryTextColor = 'text-rose-400';
     primaryBorderColor = 'border-rose-500/50';
@@ -154,38 +154,71 @@ export default function SportsCenterCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className={`relative w-full h-full p-6 flex flex-col justify-between text-white ${bgGradient}`}>
-            <div className="h-24" />
+          <div className={`relative w-full h-full p-5 flex flex-col justify-between text-white ${bgGradient}`}>
+            <div className="h-20" />
 
-            {/* Center Manager Name & Verdict Spotlight */}
+            {/* Center Content Spotlight */}
             <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto text-center w-full px-2">
-              <h2 
-                className="font-bold text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
-                style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
-              >
-                {data.playerName || 'MANAGER'}
-              </h2>
               
-              <span className={`inline-block text-[10px] font-black tracking-widest uppercase mt-2.5 px-4 py-1 rounded-md shadow-md backdrop-blur-sm ${badgeStyle}`}>
-                ⚖️ {data.verdict || 'KNOWS BALL'}
-              </span>
-
-              {/* Match Teams & Score Metric Badge for Verdict Cards */}
-              {isVerdictCard && (data.matchTitle || data.matchScore) && (
-                <div className={`mt-3 bg-black/80 border ${primaryBorderColor} px-3.5 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md`}>
-                  <span className="text-[9px] font-black uppercase text-gray-300 tracking-wider">
-                    ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
-                  </span>
-                  {data.matchScore && (
-                    <span className={`text-[10px] font-mono font-bold ${primaryTextColor} bg-white/10 px-2 py-0.5 rounded`}>
-                      {data.matchScore}
-                    </span>
+              {isVerdictCard ? (
+                /* VERDICT CARD DESIGN */
+                <div className="flex flex-col items-center gap-2 w-full">
+                  
+                  {/* Match Teams & Score Metric Badge */}
+                  {(data.matchTitle || data.matchScore) && (
+                    <div className={`bg-black/90 border ${primaryBorderColor} px-3 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md`}>
+                      <span className="text-[9.5px] font-black uppercase text-gray-200 tracking-wider">
+                        ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
+                      </span>
+                      {data.matchScore && (
+                        <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30">
+                          {data.matchScore}
+                        </span>
+                      )}
+                    </div>
                   )}
+
+                  {/* Prominent VAR Verdict Title */}
+                  <h2 
+                    className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_12px_rgba(225,29,72,0.6)] max-w-[280px] mt-1"
+                    style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+                  >
+                    {data.verdict || 'KNOWS BALL'}
+                  </h2>
+
+                  {/* Manager Alias & Decree */}
+                  <div className="flex flex-col items-center gap-1 mt-1">
+                    <span className="text-[9px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
+                      MANAGER: {data.playerName || 'TACTICIAN'}
+                    </span>
+                    
+                    {data.charge && (
+                      <p className="text-[9.5px] text-gray-300 font-semibold italic max-w-[260px] line-clamp-1 mt-1">
+                        &ldquo;{data.charge}&rdquo;
+                      </p>
+                    )}
+                  </div>
+
+                </div>
+              ) : (
+                /* TOURNAMENT MANAGER DECK DESIGN */
+                <div className="flex flex-col items-center gap-2 w-full">
+                  <h2 
+                    className="font-bold text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
+                    style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+                  >
+                    {data.playerName || 'MANAGER'}
+                  </h2>
+                  
+                  <span className={`inline-block text-[10px] font-black tracking-widest uppercase mt-1 px-4 py-1 rounded-md shadow-md backdrop-blur-sm ${badgeStyle}`}>
+                    👑 {data.verdict || 'TOURNAMENT CHEF'}
+                  </span>
                 </div>
               )}
+
             </div>
 
-            <div className="h-24" />
+            <div className="h-20" />
           </div>
         )}
 
