@@ -4,10 +4,7 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 /**
- * Generates a complete photorealistic FIFA trading card via OpenRouter AI Image Generation API.
- * 
- * Passes player details, ratings, stats, jersey nation, and verdict into the prompt
- * to output a complete, seamless EA Sports FIFA FUT card artwork.
+ * Generates a complete photorealistic FIFA Team of the Year (TOTY) trading card via OpenRouter AI API.
  */
 
 const IMAGE_MODEL = 'black-forest-labs/flux-1-pro';
@@ -28,15 +25,15 @@ function buildCompleteFifacardPrompt(params: {
   const vLabel = verdict || 'KNOWS BALL';
 
   return (
-    `Full official EA Sports FIFA Ultimate Team (FUT) special edition football trading card graphic artwork. ` +
-    `The card features a high-quality athletic football player cutout wearing the official ${nation} national team kit/jersey in a dynamic pose. ` +
-    `Card design: Glowing futuristic FUT shield card shape with metallic crimson red and champagne gold borders, 3D stadium spotlights, and glowing cosmic energy aura taking up the entire card space. ` +
-    `Integrated card graphic details rendered clearly on the card face: ` +
-    `Top-left overall rating number '${ovr}' and position '${pos}' in bold FUT font. ` +
-    `Bold player name '${username}' centered below the portrait. ` +
-    `Verdict stamp badge '${vLabel}' in top right. ` +
+    `Official EA Sports FIFA Ultimate Team (FUT) Team of the Year (TOTY) special edition football trading card graphic artwork. ` +
+    `Background: Deep midnight sapphire blue textured background with 3D metallic gold swirling rings, glowing blue sapphire crystals, and dynamic stadium spotlights taking up the entire card space. ` +
+    `Player Cutout: A high-quality photorealistic athletic football player cutout wearing the official ${nation} national team kit/jersey in a confident pose taking up the upper-center of the card. ` +
+    `Card Graphic Overlays: Double metallic champagne gold border frame outlining the curved FUT shield card shape. ` +
+    `Integrated card graphics on card face: Top-left rating '${ovr}' and position '${pos}' in bold white FUT typography. ` +
+    `Bold player name '${username}' centered below the player cutout. ` +
+    `Verdict badge '${vLabel}' at top. ` +
     `Bottom stats panel displaying 4 ratings: PRD ${prd}, MGR ${mgr}, HOT ${hot}, RST ${rst}. ` +
-    `Masterpiece quality, ultra-detailed 8k render, professional sports trading card graphic design, cinematic lighting.`
+    `Masterpiece quality, ultra-detailed 8k render, professional EA Sports FC TOTY trading card design, cinematic lighting.`
   );
 }
 
@@ -64,7 +61,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Username is required' }, { status: 400 });
     }
 
-    // Gracefully check if OpenRouter API Key is configured
     if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json(
         {
