@@ -50,6 +50,87 @@ export default function SportsCenterCard({
   const hasAiImage = Boolean(data.aiImageUrl);
   const isVerdictCard = data.mode === 'take' || Boolean(data.charge) || Boolean(data.sentence) || Boolean(data.matchTitle);
 
+  // Determine Category Theme based on Rarity / Rating
+  const ovr = data.ovr || 50;
+  const rarity = data.rarity || (ovr >= 85 ? 'LEGENDARY' : ovr >= 70 ? 'EPIC' : ovr >= 45 ? 'RARE' : 'COMMON');
+
+  let themeId = 'gold';
+  let borderStops = (
+    <>
+      <stop offset="0%" stopColor="#FFFBEB" />
+      <stop offset="30%" stopColor="#F59E0B" />
+      <stop offset="70%" stopColor="#D97706" />
+      <stop offset="100%" stopColor="#78350F" />
+    </>
+  );
+  let glowColor = '#F59E0B';
+  let bgGradient = 'bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]';
+  let badgeStyle = 'text-amber-300 bg-amber-400/15 border-amber-400/40';
+  let primaryTextColor = 'text-amber-300';
+  let primaryBorderColor = 'border-amber-400/40';
+
+  if (rarity === 'LEGENDARY' || (!isVerdictCard && ovr >= 85)) {
+    themeId = 'gold';
+    borderStops = (
+      <>
+        <stop offset="0%" stopColor="#FFFBEB" />
+        <stop offset="30%" stopColor="#F59E0B" />
+        <stop offset="70%" stopColor="#D97706" />
+        <stop offset="100%" stopColor="#78350F" />
+      </>
+    );
+    glowColor = '#F59E0B';
+    bgGradient = 'bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]';
+    badgeStyle = 'text-amber-300 bg-amber-400/15 border-amber-400/40';
+    primaryTextColor = 'text-amber-300';
+    primaryBorderColor = 'border-amber-400/40';
+  } else if (rarity === 'EPIC' || ovr >= 70) {
+    themeId = 'purple';
+    borderStops = (
+      <>
+        <stop offset="0%" stopColor="#F3E8FF" />
+        <stop offset="40%" stopColor="#C084FC" />
+        <stop offset="80%" stopColor="#7E22CE" />
+        <stop offset="100%" stopColor="#3B0764" />
+      </>
+    );
+    glowColor = '#C084FC';
+    bgGradient = 'bg-gradient-to-b from-[#1E0B2B] via-[#0B0F19] to-[#030712]';
+    badgeStyle = 'text-purple-300 bg-purple-500/15 border-purple-500/40';
+    primaryTextColor = 'text-purple-300';
+    primaryBorderColor = 'border-purple-500/40';
+  } else if (rarity === 'RARE' || ovr >= 45 || isVerdictCard) {
+    themeId = 'crimson';
+    borderStops = (
+      <>
+        <stop offset="0%" stopColor="#FFD3D9" />
+        <stop offset="40%" stopColor="#E11D48" />
+        <stop offset="80%" stopColor="#881337" />
+        <stop offset="100%" stopColor="#4C0519" />
+      </>
+    );
+    glowColor = '#E11D48';
+    bgGradient = 'bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712]';
+    badgeStyle = 'text-rose-300 bg-rose-500/15 border-rose-500/40';
+    primaryTextColor = 'text-rose-400';
+    primaryBorderColor = 'border-rose-500/40';
+  } else {
+    themeId = 'cyan';
+    borderStops = (
+      <>
+        <stop offset="0%" stopColor="#E0F2FE" />
+        <stop offset="40%" stopColor="#38BDF8" />
+        <stop offset="80%" stopColor="#0369A1" />
+        <stop offset="100%" stopColor="#0C4A6E" />
+      </>
+    );
+    glowColor = '#38BDF8';
+    bgGradient = 'bg-gradient-to-b from-[#06192A] via-[#0B0F19] to-[#030712]';
+    badgeStyle = 'text-sky-300 bg-sky-500/15 border-sky-500/40';
+    primaryTextColor = 'text-sky-400';
+    primaryBorderColor = 'border-sky-500/40';
+  }
+
   return (
     <div
       ref={cardRef}
@@ -66,29 +147,16 @@ export default function SportsCenterCard({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Theme Border Gradients */}
-          {isVerdictCard ? (
-            <linearGradient id="card-border-grad" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#FFD3D9" />
-              <stop offset="50%" stopColor="#E11D48" />
-              <stop offset="100%" stopColor="#881337" />
-            </linearGradient>
-          ) : (
-            <linearGradient id="card-border-grad" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#FFFBEB" />
-              <stop offset="30%" stopColor="#F59E0B" />
-              <stop offset="70%" stopColor="#D97706" />
-              <stop offset="100%" stopColor="#78350F" />
-            </linearGradient>
-          )}
+          <linearGradient id={`card-border-grad-${themeId}`} x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
+            {borderStops}
+          </linearGradient>
 
-          {/* Glowing Filter */}
-          <filter id="card-glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id={`card-glow-filter-${themeId}`} x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow 
               dx="0" 
               dy="8" 
               stdDeviation="14" 
-              floodColor={isVerdictCard ? '#E11D48' : '#F59E0B'} 
+              floodColor={glowColor} 
               floodOpacity="0.45" 
             />
           </filter>
@@ -97,16 +165,16 @@ export default function SportsCenterCard({
         {/* Outer Metallic Shield Border Frame */}
         <path
           d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z"
-          stroke="url(#card-border-grad)"
+          stroke={`url(#card-border-grad-${themeId})`}
           strokeWidth="3.5"
           fill="none"
-          filter="url(#card-glow-filter)"
+          filter={`url(#card-glow-filter-${themeId})`}
         />
 
         {/* Concentric Inner Line */}
         <path
           d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z"
-          stroke="url(#card-border-grad)"
+          stroke={`url(#card-border-grad-${themeId})`}
           strokeWidth="0.8"
           opacity="0.4"
           fill="none"
@@ -125,7 +193,6 @@ export default function SportsCenterCard({
         }}
       >
         {hasAiImage ? (
-          /* Full AI Generated FIFA Trading Card image taking up entire space */
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.aiImageUrl}
@@ -133,13 +200,7 @@ export default function SportsCenterCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          /* Clean, High-Contrast Immersive Gradient Card background */
-          <div className={`relative w-full h-full p-6 flex flex-col justify-between text-white ${
-            isVerdictCard 
-              ? 'bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712]'
-              : 'bg-gradient-to-b from-[#0B152C] via-[#070F22] to-[#020612]'
-          }`}>
-            {/* Top Row Spacing Placeholder */}
+          <div className={`relative w-full h-full p-6 flex flex-col justify-between text-white ${bgGradient}`}>
             <div className="h-24" />
 
             {/* Center Manager Name & Verdict Spotlight */}
@@ -151,22 +212,18 @@ export default function SportsCenterCard({
                 {data.playerName || 'MANAGER'}
               </h2>
               
-              <span className={`inline-block text-[10px] font-black tracking-widest uppercase mt-2.5 px-4 py-1 rounded-md shadow-md backdrop-blur-sm ${
-                isVerdictCard
-                  ? 'text-rose-300 bg-rose-500/15 border border-rose-500/40'
-                  : 'text-amber-300 bg-amber-400/10 border border-amber-400/35'
-              }`}>
+              <span className={`inline-block text-[10px] font-black tracking-widest uppercase mt-2.5 px-4 py-1 rounded-md shadow-md backdrop-blur-sm ${badgeStyle}`}>
                 ⚖️ {data.verdict || 'KNOWS BALL'}
               </span>
 
               {/* Match Teams & Score Metric Badge for Verdict Cards */}
               {isVerdictCard && (data.matchTitle || data.matchScore) && (
-                <div className="mt-3 bg-black/80 border border-rose-500/40 px-3.5 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
+                <div className={`mt-3 bg-black/80 border ${primaryBorderColor} px-3.5 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md`}>
                   <span className="text-[9px] font-black uppercase text-gray-300 tracking-wider">
                     ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
                   </span>
                   {data.matchScore && (
-                    <span className="text-[10px] font-mono font-bold text-[#E11D48] bg-rose-500/20 px-2 py-0.5 rounded">
+                    <span className={`text-[10px] font-mono font-bold ${primaryTextColor} bg-white/10 px-2 py-0.5 rounded`}>
                       {data.matchScore}
                     </span>
                   )}
@@ -174,7 +231,6 @@ export default function SportsCenterCard({
               )}
             </div>
 
-            {/* Bottom Spacing Placeholder */}
             <div className="h-24" />
           </div>
         )}
@@ -187,18 +243,14 @@ export default function SportsCenterCard({
           >
             {data.ovr}
           </span>
-          <span className={`text-[10px] font-black tracking-widest uppercase mt-0.5 drop-shadow ${
-            isVerdictCard ? 'text-rose-400' : 'text-amber-300'
-          }`}>
+          <span className={`text-[10px] font-black tracking-widest uppercase mt-0.5 drop-shadow ${primaryTextColor}`}>
             {data.playerPosition || (isVerdictCard ? 'VAR' : 'MGR')}
           </span>
         </div>
 
         {/* 2. BallKnowledge Product Logo Branding (Top Center Badge) */}
         <div className="absolute top-[46px] left-0 right-0 flex justify-center items-center z-40 pointer-events-none">
-          <div className={`flex items-center gap-1.5 bg-[#020612]/90 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.95)] border ${
-            isVerdictCard ? 'border-rose-500/70' : 'border-amber-400/70'
-          }`}>
+          <div className={`flex items-center gap-1.5 bg-[#020612]/90 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.95)] border ${primaryBorderColor}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/images/ball_knowledge_logo.png" 
@@ -206,32 +258,24 @@ export default function SportsCenterCard({
               className="w-4 h-4 object-contain rounded-full drop-shadow" 
             />
             <span className="text-[8.5px] font-black tracking-widest uppercase text-white">
-              BALL<span className={isVerdictCard ? 'text-[#E11D48]' : 'text-amber-400'}>KNOWLEDGE</span>
+              BALL<span className={primaryTextColor}>KNOWLEDGE</span>
             </span>
           </div>
         </div>
 
         {/* 3. Country Flag Badge (Top Right Badge) */}
         <div className="absolute top-[46px] right-[26px] z-40 pointer-events-none">
-          <div className={`flex items-center justify-center bg-[#020612]/90 rounded-full w-8 h-8 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)] border ${
-            isVerdictCard ? 'border-rose-500/40' : 'border-amber-400/40'
-          }`}>
+          <div className={`flex items-center justify-center bg-[#020612]/90 rounded-full w-8 h-8 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)] border ${primaryBorderColor}`}>
             <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
         </div>
 
         {/* 4. High-Contrast Stats Panel (Bottom Row) */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
-          <div className={`w-full h-[52px] bg-[#020612]/95 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)] border ${
-            isVerdictCard ? 'border-rose-500/35' : 'border-amber-400/35'
-          }`}>
+          <div className={`w-full h-[52px] bg-[#020612]/95 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)] border ${primaryBorderColor}`}>
             {metrics.map(m => (
-              <div key={m.label} className={`flex flex-col items-center flex-1 border-r last:border-r-0 ${
-                isVerdictCard ? 'border-rose-500/15' : 'border-amber-400/15'
-              }`}>
-                <span className={`text-[8.5px] font-black tracking-widest uppercase drop-shadow ${
-                  isVerdictCard ? 'text-rose-300' : 'text-amber-300'
-                }`}>
+              <div key={m.label} className={`flex flex-col items-center flex-1 border-r last:border-r-0 border-white/10`}>
+                <span className={`text-[8.5px] font-black tracking-widest uppercase drop-shadow ${primaryTextColor}`}>
                   {m.label}
                 </span>
                 <span 
