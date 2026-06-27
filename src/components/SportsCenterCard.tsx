@@ -113,61 +113,68 @@ export default function SportsCenterCard({
           />
         ) : (
           /* High-contrast FIFA Card layout rendered inside shield frame */
-          <div className="relative w-full h-full bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712] p-7 flex flex-col justify-between text-white">
+          <div className="relative w-full h-full bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712] p-6 flex flex-col justify-between text-white">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.25),transparent_70%)] pointer-events-none" />
 
-            {/* Top Row: OVR & Role */}
-            <div className="flex justify-between items-start z-10 pt-2">
-              <div className="flex flex-col items-center">
-                <span 
-                  className="text-[48px] tracking-tighter leading-none text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)]"
-                  style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
-                >
-                  {data.ovr}
-                </span>
-                <span className="text-[9.5px] font-black tracking-widest uppercase text-[#FFE082] mt-0.5">
-                  {data.playerPosition || 'MGR'}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-black/60 border border-white/20 rounded-full px-2.5 py-1 backdrop-blur-md">
-                <span className="text-[13px]">{data.countryFlag || '🌍'}</span>
-              </div>
-            </div>
+            {/* Top Row Spacing Placeholder */}
+            <div className="h-14" />
 
             {/* Center Spotlight: Manager Name & Verdict */}
             <div className="flex flex-col items-center justify-center text-center z-10 my-auto">
               <h2 
-                className="font-bold text-[22px] tracking-widest uppercase leading-none text-[#FFE082] truncate max-w-[260px]"
+                className="font-bold text-[22px] tracking-widest uppercase leading-none text-[#FFE082] truncate max-w-[250px]"
                 style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900, textShadow: '0 2px 6px rgba(0,0,0,0.95)' }}
               >
                 {data.playerName || 'MANAGER'}
               </h2>
-              <span className="text-[10px] font-black tracking-widest uppercase text-[#E11D48] mt-1.5 bg-[#E11D48]/15 border border-[#E11D48]/40 px-2.5 py-0.5 rounded shadow-md">
+              <span className="text-[10px] font-black tracking-widest uppercase text-[#E11D48] mt-2 bg-[#E11D48]/15 border border-[#E11D48]/40 px-3 py-1 rounded shadow-md">
                 ⚖️ {data.verdict || 'KNOWS BALL'}
               </span>
             </div>
+
+            {/* Bottom Spacing Placeholder */}
+            <div className="h-16" />
           </div>
         )}
 
-        {/* 🏆 Product Logo Branding (Guaranteed in every card top center) */}
-        <div className="absolute top-[28px] left-0 right-0 flex justify-center items-center z-40 pointer-events-none">
-          <div className="flex items-center gap-1.5 bg-black/75 border border-[#E11D48]/50 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+        {/* 1. OVR Rating & Role (Moved lower down to top-[44px] left-[26px]) */}
+        <div className="absolute top-[44px] left-[26px] z-40 flex flex-col items-center pointer-events-none">
+          <span 
+            className="text-[44px] tracking-tighter leading-none text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)]"
+            style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+          >
+            {data.ovr}
+          </span>
+          <span className="text-[9px] font-black tracking-widest uppercase text-[#FFE082] mt-0.5 drop-shadow">
+            {data.playerPosition || 'MGR'}
+          </span>
+        </div>
+
+        {/* 2. BallKnowledge Product Logo Branding (Moved lower to top-[46px]) */}
+        <div className="absolute top-[46px] left-0 right-0 flex justify-center items-center z-40 pointer-events-none">
+          <div className="flex items-center gap-1.5 bg-black/80 border border-[#E11D48]/60 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.95)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/images/ball_knowledge_logo.png" 
               alt="Ball Knowledge" 
-              className="w-5 h-5 object-contain rounded-full drop-shadow" 
+              className="w-4 h-4 object-contain rounded-full drop-shadow" 
             />
-            <span className="text-[9px] font-black tracking-widest uppercase text-white">
+            <span className="text-[8.5px] font-black tracking-widest uppercase text-white">
               BALL<span className="text-[#E11D48]">KNOWLEDGE</span>
             </span>
           </div>
         </div>
 
-        {/* 📊 High-Contrast Stats Panel (Guaranteed 100% visible on every card at bottom) */}
-        <div className="absolute bottom-[28px] left-[18px] right-[18px] z-40 pointer-events-none">
-          <div className="w-full h-[52px] bg-black/85 border border-white/20 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-lg shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+        {/* 3. Country Flag Badge (Moved lower to top-[46px] right-[26px]) */}
+        <div className="absolute top-[46px] right-[26px] z-40 pointer-events-none">
+          <div className="flex items-center justify-center bg-black/80 border border-white/20 rounded-full w-8 h-8 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+            <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
+          </div>
+        </div>
+
+        {/* 4. High-Contrast Stats Panel (Shifted higher up to bottom-[64px] with left-[28px] right-[28px]) */}
+        <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
+          <div className="w-full h-[52px] bg-black/90 border border-white/25 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)]">
             {metrics.map(m => (
               <div key={m.label} className="flex flex-col items-center flex-1 border-r border-white/15 last:border-r-0">
                 <span className="text-[8.5px] font-black tracking-widest uppercase text-[#FFE082] drop-shadow">
