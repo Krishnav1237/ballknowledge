@@ -449,18 +449,19 @@ export default function ProfileSettingsPage() {
               <div className="grid grid-cols-12 gap-6 p-6 z-20">
 
                 {/* ══ COLUMN 1: Identity & Credentials (col-span-12 lg:col-span-4) ══ */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col justify-between gap-5 bg-[#14080B]/50 border border-rose-900/30 rounded-xl p-6 relative shadow-lg">
-                  <div className="flex flex-col gap-5">
-                    <div className="shrink-0 flex items-center justify-between">
-                      <h3 className="text-xs font-bold text-rose-500 tracking-wider uppercase border-l-2 border-rose-600 pl-2">Identity Credentials</h3>
+                <div className="col-span-12 lg:col-span-4 flex flex-col justify-between h-[520px] bg-[#14080B]/80 border border-rose-900/40 rounded-2xl p-6 relative shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+                  <div className="flex flex-col gap-6">
+                    <div className="shrink-0 flex items-center justify-between border-b border-rose-900/30 pb-3">
+                      <h3 className="text-xs font-black text-rose-400 tracking-widest uppercase border-l-2 border-[#E11D48] pl-2.5">Identity Credentials</h3>
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-bold">DOSSIER #2026</span>
                     </div>
 
                     {/* Avatar Upload zone and inputs stack vertically */}
-                    <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-6">
                       
                       {/* Avatar preview */}
-                      <div className="flex flex-col items-center gap-3 bg-[#13070A]/30 border border-rose-900/10 rounded-xl p-4">
-                        <div className="relative w-24 h-24 shrink-0">
+                      <div className="flex items-center gap-4 bg-[#13070A]/60 border border-rose-900/30 rounded-xl p-4 shadow-inner">
+                        <div className="relative w-20 h-20 shrink-0">
                           <input
                             type="file"
                             accept="image/*"
@@ -470,7 +471,7 @@ export default function ProfileSettingsPage() {
                           />
                           <label
                             htmlFor="portrait-upload"
-                            className="relative flex w-full h-full bg-[#13070A]/85 border border-dashed border-rose-900/40 hover:border-[#E11D48]/55 rounded-xl overflow-hidden cursor-pointer group transition-all"
+                            className="relative flex w-full h-full bg-[#13070A] border-2 border-dashed border-rose-900/60 hover:border-[#E11D48] rounded-xl overflow-hidden cursor-pointer group transition-all shadow-md"
                           >
                             {pendingPhoto ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -481,7 +482,7 @@ export default function ProfileSettingsPage() {
                             ) : (
                               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
                                 <User className="w-6 h-6 mb-1 text-rose-500/80 group-hover:text-[#E11D48] transition-colors" />
-                                <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 group-hover:text-rose-300 transition-colors">Upload Portrait</span>
+                                <span className="text-[8px] font-black uppercase tracking-wider text-rose-400 group-hover:text-rose-300 transition-colors">Upload Face</span>
                               </div>
                             )}
                           </label>
@@ -489,21 +490,24 @@ export default function ProfileSettingsPage() {
                             <button
                               type="button"
                               onClick={() => { setPendingPhoto(null); handleRemoveCustomPhoto(); }}
-                              className="absolute -top-1.5 -right-1.5 bg-[#E11D48] hover:bg-rose-600 text-white w-4.5 h-4.5 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer shadow-md z-30 transition-all"
+                              className="absolute -top-1.5 -right-1.5 bg-[#E11D48] hover:bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black cursor-pointer shadow-md z-30 transition-all"
                               title="Remove photo"
                             >×</button>
                           )}
                         </div>
-                        <p className="text-[9px] text-zinc-400 leading-snug text-center max-w-[150px]">
-                          Upload square portrait photo
-                        </p>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-white uppercase tracking-wider">Manager Face Photo</span>
+                          <p className="text-[9.5px] text-zinc-400 leading-snug mt-1">
+                            Upload high-res portrait for AI trading card cutout.
+                          </p>
+                        </div>
                       </div>
 
                       {/* Inputs form */}
                       <div className="flex flex-col gap-4">
                         <div className="space-y-1.5 group">
-                          <label className="block text-[10px] font-bold text-rose-400 uppercase tracking-wide transition-all duration-200 group-focus-within:text-rose-300 group-hover:text-rose-300 drop-shadow-[0_0_6px_rgba(225,29,72,0.2)]">
-                            Manager Alias
+                          <label className="block text-[10px] font-black text-rose-400 uppercase tracking-widest transition-all duration-200 group-focus-within:text-rose-300">
+                            Manager Alias (Username)
                           </label>
                           <input
                             type="text"
@@ -518,13 +522,13 @@ export default function ProfileSettingsPage() {
                                 window.dispatchEvent(new Event('storage'));
                               }
                             }}
-                            className="w-full h-9 bg-[#13070A]/85 border border-rose-900/50 hover:border-rose-500/60 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/30 rounded-lg px-3 text-xs font-semibold text-white placeholder-rose-500/30 focus:shadow-[0_0_15px_rgba(225,29,72,0.25)] transition-all font-mono"
+                            className="w-full h-10 bg-[#13070A] border border-rose-900/50 hover:border-rose-500/60 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/40 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/30 shadow-inner transition-all font-mono"
                             placeholder="tactical_titan"
                           />
                         </div>
 
                         <div className="space-y-1.5 group">
-                          <label className="block text-[10px] font-bold text-rose-400 uppercase tracking-wide transition-all duration-200 group-focus-within:text-rose-300 group-hover:text-rose-300 drop-shadow-[0_0_6px_rgba(225,29,72,0.2)]">
+                          <label className="block text-[10px] font-black text-rose-400 uppercase tracking-widest transition-all duration-200 group-focus-within:text-rose-300">
                             Supporting Country (National Allegiance)
                           </label>
                           <input
@@ -540,7 +544,7 @@ export default function ProfileSettingsPage() {
                                 window.dispatchEvent(new Event('storage'));
                               }
                             }}
-                            className="w-full h-9 bg-[#13070A]/85 border border-rose-900/50 hover:border-rose-500/60 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/30 rounded-lg px-3 text-xs font-semibold text-white placeholder-rose-500/30 focus:shadow-[0_0_15px_rgba(225,29,72,0.25)] transition-all"
+                            className="w-full h-10 bg-[#13070A] border border-rose-900/50 hover:border-rose-500/60 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/40 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/30 shadow-inner transition-all"
                             placeholder="Argentina / Brazil / England"
                           />
                         </div>
@@ -550,11 +554,11 @@ export default function ProfileSettingsPage() {
                   </div>
 
                   {/* Reset button at the bottom */}
-                  <div className="pt-3 border-t border-rose-900/20 shrink-0 mt-auto">
+                  <div className="pt-4 border-t border-rose-900/30 shrink-0 mt-auto">
                     <button
                       type="button"
                       onClick={handleResetCampaign}
-                      className="w-full h-9 rounded-lg bg-rose-900/10 hover:bg-rose-900/25 border border-rose-900/35 hover:border-rose-600/50 text-rose-400 hover:text-rose-200 font-sans font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                      className="w-full h-10 rounded-xl bg-rose-900/15 hover:bg-rose-900/30 border border-rose-900/40 hover:border-rose-600/60 text-rose-400 hover:text-rose-200 font-sans font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                       <RotateCcw className="w-3.5 h-3.5" /> Wipe Campaign &amp; Reset Profile
                     </button>
@@ -562,39 +566,40 @@ export default function ProfileSettingsPage() {
                 </div>
 
                 {/* ══ COLUMN 2: Live Card Preview Showcase (col-span-12 lg:col-span-4) ══ */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col justify-center items-center h-[510px] bg-[#12070A]/30 border border-rose-900/30 rounded-xl p-4 shadow-inner relative overflow-hidden">
-                  <div className="absolute inset-0 bg-radial-gradient from-rose-900/10 via-transparent to-transparent pointer-events-none" />
+                <div className="col-span-12 lg:col-span-4 flex flex-col justify-center items-center h-[520px] bg-[#12070A]/60 border border-rose-900/40 rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-md">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.2),transparent_70%)] pointer-events-none" />
                   <div className="relative flex items-center justify-center w-full h-full">
-                    <div className="absolute scale-[0.9] origin-center shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+                    <div className="scale-[0.92] origin-center shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
                       <SportsCenterCard data={managerCardData} />
                     </div>
                   </div>
                 </div>
 
                 {/* ══ COLUMN 3: Stats & Actions (col-span-12 lg:col-span-4) ══ */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col justify-between gap-5 bg-[#14080B]/50 border border-rose-900/30 rounded-xl p-6 relative shadow-lg">
-                  <div className="flex flex-col gap-4">
-                    <div className="shrink-0 flex items-center justify-between">
-                      <h3 className="text-[10px] font-bold text-rose-500 tracking-wider uppercase border-l-2 border-rose-600 pl-2">Reputation &amp; Stats</h3>
+                <div className="col-span-12 lg:col-span-4 flex flex-col justify-between h-[520px] bg-[#14080B]/80 border border-rose-900/40 rounded-2xl p-6 relative shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+                  <div className="flex flex-col gap-5">
+                    <div className="shrink-0 flex items-center justify-between border-b border-rose-900/30 pb-3">
+                      <h3 className="text-xs font-black text-rose-400 tracking-widest uppercase border-l-2 border-[#E11D48] pl-2.5">Reputation &amp; Telemetry</h3>
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-bold">SEASON 2026</span>
                     </div>
 
                     {/* OVR Summary Badge */}
-                    <div className="flex items-center gap-4 bg-[#13070A]/85 border border-rose-900/40 rounded-xl p-3.5 shrink-0 shadow-inner relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#E11D48]/5 to-transparent pointer-events-none" />
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#E11D48] to-[#881337] flex flex-col items-center justify-center shrink-0 shadow-[0_0_15px_rgba(225,29,72,0.4)]">
+                    <div className="flex items-center gap-4 bg-[#13070A] border border-rose-900/50 rounded-xl p-3.5 shrink-0 shadow-inner relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#E11D48]/10 to-transparent pointer-events-none" />
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#E11D48] to-[#881337] flex flex-col items-center justify-center shrink-0 shadow-[0_0_20px_rgba(225,29,72,0.5)] border border-[#E11D48]/30">
                         <span className="text-white font-black text-xl leading-none">{profile.overallRating}</span>
-                        <span className="text-[7px] text-rose-200 font-bold uppercase tracking-widest mt-0.5">OVR</span>
+                        <span className="text-[7px] text-rose-200 font-black uppercase tracking-widest mt-0.5">OVR</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-black text-white uppercase tracking-wider leading-none">FOOTBALL IQ RATING</p>
-                        <p className="text-[10px] text-zinc-500 font-mono mt-1 truncate">{username || 'MANAGER'}</p>
+                        <p className="text-[10.5px] font-black text-white uppercase tracking-wider leading-none">FOOTBALL IQ RATING</p>
+                        <p className="text-[10px] text-zinc-400 font-mono mt-1 truncate">{username || 'MANAGER'}</p>
                       </div>
-                      <span className={`text-[8.5px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border shrink-0 ${
+                      <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border shrink-0 shadow-sm ${
                         profile.overallRating >= 80
-                          ? 'text-rose-400 border-rose-500/30 bg-rose-500/10'
+                          ? 'text-rose-400 border-rose-500/40 bg-rose-500/15'
                           : profile.overallRating >= 60
-                          ? 'text-orange-400 border-orange-500/30 bg-orange-500/10'
-                          : 'text-zinc-400 border-rose-950/30 bg-rose-950/10'
+                          ? 'text-orange-400 border-orange-500/40 bg-orange-500/15'
+                          : 'text-zinc-400 border-rose-950/40 bg-rose-950/20'
                       }`}>
                         {profile.overallRating >= 80 ? 'WORLD CLASS' : profile.overallRating >= 60 ? 'PRO' : 'AMATEUR'}
                       </span>
@@ -608,20 +613,20 @@ export default function ProfileSettingsPage() {
                         { label: 'HOT', val: profile.hotTakeRating,    color: '#F43F5E', name: 'HOT TAKES',    weight: '25%' },
                         { label: 'RST', val: profile.roastScore,       color: '#FDA4AF', name: 'ROAST INDEX',  weight: '15%' }
                       ].map(stat => (
-                        <div key={stat.label} className="bg-[#13070A]/50 border border-rose-900/20 rounded-lg p-2.5 space-y-1.5 shadow-inner">
+                        <div key={stat.label} className="bg-[#13070A] border border-rose-900/30 rounded-xl p-3 space-y-1.5 shadow-inner">
                           <div className="flex justify-between items-baseline">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-black text-[10px]" style={{ color: stat.color }}>{stat.label}</span>
-                              <span className="text-[9px] font-black text-zinc-400 uppercase tracking-wider">{stat.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-black text-[11px]" style={{ color: stat.color }}>{stat.label}</span>
+                              <span className="text-[9.5px] font-black text-zinc-300 uppercase tracking-wider">{stat.name}</span>
                             </div>
                             <div className="flex items-baseline gap-1">
-                              <span className="font-mono font-black text-xs" style={{ color: stat.color }}>{stat.val}</span>
-                              <span className="text-[8px] text-zinc-500 font-mono font-bold">/{stat.weight}</span>
+                              <span className="font-mono font-black text-xs text-white">{stat.val}</span>
+                              <span className="text-[8.5px] text-zinc-500 font-mono font-bold">/{stat.weight}</span>
                             </div>
                           </div>
-                          <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                          <div className="w-full h-2 bg-black rounded-full overflow-hidden border border-white/5">
                             <div
-                              className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-rose-900 via-rose-600 to-[#E11D48]"
+                              className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-rose-900 via-rose-600 to-[#E11D48] shadow-[0_0_10px_rgba(225,29,72,0.6)]"
                               style={{ width: `${stat.val}%` }}
                             />
                           </div>
@@ -631,18 +636,18 @@ export default function ProfileSettingsPage() {
                   </div>
 
                   {/* Actions & Operations */}
-                  <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-rose-900/20 shrink-0 mt-auto">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-rose-900/30 shrink-0 mt-auto">
                     <button
                       type="button"
                       disabled={isSynthesizing || !pendingPhoto}
                       onClick={runAISynthesis}
-                      className={`flex-grow h-10 rounded-lg font-sans font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(225,29,72,0.15)] ${
+                      className={`flex-grow h-11 rounded-xl font-sans font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(225,29,72,0.25)] ${
                         !pendingPhoto
-                          ? 'bg-rose-950/5 text-rose-900/40 border border-rose-950/20 cursor-not-allowed shadow-none'
-                          : 'bg-gradient-to-r from-rose-600 to-[#881337] hover:from-rose-500 hover:to-[#a21a3a] text-white cursor-pointer active:scale-[0.98]'
+                          ? 'bg-rose-950/20 text-rose-900/40 border border-rose-950/30 cursor-not-allowed shadow-none'
+                          : 'bg-gradient-to-r from-[#E11D48] to-[#881337] hover:from-rose-500 hover:to-[#a21a3a] text-white cursor-pointer active:scale-[0.98]'
                       }`}
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkles className="w-4 h-4" />
                       {isSynthesizing ? 'SYNTHESIZING...' : 'SYNTHESIZE'}
                     </button>
 
@@ -650,7 +655,7 @@ export default function ProfileSettingsPage() {
                       type="button"
                       disabled={saveLoading}
                       onClick={handleSaveSettings}
-                      className="flex-grow h-10 rounded-lg bg-[#12070A]/80 hover:bg-rose-950/40 border border-rose-900/40 hover:border-rose-600/60 text-white font-sans font-black text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                      className="flex-grow h-11 rounded-xl bg-[#13070A] hover:bg-rose-950/50 border border-rose-900/50 hover:border-rose-500/70 text-white font-sans font-black text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] shadow-md"
                     >
                       {saveLoading ? 'SAVING...' : 'SAVE DOSSIER'}
                     </button>
