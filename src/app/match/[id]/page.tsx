@@ -600,24 +600,59 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   playerName: profile?.username || 'MANAGER',
                   playerPosition: gradingResult.card.rating >= 75 ? 'CF' : 'DM',
                   avatarStyle: profile?.avatarStyle || 'fun-emoji',
-                  avatarSeed: profile?.avatarSeed || 'Reputation'
+                  avatarSeed: profile?.avatarSeed || 'Reputation',
+                  matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
+                  matchScore: `${actualResult.homeScore} - ${actualResult.awayScore}`
                 }} />
               </div>
 
               {/* Share Card Block */}
-              <div className="mt-6 flex flex-col gap-2.5 w-full max-w-[340px]">
-                <button
-                  onClick={handleCopyLink}
-                  className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-white/10 text-gray-300 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Share2 className="w-4 h-4 text-[#E11D48]" />
-                  {copied ? 'Link Copied!' : 'Copy Shareable Link'}
-                </button>
+              <div className="mt-6 flex flex-col gap-3 w-full max-w-[340px]">
+                <div className="flex justify-between items-center bg-[#0B0F19]/90 border border-white/10 rounded-2xl p-3 backdrop-blur-md">
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Share Verdict:</span>
+                  <div className="flex gap-2 items-center">
+                    {/* X/Twitter Share */}
+                    <a
+                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                        `I just graded my VAR Verdict Card for ${homeTeam.name_en} vs ${awayTeam.name_en} (${actualResult.homeScore}-${actualResult.awayScore})! Rated ${gradingResult.card.rating} OVR: ${gradingResult.card.verdict.toUpperCase()}.`
+                      )}&url=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-white transition-colors cursor-pointer"
+                      title="Post to X/Twitter"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+
+                    {/* WhatsApp Share */}
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                        `Check out my VAR Verdict Card for ${homeTeam.name_en} vs ${awayTeam.name_en} (${actualResult.homeScore}-${actualResult.awayScore})! Graded at ${gradingResult.card.rating} OVR: ${gradingResult.card.verdict.toUpperCase()}. ${typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : ''}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 rounded-lg transition-colors cursor-pointer"
+                      title="Send via WhatsApp"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
+                    </a>
+
+                    {/* Copy Link */}
+                    <button
+                      onClick={handleCopyLink}
+                      className="p-2 bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 rounded-lg transition-colors cursor-pointer"
+                      title="Copy Link"
+                    >
+                      {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
                 <Link
                   href={`/card/${gradingResult.card.id}`}
-                  className="w-full py-3 px-4 rounded-xl bg-[#E11D48]/10 hover:bg-[#E11D48]/20 border border-[#E11D48]/30 hover:border-[#E11D48]/55 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all text-center block animate-pulse-slow"
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] hover:brightness-110 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all text-center block shadow-lg"
                 >
-                  View & Customise Card Page →
+                  Customise & Download High-Res Card →
                 </Link>
               </div>
             </div>

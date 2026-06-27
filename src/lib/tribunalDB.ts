@@ -51,6 +51,8 @@ export interface VerdictData {
   avatarStyle?: string;
   avatarSeed?: string;
   aiImageUrl?: string;
+  matchScore?: string;
+  matchTitle?: string;
 }
 
 export interface ProphecyData {

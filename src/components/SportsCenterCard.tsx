@@ -48,7 +48,7 @@ export default function SportsCenterCard({
 }) {
   const metrics = get4Metrics(data);
   const hasAiImage = Boolean(data.aiImageUrl);
-  const isVerdictCard = data.mode === 'take' || Boolean(data.charge) || Boolean(data.sentence);
+  const isVerdictCard = data.mode === 'take' || Boolean(data.charge) || Boolean(data.sentence) || Boolean(data.matchTitle);
 
   return (
     <div
@@ -158,6 +158,20 @@ export default function SportsCenterCard({
               }`}>
                 ⚖️ {data.verdict || 'KNOWS BALL'}
               </span>
+
+              {/* Match Teams & Score Metric Badge for Verdict Cards */}
+              {isVerdictCard && (data.matchTitle || data.matchScore) && (
+                <div className="mt-3 bg-black/80 border border-rose-500/40 px-3.5 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
+                  <span className="text-[9px] font-black uppercase text-gray-300 tracking-wider">
+                    ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
+                  </span>
+                  {data.matchScore && (
+                    <span className="text-[10px] font-mono font-bold text-[#E11D48] bg-rose-500/20 px-2 py-0.5 rounded">
+                      {data.matchScore}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Bottom Spacing Placeholder */}
