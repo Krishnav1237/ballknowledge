@@ -4,47 +4,39 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 /**
- * Generates a personalised viral football card image via OpenRouter.
- *
- * Uses the correct OpenRouter image generation endpoint:
- *   POST /api/v1/images
- *
- * Best models for photorealistic football cards:
- *   - black-forest-labs/flux-1-pro        — best quality, photorealistic (default)
- *   - black-forest-labs/flux-1-schnell    — fast, good quality
+ * Generates a complete photorealistic FIFA trading card via OpenRouter AI Image Generation API.
+ * 
+ * Passes player details, ratings, stats, jersey nation, and verdict into the prompt
+ * to output a complete, seamless EA Sports FIFA FUT card artwork.
  */
 
 const IMAGE_MODEL = 'black-forest-labs/flux-1-pro';
 
-function buildCardPrompt(params: {
+function buildCompleteFifacardPrompt(params: {
+  username: string;
   nation: string;
   ovr: number;
+  prd: number;
+  mgr: number;
+  hot: number;
+  rst: number;
   verdict?: string;
-  username?: string;
+  playerPosition?: string;
 }) {
-  const { nation, ovr, verdict } = params;
-
-  // Determine tier aesthetic based on OVR rating
-  let tierStyle = 'glowing cosmic sapphire blue and bronze TOTY card texture';
-  if (ovr >= 85) {
-    tierStyle = 'prestigious glowing gold, champagne diamond crystals, and divine metallic aura';
-  } else if (ovr >= 70) {
-    tierStyle = 'vibrant ruby crimson, glowing laser beams, and futuristic stadium spotlights';
-  }
-
-  // Determine thematic elements based on verdict
-  let thematicElements = 'abstract geometric energy lines, floating energy embers, 3D stadium floodlights';
-  if (verdict?.toUpperCase().includes('TERRORIST') || verdict?.toUpperCase().includes('DELUSION')) {
-    thematicElements = 'dramatic stormy neon lightning bolts, dark crimson embers, intense high-contrast smoke swirls';
-  } else if (verdict?.toUpperCase().includes('CHEF') || verdict?.toUpperCase().includes('BALL')) {
-    thematicElements = 'golden radiant victory sparks, glowing championship rings, ultra-luxurious sports card geometry';
-  }
+  const { username, nation, ovr, prd, mgr, hot, rst, verdict, playerPosition } = params;
+  const pos = playerPosition || 'MGR';
+  const vLabel = verdict || 'KNOWS BALL';
 
   return (
-    `EA Sports FIFA FUT trading card background graphic design inspired by ${nation} national colors. ` +
-    `${tierStyle}, featuring ${thematicElements}. ` +
-    `Professional sports graphic design background texture, 3D render, 8k ultra resolution, high contrast cinematic lighting. ` +
-    `Strictly abstract background texture, NO people, NO faces, NO player cutouts, NO readable text.`
+    `Full official EA Sports FIFA Ultimate Team (FUT) special edition football trading card graphic artwork. ` +
+    `The card features a high-quality athletic football player cutout wearing the official ${nation} national team kit/jersey in a dynamic pose. ` +
+    `Card design: Glowing futuristic FUT shield card shape with metallic crimson red and champagne gold borders, 3D stadium spotlights, and glowing cosmic energy aura. ` +
+    `Integrated card graphic details rendered clearly on the card face: ` +
+    `Top-left overall rating number '${ovr}' and position '${pos}' in bold FUT font. ` +
+    `Bold player name '${username}' centered below the portrait. ` +
+    `Verdict stamp badge '${vLabel}' in top right. ` +
+    `Bottom stats panel displaying 4 ratings: PRD ${prd}, MGR ${mgr}, HOT ${hot}, RST ${rst}. ` +
+    `Masterpiece quality, ultra-detailed 8k render, professional sports trading card graphic design, cinematic lighting.`
   );
 }
 
@@ -65,6 +57,7 @@ export async function POST(request: Request) {
       verdict,
       charge,
       sentence,
+      playerPosition,
     } = await request.json();
 
     if (!username) {
@@ -82,7 +75,17 @@ export async function POST(request: Request) {
 
     if (process.env.OPENROUTER_API_KEY) {
       try {
-        const prompt = buildCardPrompt({ nation, ovr, verdict, username });
+        const prompt = buildCompleteFifacardPrompt({
+          username: username.toUpperCase(),
+          nation,
+          ovr,
+          prd,
+          mgr,
+          hot,
+          rst,
+          verdict,
+          playerPosition,
+        });
 
         const response = await fetch('https://openrouter.ai/api/v1/images', {
           method: 'POST',
@@ -123,7 +126,7 @@ export async function POST(request: Request) {
           console.warn(`OpenRouter image gen failed (${response.status}):`, errText);
         }
       } catch (err) {
-        console.warn('OpenRouter image generation failed — card will render without AI background:', err);
+        console.warn('OpenRouter image generation failed:', err);
       }
     } else {
       console.info('OPENROUTER_API_KEY not set — skipping AI image generation.');
