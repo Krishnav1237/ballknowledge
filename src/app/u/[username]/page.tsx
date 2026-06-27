@@ -4,7 +4,7 @@ import { useEffect, useState, use, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toPng } from 'html-to-image';
-import SportsCenterCard, { MiniSportsCenterCard } from '@/components/SportsCenterCard';
+import SportsCenterCard from '@/components/SportsCenterCard';
 import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
@@ -234,13 +234,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     const verdictText = claimedCard?.verdict || (ovr >= 85 ? 'VISIONARY PROPHET' : ovr >= 70 ? 'TACTICAL MASTERMIND' : ovr >= 45 ? 'DELUSION MERCHANT' : 'PENALTY MERCHANT');
 
     return {
-      text: verdictText,
-      mode: 'take',
-      caseId: 2026,
-      fanbase: null,
-      isRivalry: false,
-      ovr,
-      rulingText: verdictText,
       id: claimedCard?.id || match.id,
       matchId: match.id,
       rating: ovr,
@@ -257,7 +250,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         hot: profile.hotTakeRating || 82,
         rst: profile.roastScore || 80
       }
-    } as any;
+    };
   };
 
   const filteredMatches = matchdayMatches.filter(match => {
@@ -418,25 +411,59 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                       <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots found on this matchday</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 p-1">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 p-1">
                       {filteredMatches.map(match => {
                         const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: 'https://flagcdn.com/w80/un.png' };
                         const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: 'https://flagcdn.com/w80/un.png' };
                         const cardObj = constructPublicMatchCardObj(match);
                         const isSelected = selectedCard?.matchId === match.id;
 
+                        let borderGlow = 'border-white/20';
+                        let textGlow = 'text-gray-300';
+                        if (cardObj.rarity === 'LEGENDARY') { borderGlow = 'border-amber-400/50'; textGlow = 'text-amber-300'; }
+                        else if (cardObj.rarity === 'EPIC') { borderGlow = 'border-purple-400/50'; textGlow = 'text-purple-300'; }
+                        else if (cardObj.rarity === 'RARE') { borderGlow = 'border-rose-500/50'; textGlow = 'text-rose-300'; }
+                        else { borderGlow = 'border-sky-400/40'; textGlow = 'text-sky-300'; }
+
                         return (
-                          <MiniSportsCenterCard
+                          <div
                             key={match.id}
-                            data={cardObj}
-                            isSelected={isSelected}
-                            homeFlag={homeTeam.flag}
-                            awayFlag={awayTeam.flag}
                             onClick={() => {
                               setSelectedCard(cardObj);
                               setActiveRightTab('verdict');
                             }}
-                          />
+                            className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
+                              isSelected ? 'ring-2 ring-amber-400 scale-[1.02]' : ''
+                            }`}
+                          >
+                            <div className={`h-28 w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2.5 flex flex-col justify-between backdrop-blur-md shadow-lg`}>
+                              <div className="flex justify-between items-start">
+                                <div className="flex flex-col items-center">
+                                  <span className="font-mono font-black text-lg leading-none text-white">{cardObj.rating}</span>
+                                  <div className="flex gap-1 mt-1">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                                  </div>
+                                </div>
+                                <span className={`text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
+                                  {cardObj.rarity.slice(0, 3)}
+                                </span>
+                              </div>
+
+                              <div className="text-center my-auto py-1">
+                                <p className="font-sans font-black text-[9.5px] text-white tracking-wide uppercase leading-tight line-clamp-2 px-0.5">
+                                  {cardObj.verdict}
+                                </p>
+                              </div>
+
+                              <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] font-bold text-gray-400 uppercase tracking-widest">
+                                <span>MD {selectedMatchday}</span>
+                                <span className="text-amber-400 group-hover:underline">INSPECT</span>
+                              </div>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
