@@ -137,16 +137,23 @@ export default function SportsCenterCard({
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: 'polygon(3% 9%, 15% 4%, 35% 4%, 50% 1%, 65% 4%, 85% 4%, 97% 9%, 98% 87%, 50% 99%, 2% 87%)' }}
         >
-          <div className={`w-full h-full bg-gradient-to-b ${tok.bg}`}/>
-          {/* scan-lines */}
-          <div
-            className="absolute inset-0 opacity-[0.035]"
-            style={{ backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,1) 3px,rgba(255,255,255,1) 4px)' }}
-          />
-          {/* top radial glow */}
-          <div className="absolute top-0 left-0 right-0 h-48 opacity-20"
-            style={{ background: `radial-gradient(ellipse 70% 60% at 50% 0%,${glow},transparent)` }}
-          />
+          {data.aiImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
+          ) : (
+            <>
+              <div className={`w-full h-full bg-gradient-to-b ${tok.bg}`}/>
+              {/* scan-lines */}
+              <div
+                className="absolute inset-0 opacity-[0.035]"
+                style={{ backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,1) 3px,rgba(255,255,255,1) 4px)' }}
+              />
+              {/* top radial glow */}
+              <div className="absolute top-0 left-0 right-0 h-48 opacity-20"
+                style={{ background: `radial-gradient(ellipse 70% 60% at 50% 0%,${glow},transparent)` }}
+              />
+            </>
+          )}
         </div>
 
         {/* ══════════════════════════════════════════
@@ -197,29 +204,32 @@ export default function SportsCenterCard({
         {/* ══════════════════════════════════════════
             ZONE B — USER AVATAR (Upper Center - Height 120)
             y: 90 – 210
+            Only rendered if there is no full AI image background
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 90, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
-          <div
-            style={{
-              width: 120, height: 120,
-              borderRadius: '50%',
-              boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}40, 0 8px 24px rgba(0,0,0,0.85)`,
-              padding: 4,
-              background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
-            }}
-          >
-            <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.8)' }}>
-              {isPredicted ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
-              ) : (
-                <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v-6.75a2.25 2.25 0 002.25-2.25z"></path>
-                </svg>
-              )}
+        {!data.aiImageUrl && (
+          <div className="absolute z-40 pointer-events-none" style={{ top: 90, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+            <div
+              style={{
+                width: 120, height: 120,
+                borderRadius: '50%',
+                boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}40, 0 8px 24px rgba(0,0,0,0.85)`,
+                padding: 4,
+                background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
+              }}
+            >
+              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.8)' }}>
+                {isPredicted ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v-6.75a2.25 2.25 0 002.25-2.25z"></path>
+                  </svg>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* ══════════════════════════════════════════
             ZONE C — VERDICT HEADLINE (Lowered to bottom, just above Score)
