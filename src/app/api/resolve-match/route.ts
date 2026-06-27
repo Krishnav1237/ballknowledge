@@ -670,19 +670,28 @@ export async function POST(request: Request) {
 
     const hot = calculateHOT(gradedTakes.map(t => ({ grade: t.grade, confidence: t.confidence })));
 
-    // ── 4. RST — Roast Score ──────────────────────────────────────────────────
-    let rst = 50;
-    if (profile?.username) {
+    // Resolve profile ONCE at the beginning of DB section
+    let dbProfile: any = null;
+    if (profile && profile.username) {
       try {
-        const dbProfileForRST = await prisma.footballIQProfile.findUnique({
+        dbProfile = await prisma.footballIQProfile.findUnique({
           where: { username: profile.username }
         });
-        if (dbProfileForRST) {
-          rst = await calculateRST(dbProfileForRST.id, matchId);
-        }
+      } catch (dbError) {
+        console.warn('DB offline during profile resolve:', dbError);
+      }
+    }
+
+    // ── 4. RST — Roast Score ──────────────────────────────────────────────────
+    let rst = 50;
+    if (dbProfile) {
+      try {
+        rst = await calculateRST(dbProfile.id, matchId);
       } catch {
         rst = profile.roastScore ?? 50;
       }
+    } else if (profile) {
+      rst = profile.roastScore ?? 50;
     }
 
     // ── 5. Final OVR ─────────────────────────────────────────────────────────
@@ -717,13 +726,8 @@ export async function POST(request: Request) {
     };
 
     // ── 7. Persist to DB ──────────────────────────────────────────────────────
-    let dbProfile: any = null;
     try {
       if (profile && profile.username) {
-        dbProfile = await prisma.footballIQProfile.findUnique({
-          where: { username: profile.username }
-        });
-
         if (!dbProfile) {
           dbProfile = await prisma.footballIQProfile.create({
             data: {

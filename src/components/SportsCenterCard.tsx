@@ -35,7 +35,7 @@ function rarityTokens(rarity: string, isPredicted: boolean) {
     };
   }
   switch (rarity) {
-    case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-gold-grad)',   bg: 'from-[#1C1002] via-[#08050A] to-[#020308]', text: 'text-amber-400' };
+    case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-toty-grad)',   bg: 'from-[#00112A] via-[#020713] to-[#000205]', text: 'text-amber-400' };
     case 'EPIC':      return { glow: '#A855F7', border: 'url(#vcard-purple-grad)', bg: 'from-[#12021C] via-[#06020C] to-[#020308]', text: 'text-purple-400' };
     case 'RARE':      return { glow: '#3B82F6', border: 'url(#vcard-blue-grad)',   bg: 'from-[#020B1C] via-[#02040C] to-[#020308]', text: 'text-blue-400' };
     default:          return { glow: '#E11D48', border: 'url(#vcard-rose-grad)',   bg: 'from-[#1A0308] via-[#080208] to-[#020308]', text: 'text-rose-400' };
@@ -94,6 +94,13 @@ export default function SportsCenterCard({
             <linearGradient id="vcard-gold-grad"   x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
               <stop offset="0%"   stopColor="#FFFBEB"/><stop offset="35%" stopColor="#F59E0B"/><stop offset="70%" stopColor="#D97706"/><stop offset="100%" stopColor="#78350F"/>
             </linearGradient>
+            <linearGradient id="vcard-toty-grad" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
+              <stop offset="0%"   stopColor="#FFFBEB"/>
+              <stop offset="25%"  stopColor="#D4AF37"/>
+              <stop offset="55%"  stopColor="#0E3060"/>
+              <stop offset="85%"  stopColor="#2563EB"/>
+              <stop offset="100%" stopColor="#D97706"/>
+            </linearGradient>
             <linearGradient id="vcard-purple-grad" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
               <stop offset="0%"   stopColor="#F3E8FF"/><stop offset="35%" stopColor="#A855F7"/><stop offset="70%" stopColor="#7C3AED"/><stop offset="100%" stopColor="#3B0764"/>
             </linearGradient>
@@ -109,6 +116,9 @@ export default function SportsCenterCard({
             <filter id="vcard-glow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity="0.75"/>
             </filter>
+            <clipPath id="vcard-shield-clip">
+              <path d="M 16,40 C 16,40 42,8 94,8 L 170,4 L 246,8 C 298,8 324,40 324,40 L 332,360 C 332,390 278,444 170,476 C 62,444 8,390 8,360 Z" />
+            </clipPath>
           </defs>
 
           {/* Outer shield border */}
@@ -135,7 +145,7 @@ export default function SportsCenterCard({
         {/* ── Background fill (clipped to shield) ── */}
         <div
           className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: 'polygon(3% 9%, 15% 4%, 35% 4%, 50% 1%, 65% 4%, 85% 4%, 97% 9%, 98% 87%, 50% 99%, 2% 87%)' }}
+          style={{ clipPath: 'url(#vcard-shield-clip)' }}
         >
           {data.aiImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -237,7 +247,9 @@ export default function SportsCenterCard({
             ══════════════════════════════════════════ */}
         <div className="absolute z-40 pointer-events-none text-center" style={{ top: 272, left: 16, right: 16 }}>
           <h2
-            className="text-white uppercase leading-none font-black text-[22px] tracking-[0.05em]"
+            className={`text-white uppercase leading-none font-black tracking-[0.05em] line-clamp-1 ${
+              verdictLabel.length > 20 ? 'text-[15px]' : verdictLabel.length > 15 ? 'text-[18px]' : 'text-[22px]'
+            }`}
             style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.95)' }}
           >
             {verdictLabel}
@@ -333,6 +345,9 @@ export default function SportsCenterCard({
           <filter id="main-gold-glow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor="#F59E0B" floodOpacity="0.5"/>
           </filter>
+          <clipPath id="main-shield-clip">
+            <path d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z" />
+          </clipPath>
         </defs>
         <path
           d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z"
@@ -347,7 +362,7 @@ export default function SportsCenterCard({
 
       <div
         className="absolute inset-0 w-full h-full overflow-hidden"
-        style={{ clipPath:'polygon(2% 12%, 15% 8%, 35% 8%, 50% 2%, 65% 8%, 85% 8%, 98% 12%, 98% 78%, 50% 98%, 2% 78%)' }}
+        style={{ clipPath: 'url(#main-shield-clip)' }}
       >
         {data.aiImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

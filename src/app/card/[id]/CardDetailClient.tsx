@@ -221,7 +221,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
           </div>
 
           {/* Active Card Frame Container */}
-          <div className="relative flex justify-center items-center w-full">
+          <div className="relative flex justify-center items-center w-full scale-[0.80] min-[360px]:scale-[0.85] min-[400px]:scale-[0.95] sm:scale-100 origin-center py-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}

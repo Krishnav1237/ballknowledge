@@ -16,6 +16,7 @@ export async function GET(
 
     let profile = null;
     let cards: any[] = [];
+    let isDbOffline = false;
 
     try {
       profile = await prisma.footballIQProfile.findUnique({
@@ -30,6 +31,11 @@ export async function GET(
       }
     } catch (dbError) {
       console.warn('Prisma Database Offline. GET /api/profile/[username] failed:', dbError);
+      isDbOffline = true;
+    }
+
+    if (isDbOffline) {
+      return NextResponse.json({ error: 'Database is offline. Service temporarily degraded.' }, { status: 503 });
     }
 
     if (!profile) {
@@ -67,12 +73,8 @@ export async function GET(
  * POST /api/profile/[username]
  *
  * Upserts (create-or-update) a FootballIQProfile atomically.
- * Uses Prisma `upsert` to avoid the race condition where a concurrent
- * request creates the same username between our `findUnique` check and
- * `create` call (P2002 Unique Constraint error).
- *
- * Rating fields use Math.max so they only increase — never regress
- * on a profile sync.
+ * Performs a read-before-write check to preserve the highest rating values,
+ * preventing outdated local storage syncs from regressing database overall ratings.
  */
 export async function POST(
   request: Request,
@@ -96,53 +98,49 @@ export async function POST(
     let dbProfile = null;
 
     try {
-      // Use upsert to atomically create-or-update — no race condition possible
-      dbProfile = await prisma.footballIQProfile.upsert({
-        where: { username: canonicalUsername },
-        create: {
-          username: canonicalUsername,
-          avatarStyle: profile.avatarStyle || 'fun-emoji',
-          avatarSeed: profile.avatarSeed || 'Reputation',
-          favoriteClub: profile.favoriteClub || null,
-          favoriteNation: profile.favoriteNation || null,
-          overallRating: profile.overallRating || 50,
-          predictionRating: profile.predictionRating || 50,
-          hotTakeRating: profile.hotTakeRating || 50,
-          managerRating: profile.managerRating || 50,
-          roastScore: profile.roastScore || 50,
-          role: profile.role || 'FREE',
-          season: profile.season || 'World Cup 2026',
-        },
-        update: {
-          // On update: non-rating fields use the incoming value; ratings only increase
-          avatarStyle: profile.avatarStyle || undefined,
-          avatarSeed: profile.avatarSeed || undefined,
-          favoriteClub: profile.favoriteClub !== undefined ? profile.favoriteClub : undefined,
-          favoriteNation: profile.favoriteNation !== undefined ? profile.favoriteNation : undefined,
-          role: profile.role || undefined,
-          season: profile.season || undefined,
-          // Ratings use raw SQL MAX to prevent regression without a round-trip read
-          ...(profile.overallRating != null && {
-            overallRating: profile.overallRating,
-          }),
-          ...(profile.predictionRating != null && {
-            predictionRating: profile.predictionRating,
-          }),
-          ...(profile.hotTakeRating != null && {
-            hotTakeRating: profile.hotTakeRating,
-          }),
-          ...(profile.managerRating != null && {
-            managerRating: profile.managerRating,
-          }),
-          ...(profile.roastScore != null && {
-            roastScore: profile.roastScore,
-          }),
-        },
-        include: { matchCards: true },
+      const existing = await prisma.footballIQProfile.findUnique({
+        where: { username: canonicalUsername }
       });
+
+      if (existing) {
+        dbProfile = await prisma.footballIQProfile.update({
+          where: { id: existing.id },
+          data: {
+            avatarStyle: profile.avatarStyle || undefined,
+            avatarSeed: profile.avatarSeed || undefined,
+            favoriteClub: profile.favoriteClub !== undefined ? profile.favoriteClub : undefined,
+            favoriteNation: profile.favoriteNation !== undefined ? profile.favoriteNation : undefined,
+            role: profile.role || undefined,
+            season: profile.season || undefined,
+            overallRating: Math.max(existing.overallRating, profile.overallRating || 0),
+            predictionRating: Math.max(existing.predictionRating, profile.predictionRating || 0),
+            hotTakeRating: Math.max(existing.hotTakeRating, profile.hotTakeRating || 0),
+            managerRating: Math.max(existing.managerRating, profile.managerRating || 0),
+            roastScore: Math.max(existing.roastScore, profile.roastScore || 0),
+          },
+          include: { matchCards: true }
+        });
+      } else {
+        dbProfile = await prisma.footballIQProfile.create({
+          data: {
+            username: canonicalUsername,
+            avatarStyle: profile.avatarStyle || 'fun-emoji',
+            avatarSeed: profile.avatarSeed || 'Reputation',
+            favoriteClub: profile.favoriteClub || null,
+            favoriteNation: profile.favoriteNation || null,
+            overallRating: profile.overallRating || 50,
+            predictionRating: profile.predictionRating || 50,
+            hotTakeRating: profile.hotTakeRating || 50,
+            managerRating: profile.managerRating || 50,
+            roastScore: profile.roastScore || 50,
+            role: profile.role || 'FREE',
+            season: profile.season || 'World Cup 2026',
+          },
+          include: { matchCards: true }
+        });
+      }
     } catch (dbError) {
       console.warn('Prisma Database Offline. POST /api/profile/[username] failed:', dbError);
-      // Graceful fallback: return the incoming profile data from localStorage
     }
 
     const finalProfile = dbProfile || profile;
@@ -187,13 +185,11 @@ export async function DELETE(
     }
 
     try {
-      // Find the profile first
       const profile = await prisma.footballIQProfile.findUnique({
         where: { username }
       });
 
       if (profile) {
-        // Delete the profile (which will cascade-delete predictions, cards, chat messages)
         await prisma.footballIQProfile.delete({
           where: { username }
         });
@@ -209,4 +205,3 @@ export async function DELETE(
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

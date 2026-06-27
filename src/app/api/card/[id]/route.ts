@@ -15,6 +15,7 @@ export async function GET(
     }
 
     let card = null;
+    let isDbOffline = false;
 
     try {
       card = await prisma.matchCard.findUnique({
@@ -25,6 +26,11 @@ export async function GET(
       });
     } catch (dbError) {
       console.warn('Prisma Database Offline. GET /api/card/[id] failed:', dbError);
+      isDbOffline = true;
+    }
+
+    if (isDbOffline) {
+      return NextResponse.json({ error: 'Database is offline. Service temporarily degraded.' }, { status: 503 });
     }
 
     if (!card) {

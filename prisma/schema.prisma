@@ -70,6 +70,8 @@ model ChatMessage {
   upvotes     Int               @default(0)
   downvotes   Int               @default(0)
   createdAt   DateTime          @default(now())
+
+  @@index([profileId, matchId])
 }
 
 model MatchCard {

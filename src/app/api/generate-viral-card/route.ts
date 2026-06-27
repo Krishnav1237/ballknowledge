@@ -17,20 +17,15 @@ function buildCompleteFifacardPrompt(params: {
   verdict?: string;
   playerPosition?: string;
 }) {
-  const { username, nation, ovr, prd, mgr, hot, rst, verdict, playerPosition } = params;
-  const pos = playerPosition || 'MGR';
-  const vLabel = verdict || 'KNOWS BALL';
+  const { nation } = params;
 
   return (
     `Extremely high-quality, photorealistic portrait of a professional football player, upper-body view, wearing the official custom ${nation} national team jersey/kit in a heroic pose. ` +
     `The player's face should be clearly visible, center frame, realistic skin, matching lighting, with the jersey collar and logo fully visible. ` +
     `The face must be seamlessly and realistically immersed into the athlete's body and jersey collar with no obvious paste-over. ` +
     `Background: Deep midnight sapphire blue textured background with 3D metallic gold swirling rings, glowing blue sapphire crystals, and dynamic stadium spotlights taking up the entire card space. ` +
-    `Card Graphic Overlays: Double metallic champagne gold border frame outline in curved FUT shield shape. ` +
-    `Integrated card graphics on card face: Top-left overall rating '${ovr}' and position '${pos}' in bold white FUT typography. ` +
-    `Player name '${username}' centered below. Verdict badge '${vLabel}' at top. ` +
-    `Stats panel at bottom: PRD ${prd}, MGR ${mgr}, HOT ${hot}, RST ${rst}. ` +
-    `Cinematic lighting, high-contrast, commercial EA Sports FC TOTY trading card aesthetic, masterpiece, ultra-detailed 8k render.`
+    `The entire composition should have a clean space on the top-left, center-top, and lower third for card statistics overlays, in the style of EA Sports FC TOTY trading cards. ` +
+    `Cinematic lighting, high-contrast, commercial EA Sports FC TOTY trading card background, masterpiece, ultra-detailed 8k render.`
   );
 }
 
