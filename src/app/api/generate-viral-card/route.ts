@@ -19,16 +19,32 @@ const IMAGE_MODEL = 'black-forest-labs/flux-1-pro';
 function buildCardPrompt(params: {
   nation: string;
   ovr: number;
+  verdict?: string;
+  username?: string;
 }) {
-  const { nation } = params;
+  const { nation, ovr, verdict } = params;
 
-  // A highly specific prompt tuned for FIFA card abstract backgrounds
+  // Determine tier aesthetic based on OVR rating
+  let tierStyle = 'glowing cosmic sapphire blue and bronze TOTY card texture';
+  if (ovr >= 85) {
+    tierStyle = 'prestigious glowing gold, champagne diamond crystals, and divine metallic aura';
+  } else if (ovr >= 70) {
+    tierStyle = 'vibrant ruby crimson, glowing laser beams, and futuristic stadium spotlights';
+  }
+
+  // Determine thematic elements based on verdict
+  let thematicElements = 'abstract geometric energy lines, floating energy embers, 3D stadium floodlights';
+  if (verdict?.toUpperCase().includes('TERRORIST') || verdict?.toUpperCase().includes('DELUSION')) {
+    thematicElements = 'dramatic stormy neon lightning bolts, dark crimson embers, intense high-contrast smoke swirls';
+  } else if (verdict?.toUpperCase().includes('CHEF') || verdict?.toUpperCase().includes('BALL')) {
+    thematicElements = 'golden radiant victory sparks, glowing championship rings, ultra-luxurious sports card geometry';
+  }
+
   return (
-    `Premium soccer trading card background artwork inspired by the colors and pride of ${nation}. ` +
-    `EA Sports FIFA Team of the Year (TOTY) card art style, featuring abstract cosmic swirling dark blue and gold/bronze rings, ` +
-    `glowing sapphire blue crystals, dynamic 3D stadium spotlight beams, floating particle effects, professional sports graphic design. ` +
-    `High-contrast glowing texture, cinematic lighting, ultra-detailed 8k render. ` +
-    `Strictly abstract background texture, NO people, NO faces, NO player cutouts, NO text.`
+    `EA Sports FIFA FUT trading card background graphic design inspired by ${nation} national colors. ` +
+    `${tierStyle}, featuring ${thematicElements}. ` +
+    `Professional sports graphic design background texture, 3D render, 8k ultra resolution, high contrast cinematic lighting. ` +
+    `Strictly abstract background texture, NO people, NO faces, NO player cutouts, NO readable text.`
   );
 }
 
@@ -37,7 +53,7 @@ export async function POST(request: Request) {
     const {
       cardId,           // optional database MatchCard ID to persist to
       username,
-      faceImage,        // base64 face upload (used client-side; echoed back for card render)
+      faceImage,        // base64 face upload
       favoriteNation,
       overallRating,
       predictionRating,
@@ -66,7 +82,7 @@ export async function POST(request: Request) {
 
     if (process.env.OPENROUTER_API_KEY) {
       try {
-        const prompt = buildCardPrompt({ nation, ovr });
+        const prompt = buildCardPrompt({ nation, ovr, verdict, username });
 
         const response = await fetch('https://openrouter.ai/api/v1/images', {
           method: 'POST',
@@ -82,18 +98,16 @@ export async function POST(request: Request) {
             n:      1,
             aspect_ratio: '3:4',
           }),
-          signal: AbortSignal.timeout(25_000), // 25s — Flux Pro can be slow
+          signal: AbortSignal.timeout(25_000), // 25s
         });
 
         if (response.ok) {
           const data = await response.json();
           aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
           if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
-            // Some models return base64; prefix it so the client can use it directly
             aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
           }
 
-          // If a cardId is provided, persist it to the database so it's shared permanently
           if (aiImageUrl && cardId) {
             try {
               await prisma.matchCard.update({
@@ -117,10 +131,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success:      true,
-      aiImageUrl,               // empty string if key missing or gen failed
+      aiImageUrl,
       cardConfig: {
         username: username.toUpperCase(),
-        faceImage,              // echoed back for client-side JerseyAvatar render
+        faceImage,
         nation,
         ovr,
         stats: { prd, htk: hot, sel: mgr, cmy: rst },

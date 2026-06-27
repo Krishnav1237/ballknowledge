@@ -102,17 +102,17 @@ export default function SportsCenterCard({
   const verdictColor = getVerdictColor(data.verdict, data.ovr);
   const metrics = get4Metrics(data);
 
-  // Truncations to ensure zero overflow outside the shield
+  // Truncations tailored to avoid clipping
   const takeDisplay = data.text
-    ? (data.text.length > 85 ? data.text.slice(0, 82).trimEnd() + '…' : data.text)
+    ? (data.text.length > 75 ? data.text.slice(0, 72).trimEnd() + '…' : data.text)
     : 'Registered Manager Verdict Record';
 
   const chargeDisplay = data.charge
-    ? (data.charge.length > 45 ? data.charge.slice(0, 42).trimEnd() + '…' : data.charge)
+    ? (data.charge.length > 40 ? data.charge.slice(0, 37).trimEnd() + '…' : data.charge)
     : 'Tactical Analysis Approved';
 
   const sentenceDisplay = data.sentence
-    ? (data.sentence.length > 50 ? data.sentence.slice(0, 47).trimEnd() + '…' : data.sentence)
+    ? (data.sentence.length > 45 ? data.sentence.slice(0, 42).trimEnd() + '…' : data.sentence)
     : 'VERDICT AUDITED';
 
   return (
@@ -155,7 +155,7 @@ export default function SportsCenterCard({
             <path 
               d="M 12 0 L 24 6.93 L 24 20.78 L 12 27.71 L 0 20.78 L 0 6.93 Z M 0 27.71 L 12 34.64 L 12 48.5 L 0 55.43 L -12 48.5 L -12 34.64 Z" 
               fill="none" 
-              stroke="rgba(255,255,255,0.03)" 
+              stroke="rgba(255,255,255,0.04)" 
               strokeWidth="0.8" 
             />
           </pattern>
@@ -195,18 +195,18 @@ export default function SportsCenterCard({
         />
 
         {/* Ambient Glows */}
-        <circle cx="162" cy="160" r="130" fill={`url(#${colors.glowId})`} opacity="0.3" style={{ mixBlendMode: 'screen' }} />
+        <circle cx="162" cy="180" r="140" fill={`url(#${colors.glowId})`} opacity="0.35" style={{ mixBlendMode: 'screen' }} />
       </svg>
 
       {/* Layer 2: Card Content Overlay - Strictly Contained inside Shield Pads */}
-      <div className="absolute inset-0 w-full h-full text-white pointer-events-none flex flex-col justify-between px-6 pt-7 pb-6 overflow-hidden">
+      <div className="absolute inset-0 w-full h-full text-white pointer-events-none flex flex-col justify-between px-7 pt-7 pb-8 overflow-hidden">
         
         {/* Top Section: OVR Badge + Brand Logo + Verdict Pill Stamp */}
         <div className="flex justify-between items-start w-full z-30 shrink-0">
           {/* OVR + Position Stack */}
           <div className="flex flex-col items-center">
             <span 
-              className="text-[48px] tracking-tighter leading-none text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)]"
+              className="text-[46px] tracking-tighter leading-none text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)]"
               style={{
                 fontFamily: "'Oswald', sans-serif",
                 fontWeight: '900',
@@ -216,7 +216,7 @@ export default function SportsCenterCard({
               {data.ovr}
             </span>
             <span 
-              className="text-[9.5px] font-black tracking-widest uppercase leading-none mt-0.5" 
+              className="text-[9px] font-black tracking-widest uppercase leading-none mt-0.5" 
               style={{ color: colors.textColor }}
             >
               {data.playerPosition || 'MGR'}
@@ -224,23 +224,23 @@ export default function SportsCenterCard({
           </div>
 
           {/* Center Brand Logo + Country Flag */}
-          <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-2.5 py-1 backdrop-blur-md shadow-md">
+          <div className="flex items-center gap-1.5 bg-black/50 border border-white/15 rounded-full px-2.5 py-1 backdrop-blur-md shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/ball_knowledge_logo.png"
               alt="Ball Knowledge"
               className="w-5 h-5 object-contain rounded-full"
             />
-            <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
+            <span className="text-[13px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
 
-          {/* Verdict Pill Stamp */}
+          {/* Verdict Pill Stamp (Wraps nicely, never clipped!) */}
           <div 
-            className="px-2.5 py-1 border-2 text-[9px] font-black tracking-wider uppercase rounded-md shadow-lg truncate max-w-[120px]"
+            className="px-2.5 py-1 border-2 text-[8px] font-black tracking-wider uppercase rounded-md shadow-lg flex items-center justify-center text-center max-w-[125px] leading-tight"
             style={{
               borderColor: verdictColor.color,
               color: verdictColor.color,
-              backgroundColor: `${verdictColor.color}20`,
+              backgroundColor: `${verdictColor.color}25`,
               textShadow: `0 0 4px ${verdictColor.glow}`,
               fontFamily: "'Space Grotesk', sans-serif",
             }}
@@ -254,7 +254,7 @@ export default function SportsCenterCard({
           {/* Player / Manager Name */}
           <div className="text-center w-full">
             <h2 
-              className="font-bold text-[21px] tracking-widest uppercase leading-none truncate max-w-[280px] mx-auto"
+              className="font-bold text-[20px] tracking-widest uppercase leading-none truncate max-w-[260px] mx-auto"
               style={{
                 fontFamily: "'Oswald', sans-serif",
                 fontWeight: '900',
@@ -265,7 +265,7 @@ export default function SportsCenterCard({
               {data.playerName || 'MANAGER'}
             </h2>
             {data.clubName && (
-              <p className="text-[8.5px] font-bold uppercase tracking-wider text-zinc-400 mt-1 truncate">
+              <p className="text-[8px] font-bold uppercase tracking-wider text-zinc-400 mt-1 truncate">
                 {data.clubName}
               </p>
             )}
@@ -273,15 +273,15 @@ export default function SportsCenterCard({
 
           {/* Hot Take Quote & Audited Charge Glass Console */}
           <div 
-            className="w-full bg-black/55 border border-white/10 rounded-xl p-3 flex flex-col gap-1.5 text-center backdrop-blur-md"
+            className="w-full bg-black/65 border border-white/15 rounded-xl p-3 flex flex-col gap-1.5 text-center backdrop-blur-md"
             style={{
-              boxShadow: 'inset 0 1px 6px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.4)',
+              boxShadow: 'inset 0 1px 6px rgba(0,0,0,0.8), 0 4px 12px rgba(0,0,0,0.5)',
             }}
           >
-            <p className="italic text-[10.5px] leading-tight text-white font-semibold line-clamp-2">
+            <p className="italic text-[10px] leading-tight text-white font-semibold line-clamp-2">
               &ldquo;{takeDisplay}&rdquo;
             </p>
-            <div className="border-t border-white/10 pt-1.5 flex flex-col gap-0.5">
+            <div className="border-t border-white/15 pt-1.5 flex flex-col gap-0.5">
               <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-wide truncate">
                 <span style={{ color: colors.textColor }}>CHARGE:</span> {chargeDisplay}
               </p>
@@ -294,42 +294,44 @@ export default function SportsCenterCard({
           </div>
         </div>
 
-        {/* Bottom Section: 4 Core Stats Panel (Strictly Enclosed) */}
-        <div 
-          className="w-full h-[54px] flex items-center justify-between z-30 px-2 py-1.5 bg-black/60 border border-white/10 rounded-xl backdrop-blur-md shrink-0"
-          style={{
-            boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.5)',
-          }}
-        >
-          {metrics.map((m) => {
-            const getWeightLabel = (label: string): string => {
-              if (label === 'PRD') return '35%';
-              if (label === 'MGR') return '25%';
-              if (label === 'HOT') return '25%';
-              if (label === 'RST') return '15%';
-              return '';
-            };
-            return (
-              <div key={m.label} className="flex flex-col items-center flex-1 border-r border-white/5 last:border-r-0">
-                <span 
-                  className="text-[8.5px] font-black tracking-widest uppercase leading-none flex items-center gap-0.5" 
-                  style={{ color: colors.textColor }}
-                >
-                  <span>{m.label}</span>
-                  <span className="text-[6.5px] opacity-60 font-normal">({getWeightLabel(m.label)})</span>
-                </span>
-                <span 
-                  className="text-[17px] mt-1 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
-                  style={{ 
-                    fontFamily: "'Oswald', sans-serif",
-                    fontWeight: 900
-                  }}
-                >
-                  {m.val}
-                </span>
-              </div>
-            );
-          })}
+        {/* Bottom Section: 4 Core Stats Panel (Padded horizontally to fit perfectly inside shield curve) */}
+        <div className="w-full px-2 z-30 shrink-0">
+          <div 
+            className="w-full h-[50px] flex items-center justify-between px-2 py-1 bg-black/70 border border-white/15 rounded-xl backdrop-blur-md"
+            style={{
+              boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.7), 0 4px 10px rgba(0,0,0,0.6)',
+            }}
+          >
+            {metrics.map((m) => {
+              const getWeightLabel = (label: string): string => {
+                if (label === 'PRD') return '35%';
+                if (label === 'MGR') return '25%';
+                if (label === 'HOT') return '25%';
+                if (label === 'RST') return '15%';
+                return '';
+              };
+              return (
+                <div key={m.label} className="flex flex-col items-center flex-1 border-r border-white/10 last:border-r-0">
+                  <span 
+                    className="text-[8px] font-black tracking-widest uppercase leading-none flex items-center gap-0.5" 
+                    style={{ color: colors.textColor }}
+                  >
+                    <span>{m.label}</span>
+                    <span className="text-[6px] opacity-60 font-normal">({getWeightLabel(m.label)})</span>
+                  </span>
+                  <span 
+                    className="text-[16px] mt-1 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
+                    style={{ 
+                      fontFamily: "'Oswald', sans-serif",
+                      fontWeight: 900
+                    }}
+                  >
+                    {m.val}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
       </div>
