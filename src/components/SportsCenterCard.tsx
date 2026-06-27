@@ -110,6 +110,14 @@ export default function SportsCenterCard({
             stroke="white" strokeWidth="0.8" opacity="0.18" fill="none"
             style={{ transform: 'scale(0.965)', transformOrigin: '170px 240px' }}
           />
+
+          {/* Horizontal Stats Separator Line (Integrated directly in card style) */}
+          <line x1="38" y1="362" x2="302" y2="362" stroke={glow} strokeWidth="1.5" opacity="0.45" />
+
+          {/* Vertical Separator Lines for Stats Columns */}
+          <line x1="104" y1="372" x2="104" y2="408" stroke="white" strokeWidth="0.8" opacity="0.1" />
+          <line x1="170" y1="372" x2="170" y2="408" stroke="white" strokeWidth="0.8" opacity="0.1" />
+          <line x1="236" y1="372" x2="236" y2="408" stroke="white" strokeWidth="0.8" opacity="0.1" />
         </svg>
 
         {/* ── Background fill (clipped to shield) ── */}
@@ -130,7 +138,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG (Aligned with Season Card)
+            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG
             y: 44 / 46
             ══════════════════════════════════════════ */}
 
@@ -168,7 +176,7 @@ export default function SportsCenterCard({
         <div className="absolute top-[46px] right-[26px] z-40 pointer-events-none">
           <div
             className="flex items-center justify-center rounded-full w-8 h-8"
-            style={{ background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}555`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
+            style={{ background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}55`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
           >
             <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
@@ -196,7 +204,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE C — VERDICT HEADLINE (Below Avatar, Replaced rookie_tactician)
+            ZONE C — VERDICT HEADLINE (Below Avatar)
             y: 206 – 232
             ══════════════════════════════════════════ */}
         <div className="absolute z-40 pointer-events-none text-center" style={{ top: 206, left: 16, right: 16 }}>
@@ -264,16 +272,14 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE F — STATS PANEL (Bottom Position - Aligned with Season Card)
+            ZONE F — INTEGRATED STATS PANEL (Bottom Position)
             y: 364 – 416 (absolute bottom-[64px])
+            No separate card floating background box; integrated directly.
             ══════════════════════════════════════════ */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
-          <div
-            className="w-full h-[52px] bg-[#020612]/95 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)]"
-            style={{ border: `1px solid ${glow}60` }}
-          >
+          <div className="w-full h-[52px] flex items-center justify-between px-2 py-1">
             {metrics.map((m) => (
-              <div key={m.label} className="flex flex-col items-center flex-1 border-r last:border-r-0 border-white/10">
+              <div key={m.label} className="flex flex-col items-center flex-1">
                 <span className="text-[8.5px] font-black tracking-widest uppercase drop-shadow" style={{ color: glow }}>
                   {m.label}
                 </span>
