@@ -1,7 +1,6 @@
 'use client';
 
 import { VerdictData } from '@/lib/tribunalDB';
-import { User } from 'lucide-react';
 
 function get4Metrics(data: VerdictData): [
   { label: string; val: number },
@@ -49,9 +48,6 @@ export default function SportsCenterCard({
 }) {
   const metrics = get4Metrics(data);
   const hasAiImage = Boolean(data.aiImageUrl);
-  const avatarSrc = data.avatarSeed && (data.avatarSeed.startsWith('data:image/') || data.avatarSeed.startsWith('/') || data.avatarSeed.startsWith('http'))
-    ? data.avatarSeed
-    : null;
 
   return (
     <div
@@ -114,7 +110,7 @@ export default function SportsCenterCard({
         }}
       >
         {hasAiImage ? (
-          /* Full AI Generated FIFA TOTY Trading Card image */
+          /* Full AI Generated FIFA TOTY Trading Card image taking up entire space */
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.aiImageUrl}
@@ -122,48 +118,26 @@ export default function SportsCenterCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          /* Midnight Sapphire Blue TOTY Card layout rendered inside shield frame */
-          <div className="relative w-full h-full bg-gradient-to-b from-[#071330] via-[#0A1B44] to-[#030A1C] p-6 flex flex-col justify-between text-white">
-            {/* Swirling Gold & Sapphire Radial Light Effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(37,99,235,0.35),transparent_75%)] pointer-events-none" />
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-48 h-48 border border-amber-400/20 rounded-full blur-sm pointer-events-none animate-pulse" />
-
+          /* Clean, High-Contrast Midnight Sapphire Blue Card layout */
+          <div className="relative w-full h-full bg-gradient-to-b from-[#0B152C] via-[#070F22] to-[#020612] p-6 flex flex-col justify-between text-white">
             {/* Top Row Spacing Placeholder */}
-            <div className="h-20" />
+            <div className="h-24" />
 
-            {/* Center Player Portrait Cutout & Manager Spotlight */}
-            <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto">
-              <div className="relative w-32 h-32 mb-1 flex items-center justify-center">
-                {avatarSrc ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={avatarSrc}
-                    alt="Player Portrait"
-                    className="w-full h-full object-contain filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)]"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-[#0A1B44]/80 border-2 border-amber-400/50 flex items-center justify-center shadow-[0_0_25px_rgba(245,158,11,0.3)]">
-                    <User className="w-10 h-10 text-amber-300/80" />
-                  </div>
-                )}
-              </div>
-
-              {/* Player / Manager Name on Dark Sapphire Banner */}
-              <div className="text-center w-full bg-gradient-to-r from-transparent via-[#030A1C]/90 to-transparent py-1 px-4 mt-1">
-                <h2 
-                  className="font-bold text-[24px] tracking-widest uppercase leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]"
-                  style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
-                >
-                  {data.playerName || 'MANAGER'}
-                </h2>
-                <span className="inline-block text-[9.5px] font-black tracking-widest uppercase text-amber-300 mt-1 bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded shadow-md">
-                  ⚖️ {data.verdict || 'KNOWS BALL'}
-                </span>
-              </div>
+            {/* Center Manager Name & Verdict Spotlight (Clean, No weird inner images or circles) */}
+            <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto text-center w-full px-2">
+              <h2 
+                className="font-bold text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
+                style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+              >
+                {data.playerName || 'MANAGER'}
+              </h2>
+              <span className="inline-block text-[10px] font-black tracking-widest uppercase text-amber-300 mt-2.5 bg-amber-400/10 border border-amber-400/35 px-4 py-1 rounded-md shadow-md backdrop-blur-sm">
+                ⚖️ {data.verdict || 'KNOWS BALL'}
+              </span>
             </div>
 
             {/* Bottom Spacing Placeholder */}
-            <div className="h-20" />
+            <div className="h-24" />
           </div>
         )}
 
@@ -182,7 +156,7 @@ export default function SportsCenterCard({
 
         {/* 2. BallKnowledge Product Logo Branding (Top Center Badge) */}
         <div className="absolute top-[46px] left-0 right-0 flex justify-center items-center z-40 pointer-events-none">
-          <div className="flex items-center gap-1.5 bg-[#030A1C]/90 border border-amber-400/70 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
+          <div className="flex items-center gap-1.5 bg-[#020612]/90 border border-amber-400/70 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/images/ball_knowledge_logo.png" 
@@ -197,14 +171,14 @@ export default function SportsCenterCard({
 
         {/* 3. Country Flag Badge (Top Right Badge) */}
         <div className="absolute top-[46px] right-[26px] z-40 pointer-events-none">
-          <div className="flex items-center justify-center bg-[#030A1C]/90 border border-amber-400/40 rounded-full w-8 h-8 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+          <div className="flex items-center justify-center bg-[#020612]/90 border border-amber-400/40 rounded-full w-8 h-8 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
             <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
         </div>
 
         {/* 4. High-Contrast TOTY Stats Panel (Bottom Row) */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
-          <div className="w-full h-[52px] bg-[#030A1C]/95 border border-amber-400/35 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)]">
+          <div className="w-full h-[52px] bg-[#020612]/95 border border-amber-400/35 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)]">
             {metrics.map(m => (
               <div key={m.label} className="flex flex-col items-center flex-1 border-r border-amber-400/15 last:border-r-0">
                 <span className="text-[8.5px] font-black tracking-widest uppercase text-amber-300 drop-shadow">
