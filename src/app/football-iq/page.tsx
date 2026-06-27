@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { toPng } from 'html-to-image';
-import SportsCenterCard from '@/components/SportsCenterCard';
+import SportsCenterCard, { MiniSportsCenterCard } from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
@@ -204,6 +204,13 @@ export default function FootballIQPage() {
     const verdictText = userPred?.verdict || (ovr >= 85 ? 'VISIONARY PROPHET' : ovr >= 70 ? 'TACTICAL MASTERMIND' : ovr >= 45 ? 'DELUSION MERCHANT' : 'PENALTY MERCHANT');
 
     return {
+      text: verdictText,
+      mode: 'take',
+      caseId: 2026,
+      fanbase: null,
+      isRivalry: false,
+      ovr,
+      rulingText: verdictText,
       id: userPred?.cardId || match.id,
       matchId: match.id,
       rating: ovr,
@@ -220,7 +227,7 @@ export default function FootballIQPage() {
         hot: userPred?.hotTakeRating || profile.hotTakeRating || 88,
         rst: userPred?.roastScore || profile.roastScore || 80
       }
-    };
+    } as any;
   };
 
   const filteredMatches = matchdayMatches.filter(match => {
@@ -241,52 +248,18 @@ export default function FootballIQPage() {
     const cardObj = constructMatchCardObj(match);
     const isSelected = selectedCard?.matchId === match.id;
 
-    let borderGlow = 'border-white/20';
-    let textGlow = 'text-gray-300';
-    if (cardObj.rarity === 'LEGENDARY') { borderGlow = 'border-amber-400/50'; textGlow = 'text-amber-300'; }
-    else if (cardObj.rarity === 'EPIC') { borderGlow = 'border-purple-400/50'; textGlow = 'text-purple-300'; }
-    else if (cardObj.rarity === 'RARE') { borderGlow = 'border-rose-500/50'; textGlow = 'text-rose-300'; }
-    else { borderGlow = 'border-sky-400/40'; textGlow = 'text-sky-300'; }
-
     return (
-      <div
+      <MiniSportsCenterCard
         key={match.id}
+        data={cardObj}
+        isSelected={isSelected}
+        homeFlag={homeTeam.flag}
+        awayFlag={awayTeam.flag}
         onClick={() => {
           setSelectedCard(cardObj);
           setActiveRightTab('verdict');
         }}
-        className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
-          isSelected ? 'ring-2 ring-amber-400 scale-[1.02]' : ''
-        }`}
-      >
-        <div className={`h-28 w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2.5 flex flex-col justify-between backdrop-blur-md shadow-lg`}>
-          <div className="flex justify-between items-start">
-            <div className="flex flex-col items-center">
-              <span className="font-mono font-black text-lg leading-none text-white">{cardObj.rating}</span>
-              <div className="flex gap-1 mt-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
-              </div>
-            </div>
-            <span className={`text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
-              {cardObj.rarity.slice(0, 3)}
-            </span>
-          </div>
-
-          <div className="text-center my-auto py-1">
-            <p className="font-sans font-black text-[9.5px] text-white tracking-wide uppercase leading-tight line-clamp-2 px-0.5">
-              {cardObj.verdict}
-            </p>
-          </div>
-
-          <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] font-bold text-gray-400 uppercase tracking-widest">
-            <span>MD {selectedMatchday}</span>
-            <span className="text-amber-400 group-hover:underline">INSPECT</span>
-          </div>
-        </div>
-      </div>
+      />
     );
   };
 
@@ -441,7 +414,7 @@ export default function FootballIQPage() {
                       <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots found on this matchday</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 p-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 p-1">
                       {filteredMatches.map(match => renderCardSlot(match))}
                     </div>
                   )}
