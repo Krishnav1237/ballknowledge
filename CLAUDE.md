@@ -217,8 +217,9 @@ This is a **premium dark/black theme** with World Cup-themed accents. **Do not u
 4. **DB safety** — All Prisma calls in `try/catch`. Fail gracefully to localStorage
 5. **No impure render** — Don't call `Math.random()` in render. Gate with `mounted` state
 6. **Toast not alert** — Any user-facing success/error message must use the toast system
-7. **Tailwind v4** — Custom colors/fonts defined in `globals.css` under `@theme`, NOT in `tailwind.config`
+7. **Tailwind v4** — Custom colors/fonts defined in `globals.css` under `@theme`. ALWAYS use valid standard color tokens (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950). NEVER use unvalidated integers like `zinc-450` or `gray-350`.
 8. **force-dynamic** — Add `export const dynamic = 'force-dynamic'` to any route using Prisma
+9. **Widescreen Cockpit Layouts** — Profile settings dashboard uses `max-w-8xl` with a 3-column layout (`grid-cols-12`) to align perfectly with the Leaderboard and Collectibles Binder console aesthetics.
 
 ---
 

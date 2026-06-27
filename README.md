@@ -19,7 +19,7 @@ BallKnowledge is a premium World Cup 2026 prediction and debate platform. Fans l
 Locker Room → World Cup Hub → Match Room → VAR Tribunal → Verdict Card → My Card → Share
 ```
 
-1. **Locker Room** — Set up your profile (username, avatar, favourite country, club allegiance)
+1. **Locker Room** (`/profile`) — Manage manager profile settings in a widescreen 3-column cockpit (Identity, FUT Card Spotlight, Telemetry & Operations)
 2. **World Cup Hub** (`/world-cup-hub`) — Browse all 104 fixtures across Groups A–L with live standings
 3. **Match Room** (`/match/[id]`) — Before kickoff: lock score prediction, MOTM, goalscorer, hot takes, and Best XI squad. Once the match starts, a live banter chat opens
 4. **VAR Tribunal** — After a match completes, the AI grades your hot takes and checks your score prediction against actual results
