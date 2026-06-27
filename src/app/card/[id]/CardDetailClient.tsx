@@ -254,6 +254,12 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                       { label: 'HOT', name: 'Hot Take', val: (card.statsJson as any)?.hot ?? (card.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, card.rating + 2)) },
                       { label: 'RST', name: 'Roast Score', val: (card.statsJson as any)?.rst ?? (card.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, card.rating + 1)) }
                     ],
+                    matchTitle: card.matchTitle || '',
+                    matchScore: card.matchScore,
+                    homeFlag: card.homeFlag,
+                    awayFlag: card.awayFlag,
+                    homeFifaCode: card.homeFifaCode,
+                    awayFifaCode: card.awayFifaCode,
                     cardTheme: card.cardTheme || 'gold',
                     aiImageUrl: card.aiImageUrl,
                     countryFlag: profileState.favoriteNation ? getFlagEmoji(profileState.favoriteNation) : '🌍',

@@ -1,11 +1,38 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/db';
+import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
 import CardDetailClient from './CardDetailClient';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+async function resolveMatchDetails(matchId: string) {
+  try {
+    const [matches, teams] = await Promise.all([
+      fetchWorldCupMatches(),
+      fetchWorldCupTeams()
+    ]);
+    const match = matches.find(m => String(m.id) === String(matchId));
+    if (!match) return {};
+
+    const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || 'Home', flag: '', fifa_code: '' };
+    const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || 'Away', flag: '', fifa_code: '' };
+
+    return {
+      matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
+      matchScore: match.home_score !== '' && match.home_score !== undefined ? `${match.home_score} - ${match.away_score}` : undefined,
+      homeFlag: homeTeam.flag,
+      awayFlag: awayTeam.flag,
+      homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase() || 'HOM',
+      awayFifaCode: (awayTeam as any).fifa_code || awayTeam.name_en?.slice(0, 3).toUpperCase() || 'AWY',
+    };
+  } catch (err) {
+    console.error('Failed to resolve match details for card share view:', err);
+    return {};
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -23,7 +50,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${card.profile.username}'s VAR Verdict — OVR ${card.rating}`;
+    const matchDetails = await resolveMatchDetails(card.matchId);
+    const fixtureString = matchDetails.homeFifaCode && matchDetails.awayFifaCode
+      ? ` [${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}]`
+      : '';
+
+    const title = `${card.profile.username}'s VAR Verdict${fixtureString} — OVR ${card.rating}`;
     const description = `Verdict: ${card.verdict} | ${card.charge}. Check out this Football IQ card!`;
     const imageUrl = card.aiImageUrl || 'https://ballknowledge.vercel.app/images/card_bg.webp';
 
@@ -80,6 +112,8 @@ export default async function SharedCardPage({ params }: Props) {
     overallRating: 88
   };
 
+  const matchDetails = card ? await resolveMatchDetails(card.matchId) : {};
+
   const clientCard = card ? {
     id: card.id,
     matchId: card.matchId,
@@ -91,7 +125,8 @@ export default async function SharedCardPage({ params }: Props) {
     rarity: card.rarity,
     cardTheme: card.cardTheme,
     aiImageUrl: card.aiImageUrl,
-    statsJson: card.statsJson
+    statsJson: card.statsJson,
+    ...matchDetails
   } : {
     id: id,
     matchId: id,
@@ -103,7 +138,13 @@ export default async function SharedCardPage({ params }: Props) {
     rarity: 'LEGENDARY',
     cardTheme: 'gold',
     aiImageUrl: null,
-    statsJson: { prd: 90, mgr: 88, hot: 85, rst: 92 }
+    statsJson: { prd: 90, mgr: 88, hot: 85, rst: 92 },
+    matchTitle: 'Argentina vs France',
+    matchScore: '3 - 3',
+    homeFlag: 'https://flagcdn.com/w80/ar.png',
+    awayFlag: 'https://flagcdn.com/w80/fr.png',
+    homeFifaCode: 'ARG',
+    awayFifaCode: 'FRA'
   };
 
   return <CardDetailClient initialCard={clientCard} profile={clientProfile} />;
