@@ -2,6 +2,44 @@
 
 import { VerdictData } from '@/lib/tribunalDB';
 
+// ─── Verdict Label Mapper ────────────────────────────────────────────────────
+function getVerdictLabel(verdict: string, ovr: number): string {
+  const v = verdict.toUpperCase();
+  if (v.includes('CERTIFIED COOKING') || v.includes('APPROVED')) {
+    return ovr >= 90 ? 'CERTIFIED CHEF' : 'KNOWS BALL';
+  }
+  if (v.includes('BALL IQ') || v.includes('HISTORICALLY CORRECT')) return 'BALL KNOWLEDGE DETECTED';
+  if (v.includes('TERRORISM') || v.includes('TERRORIST')) return 'FOOTBALL TERRORIST';
+  if (v.includes('FRAUD') || v.includes('DELUSION') || v.includes('SPIN')) return 'DELUSION MERCHANT';
+  if (v.includes('MID TAKE') || v.includes('COMMON')) return 'AVERAGE FAN ENERGY';
+  if (v.includes('CHOKING') || v.includes('BOTTLE')) return 'GENERATIONAL BOTTLER';
+  if (v.includes('GREED') || v.includes('HATING') || v.includes('HATE')) return 'GENERATIONAL HATER';
+  if (v.includes('TACTICAL') || v.includes('GENIUS')) return 'TACTICAL GENIUS';
+  if (v.includes('ACQUITTED') || v.includes('DISMISSED')) return 'CASE DISMISSED';
+  if (v.includes('RIVALRY') || v.includes('RIVAL')) return 'RIVALRY INSTIGATOR';
+  if (v.includes('PENDING') || v.includes('ASSESSMENT')) return 'UNDER REVIEW';
+  if (ovr >= 90) return 'CERTIFIED CHEF';
+  if (ovr >= 72) return 'KNOWS BALL';
+  if (ovr >= 50) return 'MID TAKE MERCHANT';
+  if (ovr >= 30) return 'DELUSION MERCHANT';
+  return 'FOOTBALL TERRORIST';
+}
+
+// ─── Verdict Color ───────────────────────────────────────────────────────────
+function getVerdictColor(verdict: string, ovr: number): { color: string; glow: string } {
+  const label = getVerdictLabel(verdict, ovr);
+  if (label === 'CERTIFIED CHEF' || label === 'KNOWS BALL' || label === 'BALL KNOWLEDGE DETECTED' || label === 'CASE DISMISSED' || label === 'TACTICAL GENIUS') {
+    return { color: '#10B981', glow: 'rgba(16,185,129,0.45)' };
+  }
+  if (label === 'FOOTBALL TERRORIST' || label === 'DELUSION MERCHANT' || label === 'GENERATIONAL BOTTLER') {
+    return { color: '#EF4444', glow: 'rgba(239,68,68,0.45)' };
+  }
+  if (label === 'GENERATIONAL HATER' || label === 'RIVALRY INSTIGATOR') {
+    return { color: '#F97316', glow: 'rgba(249,115,22,0.45)' };
+  }
+  return { color: '#F59E0B', glow: 'rgba(245,158,11,0.45)' };
+}
+
 // ─── Theme Selector (Grades, Borders & Glows) ──────────────────────────────────
 function getThemeColors() {
   return {
@@ -60,7 +98,22 @@ export default function SportsCenterCard({
   cardRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const colors = getThemeColors();
+  const verdictLabel = getVerdictLabel(data.verdict, data.ovr);
+  const verdictColor = getVerdictColor(data.verdict, data.ovr);
   const metrics = get4Metrics(data);
+
+  // Truncations to ensure zero overflow outside the shield
+  const takeDisplay = data.text
+    ? (data.text.length > 85 ? data.text.slice(0, 82).trimEnd() + '…' : data.text)
+    : 'Registered Manager Verdict Record';
+
+  const chargeDisplay = data.charge
+    ? (data.charge.length > 45 ? data.charge.slice(0, 42).trimEnd() + '…' : data.charge)
+    : 'Tactical Analysis Approved';
+
+  const sentenceDisplay = data.sentence
+    ? (data.sentence.length > 50 ? data.sentence.slice(0, 47).trimEnd() + '…' : data.sentence)
+    : 'VERDICT AUDITED';
 
   return (
     <div
@@ -141,70 +194,111 @@ export default function SportsCenterCard({
           }}
         />
 
-        {/* Ambient Center Glow */}
-        <circle cx="162" cy="220" r="140" fill={`url(#${colors.glowId})`} opacity="0.35" style={{ mixBlendMode: 'screen' }} />
-
-        {/* Watermark Logo in center */}
-        <g opacity="0.15" fill="none">
-          <circle cx="162" cy="200" r="70" stroke="#E11D48" strokeWidth="1.5" />
-        </g>
+        {/* Ambient Glows */}
+        <circle cx="162" cy="160" r="130" fill={`url(#${colors.glowId})`} opacity="0.3" style={{ mixBlendMode: 'screen' }} />
       </svg>
 
-      {/* Layer 2: Card Content Overlay - Absolute Positioned */}
-      <div className="absolute inset-0 w-full h-full text-white pointer-events-none flex flex-col justify-between p-8">
+      {/* Layer 2: Card Content Overlay - Strictly Contained inside Shield Pads */}
+      <div className="absolute inset-0 w-full h-full text-white pointer-events-none flex flex-col justify-between px-6 pt-7 pb-6 overflow-hidden">
         
-        {/* Top Header & Logo */}
-        <div className="flex justify-between items-center w-full pt-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/ball_knowledge_logo.png"
-            alt="Ball Knowledge"
-            className="w-8 h-8 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] rounded-full border border-[#E11D48]/40"
-          />
-          <span 
-            className="text-[11px] font-bold tracking-widest uppercase" 
-            style={{ 
-              color: colors.textColor,
-              textShadow: '0 1px 2px rgba(0,0,0,0.95)'
+        {/* Top Section: OVR Badge + Brand Logo + Verdict Pill Stamp */}
+        <div className="flex justify-between items-start w-full z-30 shrink-0">
+          {/* OVR + Position Stack */}
+          <div className="flex flex-col items-center">
+            <span 
+              className="text-[48px] tracking-tighter leading-none text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)]"
+              style={{
+                fontFamily: "'Oswald', sans-serif",
+                fontWeight: '900',
+                textShadow: '0 0 20px rgba(225,29,72,0.6), 0 3px 8px rgba(0,0,0,0.9)'
+              }}
+            >
+              {data.ovr}
+            </span>
+            <span 
+              className="text-[9.5px] font-black tracking-widest uppercase leading-none mt-0.5" 
+              style={{ color: colors.textColor }}
+            >
+              {data.playerPosition || 'MGR'}
+            </span>
+          </div>
+
+          {/* Center Brand Logo + Country Flag */}
+          <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-2.5 py-1 backdrop-blur-md shadow-md">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/ball_knowledge_logo.png"
+              alt="Ball Knowledge"
+              className="w-5 h-5 object-contain rounded-full"
+            />
+            <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
+          </div>
+
+          {/* Verdict Pill Stamp */}
+          <div 
+            className="px-2.5 py-1 border-2 text-[9px] font-black tracking-wider uppercase rounded-md shadow-lg truncate max-w-[120px]"
+            style={{
+              borderColor: verdictColor.color,
+              color: verdictColor.color,
+              backgroundColor: `${verdictColor.color}20`,
+              textShadow: `0 0 4px ${verdictColor.glow}`,
+              fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
-            {data.playerPosition || 'MGR'}
-          </span>
+            ⚖️ {verdictLabel}
+          </div>
         </div>
 
-        {/* Center Spotlight: Giant OVR Rating & Player Name */}
-        <div className="flex flex-col items-center justify-center my-auto text-center pointer-events-none">
-          <span 
-            className="text-[96px] tracking-tighter leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]"
+        {/* Middle Section: Player Name & Detailed Report Console */}
+        <div className="flex flex-col items-center justify-center my-auto w-full gap-2 z-30 pointer-events-none">
+          {/* Player / Manager Name */}
+          <div className="text-center w-full">
+            <h2 
+              className="font-bold text-[21px] tracking-widest uppercase leading-none truncate max-w-[280px] mx-auto"
+              style={{
+                fontFamily: "'Oswald', sans-serif",
+                fontWeight: '900',
+                color: '#FFE082',
+                textShadow: '0 2px 6px rgba(0,0,0,0.95)'
+              }}
+            >
+              {data.playerName || 'MANAGER'}
+            </h2>
+            {data.clubName && (
+              <p className="text-[8.5px] font-bold uppercase tracking-wider text-zinc-400 mt-1 truncate">
+                {data.clubName}
+              </p>
+            )}
+          </div>
+
+          {/* Hot Take Quote & Audited Charge Glass Console */}
+          <div 
+            className="w-full bg-black/55 border border-white/10 rounded-xl p-3 flex flex-col gap-1.5 text-center backdrop-blur-md"
             style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontWeight: '900',
-              textShadow: '0 0 25px rgba(225,29,72,0.5), 0 4px 12px rgba(0,0,0,0.9)'
+              boxShadow: 'inset 0 1px 6px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.4)',
             }}
           >
-            {data.ovr}
-          </span>
-          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-[#E11D48] mt-1 drop-shadow-md">
-            OVERALL RATING
-          </span>
-          <h2 
-            className="font-bold text-[22px] tracking-widest uppercase leading-none mt-4 truncate max-w-[260px]"
-            style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontWeight: '900',
-              color: '#FFE082',
-              textShadow: '0 2px 5px rgba(0,0,0,0.95)'
-            }}
-          >
-            {data.playerName || 'MANAGER'}
-          </h2>
+            <p className="italic text-[10.5px] leading-tight text-white font-semibold line-clamp-2">
+              &ldquo;{takeDisplay}&rdquo;
+            </p>
+            <div className="border-t border-white/10 pt-1.5 flex flex-col gap-0.5">
+              <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-wide truncate">
+                <span style={{ color: colors.textColor }}>CHARGE:</span> {chargeDisplay}
+              </p>
+              {data.sentence && (
+                <p className="text-[7.5px] font-medium text-rose-300 italic truncate">
+                  &ldquo;{sentenceDisplay}&rdquo;
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Metrics Section (4 Columns) */}
+        {/* Bottom Section: 4 Core Stats Panel (Strictly Enclosed) */}
         <div 
-          className="w-full h-[64px] flex items-center justify-between z-30 px-2 py-2 mb-2 bg-black/40 border border-white/10 rounded-xl backdrop-blur-md"
+          className="w-full h-[54px] flex items-center justify-between z-30 px-2 py-1.5 bg-black/60 border border-white/10 rounded-xl backdrop-blur-md shrink-0"
           style={{
-            boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4)',
+            boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.5)',
           }}
         >
           {metrics.map((m) => {
@@ -218,14 +312,14 @@ export default function SportsCenterCard({
             return (
               <div key={m.label} className="flex flex-col items-center flex-1 border-r border-white/5 last:border-r-0">
                 <span 
-                  className="text-[9px] font-black tracking-widest uppercase leading-none flex items-center gap-1" 
+                  className="text-[8.5px] font-black tracking-widest uppercase leading-none flex items-center gap-0.5" 
                   style={{ color: colors.textColor }}
                 >
                   <span>{m.label}</span>
-                  <span className="text-[7px] opacity-60 font-normal">({getWeightLabel(m.label)})</span>
+                  <span className="text-[6.5px] opacity-60 font-normal">({getWeightLabel(m.label)})</span>
                 </span>
                 <span 
-                  className="text-[20px] mt-1 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
+                  className="text-[17px] mt-1 leading-none font-black text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]"
                   style={{ 
                     fontFamily: "'Oswald', sans-serif",
                     fontWeight: 900
