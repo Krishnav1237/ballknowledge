@@ -27,10 +27,10 @@ function get4Metrics(data: VerdictData): [
 /* ——— Rarity colour tokens ——— */
 function rarityTokens(rarity: string) {
   switch (rarity) {
-    case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-gold-grad)',   bg: 'from-[#1C1002] via-[#08050A] to-[#020308]' };
-    case 'EPIC':      return { glow: '#A855F7', border: 'url(#vcard-purple-grad)', bg: 'from-[#12021C] via-[#06020C] to-[#020308]' };
-    case 'RARE':      return { glow: '#3B82F6', border: 'url(#vcard-blue-grad)',   bg: 'from-[#020B1C] via-[#02040C] to-[#020308]' };
-    default:          return { glow: '#E11D48', border: 'url(#vcard-rose-grad)',   bg: 'from-[#1A0308] via-[#080208] to-[#020308]' };
+    case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-gold-grad)',   bg: 'from-[#1C1002] via-[#08050A] to-[#020308]', text: 'text-amber-400' };
+    case 'EPIC':      return { glow: '#A855F7', border: 'url(#vcard-purple-grad)', bg: 'from-[#12021C] via-[#06020C] to-[#020308]', text: 'text-purple-400' };
+    case 'RARE':      return { glow: '#3B82F6', border: 'url(#vcard-blue-grad)',   bg: 'from-[#020B1C] via-[#02040C] to-[#020308]', text: 'text-blue-400' };
+    default:          return { glow: '#E11D48', border: 'url(#vcard-rose-grad)',   bg: 'from-[#1A0308] via-[#080208] to-[#020308]', text: 'text-rose-400' };
   }
 }
 
@@ -131,7 +131,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE A — TOP ROW: OVR | MGR PILL | FLAG
+            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG
             y: 24 – 70
             ══════════════════════════════════════════ */}
 
@@ -148,23 +148,19 @@ export default function SportsCenterCard({
           </span>
         </div>
 
-        {/* A2 — Manager name pill (top-center) */}
+        {/* A2 — Rarity Badge (top-center) — Replaced MGR pill for clean layout */}
         <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 32, left: 0, right: 0 }}>
           <div
-            className="flex items-center gap-1.5 rounded-full px-3 py-[5px]"
+            className="flex items-center gap-1.5 rounded-full px-4 py-[5px]"
             style={{
               background: 'rgba(2,4,16,0.94)',
               border: `1px solid ${glow}60`,
               boxShadow: `0 2px 12px rgba(0,0,0,0.8), 0 0 8px ${glow}28`,
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/ball_knowledge_logo.png" alt="" className="w-[12px] h-[12px] object-contain rounded-full" />
-            <span className="font-black uppercase text-[8px] tracking-[0.14em]" style={{ color: glow }}>
-              MGR
-            </span>
-            <span className="font-black uppercase text-[8px] tracking-[0.12em] text-white max-w-[120px] truncate">
-              {managerName}
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: glow, boxShadow: `0 0 6px ${glow}` }} />
+            <span className="font-black uppercase text-[8px] tracking-[0.25em]" style={{ color: glow }}>
+              {rarity}
             </span>
           </div>
         </div>
@@ -180,16 +176,67 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE B — COMPACT FIXTURE STRIP (Above Avatar)
-            y: 76 – 112
+            ZONE B — USER AVATAR (Upper Center)
+            y: 84 – 184
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 76, left: 0, right: 0 }}>
+        <div className="absolute z-40 pointer-events-none" style={{ top: 84, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
           <div
-            className="rounded-full px-3.5 py-1.5 flex items-center gap-3 backdrop-blur-md"
             style={{
-              background: 'rgba(0,0,0,0.85)',
-              border: `1px solid ${glow}55`,
-              boxShadow: `0 4px 14px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.05)`,
+              width: 100, height: 100,
+              borderRadius: '50%',
+              boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}40, 0 8px 24px rgba(0,0,0,0.85)`,
+              padding: 4,
+              background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
+            }}
+          >
+            <div className="w-full h-full rounded-full overflow-hidden" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.75)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            ZONE C — MANAGER USERNAME (Below Avatar)
+            y: 198 – 220
+            ══════════════════════════════════════════ */}
+        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 198, left: 16, right: 16 }}>
+          <h2
+            className="text-white uppercase leading-none font-black text-[22px] tracking-[0.05em]"
+            style={{ fontFamily: "'Oswald', sans-serif" }}
+          >
+            {managerName}
+          </h2>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            ZONE D — VERDICT TITLE
+            y: 226 – 250
+            ══════════════════════════════════════════ */}
+        <div className="absolute z-40 pointer-events-none flex justify-center animate-pulse" style={{ top: 226, left: 0, right: 0 }}>
+          <span
+            className="inline-block text-[9px] font-black tracking-[0.2em] uppercase px-3 py-1 rounded border"
+            style={{
+              background: `${glow}12`,
+              borderColor: `${glow}40`,
+              color: glow,
+            }}
+          >
+            👑 {verdictLabel}
+          </span>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            ZONE E — MATCH FIXTURE & SCORE (Just above Stats)
+            y: 308 – 348
+            ══════════════════════════════════════════ */}
+        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 308, left: 0, right: 0 }}>
+          <div
+            className="rounded-lg px-4 py-2 flex items-center gap-3 backdrop-blur-md"
+            style={{
+              background: 'rgba(2,4,16,0.92)',
+              border: `1px solid ${glow}40`,
+              boxShadow: `0 4px 14px rgba(0,0,0,0.85)`,
             }}
           >
             <div className="flex items-center gap-1.5">
@@ -202,7 +249,7 @@ export default function SportsCenterCard({
               </span>
             </div>
 
-            <span className="font-black text-[11px] text-white/50 px-1 font-mono">
+            <span className="font-black text-[11px] text-white/50 px-1 font-mono flex items-center">
               {score ? (
                 <span className="text-white bg-white/10 px-2 py-0.5 rounded font-bold font-mono">
                   {score}
@@ -223,81 +270,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE C — AVATAR (Upper Middle)
-            y: 122 – 232
-            ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
-          <div
-            style={{
-              width: 110, height: 110,
-              borderRadius: '50%',
-              boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}40, 0 8px 24px rgba(0,0,0,0.85)`,
-              padding: 4,
-              background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
-            }}
-          >
-            <div className="w-full h-full rounded-full overflow-hidden" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.75)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════
-            ZONE D — VERDICT HEADLINE
-            y: 244 – 276
-            ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 244, left: 16, right: 16 }}>
-          <h2
-            className="text-white uppercase leading-none font-black"
-            style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontSize: verdictLabel.length > 16 ? 18 : verdictLabel.length > 12 ? 21 : 24,
-              letterSpacing: '0.07em',
-              textShadow: `0 4px 16px ${glow}90, 0 2px 8px rgba(0,0,0,0.95)`,
-            }}
-          >
-            {verdictLabel}
-          </h2>
-        </div>
-
-        {/* ══════════════════════════════════════════
-            ZONE E — VERDICT SENTENCE / SENTENCE DETAIL
-            y: 278 – 300
-            ══════════════════════════════════════════ */}
-        {data.charge && (
-          <div className="absolute z-40 pointer-events-none text-center" style={{ top: 278, left: 24, right: 24 }}>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest line-clamp-1 italic">
-              &ldquo;{data.charge}&rdquo;
-            </p>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════
-            ZONE F — RARITY STRIP
-            y: 308 – 320
-            ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none flex items-center justify-center gap-[7px]" style={{ top: 308, left: 0, right: 0 }}>
-          {['LEGENDARY', 'EPIC', 'RARE', 'COMMON'].map(r => (
-            <div
-              key={r}
-              style={{
-                width: rarity === r ? 9 : 6,
-                height: rarity === r ? 9 : 6,
-                borderRadius: '50%',
-                background: rarity === r ? glow : 'rgba(255,255,255,0.15)',
-                boxShadow: rarity === r ? `0 0 8px ${glow}, 0 0 16px ${glow}70` : 'none',
-                transition: 'all 0.2s',
-              }}
-            />
-          ))}
-          <span className="font-black uppercase tracking-[0.2em] text-[7.5px] ml-1" style={{ color: glow }}>
-            {rarity}
-          </span>
-        </div>
-
-        {/* ══════════════════════════════════════════
-            ZONE G — SEASON-CARD STYLE STATS PANEL (Bottom Position)
+            ZONE F — STATS PANEL (Bottom Position)
             y: 364 – 416 (absolute bottom-[64px])
             ══════════════════════════════════════════ */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
