@@ -24,7 +24,7 @@ type SortMode = 'overall' | 'prediction' | 'hottake';
 function getRarityBand(ovr: number) {
   if (ovr >= 90) return { label: 'LEGENDARY', colour: 'text-[#E11D48]', border: 'border-[#E11D48]/40', bg: 'bg-[#E11D48]/8' };
   if (ovr >= 75) return { label: 'EPIC',      colour: 'text-purple-600', border: 'border-purple-600/30', bg: 'bg-purple-600/8' };
-  if (ovr >= 60) return { label: 'RARE',      colour: 'text-blue-605',   border: 'border-blue-600/30',   bg: 'bg-blue-600/8'  };
+  if (ovr >= 60) return { label: 'RARE',      colour: 'text-blue-400',   border: 'border-blue-600/30',   bg: 'bg-blue-600/8'  };
   return                { label: 'COMMON',    colour: 'text-zinc-400',   border: 'border-white/5',      bg: 'bg-white/5'      };
 }
 

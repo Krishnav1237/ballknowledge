@@ -309,7 +309,7 @@ export default function MatchLiveChat({
                 }`}>
                   {msg.author.slice(0, 2).toUpperCase()}
                 </div>
-                <span className="text-[8px] font-black text-gray-550 uppercase tracking-wide">{isMe ? 'You' : msg.author}</span>
+                <span className="text-[8px] font-black text-gray-400 uppercase tracking-wide">{isMe ? 'You' : msg.author}</span>
                 <span className="text-[7px] font-mono text-gray-600">{formatTime(msg.timestamp)}</span>
               </div>
 

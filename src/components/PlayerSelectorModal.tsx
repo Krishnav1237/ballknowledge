@@ -123,7 +123,9 @@ export default function PlayerSelectorModal({
                       alt={player.name}
                       className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://media.api-sports.io/football/players/154.png`;
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // Prevent infinite loop recursion
+                        target.src = "https://media.api-sports.io/football/players/154.png";
                       }}
                     />
                     <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-1 shadow-sm leading-none text-white">

@@ -34,6 +34,13 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: '/football-court', destination: '/world-cup-hub', permanent: true },
+      { source: '/match-oracle', destination: '/world-cup-hub', permanent: true },
+      { source: '/rate-my-take', destination: '/world-cup-hub', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

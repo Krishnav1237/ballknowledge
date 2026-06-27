@@ -658,15 +658,16 @@ export async function POST(request: Request) {
     const maxTakes = role === 'FREE' ? 2 : 5;
     const takesToGrade = statements.slice(0, maxTakes);
 
-    const gradedTakes: GradedTake[] = [];
-    for (const take of takesToGrade) {
-      const grading = await gradeHotTake(take.statement);
-      gradedTakes.push({
-        statement: take.statement,
-        confidence: take.confidence,
-        ...grading,
-      });
-    }
+    const gradedTakes: GradedTake[] = await Promise.all(
+      takesToGrade.map(async (take: any) => {
+        const grading = await gradeHotTake(take.statement);
+        return {
+          statement: take.statement,
+          confidence: take.confidence,
+          ...grading,
+        };
+      })
+    );
 
     const hot = calculateHOT(gradedTakes.map(t => ({ grade: t.grade, confidence: t.confidence })));
 
@@ -779,13 +780,13 @@ export async function POST(request: Request) {
 
         // Save Hot Takes (delete + recreate for clean state)
         await prisma.hotTake.deleteMany({ where: { predictionId: dbPrediction.id } });
-        for (const take of takesToGrade) {
-          await prisma.hotTake.create({
-            data: {
+        if (takesToGrade.length > 0) {
+          await prisma.hotTake.createMany({
+            data: takesToGrade.map((take: any) => ({
               predictionId: dbPrediction.id,
               statement: take.statement,
               confidence: take.confidence
-            }
+            }))
           });
         }
 

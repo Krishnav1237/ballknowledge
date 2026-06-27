@@ -150,7 +150,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-schnell';
+      const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux-1-schnell';
 
       try {
         const response = await fetch('https://openrouter.ai/api/v1/images/generations', {

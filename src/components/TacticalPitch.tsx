@@ -121,7 +121,9 @@ export default function TacticalPitch({
                     alt={selectedPlayer.name}
                     className="w-full h-full object-contain rounded-full bg-white/5 border border-white/10"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://media.api-sports.io/football/players/154.png`;
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null; // Prevent infinite loop recursion
+                      target.src = "https://media.api-sports.io/football/players/154.png";
                     }}
                   />
                   <div className="absolute -bottom-0.5 -right-0.5 text-[7px] min-[370px]:text-[9px] sm:text-[11px] bg-black/60 rounded-full px-0.5 shadow-sm leading-none">
