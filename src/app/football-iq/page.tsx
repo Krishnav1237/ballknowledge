@@ -379,9 +379,9 @@ export default function FootballIQPage() {
           </div>
 
           <div className="p-4 sm:p-6 relative flex-grow flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow items-start">
               
-              {/* LEFT PAGE: ALBUM SLOTS GRID */}
+              {/* LEFT PAGE: ALBUM SLOTS GRID WITH DEDICATED SCROLL CONTAINER */}
               <div className="lg:col-span-7 p-4 sm:p-6 flex flex-col gap-4 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
@@ -457,7 +457,8 @@ export default function FootballIQPage() {
                   ))}
                 </div>
 
-                <div className="flex-1 overflow-y-auto min-h-[300px]">
+                {/* Fixed Height Scroll Container for Verdict Stickers */}
+                <div className="overflow-y-auto max-h-[520px] pr-1.5 space-y-3 custom-scrollbar">
                   {loadingMatches ? (
                     <div className="text-center py-20 flex flex-col items-center justify-center">
                       <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-3" />
@@ -469,15 +470,15 @@ export default function FootballIQPage() {
                       <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots found on this matchday</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 p-1">
                       {filteredMatches.map(match => renderCardSlot(match))}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* RIGHT PAGE: DUAL CARD PREVIEW & DIRECT VERDICT SHARING */}
-              <div className="lg:col-span-5 p-4 sm:p-6 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
+              {/* RIGHT PAGE: STICKY DUAL CARD PREVIEW & DIRECT VERDICT SHARING */}
+              <div className="lg:col-span-5 lg:sticky lg:top-4 h-fit p-4 sm:p-6 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
                 
                 <div className="flex bg-black/60 border border-white/15 p-1.5 rounded-2xl mb-4 shadow-md w-full z-20">
                   <button
