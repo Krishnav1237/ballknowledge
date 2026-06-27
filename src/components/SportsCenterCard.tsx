@@ -48,14 +48,17 @@ export default function SportsCenterCard({
 }) {
   const metrics = get4Metrics(data);
   const hasAiImage = Boolean(data.aiImageUrl);
-  // Strict check: mode === 'take' is the Verdict Card, otherwise Tournament Manager Deck
   const isVerdictCard = data.mode === 'take';
 
   const ovr = data.ovr || 50;
 
+  const avatarStyle = (data as any).avatarStyle || 'fun-emoji';
+  const avatarSeed = (data as any).avatarSeed || data.playerName || 'Tactician';
+  const avatarUrl = `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(avatarSeed)}`;
+
   if (isVerdictCard) {
     /* =========================================================================
-       VERDICT CARD DESIGN: VAR CYBER-SHIELD PLAQUE (DISTINCT SHAPE & THEME)
+       VERDICT CARD DESIGN: VAR CYBER-SHIELD PLAQUE WITH CUSTOM MANAGER AVATAR
        ========================================================================= */
     return (
       <div
@@ -115,20 +118,26 @@ export default function SportsCenterCard({
             <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
           ) : (
             <div className="relative w-full h-full p-5 flex flex-col justify-between text-white bg-gradient-to-b from-[#280512] via-[#0F0308] to-[#030712]">
-              <div className="h-20" />
+              <div className="h-16" />
 
               {/* Center Spotlight */}
               <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto text-center w-full px-2">
-                <div className="flex flex-col items-center gap-2 w-full">
+                <div className="flex flex-col items-center gap-1.5 w-full">
                   
+                  {/* Custom Manager Avatar Feature */}
+                  <div className="w-14 h-14 rounded-full border-2 border-rose-500/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(244,63,94,0.5)] overflow-hidden shrink-0 mb-0.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full" />
+                  </div>
+
                   {/* Match Teams & Score Metric Badge */}
                   {(data.matchTitle || data.matchScore) && (
-                    <div className="bg-black/90 border border-rose-500/50 px-3.5 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
-                      <span className="text-[9.5px] font-black uppercase text-gray-200 tracking-wider">
+                    <div className="bg-black/90 border border-rose-500/50 px-3 py-0.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-md">
+                      <span className="text-[9px] font-black uppercase text-gray-200 tracking-wider">
                         ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
                       </span>
                       {data.matchScore && (
-                        <span className="text-[10px] font-mono font-bold text-rose-300 bg-rose-500/25 px-2 py-0.5 rounded border border-rose-500/40">
+                        <span className="text-[9.5px] font-mono font-bold text-rose-300 bg-rose-500/25 px-1.5 py-0.2 rounded border border-rose-500/40">
                           {data.matchScore}
                         </span>
                       )}
@@ -137,20 +146,20 @@ export default function SportsCenterCard({
 
                   {/* Prominent VAR Verdict Title */}
                   <h2 
-                    className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_14px_rgba(244,63,94,0.85)] max-w-[280px] mt-1"
+                    className="font-bold text-[22px] sm:text-[24px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_14px_rgba(244,63,94,0.85)] max-w-[280px]"
                     style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                   >
                     {data.verdict || 'KNOWS BALL'}
                   </h2>
 
                   {/* Manager Alias & Decree */}
-                  <div className="flex flex-col items-center gap-1 mt-1">
-                    <span className="text-[9px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/15 border border-amber-400/35 px-3 py-0.5 rounded-full shadow-sm">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[8.5px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/15 border border-amber-400/35 px-2.5 py-0.5 rounded-full shadow-sm">
                       MANAGER: {data.playerName || 'TACTICIAN'}
                     </span>
                     
                     {data.charge && (
-                      <p className="text-[9.5px] text-gray-300 font-semibold italic max-w-[260px] line-clamp-1 mt-1">
+                      <p className="text-[9px] text-gray-300 font-semibold italic max-w-[260px] line-clamp-1">
                         &ldquo;{data.charge}&rdquo;
                       </p>
                     )}
@@ -159,7 +168,7 @@ export default function SportsCenterCard({
                 </div>
               </div>
 
-              <div className="h-20" />
+              <div className="h-16" />
             </div>
           )}
 
@@ -278,23 +287,30 @@ export default function SportsCenterCard({
           <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
         ) : (
           <div className="relative w-full h-full p-6 flex flex-col justify-between text-white bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]">
-            <div className="h-24" />
+            <div className="h-20" />
 
             {/* Center Manager Name & Ruling Spotlight */}
             <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto text-center w-full px-2">
+              
+              {/* Custom Manager Avatar Feature */}
+              <div className="w-14 h-14 rounded-full border-2 border-amber-400/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0 mb-1.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full" />
+              </div>
+
               <h2 
-                className="font-bold text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
+                className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
                 style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
               >
                 {data.playerName || 'MANAGER'}
               </h2>
               
-              <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2.5 px-4 py-1 rounded-md shadow-md backdrop-blur-sm text-amber-300 bg-amber-400/15 border border-amber-400/40">
+              <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md backdrop-blur-sm text-amber-300 bg-amber-400/15 border border-amber-400/40">
                 👑 {data.verdict || 'KNOWS BALL'}
               </span>
             </div>
 
-            <div className="h-24" />
+            <div className="h-20" />
           </div>
         )}
 

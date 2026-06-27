@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download } from 'lucide-react';
+import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
 interface Team {
@@ -267,6 +267,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
   const activeVerdictCard = selectedCard || (matchdayMatches.length > 0 ? constructPublicMatchCardObj(matchdayMatches[0]) : null);
 
+  const activeShareUrl = activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile');
+  const activeShareText = activeRightTab === 'verdict' && activeVerdictCard
+    ? `Check out ${profile.username}'s VAR Verdict Card for Match ${activeVerdictCard.matchId}! Rated ${activeVerdictCard.rating} OVR: ${activeVerdictCard.verdict.toUpperCase()}.`
+    : `Check out ${profile.username}'s official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`;
+
   return (
     <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] pb-8 select-none">
       
@@ -471,13 +476,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 </div>
               </div>
 
-              {/* RIGHT PAGE: STICKY DUAL CARD PREVIEW & DIRECT VERDICT SHARING */}
-              <div className="lg:col-span-5 lg:sticky lg:top-4 h-fit p-4 sm:p-6 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
+              {/* RIGHT PAGE: STICKY DUAL CARD PREVIEW & INSTANT HIGH-SET SHARE PLINTH */}
+              <div className="lg:col-span-5 lg:sticky lg:top-4 h-fit p-3.5 sm:p-5 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
                 
-                <div className="flex bg-black/60 border border-white/15 p-1.5 rounded-2xl mb-4 shadow-md w-full z-20">
+                <div className="flex bg-black/60 border border-white/15 p-1.5 rounded-2xl mb-2 shadow-md w-full z-20">
                   <button
                     onClick={() => setActiveRightTab('deck')}
-                    className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`flex-1 py-1.5 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       activeRightTab === 'deck'
                         ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-md'
                         : 'text-gray-400 hover:text-white'
@@ -487,7 +492,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   </button>
                   <button
                     onClick={() => setActiveRightTab('verdict')}
-                    className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`flex-1 py-1.5 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       activeRightTab === 'verdict'
                         ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
                         : 'text-gray-400 hover:text-white'
@@ -497,13 +502,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   </button>
                 </div>
 
-                <div className="flex flex-col items-center justify-center w-full relative z-20 flex-grow py-2">
+                <div className="flex flex-col items-center justify-center w-full relative z-20 flex-grow py-0 my-0">
                   <div ref={cardPedestalRef} className="relative flex justify-center items-center">
                     <div 
                       onMouseMove={handlePedestalMouseMove}
                       onMouseLeave={handlePedestalMouseLeave}
                       style={pedestalTiltStyle}
-                      className="relative card-3d-tilt origin-center scale-[0.82] sm:scale-[0.88] lg:scale-[0.88] xl:scale-[0.92]"
+                      className="relative card-3d-tilt origin-center scale-[0.76] sm:scale-[0.80] lg:scale-[0.80] xl:scale-[0.84]"
                     >
                       {activeRightTab === 'verdict' && activeVerdictCard ? (
                         <SportsCenterCard data={{
@@ -564,56 +569,64 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-white/10 pt-4 z-20 flex flex-col gap-2.5">
-                  <div className="flex justify-between items-center bg-black/60 border border-white/15 rounded-2xl p-2.5 backdrop-blur-md">
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest pl-1">
+                {/* HIGH-SET SHARE PLINTH (VISIBLE WITHOUT ANY SCROLL) */}
+                <div className="mt-1 border-t border-white/10 pt-2 z-20 flex flex-col gap-2">
+                  <div className="flex justify-between items-center bg-black/70 border border-white/15 rounded-2xl p-2.5 backdrop-blur-md shadow-lg">
+                    <span className="text-[9.5px] font-black text-gray-300 uppercase tracking-widest pl-1">
                       Share {activeRightTab === 'verdict' && activeVerdictCard ? 'Verdict Card' : 'Tournament Deck'}:
                     </span>
 
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-1.5 items-center">
+                      {/* PNG Download */}
                       <button
                         onClick={handleDownloadPng}
                         disabled={downloading}
-                        className="p-2 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-300 rounded-xl transition-all cursor-pointer"
+                        className="p-2 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-300 rounded-xl transition-all cursor-pointer shadow-sm"
                         title="Download Card PNG"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-3.5 h-3.5" />
                       </button>
 
+                      {/* X / Twitter */}
                       <a
-                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                          activeRightTab === 'verdict' && activeVerdictCard
-                            ? `Check out ${profile.username}'s VAR Verdict Card for Match ${activeVerdictCard.matchId}! Rated ${activeVerdictCard.rating} OVR: ${activeVerdictCard.verdict.toUpperCase()}.`
-                            : `Check out ${profile.username}'s official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`
-                        )}&url=${encodeURIComponent(activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile'))}`}
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(activeShareText)}&url=${encodeURIComponent(activeShareUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition-all cursor-pointer"
+                        className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition-all cursor-pointer shadow-sm"
                         title="Post to X/Twitter"
                       >
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                       </a>
 
+                      {/* WhatsApp */}
                       <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                          activeRightTab === 'verdict' && activeVerdictCard
-                            ? `Check out ${profile.username}'s VAR Verdict Card for Match ${activeVerdictCard.matchId}! Rated ${activeVerdictCard.rating} OVR: ${activeVerdictCard.verdict.toUpperCase()}. ${getShareUrl('card', activeVerdictCard.id)}`
-                            : `Check out ${profile.username}'s official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}). ${getShareUrl('profile')}`
-                        )}`}
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${activeShareText} ${activeShareUrl}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all cursor-pointer"
+                        className="p-2 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all cursor-pointer shadow-sm"
                         title="Send via WhatsApp"
                       >
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
                       </a>
 
-                      <button
-                        onClick={() => handleCopyLink('copy', activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile'))}
-                        className="p-2 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 rounded-xl transition-all cursor-pointer"
-                        title="Copy Link"
+                      {/* Telegram */}
+                      <a
+                        href={`https://t.me/share/url?url=${encodeURIComponent(activeShareUrl)}&text=${encodeURIComponent(activeShareText)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 bg-sky-500/20 hover:bg-sky-500/35 border border-sky-500/40 text-sky-300 rounded-xl transition-all cursor-pointer shadow-sm"
+                        title="Share on Telegram"
                       >
-                        {copiedPlatform === 'copy' ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+                        <Send className="w-3.5 h-3.5" />
+                      </a>
+
+                      {/* Copy Link */}
+                      <button
+                        onClick={() => handleCopyLink('copy', activeShareUrl)}
+                        className="p-2 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 rounded-xl transition-all cursor-pointer shadow-sm"
+                        title="Copy Direct Link"
+                      >
+                        {copiedPlatform === 'copy' ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
