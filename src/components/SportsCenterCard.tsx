@@ -56,9 +56,8 @@ export default function SportsCenterCard({
   return (
     <div
       ref={cardRef}
-      className="relative w-[340px] h-[480px] bg-transparent select-none transition-all duration-500 overflow-hidden"
+      className="relative w-[340px] h-[480px] bg-transparent select-none transition-all duration-500"
       style={{
-        filter: 'drop-shadow(0 15px 30px rgba(225,29,72,0.4))',
         fontFamily: "'Outfit', sans-serif",
       }}
     >
@@ -76,14 +75,20 @@ export default function SportsCenterCard({
             <stop offset="50%" stopColor="#E11D48" />
             <stop offset="100%" stopColor="#881337" />
           </linearGradient>
+
+          {/* Single Clean Glow Filter */}
+          <filter id="card-glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="10" stdDeviation="15" floodColor="#E11D48" floodOpacity="0.45" />
+          </filter>
         </defs>
 
-        {/* Outer Metallic Shield Border Frame */}
+        {/* Outer Metallic Shield Border Frame with Single Glow */}
         <path
           d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z"
           stroke="url(#gold-border)"
           strokeWidth="3.5"
           fill="none"
+          filter="url(#card-glow-filter)"
         />
 
         {/* Inner Border Line */}
