@@ -25,7 +25,15 @@ function get4Metrics(data: VerdictData): [
 }
 
 /* ——— Rarity colour tokens ——— */
-function rarityTokens(rarity: string) {
+function rarityTokens(rarity: string, isPredicted: boolean) {
+  if (!isPredicted) {
+    return {
+      glow: '#4B5563',
+      border: 'url(#vcard-locked-grad)',
+      bg: 'from-[#111827] via-[#0F172A] to-[#030712]',
+      text: 'text-gray-400'
+    };
+  }
   switch (rarity) {
     case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-gold-grad)',   bg: 'from-[#1C1002] via-[#08050A] to-[#020308]', text: 'text-amber-400' };
     case 'EPIC':      return { glow: '#A855F7', border: 'url(#vcard-purple-grad)', bg: 'from-[#12021C] via-[#06020C] to-[#020308]', text: 'text-purple-400' };
@@ -44,9 +52,10 @@ export default function SportsCenterCard({
   const metrics = get4Metrics(data);
   const isVerdictCard = data.mode === 'take';
 
+  const isPredicted = data.isPredicted !== false; // defaults to true for backward compatibility
   const ovr = data.ovr || 50;
-  const rarity = data.rarity || 'COMMON';
-  const tok = rarityTokens(rarity);
+  const rarity = isPredicted ? (data.rarity || 'COMMON') : 'LOCKED';
+  const tok = rarityTokens(rarity, isPredicted);
 
   const avatarStyle = (data as any).avatarStyle || 'fun-emoji';
   const avatarSeed = (data as any).avatarSeed || data.playerName || 'Tactician';
@@ -63,7 +72,7 @@ export default function SportsCenterCard({
   const awayShort = awayFifaCode || titleParts[1]?.trim().slice(0, 3).toUpperCase() || 'AWY';
 
   const score: string | undefined = data.matchScore;
-  const verdictLabel = (data.verdict || 'KNOWS BALL').toUpperCase();
+  const verdictLabel = isPredicted ? (data.verdict || 'KNOWS BALL').toUpperCase() : 'NO PREDICTION';
 
   if (isVerdictCard) {
     const glow = tok.glow;
@@ -94,8 +103,11 @@ export default function SportsCenterCard({
             <linearGradient id="vcard-rose-grad"   x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
               <stop offset="0%"   stopColor="#FFE4E6"/><stop offset="35%" stopColor="#F43F5E"/><stop offset="70%" stopColor="#BE123C"/><stop offset="100%" stopColor="#4C0519"/>
             </linearGradient>
+            <linearGradient id="vcard-locked-grad"   x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
+              <stop offset="0%"   stopColor="#9CA3AF"/><stop offset="50%" stopColor="#4B5563"/><stop offset="100%" stopColor="#1F2937"/>
+            </linearGradient>
             <filter id="vcard-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity="0.75"/>
+              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity={0.75}/>
             </filter>
           </defs>
 
@@ -111,7 +123,7 @@ export default function SportsCenterCard({
             style={{ transform: 'scale(0.965)', transformOrigin: '170px 240px' }}
           />
 
-          {/* Horizontal Stats Separator Line (Integrated directly in card style) */}
+          {/* Horizontal Stats Separator Line */}
           <line x1="38" y1="362" x2="302" y2="362" stroke={glow} strokeWidth="1.5" opacity="0.45" />
 
           {/* Vertical Separator Lines for Stats Columns */}
@@ -148,7 +160,7 @@ export default function SportsCenterCard({
             className="block text-white leading-none font-black text-[44px]"
             style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.9)' }}
           >
-            {ovr}
+            {isPredicted ? ovr : '--'}
           </span>
           <span className="block text-center font-black text-[10px] tracking-[0.2em] uppercase mt-0.5" style={{ color: glow }}>
             VAR
@@ -178,13 +190,14 @@ export default function SportsCenterCard({
             className="flex items-center justify-center rounded-full w-8 h-8"
             style={{ background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}55`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
           >
-            <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
+            <span className="text-[14px] leading-none">{isPredicted ? (data.countryFlag || '🌍') : '🔒'}</span>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════
             ZONE B — USER AVATAR (Upper Center)
             y: 96 – 196
+            If NOT predicted, show a sleek locked lock symbol instead of Dicebear
             ══════════════════════════════════════════ */}
         <div className="absolute z-40 pointer-events-none" style={{ top: 96, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
           <div
@@ -196,20 +209,26 @@ export default function SportsCenterCard({
               background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
             }}
           >
-            <div className="w-full h-full rounded-full overflow-hidden" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.75)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
+            <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.8)' }}>
+              {isPredicted ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
+              ) : (
+                <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v-6.75a2.25 2.25 0 002.25-2.25z"></path>
+                </svg>
+              )}
             </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE C — VERDICT HEADLINE (Below Avatar)
-            y: 206 – 232
+            ZONE C — VERDICT HEADLINE / NAME (Shifted just above score pill)
+            y: 216
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 206, left: 16, right: 16 }}>
+        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 216, left: 16, right: 16 }}>
           <h2
-            className="text-white uppercase leading-none font-black text-[24px] tracking-[0.05em]"
+            className="text-white uppercase leading-none font-black text-[22px] tracking-[0.05em]"
             style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.95)' }}
           >
             {verdictLabel}
@@ -217,22 +236,10 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE D — VERDICT SENTENCE / DETAIL
-            y: 236 – 258
+            ZONE E — MATCH FIXTURE & SCORE (Shifted down, just above stats)
+            y: 260
             ══════════════════════════════════════════ */}
-        {data.charge && (
-          <div className="absolute z-40 pointer-events-none text-center" style={{ top: 236, left: 24, right: 24 }}>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest line-clamp-1 italic">
-              &ldquo;{data.charge}&rdquo;
-            </p>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════
-            ZONE E — MATCH FIXTURE & SCORE (Just above Stats)
-            y: 304 – 344
-            ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 304, left: 0, right: 0 }}>
+        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 260, left: 0, right: 0 }}>
           <div
             className="rounded-lg px-4 py-2 flex items-center gap-3 backdrop-blur-md"
             style={{
@@ -252,7 +259,7 @@ export default function SportsCenterCard({
             </div>
 
             <span className="font-black text-[11px] text-white/50 px-1 font-mono flex items-center">
-              {score ? (
+              {isPredicted && score ? (
                 <span className="text-white bg-white/10 px-2 py-0.5 rounded font-bold font-mono">
                   {score}
                 </span>
@@ -274,7 +281,6 @@ export default function SportsCenterCard({
         {/* ══════════════════════════════════════════
             ZONE F — INTEGRATED STATS PANEL (Bottom Position)
             y: 364 – 416 (absolute bottom-[64px])
-            No separate card floating background box; integrated directly.
             ══════════════════════════════════════════ */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
           <div className="w-full h-[52px] flex items-center justify-between px-2 py-1">
@@ -287,7 +293,7 @@ export default function SportsCenterCard({
                   className="text-[18px] font-black text-white leading-none mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
                   style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                 >
-                  {m.val}
+                  {isPredicted ? m.val : '--'}
                 </span>
               </div>
             ))}

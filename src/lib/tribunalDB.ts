@@ -57,6 +57,7 @@ export interface VerdictData {
   awayFlag?: string;
   homeFifaCode?: string;
   awayFifaCode?: string;
+  isPredicted?: boolean;
 }
 
 export interface ProphecyData {

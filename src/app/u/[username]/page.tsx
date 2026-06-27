@@ -253,6 +253,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       awayFlag: awayTeam.flag,
       homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
       awayFifaCode: (awayTeam as any).fifa_code || awayTeam.name_en?.slice(0, 3).toUpperCase(),
+      isPredicted: !!claimedCard,
       statsJson: {
         prd: profile.predictionRating || 85,
         mgr: profile.managerRating || 88,
@@ -550,6 +551,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           awayFlag: activeVerdictCard.awayFlag,
                           homeFifaCode: (activeVerdictCard as any).homeFifaCode,
                           awayFifaCode: (activeVerdictCard as any).awayFifaCode,
+                          isPredicted: activeVerdictCard.isPredicted,
                         }} />
                       ) : (
                         <SportsCenterCard data={{

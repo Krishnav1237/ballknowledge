@@ -223,6 +223,7 @@ export default function FootballIQPage() {
       awayFlag: awayTeam.flag,
       homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
       awayFifaCode: (awayTeam as any).fifa_code || awayTeam.name_en?.slice(0, 3).toUpperCase(),
+      isPredicted: !!userPred,
       statsJson: {
         prd: userPred?.homeScore !== undefined ? 92 : profile.predictionRating || 75,
         mgr: userPred?.managerRating || profile.managerRating || 85,
@@ -527,6 +528,7 @@ export default function FootballIQPage() {
                           awayFlag: activeVerdictCard.awayFlag,
                           homeFifaCode: (activeVerdictCard as any).homeFifaCode,
                           awayFifaCode: (activeVerdictCard as any).awayFifaCode,
+                          isPredicted: activeVerdictCard.isPredicted,
                         }} />
                       ) : (
                         <SportsCenterCard data={{
