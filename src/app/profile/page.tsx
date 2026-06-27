@@ -410,7 +410,7 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
       ) : (
-        <div className="relative flex flex-col bg-[#07090E] pt-[52px] flex-grow pb-16">
+        <div className="relative flex flex-col bg-[#07090E] pt-[52px] min-h-[calc(100vh-52px)] flex-grow pb-8 justify-center">
 
           {/* Clean Subdued Background */}
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -426,12 +426,12 @@ export default function ProfileSettingsPage() {
           </div>
 
           {/* Main Dashboard Panel */}
-          <div className="relative z-10 flex flex-col px-6 pt-1 pb-4 max-w-8xl w-full mx-auto">
-            <div className="w-full flex flex-col bg-[#0F111A]/85 border border-rose-900/35 rounded-2xl shadow-[0_0_50px_rgba(225,29,72,0.08)] backdrop-blur-2xl relative overflow-hidden select-none">
+          <div className="relative z-10 flex flex-col px-4 sm:px-6 py-4 max-w-8xl w-full mx-auto flex-grow justify-center">
+            <div className="w-full flex flex-col bg-[#0F111A]/90 border border-rose-900/40 rounded-3xl shadow-[0_0_60px_rgba(225,29,72,0.12)] backdrop-blur-2xl relative overflow-hidden select-none">
               <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#E11D48] to-transparent z-30" />
 
               {/* ─── TOP BAR ─── */}
-              <div className="flex justify-between items-center px-6 py-4 border-b border-rose-950/20 shrink-0 z-20">
+              <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-rose-950/30 shrink-0 z-20 bg-black/30">
                 <div>
                   <h2 className="font-sans font-bold text-base text-white uppercase tracking-wider leading-none">
                     Manager Profile Settings

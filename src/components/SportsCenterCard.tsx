@@ -1,6 +1,7 @@
 'use client';
 
 import { VerdictData } from '@/lib/tribunalDB';
+import { User } from 'lucide-react';
 
 function get4Metrics(data: VerdictData): [
   { label: string; val: number },
@@ -48,10 +49,8 @@ export default function SportsCenterCard({
 }) {
   const metrics = get4Metrics(data);
   const hasAiImage = Boolean(data.aiImageUrl);
-  const avatarSrc = data.avatarSeed
-    ? data.avatarSeed.startsWith('data:image/') || data.avatarSeed.startsWith('/') || data.avatarSeed.startsWith('http')
-      ? data.avatarSeed
-      : `https://api.dicebear.com/7.x/${data.avatarStyle || 'fun-emoji'}/svg?seed=${encodeURIComponent(data.avatarSeed || data.playerName || 'MANAGER')}&backgroundColor=transparent`
+  const avatarSrc = data.avatarSeed && (data.avatarSeed.startsWith('data:image/') || data.avatarSeed.startsWith('/') || data.avatarSeed.startsWith('http'))
+    ? data.avatarSeed
     : null;
 
   return (
@@ -126,16 +125,20 @@ export default function SportsCenterCard({
 
             {/* Center Player Portrait Cutout Spotlight */}
             <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto">
-              {avatarSrc && (
-                <div className="relative w-32 h-32 mb-2 flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+              <div className="relative w-28 h-28 mb-2 flex items-center justify-center">
+                {avatarSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={avatarSrc}
                     alt="Player Portrait"
                     className="w-full h-full object-contain filter drop-shadow-[0_8px_20px_rgba(0,0,0,0.85)]"
                   />
-                </div>
-              )}
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-[#13070A]/80 border-2 border-[#E11D48]/40 flex items-center justify-center shadow-[0_0_20px_rgba(225,29,72,0.3)]">
+                    <User className="w-10 h-10 text-rose-400/70" />
+                  </div>
+                )}
+              </div>
 
               {/* Manager Name & Verdict */}
               <div className="text-center">
