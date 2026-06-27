@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
-import { Share2, ShieldAlert, CheckCircle, Lock, Download, Trophy, Shield } from 'lucide-react';
+import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
 interface Team {
@@ -33,363 +33,377 @@ interface Match {
   away_team_label?: string;
 }
 
-const SYSTEM_DATE = new Date('2026-06-16T19:20:00Z');
+const SYSTEM_DATE = new Date('2026-06-11T12:00:00Z');
 
 export default function FootballIQPage() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
-  const [userPreds, setUserPreds] = useState<any>({});
-  const [selectedCard, setSelectedCard] = useState<any>(null);
-  const [activePedestalTab, setActivePedestalTab] = useState<'manager' | 'verdict'>('manager');
-
-  const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const pedestalCardRef = useRef<HTMLDivElement>(null);
-
-  const handleCopyLink = (platform: string, url: string) => {
-    navigator.clipboard.writeText(url);
-    setCopiedPlatform(platform);
-    setTimeout(() => setCopiedPlatform(null), 2000);
-  };
-
-  const handleDownloadPedestalPng = async () => {
-    if (!pedestalCardRef.current || !profile) return;
-    setDownloading(true);
-    try {
-      const dataUrl = await toPng(pedestalCardRef.current, { cacheBust: true, quality: 0.95 });
-      const link = document.createElement('a');
-      const label = activePedestalTab === 'verdict' && selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Manager_Deck';
-      link.download = `${profile.username.replace(/\s+/g, '_')}_${label}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Download failed:', err);
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  // Tournament data states
+  const [userPreds, setUserPreds] = useState<Record<string, any>>({});
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(true);
+  
   const [selectedMatchday, setSelectedMatchday] = useState('1');
   const [filterRarity, setFilterRarity] = useState('ALL');
-  const [loadingMatches, setLoadingMatches] = useState(true);
-
-  // 3D Tilt states
+  const [selectedCard, setSelectedCard] = useState<any | null>(null);
+  const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('deck');
+  
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
   const [miniCardTilts, setMiniCardTilts] = useState<Record<string, any>>({});
+  const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const cardPedestalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setProfile(getStoredProfile());
-    setUserPreds(getStoredPredictions());
+    const p = getStoredProfile();
+    setProfile(p);
+    const preds = getStoredPredictions();
+    setUserPreds(preds);
 
-    const fetchTournamentData = async () => {
+    async function fetchData() {
       try {
-        const [matchesRes, teamsRes] = await Promise.all([
+        const [resM, resT] = await Promise.all([
           fetch('/api/matches'),
           fetch('/api/teams')
         ]);
-
-        if (matchesRes.ok && teamsRes.ok) {
-          const [matchesData, teamsData] = await Promise.all([
-            matchesRes.json(),
-            teamsRes.json()
-          ]);
-          setMatches(matchesData);
-          setTeams(teamsData);
-        } else {
-          throw new Error('Remote fetch failed');
+        if (resM.ok && resT.ok) {
+          const datM = await resM.json();
+          const datT = await resT.json();
+          setMatches(datM.matches || []);
+          setTeams(datT.teams || []);
         }
-      } catch (err) {
-        console.error('Failed to fetch remote World Cup data:', err);
-        setError('Failed to retrieve tournament standings and matches from the server.');
+      } catch (e) {
+        console.error('Failed to load matches/teams', e);
       } finally {
         setLoadingMatches(false);
       }
-    };
+    }
+    fetchData();
 
-    fetchTournamentData();
+    const handleStorage = () => {
+      setProfile(getStoredProfile());
+      setUserPreds(getStoredPredictions());
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center pt-[52px]">
-        <div className="max-w-md bg-[#0B0F19]/90 border border-white/15 p-8 rounded-3xl shadow-xl backdrop-blur-md">
-          <ShieldAlert className="w-12 h-12 text-[#E11D48] mb-4 mx-auto" />
-          <h2 className="font-display font-black text-xl text-white uppercase mb-2">Connection Failure</h2>
-          <p className="text-gray-300 text-xs leading-relaxed mb-6 font-medium">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-block py-3 px-6 rounded-xl bg-[#E11D48] text-white font-display font-black text-xs uppercase tracking-wider shadow-md hover:bg-rose-700 transition-colors cursor-pointer"
-          >
-            Retry Connection
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!profile) return null;
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-300">Retrieving Football reputation card...</p>
-      </div>
-    );
-  }
+  // Compute album metrics
+  const predArray = Object.values(userPreds);
+  const totalMatches = predArray.length;
+  const exactCount = predArray.filter(p => p.exactScore).length;
+  const accuracy = totalMatches > 0 ? Math.round((exactCount / totalMatches) * 100) : 0;
 
-  const playstyle = profile.overallRating >= 85 ? 'TACTICAL MASTERMIND' : (profile.overallRating >= 70 ? 'CERTIFIED CHEF' : (profile.overallRating >= 45 ? 'ROOKIE TACTICIAN' : 'DELUSION MERCHANT'));
-  const badge = profile.overallRating >= 85 ? '👑' : (profile.overallRating >= 70 ? '⚖️' : (profile.overallRating >= 45 ? '🔥' : '⚠️'));
+  let legendaryCount = 0;
+  let epicCount = 0;
+  let rareCount = 0;
+  let commonCount = 0;
 
-  // Filter matches by selected matchday
-  const matchdayMatches = matches.filter(m => m.matchday === selectedMatchday);
-
-  // Generate cards and calculate metrics for current matchday
-  const matchdayCards = matchdayMatches.map(m => {
-    const p = userPreds[m.id];
-    const finished = m.finished === 'TRUE' || m.finished === 'true';
-    const mDate = parseLocalDate(m.local_date);
-    const expired = !finished && mDate < SYSTEM_DATE;
-
-    const homeTeam = teams.find(t => t.id === m.home_team_id) || { name_en: m.home_team_label || 'Home', flag: '', groups: 'A' };
-    const awayTeam = teams.find(t => t.id === m.away_team_id) || { name_en: m.away_team_label || 'Away', flag: '', groups: 'A' };
-
-    let status: 'LOCKED' | 'GRADED' | 'EXPIRED' = 'LOCKED';
-    let cardData: any = null;
-
-    if (finished && p) {
-      status = 'GRADED';
-      const actualHome = parseInt(m.home_score, 10);
-      const actualAway = parseInt(m.away_score, 10);
-      const exactScore = p.homeScore === actualHome && p.awayScore === actualAway;
-      const correctOutcome = (p.homeScore > p.awayScore && actualHome > actualAway) ||
-                             (p.homeScore < p.awayScore && actualHome < actualAway) ||
-                             (p.homeScore === p.awayScore && actualHome === actualAway);
-
-      let rating = profile.overallRating;
-      let rarity = 'COMMON';
-      let verdict = 'NEUTRAL RULING';
-      let charge = 'Standard Match Prediction';
-      let sentence = 'Case Closed';
-
-      if (exactScore) {
-        rating = Math.min(99, profile.overallRating + 8);
-        rarity = 'LEGENDARY';
-        verdict = 'TACTICAL MASTERMIND';
-        charge = `EXACT SCORE PREDICTION (${p.homeScore}-${p.awayScore})`;
-        sentence = 'Awarded Maximum VAR Distinction (+15 Pts)';
-      } else if (correctOutcome) {
-        rating = Math.min(99, profile.overallRating + 4);
-        rarity = 'EPIC';
-        verdict = 'CERTIFIED CHEF';
-        charge = `CORRECT OUTCOME PREDICTED`;
-        sentence = 'VAR Approved Tactical Take (+5 Pts)';
-      } else {
-        rating = Math.max(30, profile.overallRating - 5);
-        rarity = 'RARE';
-        verdict = 'DELUSION MERCHANT';
-        charge = `INCORRECT OUTCOME PREDICTED`;
-        sentence = 'Sentenced to Tactical Re-education (-2 Pts)';
-      }
-
-      cardData = {
-        id: `card_${m.id}`,
-        matchId: m.id,
-        rating,
-        rarity,
-        verdict,
-        charge,
-        sentence,
-        evidence: p.hotTake ? `Hot Take statement: "${p.hotTake}" (VAR grading: ${verdict})` : `Score prediction submitted: ${p.homeScore}-${p.awayScore}`,
-        homeTeam: homeTeam.name_en,
-        awayTeam: awayTeam.name_en,
-        homeScore: m.home_score,
-        awayScore: m.away_score,
-        cardTheme: rarity === 'LEGENDARY' ? 'gold' : (rarity === 'EPIC' ? 'purple' : 'blue'),
-        statsJson: { prd: rating, mgr: Math.max(30, rating - 3), hot: Math.min(99, rating + 2), rst: Math.min(99, rating + 1) }
-      };
-    } else if (expired) {
-      status = 'EXPIRED';
-    }
-
-    return { match: m, status, card: cardData, homeTeam, awayTeam };
+  predArray.forEach(p => {
+    const ovr = p.cardRating || 50;
+    if (ovr >= 85) legendaryCount++;
+    else if (ovr >= 70) epicCount++;
+    else if (ovr >= 45) rareCount++;
+    else commonCount++;
   });
 
-  // Filter slot cards by rarity tab
-  const filteredMatches = matchdayCards.filter(item => {
-    if (filterRarity === 'ALL') return true;
-    if (filterRarity === 'LOCKED') return item.status === 'LOCKED';
-    if (filterRarity === 'MISSED') return item.status === 'EXPIRED';
-    return item.status === 'GRADED' && item.card?.rarity === filterRarity;
-  });
-
-  // Calculate album metrics
-  const totalMatches = matchdayCards.length;
-  const gradedCount = matchdayCards.filter(c => c.status === 'GRADED').length;
-  const legendaryCount = matchdayCards.filter(c => c.card?.rarity === 'LEGENDARY').length;
-  const epicCount = matchdayCards.filter(c => c.card?.rarity === 'EPIC').length;
-  const rareCount = matchdayCards.filter(c => c.card?.rarity === 'RARE').length;
-  const commonCount = matchdayCards.filter(c => c.card?.rarity === 'COMMON').length;
-  
   const totalAlbumSlots = 72;
-  const albumProgressPercent = Math.round((gradedCount / totalAlbumSlots) * 100);
-  const exactCount = matchdayCards.filter(c => c.card?.rarity === 'LEGENDARY').length;
-  const accuracy = gradedCount > 0 ? Math.round((exactCount / gradedCount) * 100) : 0;
+  const albumProgressPercent = Math.min(100, Math.round((totalMatches / totalAlbumSlots) * 100));
 
-  // Handle Card Slot Click
-  const handleSlotClick = (item: any) => {
-    if (item.status === 'GRADED' && item.card) {
-      setSelectedCard(item.card);
-      setActivePedestalTab('verdict');
+  let playstyle = 'Rookie Fan';
+  let badge = '🌍';
+  if (profile.overallRating >= 85) {
+    playstyle = 'VISIONARY PROPHET';
+    badge = '🧠';
+  } else if (profile.overallRating >= 70) {
+    playstyle = 'ELITE MASTERMIND';
+    badge = '🔥';
+  } else if (profile.overallRating >= 45) {
+    playstyle = 'DELUSION MERCHANT';
+    badge = '⚖️';
+  } else {
+    playstyle = 'FOOTBALL TERRORIST';
+    badge = '💀';
+  }
+
+  const getMatchStatus = (match: Match) => {
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
+    const timeDiff = SYSTEM_DATE.getTime() - kickoff.getTime();
+    if (timeDiff >= 2 * 60 * 60 * 1000) {
+      return 'COMPLETED';
+    } else if (timeDiff >= 0) {
+      return 'LIVE';
+    } else {
+      return 'UPCOMING';
     }
   };
 
-  const handleMiniMouseMove = (id: string, e: React.MouseEvent<HTMLDivElement>) => {
-    const box = e.currentTarget.getBoundingClientRect();
+  const handlePedestalMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const box = card.getBoundingClientRect();
+    const x = e.clientX - box.left - box.width / 2;
+    const y = e.clientY - box.top - box.height / 2;
+    const tiltX = -(y / (box.height / 2)) * 10;
+    const tiltY = (x / (box.width / 2)) * 10;
+    setPedestalTiltStyle({
+      transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`,
+      transition: 'transform 0.05s ease'
+    });
+  };
+
+  const handlePedestalMouseLeave = () => {
+    setPedestalTiltStyle({
+      transform: 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+      transition: 'transform 0.4s ease'
+    });
+  };
+
+  const handleMiniMouseMove = (e: React.MouseEvent<HTMLDivElement>, matchId: string) => {
+    const card = e.currentTarget;
+    const box = card.getBoundingClientRect();
     const x = e.clientX - box.left - box.width / 2;
     const y = e.clientY - box.top - box.height / 2;
     const tiltX = -(y / (box.height / 2)) * 12;
     const tiltY = (x / (box.width / 2)) * 12;
     setMiniCardTilts(prev => ({
       ...prev,
-      [id]: { transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.04, 1.04, 1.04)`, transition: 'transform 0.05s ease' }
+      [matchId]: {
+        transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.05, 1.05, 1.05)`,
+        zIndex: 10,
+        transition: 'transform 0.05s ease'
+      }
     }));
   };
 
-  const handleMiniMouseLeave = (id: string) => {
+  const handleMiniMouseLeave = (matchId: string) => {
     setMiniCardTilts(prev => ({
       ...prev,
-      [id]: { transform: 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)', transition: 'transform 0.4s ease' }
+      [matchId]: {
+        transform: 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+        zIndex: 1,
+        transition: 'transform 0.3s ease'
+      }
     }));
   };
 
-  const handlePedestalMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const box = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - box.left - box.width / 2;
-    const y = e.clientY - box.top - box.height / 2;
-    const tiltX = -(y / (box.height / 2)) * 14;
-    const tiltY = (x / (box.width / 2)) * 14;
-    setPedestalTiltStyle({ transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`, transition: 'transform 0.05s ease' });
-  };
-
-  const handlePedestalMouseLeave = () => {
-    setPedestalTiltStyle({ transform: 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)', transition: 'transform 0.4s ease' });
-  };
-
-  const getShareUrl = (type: 'profile' | 'card', id?: string) => {
+  const getShareUrl = (type: 'profile' | 'card', idStr?: string) => {
     if (typeof window === 'undefined') return '';
-    if (type === 'card' && id) return `${window.location.origin}/card/${id}`;
-    return `${window.location.origin}/u/${profile.username}`;
+    return type === 'profile' 
+      ? `${window.location.origin}/u/${profile.username}` 
+      : `${window.location.origin}/card/${idStr}`;
   };
 
-  // Render individual card slot
-  const renderCardSlot = (item: any) => {
-    const { match: m, status, card: c, homeTeam, awayTeam } = item;
-    const slotId = m.id;
-    const tilt = miniCardTilts[slotId] || {};
+  const handleCopyLink = (platformStr: string, textToCopy: string) => {
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedPlatform(platformStr);
+    setTimeout(() => setCopiedPlatform(null), 2500);
+  };
 
-    let rarityBorder = 'border-white/10 bg-black/40';
-    let badgeBg = 'bg-zinc-800 text-zinc-400';
+  const handleDownloadPng = async () => {
+    if (!cardPedestalRef.current) return;
+    setDownloading(true);
+    try {
+      const dataUrl = await toPng(cardPedestalRef.current, { cacheBust: true, quality: 0.95 });
+      const link = document.createElement('a');
+      const label = selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Tournament_Deck';
+      link.download = `${profile.username.replace(/\s+/g, '_')}_${label}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Export failed:', err);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
-    if (status === 'GRADED' && c) {
-      if (c.rarity === 'LEGENDARY') {
-        rarityBorder = 'border-amber-400/60 bg-gradient-to-b from-amber-950/40 to-black/80 shadow-[0_0_15px_rgba(245,158,11,0.25)]';
-        badgeBg = 'bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black';
-      } else if (c.rarity === 'EPIC') {
-        rarityBorder = 'border-purple-500/60 bg-gradient-to-b from-purple-950/40 to-black/80 shadow-[0_0_15px_rgba(168,85,247,0.25)]';
-        badgeBg = 'bg-purple-600 text-white font-black';
-      } else {
-        rarityBorder = 'border-blue-500/60 bg-gradient-to-b from-blue-950/40 to-black/80 shadow-[0_0_15px_rgba(59,130,246,0.25)]';
-        badgeBg = 'bg-blue-600 text-white font-black';
+  const matchdayMatches = matches.filter(m => m.matchday === selectedMatchday && m.type === 'group');
+
+  const filteredMatches = matchdayMatches.filter(match => {
+    const userPred = userPreds[match.id];
+    const status = getMatchStatus(match);
+
+    if (filterRarity === 'ALL') return true;
+    if (filterRarity === 'LOCKED') return userPred && !userPred.resolved;
+    if (filterRarity === 'MISSED') return status === 'COMPLETED' && (!userPred || !userPred.resolved);
+    
+    if (!userPred || !userPred.resolved) return false;
+    const ovr = userPred.cardRating || 50;
+    let rarity = 'COMMON';
+    if (ovr >= 85) rarity = 'LEGENDARY';
+    else if (ovr >= 70) rarity = 'EPIC';
+    else if (ovr >= 45) rarity = 'RARE';
+
+    return rarity === filterRarity;
+  });
+
+  const renderCardSlot = (match: Match) => {
+    const homeTeam = teams.find(t => t.id === match.home_team_id) || {
+      id: match.home_team_id,
+      name_en: match.home_team_label || 'Home',
+      flag: 'https://flagcdn.com/w80/un.png',
+      fifa_code: match.home_team_label ? match.home_team_label.slice(0, 3).toUpperCase() : 'TBD',
+      groups: match.group || 'A'
+    };
+    const awayTeam = teams.find(t => t.id === match.away_team_id) || {
+      id: match.away_team_id,
+      name_en: match.away_team_label || 'Away',
+      flag: 'https://flagcdn.com/w80/un.png',
+      fifa_code: match.away_team_label ? match.away_team_label.slice(0, 3).toUpperCase() : 'TBD',
+      groups: match.group || 'A'
+    };
+
+    const userPred = userPreds[match.id];
+    const status = getMatchStatus(match);
+
+    if (userPred && userPred.resolved) {
+      const ovr = userPred.cardRating || 50;
+      let rarity = 'COMMON';
+      let textGlow = 'text-gray-300';
+      let borderGlow = 'border-white/20';
+
+      if (ovr >= 85) {
+        rarity = 'LEGENDARY';
+        textGlow = 'text-amber-300';
+        borderGlow = 'border-amber-400/50';
+      } else if (ovr >= 70) {
+        rarity = 'EPIC';
+        textGlow = 'text-purple-300';
+        borderGlow = 'border-purple-400/50';
+      } else if (ovr >= 45) {
+        rarity = 'RARE';
+        textGlow = 'text-blue-300';
+        borderGlow = 'border-blue-400/50';
       }
-    } else if (status === 'EXPIRED') {
-      rarityBorder = 'border-rose-900/40 bg-rose-950/20 opacity-60';
+
+      const cardObj = {
+        id: userPred.cardId || match.id,
+        matchId: match.id,
+        rating: ovr,
+        verdict: userPred.verdict || 'CERTIFIED CHEF',
+        charge: userPred.charge || `${homeTeam.name_en} vs ${awayTeam.name_en}`,
+        sentence: userPred.sentence || `Score: ${userPred.predHomeScore}-${userPred.predAwayScore}`,
+        evidence: `Hot Take statement: "${userPred.hotTake || 'Tactical Mastermind'}"`,
+        rarity,
+        cardTheme: ovr >= 85 ? 'gold' : 'crimson',
+        matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
+        matchScore: userPred.predHomeScore !== undefined ? `${userPred.predHomeScore} - ${userPred.predAwayScore}` : undefined,
+        statsJson: {
+          prd: userPred.predHomeScore !== undefined ? 92 : 75,
+          mgr: userPred.managerRating || 85,
+          hot: userPred.hotTakeRating || 88,
+          rst: userPred.roastScore || 80
+        }
+      };
+
+      const isSelected = selectedCard?.matchId === match.id;
+
+      return (
+        <div
+          key={match.id}
+          onMouseMove={(e) => handleMiniMouseMove(e, match.id)}
+          onMouseLeave={() => handleMiniMouseLeave(match.id)}
+          style={miniCardTilts[match.id] || {}}
+          onClick={() => {
+            setSelectedCard(cardObj);
+            setActiveRightTab('verdict');
+          }}
+          className={`card-mini-fut-slot card-3d-tilt cursor-pointer relative z-10 group filter drop-shadow-md transition-all ${
+            isSelected ? 'ring-2 ring-amber-400 scale-[1.03]' : ''
+          }`}
+        >
+          <div className={`h-full w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2 flex flex-col justify-between backdrop-blur-md`}>
+            <div className="flex justify-between items-start">
+              <div className="flex flex-col items-center">
+                <span className="font-mono font-black text-lg leading-none text-white">{ovr}</span>
+                <div className="flex gap-1 mt-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={homeTeam.flag} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={awayTeam.flag} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                </div>
+              </div>
+              <span className={`text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
+                {rarity.slice(0, 3)}
+              </span>
+            </div>
+
+            <div className="text-center my-auto py-1">
+              <p className="font-sans font-black text-[9.5px] text-white tracking-wide uppercase leading-tight line-clamp-2 px-0.5">
+                {cardObj.verdict.split(' MERCHANT')[0].split(' PROPHET')[0]}
+              </p>
+            </div>
+
+            <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] font-bold text-gray-400 uppercase tracking-widest">
+              <span>MD {selectedMatchday}</span>
+              <span className="text-amber-400 group-hover:underline">INSPECT</span>
+            </div>
+          </div>
+        </div>
+      );
     }
 
-    const isSelected = selectedCard?.id === c?.id;
+    if (status === 'COMPLETED') {
+      return (
+        <div key={match.id} className="bg-black/40 border border-red-900/30 rounded-xl p-2.5 flex flex-col justify-between items-center text-center opacity-60">
+          <span className="text-[8px] font-black text-red-500 uppercase tracking-wider">SLOT {match.id}</span>
+          <div className="my-auto py-2">
+            <span className="text-[9px] font-black text-red-400/80 uppercase tracking-widest border border-red-900/40 px-2 py-0.5 rounded">MISSED</span>
+          </div>
+          <span className="text-[7.5px] text-zinc-500 uppercase font-bold">Expired</span>
+        </div>
+      );
+    }
 
     return (
-      <div
-        key={slotId}
-        onMouseMove={(e) => handleMiniMouseMove(slotId, e)}
-        onMouseLeave={() => handleMiniMouseLeave(slotId)}
-        onClick={() => handleSlotClick(item)}
-        style={tilt}
-        className={`relative aspect-[3/4] rounded-2xl border ${rarityBorder} p-3 flex flex-col justify-between cursor-pointer transition-all duration-300 select-none overflow-hidden group ${
-          isSelected ? 'ring-2 ring-[#E11D48] scale-[1.03] z-20 shadow-2xl' : ''
-        }`}
-      >
-        {/* Top Header Badge */}
-        <div className="flex justify-between items-center z-10">
-          <span className="text-[9px] font-mono font-bold text-gray-300 uppercase">M{m.id}</span>
-          <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md ${badgeBg}`}>
-            {status === 'GRADED' ? c.rarity : status}
-          </span>
+      <div key={match.id} className="bg-black/20 border border-white/5 rounded-xl p-2.5 flex flex-col justify-between items-center text-center">
+        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-wider">SLOT {match.id}</span>
+        <div className="my-auto py-2 flex flex-col items-center gap-1">
+          <div className="flex gap-1 grayscale opacity-40">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={homeTeam.flag} alt="" className="w-4 h-3 object-cover rounded" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={awayTeam.flag} alt="" className="w-4 h-3 object-cover rounded" />
+          </div>
+          <span className="text-[8px] font-mono text-zinc-400 uppercase font-bold">UPCOMING</span>
         </div>
-
-        {/* Center Slot Content */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center my-1 z-10">
-          {status === 'GRADED' && c ? (
-            <div className="flex flex-col items-center">
-              <span className="text-2xl font-black text-white font-display tracking-tighter leading-none mb-1">{c.rating}</span>
-              <span className="text-[9px] font-bold text-amber-300 uppercase tracking-wider truncate max-w-[90px]">{c.verdict}</span>
-            </div>
-          ) : status === 'EXPIRED' ? (
-            <div className="flex flex-col items-center opacity-60">
-              <ShieldAlert className="w-6 h-6 text-rose-500 mb-1" />
-              <span className="text-[8px] font-black text-rose-400 uppercase tracking-widest">MISSED</span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center opacity-40">
-              <Lock className="w-6 h-6 text-gray-400 mb-1" />
-              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">LOCKED</span>
-            </div>
-          )}
-        </div>
-
-        {/* Bottom Teams Label */}
-        <div className="text-center z-10 border-t border-white/10 pt-1.5 mt-auto">
-          <p className="text-[9px] font-black text-white uppercase truncate">
-            {homeTeam.name_en} vs {awayTeam.name_en}
-          </p>
-        </div>
+        <span className="text-[7.5px] text-zinc-600 uppercase font-bold">Locked</span>
       </div>
     );
   };
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground flex flex-col justify-between pt-[52px] pb-6 select-none">
+    <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] pb-8 select-none">
       
-      {/* Ambient Stadium Background */}
+      {/* Background Stadium Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/game_stadium_showcase.webp" 
+          src="/images/world_cup_stadium.webp" 
           alt="World Cup Stadium background" 
           fill 
-          className="object-cover object-center opacity-[0.20]" 
+          className="object-cover object-center opacity-[0.22]" 
           priority 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#030712]/75 to-[#030712]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/60 via-[#030712]/80 to-[#030712]" />
       </div>
 
       <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8 pt-2 pb-4 w-full flex-grow flex flex-col min-h-0">
-        
         <div className="relative w-full bg-[#0B0F19]/90 border border-white/15 rounded-3xl shadow-2xl flex flex-col flex-grow min-h-0 mt-2 backdrop-blur-xl overflow-hidden">
           
-          {/* ── Unified Header Bar ── */}
-          <div className="shrink-0 border-b border-white/15 bg-black/40 backdrop-blur-md p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+          {/* ── Unified Header Panel with Horizontal Matchday Selector Pills ── */}
+          <div className="shrink-0 border-b border-white/10 bg-black/40 p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 w-full">
             <div>
               <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
                 COLLECTIBLES <span className="text-[#E11D48]">BINDER</span>
               </h1>
-              <p className="text-gray-300 text-[10px] sm:text-xs mt-1.5 font-bold uppercase tracking-widest leading-none">
+              <p className="text-gray-400 text-[10px] sm:text-xs mt-1.5 font-bold uppercase tracking-widest leading-none">
                 YOUR SHIELD COLLECTION <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
               </p>
             </div>
 
-            {/* Clean Horizontal Matchday Navigation Bar */}
-            <div className="flex bg-black/60 border border-white/15 p-1 rounded-2xl gap-1">
+            {/* Horizontal Matchday Selector Pills */}
+            <div className="flex items-center gap-2 bg-black/60 border border-white/15 p-1.5 rounded-2xl">
               {[
                 { id: '1', label: 'Matchday 1' },
                 { id: '2', label: 'Matchday 2' },
@@ -401,10 +415,10 @@ export default function FootballIQPage() {
                     setSelectedMatchday(tab.id);
                     setSelectedCard(null);
                   }}
-                  className={`px-4 py-2 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                     selectedMatchday === tab.id
-                      ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {tab.label}
@@ -413,27 +427,23 @@ export default function FootballIQPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-6 relative flex-grow flex flex-col min-h-0">
-
-            {/* Content split grid (Double page display) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow min-h-0">
+          <div className="p-4 sm:p-6 relative flex-grow flex flex-col">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow">
               
-              {/* ──────────────────────────────────────────────────────── */}
-              {/* LEFT PAGE: ALBUM SLOTS GRID & HIGH CONTRAST STATS        */}
-              {/* ──────────────────────────────────────────────────────── */}
-              <div className="lg:col-span-7 p-4 sm:p-6 flex flex-col gap-4 border border-white/15 bg-black/40 rounded-3xl backdrop-blur-md shadow-xl overflow-hidden">
+              {/* ── LEFT PAGE: ALBUM SLOTS GRID ── */}
+              <div className="lg:col-span-7 p-4 sm:p-6 flex flex-col gap-4 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
                 
-                {/* Album Page Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-3">
+                {/* Album Page Header & Reset */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
                   <div>
                     <h2 className="font-display font-black text-lg text-white uppercase tracking-wider">
                       Matchday {selectedMatchday} — Sticker Slots
                     </h2>
-                    <div className="flex gap-3 mt-1.5 text-xs font-black uppercase">
+                    <div className="flex gap-3 mt-1.5 text-xs font-black uppercase tracking-wider">
                       <span className="text-amber-400">🏆 {legendaryCount} LEG</span>
                       <span className="text-purple-400">🔥 {epicCount} EPC</span>
                       <span className="text-blue-400">⚡ {rareCount} RRE</span>
-                      <span className="text-gray-300">🪙 {commonCount} CMN</span>
+                      <span className="text-gray-400">🪙 {commonCount} CMN</span>
                     </div>
                   </div>
 
@@ -442,14 +452,14 @@ export default function FootballIQPage() {
                       setSelectedCard(null);
                       setFilterRarity('ALL');
                     }}
-                    className="px-3.5 py-2 text-xs font-black text-rose-300 bg-rose-500/15 border border-rose-500/30 rounded-xl uppercase tracking-wider hover:bg-rose-500/25 transition-all cursor-pointer shrink-0"
+                    className="px-3.5 py-1.5 text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-xl uppercase tracking-wider hover:bg-rose-500/20 transition-all cursor-pointer shrink-0"
                   >
-                    Reset Slots
+                    Reset Filter
                   </button>
                 </div>
 
-                {/* Compact High-Contrast Stats Row */}
-                <div className="grid grid-cols-2 gap-3 bg-black/60 border border-white/10 rounded-2xl p-3.5 shadow-md">
+                {/* High-Contrast Stats Row */}
+                <div className="grid grid-cols-2 gap-4 bg-black/50 border border-white/10 rounded-2xl p-3.5 shadow-md">
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center text-xs font-black text-gray-300 uppercase tracking-widest">
                       <span>Album Progress</span>
@@ -457,30 +467,29 @@ export default function FootballIQPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-[#881337] to-[#E11D48] rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
+                        <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
                       </div>
-                      <span className="font-mono text-xs font-black text-rose-400 shrink-0">{albumProgressPercent}%</span>
+                      <span className="font-mono text-xs font-black text-[#E11D48] shrink-0">{albumProgressPercent}%</span>
                     </div>
                   </div>
-
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center text-xs font-black text-gray-300 uppercase tracking-widest">
-                      <span>VAR Accuracy</span>
-                      <span className="font-mono text-white font-bold">{accuracy}% exact</span>
+                      <span>Exact Accuracy</span>
+                      <span className="font-mono text-white font-bold">{accuracy}%</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-700" style={{ width: `${accuracy}%` }} />
+                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700" style={{ width: `${accuracy}%` }} />
                       </div>
-                      <span className="font-mono text-xs font-black text-amber-400 shrink-0">EXACT</span>
+                      <span className="font-mono text-xs font-black text-emerald-400 shrink-0">EXACT</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Album Slot Filter Pills */}
+                {/* Album Slot Filter Chips */}
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { id: 'ALL', label: 'All' },
+                    { id: 'ALL', label: 'All Slots' },
                     { id: 'LEGENDARY', label: 'Legendary' },
                     { id: 'EPIC', label: 'Epic' },
                     { id: 'RARE', label: 'Rare' },
@@ -493,8 +502,8 @@ export default function FootballIQPage() {
                       onClick={() => setFilterRarity(f.id)}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider border transition-all cursor-pointer ${
                         filterRarity === f.id
-                          ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-sm'
-                          : 'bg-black/40 border-white/10 text-gray-300 hover:bg-black/60 hover:text-white'
+                          ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
+                          : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
                       }`}
                     >
                       {f.label}
@@ -503,16 +512,16 @@ export default function FootballIQPage() {
                 </div>
 
                 {/* Slots Grid */}
-                <div className="flex-1 overflow-y-auto pr-1">
+                <div className="flex-1 overflow-y-auto min-h-[300px]">
                   {loadingMatches ? (
                     <div className="text-center py-20 flex flex-col items-center justify-center">
                       <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-3" />
-                      <p className="text-xs text-gray-400 font-bold uppercase">Consulting VAR database...</p>
+                      <p className="text-xs text-gray-400 font-semibold uppercase">Consulting database...</p>
                     </div>
                   ) : filteredMatches.length === 0 ? (
                     <div className="text-center py-16 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-2xl bg-black/20">
                       <ShieldAlert className="w-8 h-8 text-gray-400 mb-2.5" />
-                      <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots on page</p>
+                      <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots found on this matchday</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -520,35 +529,27 @@ export default function FootballIQPage() {
                     </div>
                   )}
                 </div>
-
-                {/* Footer notes */}
-                <div className="border-t border-white/10 pt-2 flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  <span>Matchday {selectedMatchday} group stage</span>
-                  <span>VAR Collectibles v2.0</span>
-                </div>
               </div>
 
-              {/* ──────────────────────────────────────────────────────── */}
-              {/* RIGHT PAGE: STICKY SHOWCASE SHOWCASING BOTH CARDS         */}
-              {/* ──────────────────────────────────────────────────────── */}
-              <div className="lg:col-span-5 p-4 sm:p-6 border border-white/15 bg-black/40 rounded-3xl flex flex-col justify-between shadow-2xl backdrop-blur-md relative overflow-hidden">
+              {/* ── RIGHT PAGE: DUAL CARD PREVIEW & DIRECT VERDICT SHARING ── */}
+              <div className="lg:col-span-5 p-4 sm:p-6 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
                 
-                {/* Pedestal Tab Switcher */}
-                <div className="flex bg-black/60 border border-white/15 p-1 rounded-2xl mb-4 shadow-md w-full relative z-30">
+                {/* Dual Card Preview Selector Bar */}
+                <div className="flex bg-black/60 border border-white/15 p-1.5 rounded-2xl mb-4 shadow-md w-full z-20">
                   <button
-                    onClick={() => setActivePedestalTab('manager')}
+                    onClick={() => setActiveRightTab('deck')}
                     className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      activePedestalTab === 'manager'
+                      activeRightTab === 'deck'
                         ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-md'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    <Trophy className="w-3.5 h-3.5" /> Manager Deck
+                    <Trophy className="w-3.5 h-3.5" /> Tournament Deck
                   </button>
                   <button
-                    onClick={() => setActivePedestalTab('verdict')}
+                    onClick={() => setActiveRightTab('verdict')}
                     className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      activePedestalTab === 'verdict'
+                      activeRightTab === 'verdict'
                         ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
                         : 'text-gray-400 hover:text-white'
                     }`}
@@ -557,86 +558,89 @@ export default function FootballIQPage() {
                   </button>
                 </div>
 
-                {/* Pedestal and Card Display */}
-                <div className="flex flex-col items-center justify-center gap-4 w-full relative z-20 flex-grow">
-                  
-                  <div 
-                    onMouseMove={handlePedestalMouseMove}
-                    onMouseLeave={handlePedestalMouseLeave}
-                    style={pedestalTiltStyle}
-                    className="relative card-3d-tilt transform origin-center scale-[0.80] sm:scale-[0.85] lg:scale-[0.82] xl:scale-[0.88]"
-                  >
-                    {activePedestalTab === 'verdict' && selectedCard ? (
-                      <SportsCenterCard cardRef={pedestalCardRef} data={{
-                        text: selectedCard.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
-                        mode: 'take',
-                        caseId: 2026,
-                        fanbase: null,
-                        isRivalry: false,
-                        rarity: selectedCard.rarity,
-                        ovr: selectedCard.rating,
-                        rulingText: selectedCard.verdict,
-                        verdict: selectedCard.verdict,
-                        charge: selectedCard.charge,
-                        sentence: selectedCard.sentence,
-                        ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
-                        stats: [
-                          { label: 'PRD', name: 'Prediction', val: (selectedCard.statsJson as any)?.prd ?? (selectedCard.statsJson as any)?.predictionPerfScore ?? selectedCard.rating },
-                          { label: 'MGR', name: 'Manager Score', val: (selectedCard.statsJson as any)?.mgr ?? (selectedCard.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, selectedCard.rating - 3)) },
-                          { label: 'HOT', name: 'Hot Take', val: (selectedCard.statsJson as any)?.hot ?? (selectedCard.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
-                          { label: 'RST', name: 'Roast Score', val: (selectedCard.statsJson as any)?.rst ?? (selectedCard.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, selectedCard.rating + 1)) }
-                        ],
-                        cardTheme: selectedCard.cardTheme || 'gold',
-                        countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-                        playerName: profile.username,
-                        playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM',
-                        avatarStyle: profile.avatarStyle,
-                        avatarSeed: profile.avatarSeed,
-                        matchTitle: `${selectedCard.homeTeam} vs ${selectedCard.awayTeam}`,
-                        matchScore: `${selectedCard.homeScore} - ${selectedCard.awayScore}`
-                      }} />
-                    ) : (
-                      <SportsCenterCard cardRef={pedestalCardRef} data={{
-                        text: `Loyal supporter of ${profile.favoriteNation || 'Argentina'}. Fighting for tactical ball knowledge in the 2026 tournament.`,
-                        mode: 'court',
-                        caseId: 1000,
-                        fanbase: null,
-                        isRivalry: false,
-                        rarity: profile.overallRating >= 85 ? 'LEGENDARY' : (profile.overallRating >= 70 ? 'EPIC' : (profile.overallRating >= 45 ? 'RARE' : 'COMMON')),
-                        ovr: profile.overallRating,
-                        rulingText: playstyle,
-                        verdict: playstyle,
-                        charge: `ACCURACY: ${accuracy}% OVER MATCHDAYS`,
-                        sentence: `Total Matches Predicted: ${totalMatches} Resolved`,
-                        ach: { title: 'Reputation', desc: 'Active Profile', badge },
-                        stats: [
-                          { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
-                          { label: 'MGR', name: 'Manager Score', val: profile.managerRating },
-                          { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating },
-                          { label: 'RST', name: 'Roast Score', val: profile.roastScore }
-                        ],
-                        cardTheme: 'gold',
-                        countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-                        playerName: profile.username,
-                        playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM',
-                        avatarStyle: profile.avatarStyle,
-                        avatarSeed: profile.avatarSeed
-                      }} />
-                    )}
+                {/* Pedestal and Card Display Wrapper */}
+                <div className="flex flex-col items-center justify-center w-full relative z-20 flex-grow py-2">
+                  <div ref={cardPedestalRef} className="relative flex justify-center items-center">
+                    <div 
+                      onMouseMove={handlePedestalMouseMove}
+                      onMouseLeave={handlePedestalMouseLeave}
+                      style={pedestalTiltStyle}
+                      className="relative card-3d-tilt origin-center scale-[0.82] sm:scale-[0.88] lg:scale-[0.88] xl:scale-[0.92]"
+                    >
+                      {activeRightTab === 'verdict' && selectedCard ? (
+                        <SportsCenterCard data={{
+                          text: selectedCard.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
+                          mode: 'take',
+                          caseId: 2026,
+                          fanbase: null,
+                          isRivalry: false,
+                          rarity: selectedCard.rarity,
+                          ovr: selectedCard.rating,
+                          rulingText: selectedCard.verdict,
+                          verdict: selectedCard.verdict,
+                          charge: selectedCard.charge,
+                          sentence: selectedCard.sentence,
+                          ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
+                          stats: [
+                            { label: 'PRD', name: 'Prediction', val: (selectedCard.statsJson as any)?.prd ?? 85 },
+                            { label: 'MGR', name: 'Manager Score', val: (selectedCard.statsJson as any)?.mgr ?? 80 },
+                            { label: 'HOT', name: 'Hot Take', val: (selectedCard.statsJson as any)?.hot ?? 88 },
+                            { label: 'RST', name: 'Roast Score', val: (selectedCard.statsJson as any)?.rst ?? 82 }
+                          ],
+                          cardTheme: 'crimson',
+                          countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
+                          playerName: profile.username,
+                          playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM',
+                          avatarStyle: profile.avatarStyle,
+                          avatarSeed: profile.avatarSeed,
+                          matchTitle: selectedCard.matchTitle,
+                          matchScore: selectedCard.matchScore
+                        }} />
+                      ) : (
+                        <SportsCenterCard data={{
+                          text: `Loyal supporter of ${profile.favoriteNation || 'Argentina'}. Fighting for tactical ball knowledge in the 2026 tournament.`,
+                          mode: 'court',
+                          caseId: 1000,
+                          fanbase: null,
+                          isRivalry: false,
+                          rarity: profile.overallRating >= 85 ? 'LEGENDARY' : (profile.overallRating >= 70 ? 'EPIC' : (profile.overallRating >= 45 ? 'RARE' : 'COMMON')),
+                          ovr: profile.overallRating || 88,
+                          rulingText: playstyle,
+                          verdict: playstyle,
+                          charge: `ACCURACY: ${accuracy}% OVER MATCHDAYS`,
+                          sentence: `Total Matches Predicted: ${totalMatches} Resolved`,
+                          ach: { title: 'Reputation', desc: 'Active Profile', badge },
+                          stats: [
+                            { label: 'PRD', name: 'Prediction', val: profile.predictionRating || 90 },
+                            { label: 'MGR', name: 'Manager Score', val: profile.managerRating || 88 },
+                            { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating || 85 },
+                            { label: 'RST', name: 'Roast Score', val: profile.roastScore || 92 }
+                          ],
+                          cardTheme: 'gold',
+                          countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
+                          playerName: profile.username,
+                          playerPosition: 'MGR',
+                          avatarStyle: profile.avatarStyle,
+                          avatarSeed: profile.avatarSeed
+                        }} />
+                      )}
+                    </div>
                   </div>
+                </div>
 
-                  {/* Horizontal Social Share Dock & High-Res PNG Download */}
-                  <div className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-white/15 bg-black/60 shadow-xl w-full relative z-30">
-                    <span className="text-xs font-black text-gray-300 uppercase tracking-widest pl-1">
-                      Share {activePedestalTab === 'verdict' && selectedCard ? 'Verdict Card' : 'Manager Deck'}
+                {/* Direct Social Share Plinth & Download PNG Bar */}
+                <div className="mt-4 border-t border-white/10 pt-4 z-20 flex flex-col gap-2.5">
+                  <div className="flex justify-between items-center bg-black/60 border border-white/15 rounded-2xl p-2.5 backdrop-blur-md">
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest pl-1">
+                      Share {activeRightTab === 'verdict' && selectedCard ? 'Verdict Card' : 'Tournament Deck'}:
                     </span>
-                    
+
                     <div className="flex gap-2 items-center">
                       {/* Download PNG Button */}
                       <button
-                        onClick={handleDownloadPedestalPng}
+                        onClick={handleDownloadPng}
                         disabled={downloading}
-                        className="p-2.5 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/50 text-amber-300 rounded-xl transition-all cursor-pointer shadow-md"
+                        className="p-2 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-300 rounded-xl transition-all cursor-pointer"
                         title="Download Card PNG"
                       >
                         <Download className="w-4 h-4" />
@@ -644,53 +648,44 @@ export default function FootballIQPage() {
 
                       {/* X/Twitter Share */}
                       <a
-                        href={activePedestalTab === 'verdict' && selectedCard ? (
-                          `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                            `My VAR Verdict Card for ${selectedCard.homeTeam} vs ${selectedCard.awayTeam} (${selectedCard.homeScore}-${selectedCard.awayScore}) graded at ${selectedCard.rating} OVR! ${selectedCard.verdict.toUpperCase()}:`
-                          )}&url=${encodeURIComponent(getShareUrl('card', selectedCard.id))}`
-                        ) : (
-                          `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                            `My official Football IQ Manager Deck is ${profile.overallRating} OVR (${playstyle}) on the World Cup 2026 VAR Tribunal! Inspect my card binder:`
-                          )}&url=${encodeURIComponent(getShareUrl('profile'))}`
-                        )}
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                          activeRightTab === 'verdict' && selectedCard
+                            ? `Check out my VAR Verdict Card for Match ${selectedCard.matchId}! Rated ${selectedCard.rating} OVR: ${selectedCard.verdict.toUpperCase()}.`
+                            : `Check out my official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`
+                        )}&url=${encodeURIComponent(selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition-all cursor-pointer"
-                        title="Share on X"
+                        className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition-all cursor-pointer"
+                        title="Post to X/Twitter"
                       >
                         <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                       </a>
 
                       {/* WhatsApp Share */}
                       <a
-                        href={activePedestalTab === 'verdict' && selectedCard ? (
-                          `https://api.whatsapp.com/send?text=${encodeURIComponent(
-                            `My VAR Verdict Card for ${selectedCard.homeTeam} vs ${selectedCard.awayTeam} (${selectedCard.homeScore}-${selectedCard.awayScore}) graded at ${selectedCard.rating} OVR! ${selectedCard.verdict.toUpperCase()}: ${getShareUrl('card', selectedCard.id)}`
-                          )}`
-                        ) : (
-                          `https://api.whatsapp.com/send?text=${encodeURIComponent(
-                            `My official Football IQ Manager Deck is ${profile.overallRating} OVR (${playstyle}) on the World Cup 2026 VAR Tribunal! Inspect my card binder: ${getShareUrl('profile')}`
-                          )}`
-                        )}
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                          activeRightTab === 'verdict' && selectedCard
+                            ? `Check out my VAR Verdict Card for Match ${selectedCard.matchId}! Rated ${selectedCard.rating} OVR: ${selectedCard.verdict.toUpperCase()}. ${getShareUrl('card', selectedCard.id)}`
+                            : `Check out my official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}). ${getShareUrl('profile')}`
+                        )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2.5 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all cursor-pointer"
-                        title="Share on WhatsApp"
+                        className="p-2 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all cursor-pointer"
+                        title="Send via WhatsApp"
                       >
                         <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
                       </a>
 
                       {/* Copy Link */}
                       <button
-                        onClick={() => handleCopyLink('copy', activePedestalTab === 'verdict' && selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}
-                        className="p-2.5 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 rounded-xl transition-all cursor-pointer"
-                        title="Copy URL"
+                        onClick={() => handleCopyLink('copy', selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}
+                        className="p-2 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 rounded-xl transition-all cursor-pointer"
+                        title="Copy Link"
                       >
                         {copiedPlatform === 'copy' ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
-
                 </div>
 
               </div>
@@ -700,6 +695,7 @@ export default function FootballIQPage() {
 
         </div>
       </div>
+
     </div>
   );
 }

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { ShieldAlert, Trophy, Share2, CheckCircle } from 'lucide-react';
+import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
 
 interface Team {
@@ -32,101 +33,109 @@ interface Match {
   away_team_label?: string;
 }
 
-
+const SYSTEM_DATE = new Date('2026-06-11T12:00:00Z');
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
-  const { username } = use(params);
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const { username: rawUsername } = use(params);
+  const username = decodeURIComponent(rawUsername);
 
-  // Tournament data states
+  const [profile, setProfile] = useState<any | null>(null);
+  const [cards, setCards] = useState<any[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const [selectedMatchday, setSelectedMatchday] = useState('1');
   const [filterRarity, setFilterRarity] = useState('ALL');
-  const [loadingMatches, setLoadingMatches] = useState(true);
+  const [selectedCard, setSelectedCard] = useState<any | null>(null);
+  const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('deck');
 
-  // 3D Tilt states
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
   const [miniCardTilts, setMiniCardTilts] = useState<Record<string, any>>({});
-
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
-  const handleCopyLink = (platform: string, url: string) => {
-    navigator.clipboard.writeText(url);
-    setCopiedPlatform(platform);
-    setTimeout(() => setCopiedPlatform(null), 2000);
-  };
+  const cardPedestalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchProfileAndTournament = async () => {
+    async function fetchPublicProfile() {
       try {
-        const res = await fetch(`/api/profile/${username}`);
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-        } else {
-          setError('Profile not found in the database. Sync the profile details first by saving settings.');
+        const res = await fetch(`/api/profile/${encodeURIComponent(username)}`);
+        if (!res.ok) {
+          setErrorMsg('Manager Dossier not found or classified.');
+          setLoading(false);
+          return;
         }
+        const data = await res.json();
+        setProfile(data.profile);
+        setCards(data.cards || []);
 
-        // Fetch tournament matches & teams
-        const [matchesRes, teamsRes] = await Promise.all([
+        const [resM, resT] = await Promise.all([
           fetch('/api/matches'),
           fetch('/api/teams')
         ]);
-
-        if (matchesRes.ok && teamsRes.ok) {
-          const [matchesData, teamsData] = await Promise.all([
-            matchesRes.json(),
-            teamsRes.json()
-          ]);
-          setMatches(matchesData);
-          setTeams(teamsData);
-        } else {
-          throw new Error('Remote fetch failed');
+        if (resM.ok && resT.ok) {
+          const datM = await resM.json();
+          const datT = await resT.json();
+          setMatches(datM.matches || []);
+          setTeams(datT.teams || []);
         }
       } catch (err) {
-        console.error('Failed to load public profile details:', err);
-        setError('Failed to retrieve tournament match and team details from the server.');
+        console.error(err);
+        setErrorMsg('Failed to connect to VAR Tribunal Database.');
       } finally {
         setLoading(false);
-        setLoadingMatches(false);
       }
-    };
-
-    fetchProfileAndTournament();
+    }
+    fetchPublicProfile();
   }, [username]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Retrieving Football IQ profile...</p>
+      <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-center items-center">
+        <div className="w-10 h-10 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Authenticating Dossier Access...</p>
       </div>
     );
   }
 
-  if (error || !data) {
+  if (errorMsg || !profile) {
     return (
-      <div className="min-h-screen bg-[#030712] text-foreground flex flex-col justify-center items-center p-6 text-center">
-        <div className="max-w-md bg-[#0B0F19] border border-white/5 p-8 rounded-3xl shadow-2xl">
-          <ShieldAlert className="w-12 h-12 text-red-500 mb-4 mx-auto" />
-          <h2 className="font-display font-black text-xl text-white uppercase mb-2">Profile Unavailable</h2>
-          <p className="text-gray-400 text-xs leading-relaxed mb-6 font-medium">{error}</p>
-          <Link
-            href="/world-cup-hub"
-            className="inline-block py-3 px-6 rounded-xl bg-[#881337] text-white font-display font-black text-xs uppercase tracking-wider shadow-md hover:bg-[#881337]/90 transition-colors"
-          >
-            Start Your Own Campaign
+      <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-center items-center px-4">
+        <div className="bg-[#0B0F19]/90 border border-rose-900/40 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-xl">
+          <ShieldAlert className="w-12 h-12 text-[#E11D48] mx-auto mb-4" />
+          <h2 className="font-display font-black text-2xl uppercase tracking-wider mb-2">DOSSIER NOT FOUND</h2>
+          <p className="text-gray-400 text-xs mb-6 leading-relaxed">{errorMsg || 'The requested manager profile does not exist.'}</p>
+          <Link href="/" className="inline-block py-3 px-6 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 transition-transform">
+            Return to Hub
           </Link>
         </div>
       </div>
     );
   }
 
-  const { profile, cards } = data;
+  const totalMatches = cards.length;
+  let exactCount = 0;
+
+  let legendaryCount = 0;
+  let epicCount = 0;
+  let rareCount = 0;
+  let commonCount = 0;
+
+  cards.forEach(c => {
+    const ovr = c.rating || 50;
+    if (ovr >= 85) legendaryCount++;
+    else if (ovr >= 70) epicCount++;
+    else if (ovr >= 45) rareCount++;
+    else commonCount++;
+
+    if ((c.statsJson as any)?.exactScore) exactCount++;
+  });
+
+  const accuracy = totalMatches > 0 ? Math.round((exactCount / totalMatches) * 100) : 0;
+  const totalAlbumSlots = 72;
+  const albumProgressPercent = Math.min(100, Math.round((totalMatches / totalAlbumSlots) * 100));
 
   let playstyle = 'Rookie Fan';
   let badge = '🌍';
@@ -146,7 +155,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
   const getMatchStatus = (match: Match) => {
     const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-    const timeDiff = new Date().getTime() - kickoff.getTime();
+    const timeDiff = SYSTEM_DATE.getTime() - kickoff.getTime();
     if (timeDiff >= 2 * 60 * 60 * 1000) {
       return 'COMPLETED';
     } else if (timeDiff >= 0) {
@@ -156,18 +165,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     }
   };
 
-  const getPublicCardForMatch = (matchId: string) => {
-    return cards.find((c: any) => c.matchId === matchId);
-  };
-
-  // 3D Parallax Tilt Handlers for Pedestal
   const handlePedestalMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = e.currentTarget;
     const box = card.getBoundingClientRect();
     const x = e.clientX - box.left - box.width / 2;
     const y = e.clientY - box.top - box.height / 2;
-    const tiltX = -(y / (box.height / 2)) * 12;
-    const tiltY = (x / (box.width / 2)) * 12;
+    const tiltX = -(y / (box.height / 2)) * 10;
+    const tiltY = (x / (box.width / 2)) * 10;
     setPedestalTiltStyle({
       transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`,
       transition: 'transform 0.05s ease'
@@ -181,14 +185,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     });
   };
 
-  // 3D Parallax Tilt Handlers for Mini Cards
   const handleMiniMouseMove = (e: React.MouseEvent<HTMLDivElement>, matchId: string) => {
     const card = e.currentTarget;
     const box = card.getBoundingClientRect();
     const x = e.clientX - box.left - box.width / 2;
     const y = e.clientY - box.top - box.height / 2;
-    const tiltX = -(y / (box.height / 2)) * 15;
-    const tiltY = (x / (box.width / 2)) * 15;
+    const tiltX = -(y / (box.height / 2)) * 12;
+    const tiltY = (x / (box.width / 2)) * 12;
     setMiniCardTilts(prev => ({
       ...prev,
       [matchId]: {
@@ -210,7 +213,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     }));
   };
 
-  // Copy share URLs
   const getShareUrl = (type: 'profile' | 'card', idStr?: string) => {
     if (typeof window === 'undefined') return '';
     return type === 'profile' 
@@ -218,223 +220,213 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       : `${window.location.origin}/card/${idStr}`;
   };
 
+  const handleCopyLink = (platformStr: string, textToCopy: string) => {
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedPlatform(platformStr);
+    setTimeout(() => setCopiedPlatform(null), 2500);
+  };
 
+  const handleDownloadPng = async () => {
+    if (!cardPedestalRef.current) return;
+    setDownloading(true);
+    try {
+      const dataUrl = await toPng(cardPedestalRef.current, { cacheBust: true, quality: 0.95 });
+      const link = document.createElement('a');
+      const label = selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Tournament_Deck';
+      link.download = `${profile.username.replace(/\s+/g, '_')}_${label}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Export failed:', err);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
-  // Filter matches for matchday
   const matchdayMatches = matches.filter(m => m.matchday === selectedMatchday && m.type === 'group');
+
+  const getPublicCardForMatch = (matchId: string) => {
+    return cards.find(c => c.matchId === matchId);
+  };
 
   const filteredMatches = matchdayMatches.filter(match => {
     const card = getPublicCardForMatch(match.id);
     const status = getMatchStatus(match);
 
     if (filterRarity === 'ALL') return true;
-    if (filterRarity === 'LOCKED') return status === 'LIVE';
+    if (filterRarity === 'LOCKED') return !card && status !== 'COMPLETED';
     if (filterRarity === 'MISSED') return status === 'COMPLETED' && !card;
     
-    if (card) {
-      return card.rarity === filterRarity;
-    }
-    return false;
+    if (!card) return false;
+    const ovr = card.rating || 50;
+    let rarity = 'COMMON';
+    if (ovr >= 85) rarity = 'LEGENDARY';
+    else if (ovr >= 70) rarity = 'EPIC';
+    else if (ovr >= 45) rarity = 'RARE';
+
+    return rarity === filterRarity;
   });
 
-  const totalAlbumSlots = matches.filter(m => m.type === 'group').length || 48;
-  const albumProgressPercent = Math.round((cards.length / totalAlbumSlots) * 100);
-
-  // Rarity deck counts for inventory stats bar
-  const legendaryCount = cards.filter((c: any) => c.rarity === 'LEGENDARY').length;
-  const epicCount = cards.filter((c: any) => c.rarity === 'EPIC').length;
-  const rareCount = cards.filter((c: any) => c.rarity === 'RARE').length;
-  const commonCount = cards.filter((c: any) => c.rarity === 'COMMON').length;
-
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white pb-20 overflow-hidden pt-[52px]">
-
-      {/* Immersive Game-style Stadium Background */}
+    <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] pb-8 select-none">
+      
+      {/* Background Stadium Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/game_stadium_showcase.webp" 
+          src="/images/world_cup_stadium.webp" 
           alt="World Cup Stadium background" 
           fill 
-          className="object-cover opacity-[0.25] object-center" 
+          className="object-cover object-center opacity-[0.22]" 
           priority 
         />
-
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/40 via-background/50 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/60 via-[#030712]/80 to-[#030712]" />
       </div>
 
-      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8 pt-1 pb-4 w-full flex-grow flex flex-col min-h-0">
-        
-        <div className="relative w-full bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-xl flex flex-col flex-grow min-h-0 mt-3">
+      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8 pt-2 pb-4 w-full flex-grow flex flex-col min-h-0">
+        <div className="relative w-full bg-[#0B0F19]/90 border border-white/15 rounded-3xl shadow-2xl flex flex-col flex-grow min-h-0 mt-2 backdrop-blur-xl overflow-hidden">
           
-          {/* ── Unified Header Panel ── */}
-          <div className="shrink-0 border-b border-white/10 bg-black/20 backdrop-blur-xs p-4 flex flex-col items-center justify-center text-center w-full rounded-t-2xl">
-            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
-              {profile.username}&apos;S ALBUM <span className="text-[#E11D48]">BINDER</span>
-            </h1>
-            <p className="text-zinc-400 text-[9px] sm:text-[10px] mt-1.5 font-bold uppercase tracking-widest leading-none">
-              COLLECTIBLES BINDER <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
-            </p>
+          {/* Header Panel */}
+          <div className="shrink-0 border-b border-white/10 bg-black/40 p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+            <div>
+              <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
+                {profile.username}&apos;S <span className="text-[#E11D48]">BINDER</span>
+              </h1>
+              <p className="text-gray-400 text-[10px] sm:text-xs mt-1.5 font-bold uppercase tracking-widest leading-none">
+                WORLD CUP 2026 DOSSIER <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
+              </p>
+            </div>
+
+            {/* Horizontal Matchday Selector Pills */}
+            <div className="flex items-center gap-2 bg-black/60 border border-white/15 p-1.5 rounded-2xl">
+              {[
+                { id: '1', label: 'Matchday 1' },
+                { id: '2', label: 'Matchday 2' },
+                { id: '3', label: 'Matchday 3' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setSelectedMatchday(tab.id);
+                    setSelectedCard(null);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    selectedMatchday === tab.id
+                      ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="p-4 relative">
-          
-          {/* Protruding divider Tabs */}
-          <div className="binder-tabs-container">
-            {[
-              { id: '1', label: 'MD 1', bg: 'bg-[#881337] text-white hover:opacity-90' },
-              { id: '2', label: 'MD 2', bg: 'bg-[#E11D48] text-white hover:opacity-90' },
-              { id: '3', label: 'MD 3', bg: 'bg-emerald-600 text-white hover:opacity-90' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setSelectedMatchday(tab.id);
-                  setSelectedCard(null);
-                }}
-                className={`binder-index-tab cursor-pointer text-center font-black ${tab.bg} ${
-                  selectedMatchday === tab.id 
-                    ? 'scale-x-[1.25] shadow-md border-l border-white/25 z-10' 
-                    : 'opacity-70'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Main Leather Binder */}
-          <div className="binder-container p-2 sm:p-3.5">
-            <div className="binder-stitching" />
-            
-            {/* Content split grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 relative z-10">
+          <div className="p-4 sm:p-6 relative flex-grow flex flex-col">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow">
               
-              {/* LEFT PAGE: STICKER BINDER GRID */}
-              <div className="lg:col-span-7 binder-page-left p-3.5 sm:p-4.5 flex flex-col justify-between border border-white/10 bg-[#0B0F19]/95 text-white backdrop-blur-md shadow-xl">
+              {/* LEFT PAGE: ALBUM SLOTS GRID */}
+              <div className="lg:col-span-7 p-4 sm:p-6 flex flex-col gap-4 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
                 
-                <div>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-2 mb-3 gap-2">
-                    <div>
-                      <h2 className="font-display font-black text-base text-white uppercase tracking-wider">
-                        Page Matchday {selectedMatchday} Slots
-                      </h2>
-                      {/* FUT Inventory counts */}
-                      <div className="flex gap-2.5 mt-1 text-[8.5px] font-black uppercase text-zinc-400">
-                        <span className="text-[#E11D48]">🏆 {legendaryCount} LEG</span>
-                        <span className="text-purple-600">🔥 {epicCount} EPC</span>
-                        <span className="text-blue-600">⚡ {rareCount} RRE</span>
-                        <span className="text-zinc-500">🪙 {commonCount} CMN</span>
-                      </div>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
+                  <div>
+                    <h2 className="font-display font-black text-lg text-white uppercase tracking-wider">
+                      Matchday {selectedMatchday} — Sticker Slots
+                    </h2>
+                    <div className="flex gap-3 mt-1.5 text-xs font-black uppercase tracking-wider">
+                      <span className="text-amber-400">🏆 {legendaryCount} LEG</span>
+                      <span className="text-purple-400">🔥 {epicCount} EPC</span>
+                      <span className="text-blue-400">⚡ {rareCount} RRE</span>
+                      <span className="text-gray-400">🪙 {commonCount} CMN</span>
                     </div>
                   </div>
 
-                  {/* System Log / Public Profile Description */}
-                  <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 mb-3 text-[10px] text-zinc-300 leading-relaxed flex items-start gap-2.5">
-                    <span className="text-[#E11D48] font-black tracking-wider uppercase shrink-0 mt-0.5 text-[8.5px] bg-[#E11D48]/10 px-1 py-0.5 rounded border border-[#E11D48]/20">PUBLIC LOG</span>
-                    <p>
-                      Explore this collector&apos;s persistent reputation card cabinet. Check their predictions outcome, hot takes verdicts, and see if they know ball.
-                    </p>
-                  </div>
+                  <button 
+                    onClick={() => {
+                      setSelectedCard(null);
+                      setFilterRarity('ALL');
+                    }}
+                    className="px-3.5 py-1.5 text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-xl uppercase tracking-wider hover:bg-rose-500/20 transition-all cursor-pointer shrink-0"
+                  >
+                    Reset Filter
+                  </button>
+                </div>
 
-                  {/* FUT Album & Rank Statistics Dashboard */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 bg-white/5 border border-white/10 rounded-xl p-3 shadow-inner text-white">
-                    {/* Album Completion */}
-                    <div className="flex flex-col gap-1 border-b sm:border-b-0 sm:border-r border-white/10 pb-2 sm:pb-0 sm:pr-3">
-                      <div className="flex justify-between items-center text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-                        <span>Binder Progress</span>
-                        <span className="font-mono text-zinc-300 text-[10.5px] font-bold">{cards.length} / {totalAlbumSlots} STICKERS</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-rose-500 to-rose-300 rounded-full transition-all duration-700" 
-                            style={{ width: `${albumProgressPercent}%` }}
-                          />
-                        </div>
-                        <span className="font-mono text-[10px] font-black text-rose-500 shrink-0">{albumProgressPercent}%</span>
-                      </div>
+                <div className="grid grid-cols-2 gap-4 bg-black/50 border border-white/10 rounded-2xl p-3.5 shadow-md">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs font-black text-gray-300 uppercase tracking-widest">
+                      <span>Album Progress</span>
+                      <span className="font-mono text-white font-bold">{totalMatches}/{totalAlbumSlots}</span>
                     </div>
-
-                    {/* Platform Ranking */}
-                    <div className="flex flex-col gap-1 sm:pl-1">
-                      <div className="flex justify-between items-center text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-                        <span>Platform Rank</span>
-                        <span className="font-mono text-zinc-300 text-[10.5px] font-bold">{profile.overallRating} OVR</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-[#881337] to-[#E11D48] rounded-full transition-all duration-700" 
-                            style={{ width: `${profile.overallRating}%` }}
-                          />
-                        </div>
-                        <span className="font-mono text-[10px] font-black text-[#E11D48] shrink-0">{playstyle}</span>
-                      </div>
+                      <span className="font-mono text-xs font-black text-[#E11D48] shrink-0">{albumProgressPercent}%</span>
                     </div>
                   </div>
-
-
-
-                  {/* Filters (Bigger & more readable) */}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {[
-                      { id: 'ALL', label: 'All Slots' },
-                      { id: 'LEGENDARY', label: 'Legendary' },
-                      { id: 'EPIC', label: 'Epic' },
-                      { id: 'RARE', label: 'Rare' },
-                      { id: 'COMMON', label: 'Common' },
-                      { id: 'MISSED', label: 'Missed' },
-                    ].map(f => (
-                      <button
-                        key={f.id}
-                        onClick={() => setFilterRarity(f.id)}
-                        className={`px-3.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest border transition-all cursor-pointer ${
-                          filterRarity === f.id
-                            ? 'bg-[#E11D48]/15 border-[#E11D48] text-[#E11D48] shadow-sm'
-                            : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Slots Grid */}
-                  {loadingMatches ? (
-                    <div className="text-center py-24 flex flex-col items-center justify-center">
-                      <div className="w-8 h-8 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-3" />
-                      <p className="text-xs text-zinc-400 font-semibold uppercase">Consulting database...</p>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs font-black text-gray-300 uppercase tracking-widest">
+                      <span>Exact Accuracy</span>
+                      <span className="font-mono text-white font-bold">{accuracy}%</span>
                     </div>
-                  ) : filteredMatches.length === 0 ? (
-                    <div className="text-center py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-2xl bg-[#0B0F19]/40">
-                      <ShieldAlert className="w-8 h-8 text-zinc-500 mb-2.5" />
-                      <p className="font-display font-black text-xs text-zinc-400 uppercase tracking-widest">No matching slots on page</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700" style={{ width: `${accuracy}%` }} />
+                      </div>
+                      <span className="font-mono text-xs font-black text-emerald-400 shrink-0">EXACT</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'ALL', label: 'All Slots' },
+                    { id: 'LEGENDARY', label: 'Legendary' },
+                    { id: 'EPIC', label: 'Epic' },
+                    { id: 'RARE', label: 'Rare' },
+                    { id: 'COMMON', label: 'Common' },
+                    { id: 'LOCKED', label: 'Locked' },
+                    { id: 'MISSED', label: 'Missed' },
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => setFilterRarity(f.id)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                        filterRarity === f.id
+                          ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
+                          : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex-1 overflow-y-auto min-h-[300px]">
+                  {filteredMatches.length === 0 ? (
+                    <div className="text-center py-16 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-2xl bg-black/20">
+                      <ShieldAlert className="w-8 h-8 text-gray-400 mb-2.5" />
+                      <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots found on this matchday</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                       {filteredMatches.map(match => {
-                        const homeTeam = teams.find(t => t.id === match.home_team_id) || {
-                          id: match.home_team_id,
-                          name_en: (match as any).home_team_label || 'Home',
-                          flag: 'https://flagcdn.com/w80/un.png',
-                          fifa_code: (match as any).home_team_label ? ((match as any).home_team_label.slice(0, 3).toUpperCase()) : 'TBD',
-                          groups: match.group || 'A'
-                        };
-                        const awayTeam = teams.find(t => t.id === match.away_team_id) || {
-                          id: match.away_team_id,
-                          name_en: (match as any).away_team_label || 'Away',
-                          flag: 'https://flagcdn.com/w80/un.png',
-                          fifa_code: (match as any).away_team_label ? ((match as any).away_team_label.slice(0, 3).toUpperCase()) : 'TBD',
-                          groups: match.group || 'A'
-                        };
-
+                        const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: 'Home', flag: 'https://flagcdn.com/w80/un.png' };
+                        const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: 'Away', flag: 'https://flagcdn.com/w80/un.png' };
                         const card = getPublicCardForMatch(match.id);
                         const status = getMatchStatus(match);
 
-                        // ─── Case A: Card claimed ──────────────────────────────────
                         if (card) {
-                          const miniThemeClass = 'card-mini-default';
-                          const textGlow = 'text-[#E11D48]';
+                          const ovr = card.rating || 50;
+                          let rarity = 'COMMON';
+                          let textGlow = 'text-gray-300';
+                          let borderGlow = 'border-white/20';
+
+                          if (ovr >= 85) { rarity = 'LEGENDARY'; textGlow = 'text-amber-300'; borderGlow = 'border-amber-400/50'; }
+                          else if (ovr >= 70) { rarity = 'EPIC'; textGlow = 'text-purple-300'; borderGlow = 'border-purple-400/50'; }
+                          else if (ovr >= 45) { rarity = 'RARE'; textGlow = 'text-blue-300'; borderGlow = 'border-blue-400/50'; }
+
+                          const isSelected = selectedCard?.id === card.id;
 
                           return (
                             <div
@@ -442,347 +434,239 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                               onMouseMove={(e) => handleMiniMouseMove(e, match.id)}
                               onMouseLeave={() => handleMiniMouseLeave(match.id)}
                               style={miniCardTilts[match.id] || {}}
-                              onClick={() => setSelectedCard(card)}
-                              className={`card-mini-fut-slot ${miniThemeClass} card-3d-tilt cursor-pointer relative z-10 group filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]`}
+                              onClick={() => {
+                                setSelectedCard({
+                                  ...card,
+                                  matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`
+                                });
+                                setActiveRightTab('verdict');
+                              }}
+                              className={`card-mini-fut-slot card-3d-tilt cursor-pointer relative z-10 group filter drop-shadow-md transition-all ${
+                                isSelected ? 'ring-2 ring-amber-400 scale-[1.03]' : ''
+                              }`}
                             >
-                              <div className="holographic-sheen-mini" />
-                              <div className="card-mini-fut-inner">
+                              <div className={`h-full w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2 flex flex-col justify-between backdrop-blur-md`}>
                                 <div className="flex justify-between items-start">
                                   <div className="flex flex-col items-center">
-                                    <span className="font-card-fut font-bold text-xl leading-none text-white">
-                                      {card.rating}
-                                    </span>
-                                    <Image src={homeTeam.flag} alt="" width={20} height={14} className="w-5 h-3.5 object-cover rounded shadow-xs mt-1 shrink-0 border border-white/5" />
+                                    <span className="font-mono font-black text-lg leading-none text-white">{ovr}</span>
+                                    <div className="flex gap-1 mt-1">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={homeTeam.flag} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={awayTeam.flag} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                                    </div>
                                   </div>
-                                  <span className={`text-[6.5px] font-black uppercase tracking-wider px-1 py-0.5 rounded bg-black/60 border border-white/5 ${textGlow}`}>
-                                    {card.rarity.slice(0, 3)}
+                                  <span className={`text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
+                                    {rarity.slice(0, 3)}
                                   </span>
                                 </div>
 
-                                <div className="text-center my-auto">
-                                  <p className="font-card-fut font-black text-[9px] text-white tracking-tight uppercase leading-tight line-clamp-2 px-1 break-words">
-                                    {card.verdict.split(' MERCHANT')[0].split(' PROPHET')[0].split(' MASTERMIND')[0]}
+                                <div className="text-center my-auto py-1">
+                                  <p className="font-sans font-black text-[9.5px] text-white tracking-wide uppercase leading-tight line-clamp-2 px-0.5">
+                                    {card.verdict.split(' MERCHANT')[0].split(' PROPHET')[0]}
                                   </p>
                                 </div>
 
-                                <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7px] font-bold text-gray-400 uppercase tracking-widest">
+                                <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] font-bold text-gray-400 uppercase tracking-widest">
                                   <span>MD {selectedMatchday}</span>
-                                  <span className="text-[#E11D48] group-hover:underline">INSPECT</span>
+                                  <span className="text-amber-400 group-hover:underline">INSPECT</span>
                                 </div>
                               </div>
                             </div>
                           );
                         }
 
-                        // ─── Case B: Completed but no card ──────────────────────────
                         if (status === 'COMPLETED') {
                           return (
-                            <div
-                              key={match.id}
-                              className="card-mini-fut-slot card-mini-missed group relative overflow-hidden"
-                            >
-                              <div className="card-mini-fut-inner">
-                                <div className="flex justify-between items-start opacity-40">
-                                  <span className="text-[8px] font-black text-gray-500 uppercase tracking-wider">SLOT {match.id}</span>
-                                  <span className="text-[8px] font-mono font-bold text-red-500">MISSED</span>
-                                </div>
-
-                                <div className="text-center my-auto flex flex-col items-center relative z-10">
-                                  <div className="flex gap-1.5 grayscale opacity-30 mb-1">
-                                    <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded border border-white/5" />
-                                    <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded border border-white/5" />
-                                  </div>
-                                  <div className="stamp-expired-mini absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                                    EXPIRED
-                                  </div>
-                                </div>
-
-                                <div className="text-center text-[8px] font-black text-red-500/70 uppercase tracking-wide">
-                                  Missed Slot
-                                </div>
+                            <div key={match.id} className="bg-black/40 border border-red-900/30 rounded-xl p-2.5 flex flex-col justify-between items-center text-center opacity-60">
+                              <span className="text-[8px] font-black text-red-500 uppercase tracking-wider">SLOT {match.id}</span>
+                              <div className="my-auto py-2">
+                                <span className="text-[9px] font-black text-red-400/80 uppercase tracking-widest border border-red-900/40 px-2 py-0.5 rounded">MISSED</span>
                               </div>
+                              <span className="text-[7.5px] text-zinc-500 uppercase font-bold">Expired</span>
                             </div>
                           );
                         }
 
-                        // ─── Case C: Empty Slot / Upcoming Match ────────────────────
                         return (
-                          <div
-                            key={match.id}
-                            className="card-mini-fut-slot card-mini-empty group relative overflow-hidden"
-                          >
-                            <div className="card-mini-fut-inner">
-                              <div className="flex justify-between items-start">
-                                <span className="text-[8px] font-black text-gray-500 uppercase tracking-wider">SLOT {match.id}</span>
-                                <span className="text-[8px] font-mono font-bold text-gray-400">EMPTY</span>
+                          <div key={match.id} className="bg-black/20 border border-white/5 rounded-xl p-2.5 flex flex-col justify-between items-center text-center">
+                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-wider">SLOT {match.id}</span>
+                            <div className="my-auto py-2 flex flex-col items-center gap-1">
+                              <div className="flex gap-1 grayscale opacity-40">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={homeTeam.flag} alt="" className="w-4 h-3 object-cover rounded" />
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={awayTeam.flag} alt="" className="w-4 h-3 object-cover rounded" />
                               </div>
-
-                              <div className="text-center my-auto flex flex-col items-center">
-                                <div className="flex gap-1.5 mb-1">
-                                  <Image src={homeTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
-                                  <Image src={awayTeam.flag} alt="" width={22} height={16} className="w-5.5 h-4 object-cover rounded shadow-xs border border-white/5" />
-                                </div>
-                                <p className="text-[9.5px] font-bold text-gray-300 truncate w-full max-w-[95px]">{homeTeam.fifa_code} vs {awayTeam.fifa_code}</p>
-                              </div>
-
-                              <div className="text-center text-[8px] font-black text-gray-400 uppercase tracking-wider">
-                                Upcoming game
-                              </div>
+                              <span className="text-[8px] font-mono text-zinc-400 uppercase font-bold">UPCOMING</span>
                             </div>
+                            <span className="text-[7.5px] text-zinc-600 uppercase font-bold">Locked</span>
                           </div>
                         );
                       })}
                     </div>
                   )}
                 </div>
-
-                <div className="border-t border-white/10 mt-8 pt-4 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-                  <span>Matchday {selectedMatchday} group stage page</span>
-                  <span>VAR Album v1.02</span>
-                </div>
               </div>
 
-              {/* RIGHT PAGE: THE STICKY PEDESTAL SHOWCASE (Borderless column, no scroll) */}
-              <div className="lg:col-span-5 p-2 sm:p-4 flex flex-col justify-start items-center lg:sticky lg:top-[95px] lg:h-[calc(100vh-185px)] overflow-hidden pt-2 gap-2">
+              {/* RIGHT PAGE: DUAL CARD PREVIEW & DIRECT VERDICT SHARING */}
+              <div className="lg:col-span-5 p-4 sm:p-6 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
                 
-                {/* Spotlight glowing effect */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[160px] bg-gradient-to-b from-[#E11D48]/10 via-[#E11D48]/5 to-transparent blur-xl rounded-full pointer-events-none" />
+                <div className="flex bg-black/60 border border-white/15 p-1.5 rounded-2xl mb-4 shadow-md w-full z-20">
+                  <button
+                    onClick={() => setActiveRightTab('deck')}
+                    className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      activeRightTab === 'deck'
+                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Trophy className="w-3.5 h-3.5" /> Tournament Deck
+                  </button>
+                  <button
+                    onClick={() => setActiveRightTab('verdict')}
+                    className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      activeRightTab === 'verdict'
+                        ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" /> Verdict Card
+                  </button>
+                </div>
 
-                {/* Pedestal and Card display side-by-side with vertical Share dock */}
-                <div className="flex flex-row items-center justify-center gap-3 sm:gap-4.5 w-full relative">
-                  
-                  {/* Rotating platform base (Scaled to fit screen perfectly) */}
-                  <div className="relative flex justify-center items-center py-1">
-                    
-                    {/* Glowing Aura Ring */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[360px] rounded-full blur-[80px] pointer-events-none -z-10 opacity-70 bg-gradient-to-tr from-[#881337]/20 via-transparent to-[#E11D48]/25" />
-                    
-                    {/* Metal pedestal base glow */}
-                    <div className="absolute bottom-1 w-60 h-2.5 bg-gradient-to-r from-transparent via-[#E11D48]/20 to-transparent blur-md rounded-full pointer-events-none" />
-
-                    {/* Bounding box wrapper with exact layout size of the scaled card */}
-                    <div className="relative flex items-center justify-center h-[360px] w-[255px] sm:h-[384px] sm:w-[272px] md:h-[408px] md:w-[289px] lg:h-[384px] lg:w-[272px] xl:h-[408px] xl:w-[289px] shrink-0">
-                      {/* 3D tilt frame wrapper */}
-                      <div 
-                        onMouseMove={handlePedestalMouseMove}
-                        onMouseLeave={handlePedestalMouseLeave}
-                        style={pedestalTiltStyle}
-                        className="absolute card-3d-tilt transform origin-center scale-[0.75] sm:scale-[0.80] md:scale-[0.85] lg:scale-[0.80] xl:scale-[0.85]"
-                      >
-                        {selectedCard ? (
-                          <SportsCenterCard data={{
-                            text: selectedCard.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
-                            mode: 'take',
-                            caseId: 2026,
-                            fanbase: null,
-                            isRivalry: false,
-                            rarity: selectedCard.rarity,
-                            ovr: selectedCard.rating,
-                            rulingText: selectedCard.verdict,
-                            verdict: selectedCard.verdict,
-                            charge: selectedCard.charge,
-                            sentence: selectedCard.sentence,
-                            ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
-                            stats: [
-                              { label: 'PRD', name: 'Prediction', val: (selectedCard.statsJson as any)?.prd ?? (selectedCard.statsJson as any)?.predictionPerfScore ?? selectedCard.rating },
-                              { label: 'MGR', name: 'Manager Score', val: (selectedCard.statsJson as any)?.mgr ?? (selectedCard.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, selectedCard.rating - 3)) },
-                              { label: 'HOT', name: 'Hot Take', val: (selectedCard.statsJson as any)?.hot ?? (selectedCard.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, selectedCard.rating + 2)) },
-                              { label: 'RST', name: 'Roast Score', val: (selectedCard.statsJson as any)?.rst ?? (selectedCard.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, selectedCard.rating + 1)) }
-                            ],
-                            cardTheme: selectedCard.cardTheme || 'gold',
-                            countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-                            playerName: profile.username,
-                            playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM',
-                            avatarStyle: profile.avatarStyle,
-                            avatarSeed: profile.avatarSeed
-                          }} />
-                        ) : (
-                          <SportsCenterCard data={{
-                            text: `Loyal supporter of ${profile.favoriteClub || 'VAR FC'}. Fighting for tactical ball knowledge in the 2026 tournament.`,
-                            mode: 'take',
-                            caseId: 1000,
-                            fanbase: null,
-                            isRivalry: false,
-                            rarity: profile.overallRating >= 85 ? 'LEGENDARY' : (profile.overallRating >= 70 ? 'EPIC' : (profile.overallRating >= 45 ? 'RARE' : 'COMMON')),
-                            ovr: profile.overallRating,
-                            rulingText: playstyle,
-                            verdict: playstyle,
-                            charge: `ACCURACY RATING AT KICKOFF`,
-                            sentence: `Total Matches Predicted: ${cards.length} Resolved`,
-                            ach: { title: 'Reputation', desc: 'Active Profile', badge },
-                            stats: [
-                              { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
-                              { label: 'MGR', name: 'Manager Score', val: profile.managerRating },
-                              { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating },
-                              { label: 'RST', name: 'Roast Score', val: profile.roastScore }
-                            ],
-                            cardTheme: 'gold',
-                            countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-                            playerName: profile.username,
-                            playerPosition: profile.overallRating >= 75 ? 'CF' : 'DM',
-                            avatarStyle: profile.avatarStyle,
-                            avatarSeed: profile.avatarSeed
-                          }} />
-                        )}
-                      </div>
+                <div className="flex flex-col items-center justify-center w-full relative z-20 flex-grow py-2">
+                  <div ref={cardPedestalRef} className="relative flex justify-center items-center">
+                    <div 
+                      onMouseMove={handlePedestalMouseMove}
+                      onMouseLeave={handlePedestalMouseLeave}
+                      style={pedestalTiltStyle}
+                      className="relative card-3d-tilt origin-center scale-[0.82] sm:scale-[0.88] lg:scale-[0.88] xl:scale-[0.92]"
+                    >
+                      {activeRightTab === 'verdict' && selectedCard ? (
+                        <SportsCenterCard data={{
+                          text: selectedCard.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
+                          mode: 'take',
+                          caseId: 2026,
+                          fanbase: null,
+                          isRivalry: false,
+                          rarity: selectedCard.rarity,
+                          ovr: selectedCard.rating,
+                          rulingText: selectedCard.verdict,
+                          verdict: selectedCard.verdict,
+                          charge: selectedCard.charge,
+                          sentence: selectedCard.sentence,
+                          ach: { title: 'Reputation', desc: 'Graded Sticker', badge: '🔥' },
+                          stats: [
+                            { label: 'PRD', name: 'Prediction', val: (selectedCard.statsJson as any)?.prd ?? 85 },
+                            { label: 'MGR', name: 'Manager Score', val: (selectedCard.statsJson as any)?.mgr ?? 80 },
+                            { label: 'HOT', name: 'Hot Take', val: (selectedCard.statsJson as any)?.hot ?? 88 },
+                            { label: 'RST', name: 'Roast Score', val: (selectedCard.statsJson as any)?.rst ?? 82 }
+                          ],
+                          cardTheme: 'crimson',
+                          countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
+                          playerName: profile.username,
+                          playerPosition: selectedCard.rating >= 75 ? 'CF' : 'DM',
+                          avatarStyle: profile.avatarStyle,
+                          avatarSeed: profile.avatarSeed,
+                          matchTitle: selectedCard.matchTitle,
+                          matchScore: selectedCard.matchScore
+                        }} />
+                      ) : (
+                        <SportsCenterCard data={{
+                          text: `Loyal supporter of ${profile.favoriteNation || 'Argentina'}. Fighting for tactical ball knowledge in the 2026 tournament.`,
+                          mode: 'court',
+                          caseId: 1000,
+                          fanbase: null,
+                          isRivalry: false,
+                          rarity: profile.overallRating >= 85 ? 'LEGENDARY' : (profile.overallRating >= 70 ? 'EPIC' : (profile.overallRating >= 45 ? 'RARE' : 'COMMON')),
+                          ovr: profile.overallRating || 88,
+                          rulingText: playstyle,
+                          verdict: playstyle,
+                          charge: `ACCURACY: ${accuracy}% OVER MATCHDAYS`,
+                          sentence: `Total Matches Predicted: ${totalMatches} Resolved`,
+                          ach: { title: 'Reputation', desc: 'Active Profile', badge },
+                          stats: [
+                            { label: 'PRD', name: 'Prediction', val: profile.predictionRating || 90 },
+                            { label: 'MGR', name: 'Manager Score', val: profile.managerRating || 88 },
+                            { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating || 85 },
+                            { label: 'RST', name: 'Roast Score', val: profile.roastScore || 92 }
+                          ],
+                          cardTheme: 'gold',
+                          countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
+                          playerName: profile.username,
+                          playerPosition: 'MGR',
+                          avatarStyle: profile.avatarStyle,
+                          avatarSeed: profile.avatarSeed
+                        }} />
+                      )}
                     </div>
                   </div>
+                </div>
 
-                  {/* Vertical Branded Social Share Dock (Placed to the Right of the Card) */}
-                  <div className="flex flex-col items-center gap-2 p-2 rounded-2xl border border-white/10 bg-white/5 shadow-md shrink-0 relative z-30">
-                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest select-none pb-0.5">
-                      <Share2 className="w-3 h-3 text-zinc-400" />
+                <div className="mt-4 border-t border-white/10 pt-4 z-20 flex flex-col gap-2.5">
+                  <div className="flex justify-between items-center bg-black/60 border border-white/15 rounded-2xl p-2.5 backdrop-blur-md">
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest pl-1">
+                      Share {activeRightTab === 'verdict' && selectedCard ? 'Verdict Card' : 'Tournament Deck'}:
                     </span>
-                    
-                    {/* Copy notification overlay */}
-                    {copiedPlatform !== null && (
-                      <div className="absolute top-1/2 left-[-90px] -translate-y-1/2 px-2.5 py-1 bg-green-500 text-black text-[9px] font-black uppercase rounded shadow-lg animate-bounce z-40">
-                        Copied!
-                      </div>
-                    )}
 
-                    {/* Branded social buttons dock */}
-                    <div className="flex flex-col items-center gap-2">
-                      {/* X/Twitter Share */}
-                    <a
-                      href={selectedCard ? (
-                        `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                          `Check out ${profile.username}'s World Cup prediction card graded at ${selectedCard.rating} OVR! VAR Verdict: ${selectedCard.verdict.toUpperCase()}:`
-                        )}&url=${encodeURIComponent(getShareUrl('card', selectedCard.id))}`
-                      ) : (
-                        `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                          `Explore ${profile.username}'s Football IQ rating card and collectibles album: `
-                        )}&url=${encodeURIComponent(getShareUrl('profile'))}`
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="social-share-btn social-share-btn-sm social-btn-x"
-                      title="Share on X"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    </a>
+                    <div className="flex gap-2 items-center">
+                      <button
+                        onClick={handleDownloadPng}
+                        disabled={downloading}
+                        className="p-2 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 text-amber-300 rounded-xl transition-all cursor-pointer"
+                        title="Download Card PNG"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
 
-                    {/* WhatsApp Share */}
-                    <a
-                      href={selectedCard ? (
-                        `https://api.whatsapp.com/send?text=${encodeURIComponent(
-                          `Check out ${profile.username}'s World Cup prediction card graded at ${selectedCard.rating} OVR! VAR Verdict: ${selectedCard.verdict.toUpperCase()} - ${getShareUrl('card', selectedCard.id)}`
-                        )}`
-                      ) : (
-                        `https://api.whatsapp.com/send?text=${encodeURIComponent(
-                          `Explore ${profile.username}'s Football IQ rating card and collectibles album: ${getShareUrl('profile')}`
-                        )}`
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="social-share-btn social-share-btn-sm social-btn-wa"
-                      title="Share on WhatsApp"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
-                    </a>
+                      <a
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                          activeRightTab === 'verdict' && selectedCard
+                            ? `Check out ${profile.username}'s VAR Verdict Card for Match ${selectedCard.matchId}! Rated ${selectedCard.rating} OVR: ${selectedCard.verdict.toUpperCase()}.`
+                            : `Check out ${profile.username}'s official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`
+                        )}&url=${encodeURIComponent(selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition-all cursor-pointer"
+                        title="Post to X/Twitter"
+                      >
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                      </a>
 
-                    {/* Telegram Share */}
-                    <a
-                      href={selectedCard ? (
-                        `https://t.me/share/url?url=${encodeURIComponent(getShareUrl('card', selectedCard.id))}&text=${encodeURIComponent(
-                          `Check out ${profile.username}'s World Cup prediction card graded at ${selectedCard.rating} OVR! VAR Verdict: ${selectedCard.verdict.toUpperCase()}:`
-                        )}`
-                      ) : (
-                        `https://t.me/share/url?url=${encodeURIComponent(getShareUrl('profile'))}&text=${encodeURIComponent(
-                          `Explore ${profile.username}'s Football IQ rating card and collectibles album: `
-                        )}`
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="social-share-btn social-share-btn-sm social-btn-tg"
-                      title="Share on Telegram"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.393c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.87 4.326-2.96-.924c-.643-.204-.658-.643.136-.953l11.57-4.46c.538-.196 1.006.128.832.941z"/></svg>
-                    </a>
+                      <a
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                          activeRightTab === 'verdict' && selectedCard
+                            ? `Check out ${profile.username}'s VAR Verdict Card for Match ${selectedCard.matchId}! Rated ${selectedCard.rating} OVR: ${selectedCard.verdict.toUpperCase()}. ${getShareUrl('card', selectedCard.id)}`
+                            : `Check out ${profile.username}'s official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}). ${getShareUrl('profile')}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all cursor-pointer"
+                        title="Send via WhatsApp"
+                      >
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
+                      </a>
 
-                    {/* Reddit Share */}
-                    <a
-                      href={selectedCard ? (
-                        `https://www.reddit.com/submit?title=${encodeURIComponent(
-                          `Check out ${profile.username}'s World Cup prediction card graded at ${selectedCard.rating} OVR! VAR Verdict: ${selectedCard.verdict.toUpperCase()}:`
-                        )}&url=${encodeURIComponent(getShareUrl('card', selectedCard.id))}`
-                      ) : (
-                        `https://www.reddit.com/submit?title=${encodeURIComponent(
-                          `Explore ${profile.username}'s Football IQ rating card and collectibles album:`
-                        )}&url=${encodeURIComponent(getShareUrl('profile'))}`
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="social-share-btn social-share-btn-sm social-btn-reddit"
-                      title="Share on Reddit"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.09-3.43 3.58.77c.06 1.05.94 1.88 2.02 1.88 1.1 0 2-1 2-2s-1-2-2-2c-.93 0-1.7.63-1.92 1.48l-3.88-.83c-.35-.08-.71.15-.79.5l-1.37 4.3c-2.49.04-4.75.68-6.42 1.7-.56-.75-1.45-1.22-2.41-1.22-1.65 0-3 1.35-3 3 0 1.25.77 2.32 1.86 2.77-.05.25-.08.5-.08.76 0 3.86 4.49 7 10 7s10-3.14 10-7c0-.26-.03-.51-.08-.76 1.09-.45 1.86-1.52 1.86-2.77zM6 14.5c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm10.74 3.7c-1.35 1.35-3.89 1.48-4.74 1.48-.85 0-3.39-.13-4.74-1.48-.3-.3-.3-.79 0-1.09.3-.3.79-.3 1.09 0 1 .1 2.87.23 3.65.23.78 0 2.65-.13 3.65-.23.3-.3.79-.3 1.09 0 .3.3.3.79 0 1.09zM16 16.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-                    </a>
-
-                    {/* Instagram Share */}
-                    <button
-                      onClick={() => handleCopyLink('instagram', selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}
-                      className="social-share-btn social-share-btn-sm social-btn-ig cursor-pointer"
-                      title="Copy & Share on Instagram"
-                    >
-                      {copiedPlatform === 'instagram' ? (
-                        <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                      ) : (
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z" /></svg>
-                      )}
-                    </button>
-
-                    {/* Discord Share */}
-                    <button
-                      onClick={() => handleCopyLink('discord', selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}
-                      className="social-share-btn social-share-btn-sm social-btn-discord cursor-pointer"
-                      title="Copy & Share on Discord"
-                    >
-                      {copiedPlatform === 'discord' ? (
-                        <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                      ) : (
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 01-1.873-.894.077.077 0 01-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 01.077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 01.078.009c.12.099.246.195.373.289a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.894.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/></svg>
-                      )}
-                    </button>
-
-                    {/* Copy Link */}
-                    <button
-                      onClick={() => handleCopyLink('copy', selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}
-                      className="social-share-btn social-share-btn-sm social-btn-copy cursor-pointer"
-                      title="Copy URL"
-                    >
-                      {copiedPlatform === 'copy' ? (
-                        <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                      ) : (
-                        <Share2 className="w-3.5 h-3.5" />
-                      )}
-                    </button>
+                      <button
+                        onClick={() => handleCopyLink('copy', selectedCard ? getShareUrl('card', selectedCard.id) : getShareUrl('profile'))}
+                        className="p-2 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 rounded-xl transition-all cursor-pointer"
+                        title="Copy Link"
+                      >
+                        {copiedPlatform === 'copy' ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-            </div>
+              </div>
 
             </div>
           </div>
 
         </div>
-
-        {/* Guest invitation call to action */}
-        <div className="mt-12 text-center max-w-sm mx-auto relative z-10">
-          <p className="text-xs text-zinc-400 mb-4 font-semibold">
-            Think you have better tactical ball knowledge than {profile.username}?
-          </p>
-          <Link
-            href="/world-cup-hub"
-            className="inline-flex items-center gap-2 py-4 px-8 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-md hover:scale-[1.02] hover:opacity-95 active:scale-[0.98] transition-all"
-          >
-            <Trophy className="w-4 h-4 text-white" /> Challenge Them / Build Your IQ
-          </Link>
-        </div>
-
       </div>
-    </div>
+
     </div>
   );
 }
