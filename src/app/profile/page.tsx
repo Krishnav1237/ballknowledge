@@ -525,7 +525,7 @@ export default function ProfileSettingsPage() {
 
                         <div className="space-y-1.5 group">
                           <label className="block text-[10px] font-bold text-rose-400 uppercase tracking-wide transition-all duration-200 group-focus-within:text-rose-300 group-hover:text-rose-300 drop-shadow-[0_0_6px_rgba(225,29,72,0.2)]">
-                            National Allegiance
+                            Supporting Country (National Allegiance)
                           </label>
                           <input
                             type="text"
@@ -541,29 +541,7 @@ export default function ProfileSettingsPage() {
                               }
                             }}
                             className="w-full h-9 bg-[#13070A]/85 border border-rose-900/50 hover:border-rose-500/60 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/30 rounded-lg px-3 text-xs font-semibold text-white placeholder-rose-500/30 focus:shadow-[0_0_15px_rgba(225,29,72,0.25)] transition-all"
-                            placeholder="Brazil"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5 group">
-                          <label className="block text-[10px] font-bold text-rose-400 uppercase tracking-wide transition-all duration-200 group-focus-within:text-rose-300 group-hover:text-rose-300 drop-shadow-[0_0_6px_rgba(225,29,72,0.2)]">
-                            Club Allegiance
-                          </label>
-                          <input
-                            type="text"
-                            value={favoriteClub}
-                            onChange={e => {
-                              const val = e.target.value;
-                              setFavoriteClub(val);
-                              if (profile) {
-                                const updated = { ...profile, favoriteClub: val };
-                                setProfile(updated);
-                                saveStoredProfile(updated);
-                                window.dispatchEvent(new Event('storage'));
-                              }
-                            }}
-                            className="w-full h-9 bg-[#13070A]/85 border border-rose-900/50 hover:border-rose-500/60 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/30 rounded-lg px-3 text-xs font-semibold text-white placeholder-rose-500/30 focus:shadow-[0_0_15px_rgba(225,29,72,0.25)] transition-all"
-                            placeholder="Real Madrid"
+                            placeholder="Argentina / Brazil / England"
                           />
                         </div>
                       </div>
