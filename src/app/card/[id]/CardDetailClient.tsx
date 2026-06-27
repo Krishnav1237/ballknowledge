@@ -196,7 +196,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 </span>
                 <h4 className="font-display font-black text-base text-white uppercase mt-1 leading-none">{card.verdict}</h4>
               </div>
-              <span className="text-[9px] font-mono font-bold text-gray-350 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">OVR {card.rating}</span>
+              <span className="text-[9px] font-mono font-bold text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">OVR {card.rating}</span>
             </div>
             
             <div className="space-y-3.5 text-xs text-gray-300 font-medium leading-relaxed max-h-[160px] overflow-y-auto pr-1">
@@ -222,7 +222,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 <button
                   onClick={handleGenerateAiBg}
                   disabled={generating}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 hover:from-amber-500/30 hover:to-yellow-500/20 border border-amber-500/40 hover:border-amber-500/60 text-amber-350 hover:text-white font-display font-black text-[10px] uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 hover:from-amber-500/30 hover:to-yellow-500/20 border border-amber-500/40 hover:border-amber-500/60 text-amber-400 hover:text-white font-display font-black text-[10px] uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {generating ? (
                     <>

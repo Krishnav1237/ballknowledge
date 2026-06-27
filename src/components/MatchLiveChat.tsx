@@ -269,7 +269,7 @@ export default function MatchLiveChat({
           </span>
         </div>
         <div className="flex items-center gap-1.5 text-zinc-400">
-          <MessageCircle className="w-3 h-3 text-zinc-450" />
+          <MessageCircle className="w-3 h-3 text-zinc-400" />
           <span className="text-[8px] font-mono">{messages.filter(m => m.type === 'message').length} msgs</span>
         </div>
       </div>

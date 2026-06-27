@@ -106,7 +106,7 @@ export default function PricingPage() {
             SIGN YOUR MANAGER <span className="text-[#E11D48]">CONTRACT</span>
           </h1>
           <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none max-w-lg mx-auto">
-            ACQUIRE OFFICIAL MANAGER LICENSE FOR WORLD CUP 2026 <span className="text-zinc-350 mx-2">•</span> SELECT TIER & LOCK PREDICTIONS
+            ACQUIRE OFFICIAL MANAGER LICENSE FOR WORLD CUP 2026 <span className="text-zinc-300 mx-2">•</span> SELECT TIER & LOCK PREDICTIONS
           </p>
           
           <button 
@@ -137,7 +137,7 @@ export default function PricingPage() {
                 </div>
                 <Ticket className="w-5 h-5 text-gray-400" />
               </div>
-              <p className="text-[9px] text-gray-450 font-bold uppercase tracking-wider mb-2">Jump in, no commitment</p>
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-2">Jump in, no commitment</p>
               
               <div className="flex items-baseline mb-3">
                 <span className="font-display font-black text-3xl sm:text-4xl text-white">{currency}0</span>
@@ -166,7 +166,7 @@ export default function PricingPage() {
             <button
               onClick={() => handleSignContract('Casual Fan')}
               disabled={selectedPlan !== null}
-              className="w-full py-2 rounded-lg border border-white/10 text-gray-350 hover:text-white hover:bg-white/5 font-display font-black text-[11px] uppercase tracking-widest transition-all hover:scale-102 cursor-pointer text-center"
+              className="w-full py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 font-display font-black text-[11px] uppercase tracking-widest transition-all hover:scale-102 cursor-pointer text-center"
             >
               {contractSigning && selectedPlan === 'Casual Fan' ? 'SIGNING...' : 'START FREE'}
             </button>
@@ -326,7 +326,7 @@ export default function PricingPage() {
                         <span className="font-display font-bold text-xs uppercase tracking-wider text-[#E11D48]">
                           Rule {idx + 1}: {rule.q}
                         </span>
-                        <ChevronDown className={`w-3.5 h-3.5 text-zinc-450 transition-transform duration-300 ${isOpen ? 'rotate-180 text-white' : ''}`} />
+                        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-white' : ''}`} />
                       </button>
 
                       <AnimatePresence initial={false}>

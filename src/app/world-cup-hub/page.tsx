@@ -485,7 +485,7 @@ export default function WorldCupHub() {
                               {status === 'COMPLETED' || status === 'LIVE' ? (
                                 <div className="bg-black/40 border border-white/10 rounded px-2.5 py-1 font-mono font-black text-[#E11D48] text-sm tracking-tight shadow-[0_2px_12px_rgba(225,29,72,0.2)] flex items-center gap-1.5">
                                   <span>{getResolvedScore(match, 'home')}</span>
-                                  <span className="text-zinc-350 font-normal">:</span>
+                                  <span className="text-zinc-300 font-normal">:</span>
                                   <span>{getResolvedScore(match, 'away')}</span>
                                 </div>
                               ) : (
@@ -575,7 +575,7 @@ export default function WorldCupHub() {
                                       <span className="font-display font-black tracking-wide uppercase truncate">{st.name}</span>
                                     </td>
                                     <td className="py-2 text-center font-mono text-[10px] text-zinc-400">{st.played}</td>
-                                    <td className="py-2 text-center font-mono text-[10px] text-zinc-450">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
+                                    <td className="py-2 text-center font-mono text-[10px] text-zinc-400">{st.gd > 0 ? `+${st.gd}` : st.gd}</td>
                                     <td className={`py-2 text-right font-display font-black text-[12px] ${
                                       isPromoted ? 'text-[#E11D48] drop-shadow-[0_2px_4px_rgba(225,29,72,0.15)]' : 'text-zinc-400'
                                     }`}>{st.points}</td>

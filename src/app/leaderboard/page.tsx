@@ -162,7 +162,7 @@ function PodiumCard({ entry, config, isMe }: {
         <p className="font-display font-black text-[9px] md:text-[10px] uppercase tracking-wide text-white truncate px-0.5">
           {entry.username}
         </p>
-        <p className="font-black text-[10px] md:text-xs leading-none text-gray-350 mt-0.5">{entry.overallRating}</p>
+        <p className="font-black text-[10px] md:text-xs leading-none text-gray-300 mt-0.5">{entry.overallRating}</p>
         <p className={`text-[7px] font-black uppercase tracking-widest ${rarity.colour} opacity-80 leading-none mt-0.5`}>
           {rarity.label.substring(0, 3)}
         </p>
@@ -518,7 +518,7 @@ export default function LeaderboardPage() {
             {/* Section 4: Activity Console */}
             <div className="relative bg-gradient-to-b from-black/40 to-transparent border border-white/5 rounded-xl p-4 text-center mt-auto overflow-hidden">
               <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Activity Console</p>
-              <p className="text-zinc-450 text-[10px] mt-1.5 leading-normal">
+              <p className="text-zinc-400 text-[10px] mt-1.5 leading-normal">
                 Submit predictions and hot takes in the match console to raise your rank.
               </p>
               <Link
@@ -560,7 +560,7 @@ export default function LeaderboardPage() {
               {!loading && error && (
                 <div className="text-center py-24 bg-black/20 flex flex-col justify-center items-center h-full gap-4">
                   <Shield className="w-12 h-12 text-[#881337]/30" />
-                  <p className="font-display font-black text-xl uppercase text-zinc-450">Tribunal Offline</p>
+                  <p className="font-display font-black text-xl uppercase text-zinc-400">Tribunal Offline</p>
                   <button
                     onClick={() => fetchLeaderboard(sortBy)}
                     className="px-5 py-2.5 rounded-xl bg-[#881337] hover:bg-[#881337]/90 text-white text-sm font-bold transition-all"
@@ -577,7 +577,7 @@ export default function LeaderboardPage() {
               )}
 
               {!loading && !error && filtered.length === 0 && (
-                <div className="text-center py-24 flex flex-col justify-center items-center h-full text-zinc-450">
+                <div className="text-center py-24 flex flex-col justify-center items-center h-full text-zinc-400">
                   <Search className="w-6 h-6 text-zinc-500 mb-2" />
                   <p className="text-xs">No manager found for &quot;<span className="text-white font-semibold">{search}</span>&quot;</p>
                 </div>

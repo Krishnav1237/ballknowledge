@@ -64,7 +64,7 @@ export default function Navbar() {
               />
             </div>
             <span className="font-display font-black text-2xl tracking-widest flex items-center transition-colors duration-300 text-white">
-              BALL<span className="ml-1 text-[#E11D48] group-hover:text-rose-450 transition-colors">KNOWLEDGE</span>
+              BALL<span className="ml-1 text-[#E11D48] group-hover:text-rose-400 transition-colors">KNOWLEDGE</span>
             </span>
           </Link>
 
