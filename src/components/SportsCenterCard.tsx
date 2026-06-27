@@ -66,18 +66,6 @@ export default function SportsCenterCard({
   const verdictLabel = (data.verdict || 'KNOWS BALL').toUpperCase();
   const managerName = (data.playerName || 'TACTICIAN').toUpperCase();
 
-  /* ─────────────────────────────────────────────────────────────────
-     VERDICT CARD  —  340 × 480 px  fixed-canvas, zone-based layout
-     Clip-path bottom edge at sides: 87% of 480 ≈ y 417
-     ─────────────────────────────────────────────────────────────────
-     Zone A  y  20–72   OVR | MGR pill | flag
-     Zone B  y  76–138  avatar (66 px circle)
-     Zone C  y 142–185  compact fixture strip
-     Zone D  y 192–228  verdict headline
-     Zone E  y 232–246  rarity pips
-     Zone F  y 252–308  stats (ends y 308 — fully inside clip)
-     ───────────────────────────────────────────────────────────────── */
-
   if (isVerdictCard) {
     const glow = tok.glow;
 
@@ -108,7 +96,7 @@ export default function SportsCenterCard({
               <stop offset="0%"   stopColor="#FFE4E6"/><stop offset="35%" stopColor="#F43F5E"/><stop offset="70%" stopColor="#BE123C"/><stop offset="100%" stopColor="#4C0519"/>
             </linearGradient>
             <filter id="vcard-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="6" stdDeviation="14" floodColor={glow} floodOpacity="0.72"/>
+              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity="0.75"/>
             </filter>
           </defs>
 
@@ -123,8 +111,6 @@ export default function SportsCenterCard({
             stroke="white" strokeWidth="0.8" opacity="0.18" fill="none"
             style={{ transform: 'scale(0.965)', transformOrigin: '170px 240px' }}
           />
-          {/* Accent line above stats */}
-          <line x1="38" y1="244" x2="302" y2="244" stroke={glow} strokeWidth="0.8" opacity="0.35"/>
         </svg>
 
         {/* ── Background fill (clipped to shield) ── */}
@@ -145,23 +131,25 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE A — OVR  |  MGR PILL  |  FLAG
-            y: 20 – 72
+            ZONE A — TOP ROW: OVR | MGR PILL | FLAG
+            y: 24 – 70
             ══════════════════════════════════════════ */}
 
         {/* A1 — OVR stack (top-left) */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 22, left: 22 }}>
+        <div className="absolute z-40 pointer-events-none" style={{ top: 24, left: 24 }}>
           <span
-            className="block text-white leading-none"
-            style={{ fontFamily:"'Oswald',sans-serif", fontWeight:900, fontSize:40, textShadow:'0 4px 10px rgba(0,0,0,0.9)' }}
-          >{ovr}</span>
-          <span className="block text-center font-black text-[8px] tracking-[0.22em] uppercase mt-[-2px]" style={{ color: glow }}>
+            className="block text-white leading-none font-black"
+            style={{ fontFamily: "'Oswald', sans-serif", fontSize: 44, textShadow: '0 4px 10px rgba(0,0,0,0.9)' }}
+          >
+            {ovr}
+          </span>
+          <span className="block text-center font-black text-[9px] tracking-[0.22em] uppercase mt-[-2px]" style={{ color: glow }}>
             VAR
           </span>
         </div>
 
-        {/* A2 — Manager name pill (top-center) — replaces "VAR TRIBUNAL" */}
-        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 30, left: 0, right: 0 }}>
+        {/* A2 — Manager name pill (top-center) */}
+        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 32, left: 0, right: 0 }}>
           <div
             className="flex items-center gap-1.5 rounded-full px-3 py-[5px]"
             style={{
@@ -171,7 +159,7 @@ export default function SportsCenterCard({
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/ball_knowledge_logo.png" alt="" className="w-[12px] h-[12px] object-contain rounded-full"/>
+            <img src="/images/ball_knowledge_logo.png" alt="" className="w-[12px] h-[12px] object-contain rounded-full" />
             <span className="font-black uppercase text-[8px] tracking-[0.14em]" style={{ color: glow }}>
               MGR
             </span>
@@ -182,185 +170,154 @@ export default function SportsCenterCard({
         </div>
 
         {/* A3 — Country flag (top-right) */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 26, right: 22 }}>
+        <div className="absolute z-40 pointer-events-none" style={{ top: 28, right: 24 }}>
           <div
             className="flex items-center justify-center rounded-full"
-            style={{ width:30, height:30, background:'rgba(2,4,16,0.94)', border:`1px solid ${glow}55`, boxShadow:'0 3px 10px rgba(0,0,0,0.8)' }}
+            style={{ width: 32, height: 32, background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}55`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
           >
-            <span className="text-[13px] leading-none">{data.countryFlag || '🌍'}</span>
+            <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE B — AVATAR  (76 – 140)
+            ZONE B — COMPACT FIXTURE STRIP (Above Avatar)
+            y: 76 – 112
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 76, left: 0, right: 0, display:'flex', justifyContent:'center' }}>
-          {/* Outer glow ring */}
+        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 76, left: 0, right: 0 }}>
           <div
+            className="rounded-full px-3.5 py-1.5 flex items-center gap-3 backdrop-blur-md"
             style={{
-              width: 68, height: 68,
-              borderRadius: '50%',
-              boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}50, 0 0 40px ${glow}20`,
-              padding: 3,
-              background: `radial-gradient(circle, ${glow}30, rgba(0,0,0,0.9))`,
-            }}
-          >
-            <div className="w-full h-full rounded-full overflow-hidden" style={{ border:`2px solid ${glow}60`, background:'rgba(0,0,0,0.7)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover"/>
-            </div>
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════
-            ZONE C — COMPACT FIXTURE STRIP  (144 – 192)
-            Slim single-row: flag CODE  score  CODE flag
-            ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 144, left: 30, right: 30 }}>
-          <div
-            className="w-full rounded-xl overflow-hidden"
-            style={{
-              background: 'rgba(0,0,0,0.80)',
+              background: 'rgba(0,0,0,0.85)',
               border: `1px solid ${glow}55`,
-              boxShadow: `0 4px 18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.05)`,
+              boxShadow: `0 4px 14px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.05)`,
             }}
           >
-            <div className="flex items-center justify-between px-4 py-[10px]">
+            <div className="flex items-center gap-1.5">
+              {homeFlag && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={homeFlag} alt="" className="w-5 h-3.5 object-cover rounded-xs border border-white/10" />
+              )}
+              <span className="font-bold text-[10px] uppercase text-white tracking-widest font-mono">
+                {homeShort}
+              </span>
+            </div>
 
-              {/* Home team */}
-              <div className="flex flex-col items-center gap-[5px]" style={{ width: 60 }}>
-                {homeFlag ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={homeFlag} alt={homeShort} className="object-cover rounded-sm"
-                    style={{ width:34, height:22, border:'1px solid rgba(255,255,255,0.18)', boxShadow:'0 2px 8px rgba(0,0,0,0.6)' }}
-                  />
-                ) : (
-                  <div style={{ width:34, height:22, background:'#111', borderRadius:3 }}/>
-                )}
-                <span className="font-black text-white uppercase tracking-wider" style={{ fontFamily:"'Oswald',sans-serif", fontSize:11 }}>
-                  {homeShort}
+            <span className="font-black text-[11px] text-white/50 px-1 font-mono">
+              {score ? (
+                <span className="text-white bg-white/10 px-2 py-0.5 rounded font-bold font-mono">
+                  {score}
                 </span>
-              </div>
+              ) : 'VS'}
+            </span>
 
-              {/* Score / VS */}
-              <div className="flex flex-col items-center" style={{ minWidth: 72 }}>
-                {score ? (
-                  <>
-                    <div
-                      className="rounded-lg px-3 py-[5px]"
-                      style={{ background:`${glow}20`, border:`1px solid ${glow}65` }}
-                    >
-                      <span
-                        className="text-white font-black"
-                        style={{ fontFamily:"'Oswald',sans-serif", fontSize:19, letterSpacing:'0.06em', textShadow:`0 0 14px ${glow}` }}
-                      >{score}</span>
-                    </div>
-                    <span className="font-black tracking-[0.2em] uppercase text-[6.5px] mt-[3px]" style={{ color: glow }}>FINAL</span>
-                  </>
-                ) : (
-                  <div className="rounded-lg px-3 py-[5px]" style={{ background:`${glow}18`, border:`1px solid ${glow}50` }}>
-                    <span className="text-white font-black" style={{ fontFamily:"'Oswald',sans-serif", fontSize:14, letterSpacing:'0.1em' }}>VS</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Away team */}
-              <div className="flex flex-col items-center gap-[5px]" style={{ width: 60 }}>
-                {awayFlag ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={awayFlag} alt={awayShort} className="object-cover rounded-sm"
-                    style={{ width:34, height:22, border:'1px solid rgba(255,255,255,0.18)', boxShadow:'0 2px 8px rgba(0,0,0,0.6)' }}
-                  />
-                ) : (
-                  <div style={{ width:34, height:22, background:'#111', borderRadius:3 }}/>
-                )}
-                <span className="font-black text-white uppercase tracking-wider" style={{ fontFamily:"'Oswald',sans-serif", fontSize:11 }}>
-                  {awayShort}
-                </span>
-              </div>
-
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-[10px] uppercase text-white tracking-widest font-mono">
+                {awayShort}
+              </span>
+              {awayFlag && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={awayFlag} alt="" className="w-5 h-3.5 object-cover rounded-xs border border-white/10" />
+              )}
             </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE D — VERDICT HEADLINE  (198 – 236)
+            ZONE C — AVATAR (Upper Middle)
+            y: 122 – 232
             ══════════════════════════════════════════ */}
-        <div
-          className="absolute z-40 pointer-events-none text-center"
-          style={{ top: 198, left: 18, right: 18 }}
-        >
-          <h2
-            className="text-white uppercase leading-none"
+        <div className="absolute z-40 pointer-events-none" style={{ top: 122, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+          <div
             style={{
-              fontFamily: "'Oswald',sans-serif",
-              fontWeight: 900,
-              fontSize: verdictLabel.length > 16 ? 16 : verdictLabel.length > 12 ? 19 : 22,
-              letterSpacing: '0.07em',
-              textShadow: `0 3px 14px ${glow}85, 0 1px 6px rgba(0,0,0,0.95)`,
+              width: 110, height: 110,
+              borderRadius: '50%',
+              boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}40, 0 8px 24px rgba(0,0,0,0.85)`,
+              padding: 4,
+              background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
             }}
-          >{verdictLabel}</h2>
+          >
+            <div className="w-full h-full rounded-full overflow-hidden" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.75)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
+            </div>
+          </div>
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE E — RARITY STRIP  (242 – 254)
+            ZONE D — VERDICT HEADLINE
+            y: 244 – 276
             ══════════════════════════════════════════ */}
-        <div
-          className="absolute z-40 pointer-events-none flex items-center justify-center gap-[7px]"
-          style={{ top: 242, left: 0, right: 0 }}
-        >
-          {['LEGENDARY','EPIC','RARE','COMMON'].map(r => (
+        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 244, left: 16, right: 16 }}>
+          <h2
+            className="text-white uppercase leading-none font-black"
+            style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontSize: verdictLabel.length > 16 ? 18 : verdictLabel.length > 12 ? 21 : 24,
+              letterSpacing: '0.07em',
+              textShadow: `0 4px 16px ${glow}90, 0 2px 8px rgba(0,0,0,0.95)`,
+            }}
+          >
+            {verdictLabel}
+          </h2>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            ZONE E — VERDICT SENTENCE / SENTENCE DETAIL
+            y: 278 – 300
+            ══════════════════════════════════════════ */}
+        {data.charge && (
+          <div className="absolute z-40 pointer-events-none text-center" style={{ top: 278, left: 24, right: 24 }}>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest line-clamp-1 italic">
+              &ldquo;{data.charge}&rdquo;
+            </p>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════
+            ZONE F — RARITY STRIP
+            y: 308 – 320
+            ══════════════════════════════════════════ */}
+        <div className="absolute z-40 pointer-events-none flex items-center justify-center gap-[7px]" style={{ top: 308, left: 0, right: 0 }}>
+          {['LEGENDARY', 'EPIC', 'RARE', 'COMMON'].map(r => (
             <div
               key={r}
               style={{
-                width: rarity === r ? 10 : 6,
-                height: rarity === r ? 10 : 6,
+                width: rarity === r ? 9 : 6,
+                height: rarity === r ? 9 : 6,
                 borderRadius: '50%',
                 background: rarity === r ? glow : 'rgba(255,255,255,0.15)',
-                boxShadow: rarity === r ? `0 0 7px ${glow}, 0 0 14px ${glow}70` : 'none',
+                boxShadow: rarity === r ? `0 0 8px ${glow}, 0 0 16px ${glow}70` : 'none',
                 transition: 'all 0.2s',
               }}
             />
           ))}
-          <span className="font-black uppercase tracking-[0.2em] text-[7px]" style={{ color: glow }}>
+          <span className="font-black uppercase tracking-[0.2em] text-[7.5px] ml-1" style={{ color: glow }}>
             {rarity}
           </span>
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE F — STATS PANEL  (258 – 318)
-            top=258, height=60 → bottom=318
-            Clip at sides ≈ y 417  ✓ FULLY INSIDE
+            ZONE G — SEASON-CARD STYLE STATS PANEL (Bottom Position)
+            y: 364 – 416 (absolute bottom-[64px])
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 258, left: 28, right: 28 }}>
+        <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
           <div
-            className="w-full overflow-hidden rounded-xl"
-            style={{
-              height: 60,
-              background: 'rgba(1,3,14,0.97)',
-              border: `2px solid ${glow}75`,
-              boxShadow: `0 6px 22px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 18px ${glow}22`,
-            }}
+            className="w-full h-[52px] bg-[#020612]/95 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)]"
+            style={{ border: `1px solid ${glow}60` }}
           >
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', height:'100%' }}>
-              {metrics.map((m, idx) => (
-                <div
-                  key={m.label}
-                  style={{
-                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-                    borderRight: idx < 3 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                    padding: '4px 2px',
-                  }}
+            {metrics.map((m) => (
+              <div key={m.label} className="flex flex-col items-center flex-1 border-r last:border-r-0 border-white/10">
+                <span className="text-[8.5px] font-black tracking-widest uppercase drop-shadow" style={{ color: glow }}>
+                  {m.label}
+                </span>
+                <span
+                  className="text-[18px] font-black text-white leading-none mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+                  style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                 >
-                  <span style={{ fontFamily:"'Outfit',sans-serif", fontWeight:900, fontSize:7.5, letterSpacing:'0.22em', textTransform:'uppercase', color: glow, lineHeight:1 }}>
-                    {m.label}
-                  </span>
-                  <span style={{ fontFamily:"'Oswald',sans-serif", fontWeight:900, fontSize:21, color:'#fff', lineHeight:1, marginTop:3, textShadow:'0 2px 6px rgba(0,0,0,0.9)' }}>
-                    {m.val}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  {m.val}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
