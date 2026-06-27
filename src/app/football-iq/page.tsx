@@ -42,7 +42,6 @@ export default function FootballIQPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
   
-  const [selectedMatchday, setSelectedMatchday] = useState('1');
   const [filterRarity, setFilterRarity] = useState('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
@@ -193,7 +192,7 @@ export default function FootballIQPage() {
     handleCopyLink('insta', urlStr);
   };
 
-  const matchdayMatches = matches.filter(m => String(m.matchday) === String(selectedMatchday) && (m.type === 'group' || !m.type));
+  const groupMatches = matches.filter(m => m.type === 'group' || !m.type);
 
   const constructMatchCardObj = (match: Match) => {
     const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: '', fifa_code: '' };
@@ -233,7 +232,7 @@ export default function FootballIQPage() {
     };
   };
 
-  const filteredMatches = matchdayMatches.filter(match => {
+  const filteredMatches = groupMatches.filter(match => {
     const cardObj = constructMatchCardObj(match);
     const userPred = userPreds[match.id];
     const status = getMatchStatus(match);
@@ -292,7 +291,7 @@ export default function FootballIQPage() {
           </div>
 
           <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] font-bold text-gray-400 uppercase tracking-widest">
-            <span>MD {selectedMatchday}</span>
+            <span>GROUP {match.group || 'STAGE'}</span>
             <span className="text-amber-400 group-hover:underline">INSPECT</span>
           </div>
         </div>
@@ -300,7 +299,7 @@ export default function FootballIQPage() {
     );
   };
 
-  const activeVerdictCard = selectedCard || (matchdayMatches.length > 0 ? constructMatchCardObj(matchdayMatches[0]) : null);
+  const activeVerdictCard = selectedCard || (groupMatches.length > 0 ? constructMatchCardObj(groupMatches[0]) : null);
 
   const activeShareUrl = activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile');
   const activeShareText = activeRightTab === 'verdict' && activeVerdictCard
@@ -335,30 +334,6 @@ export default function FootballIQPage() {
                 YOUR SHIELD COLLECTION <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
               </p>
             </div>
-
-            {/* Horizontal Matchday Selector Pills */}
-            <div className="flex items-center gap-2 bg-black/60 border border-white/15 p-1.5 rounded-2xl">
-              {[
-                { id: '1', label: 'Matchday 1' },
-                { id: '2', label: 'Matchday 2' },
-                { id: '3', label: 'Matchday 3' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setSelectedMatchday(tab.id);
-                    setSelectedCard(null);
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                    selectedMatchday === tab.id
-                      ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="p-4 sm:p-6 relative flex-grow flex flex-col">
@@ -370,7 +345,7 @@ export default function FootballIQPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
                   <div>
                     <h2 className="font-display font-black text-lg text-white uppercase tracking-wider">
-                      Matchday {selectedMatchday} — Sticker Slots
+                      Tournament Album Sticker Slots
                     </h2>
                     <div className="flex gap-3 mt-1.5 text-xs font-black uppercase tracking-wider">
                       <span className="text-amber-400">🏆 {legendaryCount} LEG</span>
