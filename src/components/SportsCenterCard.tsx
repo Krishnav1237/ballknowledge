@@ -55,7 +55,7 @@ export default function SportsCenterCard({
 
   if (isVerdictCard) {
     /* =========================================================================
-       VERDICT CARD DESIGN: CYBER OCTAGON / VAR PLAQUE SHAPE (COMPLETELY NEW)
+       VERDICT CARD DESIGN: VAR CYBER-SHIELD PLAQUE (DISTINCT SHAPE & THEME)
        ========================================================================= */
     return (
       <div
@@ -63,7 +63,7 @@ export default function SportsCenterCard({
         className="relative w-[340px] h-[480px] bg-transparent select-none transition-all duration-500"
         style={{ fontFamily: "'Outfit', sans-serif" }}
       >
-        {/* SVG Cyber Octagon Frame & Metallic Crimson Border */}
+        {/* SVG VAR Cyber-Shield Frame & Metallic Crimson Border */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-30"
           viewBox="0 0 340 480"
@@ -71,50 +71,50 @@ export default function SportsCenterCard({
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="verdict-cyber-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#FFD3D9" />
-              <stop offset="35%" stopColor="#E11D48" />
-              <stop offset="75%" stopColor="#991B1B" />
+            <linearGradient id="verdict-shield-border" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FFE4E6" />
+              <stop offset="30%" stopColor="#F43F5E" />
+              <stop offset="70%" stopColor="#BE123C" />
               <stop offset="100%" stopColor="#4C0519" />
             </linearGradient>
 
-            <filter id="verdict-cyber-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="#E11D48" floodOpacity="0.6" />
+            <filter id="verdict-shield-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="#F43F5E" floodOpacity="0.65" />
             </filter>
           </defs>
 
-          {/* Outer Cyber Octagon Border */}
+          {/* Outer Cyber-Shield Border Path */}
           <path
-            d="M 32,12 L 170,4 L 308,12 L 332,54 L 332,382 L 300,432 L 170,476 L 40,432 L 8,382 L 8,54 Z"
-            stroke="url(#verdict-cyber-border)"
+            d="M 16,38 C 16,38 42,8 92,8 L 170,4 L 248,8 C 298,8 324,38 324,38 L 332,364 C 332,392 278,444 170,476 C 62,444 8,392 8,364 Z"
+            stroke="url(#verdict-shield-border)"
             strokeWidth="4"
             fill="none"
-            filter="url(#verdict-cyber-glow)"
+            filter="url(#verdict-shield-glow)"
           />
 
           {/* Inner Laser Accent Line */}
           <path
-            d="M 32,12 L 170,4 L 308,12 L 332,54 L 332,382 L 300,432 L 170,476 L 40,432 L 8,382 L 8,54 Z"
-            stroke="#FFD3D9"
+            d="M 16,38 C 16,38 42,8 92,8 L 170,4 L 248,8 C 298,8 324,38 324,38 L 332,364 C 332,392 278,444 170,476 C 62,444 8,392 8,364 Z"
+            stroke="#FFE4E6"
             strokeWidth="1"
             opacity="0.4"
             fill="none"
-            style={{ transform: 'scale(0.96)', transformOrigin: '170px 240px' }}
+            style={{ transform: 'scale(0.95)', transformOrigin: '170px 240px' }}
           />
         </svg>
 
-        {/* Card Content Container Clipped inside Cyber Octagon */}
+        {/* Card Content Container Clipped strictly within Cyber-Shield Shape */}
         <div 
           className="absolute inset-0 w-full h-full overflow-hidden"
           style={{
-            clipPath: 'polygon(9% 2%, 91% 2%, 97% 11%, 97% 79%, 88% 90%, 50% 99%, 12% 90%, 3% 79%, 3% 11%)'
+            clipPath: 'polygon(3% 9%, 15% 4%, 35% 4%, 50% 1%, 65% 4%, 85% 4%, 97% 9%, 98% 76%, 50% 98%, 2% 76%)'
           }}
         >
           {hasAiImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
           ) : (
-            <div className="relative w-full h-full p-5 flex flex-col justify-between text-white bg-gradient-to-b from-[#2A0813] via-[#14050C] to-[#030712]">
+            <div className="relative w-full h-full p-5 flex flex-col justify-between text-white bg-gradient-to-b from-[#280512] via-[#0F0308] to-[#030712]">
               <div className="h-20" />
 
               {/* Center Spotlight */}
@@ -128,7 +128,7 @@ export default function SportsCenterCard({
                         ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
                       </span>
                       {data.matchScore && (
-                        <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30">
+                        <span className="text-[10px] font-mono font-bold text-rose-300 bg-rose-500/25 px-2 py-0.5 rounded border border-rose-500/40">
                           {data.matchScore}
                         </span>
                       )}
@@ -137,7 +137,7 @@ export default function SportsCenterCard({
 
                   {/* Prominent VAR Verdict Title */}
                   <h2 
-                    className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_14px_rgba(225,29,72,0.8)] max-w-[280px] mt-1"
+                    className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_14px_rgba(244,63,94,0.85)] max-w-[280px] mt-1"
                     style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                   >
                     {data.verdict || 'KNOWS BALL'}
@@ -145,7 +145,7 @@ export default function SportsCenterCard({
 
                   {/* Manager Alias & Decree */}
                   <div className="flex flex-col items-center gap-1 mt-1">
-                    <span className="text-[9px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-0.5 rounded-full">
+                    <span className="text-[9px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/15 border border-amber-400/35 px-3 py-0.5 rounded-full shadow-sm">
                       MANAGER: {data.playerName || 'TACTICIAN'}
                     </span>
                     
