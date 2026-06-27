@@ -60,7 +60,7 @@ export default function SportsCenterCard({
     >
       {/* SVG Container defining the FUT shield geometry and border frame */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none z-20"
+        className="absolute inset-0 w-full h-full pointer-events-none z-30"
         viewBox="0 0 340 480"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -72,11 +72,6 @@ export default function SportsCenterCard({
             <stop offset="50%" stopColor="#E11D48" />
             <stop offset="100%" stopColor="#881337" />
           </linearGradient>
-
-          {/* Shield Clip Path for AI Image rendering */}
-          <clipPath id="fut-shield-clip">
-            <path d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z" />
-          </clipPath>
         </defs>
 
         {/* Outer Metallic Shield Border Frame */}
@@ -87,7 +82,7 @@ export default function SportsCenterCard({
           fill="none"
         />
 
-        {/* Concentric Inner Border Line */}
+        {/* Inner Border Line */}
         <path
           d="M 6,56 C 6,56 26,10 72,10 C 108,10 126,24 144,24 C 153,24 156,16 162,16 C 168,16 171,24 180,24 C 198,24 216,10 252,10 C 298,10 318,56 318,56 L 318,368 C 318,396 270,442 162,472 C 54,442 6,396 6,368 Z"
           stroke="url(#gold-border)"
@@ -109,7 +104,7 @@ export default function SportsCenterCard({
         }}
       >
         {hasAiImage ? (
-          /* Render full AI Generated FIFA Trading Card image */
+          /* Full AI Generated FIFA Trading Card image */
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.aiImageUrl}
@@ -119,10 +114,9 @@ export default function SportsCenterCard({
         ) : (
           /* High-contrast FIFA Card layout rendered inside shield frame */
           <div className="relative w-full h-full bg-gradient-to-b from-[#1E070F] via-[#0B0F19] to-[#030712] p-7 flex flex-col justify-between text-white">
-            {/* Background Texture Overlay */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.25),transparent_70%)] pointer-events-none" />
 
-            {/* Top Row: OVR & Logo */}
+            {/* Top Row: OVR & Role */}
             <div className="flex justify-between items-start z-10 pt-2">
               <div className="flex flex-col items-center">
                 <span 
@@ -136,9 +130,7 @@ export default function SportsCenterCard({
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 bg-black/50 border border-white/15 rounded-full px-2.5 py-1 backdrop-blur-md">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/ball_knowledge_logo.png" alt="Logo" className="w-5 h-5 object-contain rounded-full" />
+              <div className="flex items-center gap-1.5 bg-black/60 border border-white/20 rounded-full px-2.5 py-1 backdrop-blur-md">
                 <span className="text-[13px]">{data.countryFlag || '🌍'}</span>
               </div>
             </div>
@@ -151,22 +143,46 @@ export default function SportsCenterCard({
               >
                 {data.playerName || 'MANAGER'}
               </h2>
-              <span className="text-[10px] font-black tracking-widest uppercase text-[#E11D48] mt-1.5 bg-[#E11D48]/10 border border-[#E11D48]/30 px-2.5 py-0.5 rounded">
+              <span className="text-[10px] font-black tracking-widest uppercase text-[#E11D48] mt-1.5 bg-[#E11D48]/15 border border-[#E11D48]/40 px-2.5 py-0.5 rounded shadow-md">
                 ⚖️ {data.verdict || 'KNOWS BALL'}
               </span>
             </div>
-
-            {/* Bottom Row: 4 Stats Bar */}
-            <div className="w-full h-[48px] bg-black/60 border border-white/15 rounded-xl flex items-center justify-between px-2 py-1 z-10 backdrop-blur-md mb-3">
-              {metrics.map(m => (
-                <div key={m.label} className="flex flex-col items-center flex-1 border-r border-white/10 last:border-r-0">
-                  <span className="text-[8px] font-black tracking-widest uppercase text-[#FFE082]">{m.label}</span>
-                  <span className="text-[16px] font-black text-white leading-none mt-0.5" style={{ fontFamily: "'Oswald', sans-serif" }}>{m.val}</span>
-                </div>
-              ))}
-            </div>
           </div>
         )}
+
+        {/* 🏆 Product Logo Branding (Guaranteed in every card top center) */}
+        <div className="absolute top-[28px] left-0 right-0 flex justify-center items-center z-40 pointer-events-none">
+          <div className="flex items-center gap-1.5 bg-black/75 border border-[#E11D48]/50 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="/images/ball_knowledge_logo.png" 
+              alt="Ball Knowledge" 
+              className="w-5 h-5 object-contain rounded-full drop-shadow" 
+            />
+            <span className="text-[9px] font-black tracking-widest uppercase text-white">
+              BALL<span className="text-[#E11D48]">KNOWLEDGE</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 📊 High-Contrast Stats Panel (Guaranteed 100% visible on every card at bottom) */}
+        <div className="absolute bottom-[28px] left-[18px] right-[18px] z-40 pointer-events-none">
+          <div className="w-full h-[52px] bg-black/85 border border-white/20 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-lg shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+            {metrics.map(m => (
+              <div key={m.label} className="flex flex-col items-center flex-1 border-r border-white/15 last:border-r-0">
+                <span className="text-[8.5px] font-black tracking-widest uppercase text-[#FFE082] drop-shadow">
+                  {m.label}
+                </span>
+                <span 
+                  className="text-[18px] font-black text-white leading-none mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]" 
+                  style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+                >
+                  {m.val}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
