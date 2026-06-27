@@ -249,6 +249,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       rarity,
       matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
       matchScore: match.home_score !== '' ? `${match.home_score} - ${match.away_score}` : undefined,
+      homeFlag: homeTeam.flag,
+      awayFlag: awayTeam.flag,
       statsJson: {
         prd: profile.predictionRating || 85,
         mgr: profile.managerRating || 88,
@@ -541,7 +543,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           avatarStyle: profile.avatarStyle,
                           avatarSeed: profile.avatarSeed,
                           matchTitle: activeVerdictCard.matchTitle,
-                          matchScore: activeVerdictCard.matchScore
+                          matchScore: activeVerdictCard.matchScore,
+                          homeFlag: activeVerdictCard.homeFlag,
+                          awayFlag: activeVerdictCard.awayFlag
                         }} />
                       ) : (
                         <SportsCenterCard data={{

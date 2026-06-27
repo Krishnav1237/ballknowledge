@@ -53,6 +53,8 @@ export interface VerdictData {
   aiImageUrl?: string;
   matchScore?: string;
   matchTitle?: string;
+  homeFlag?: string;
+  awayFlag?: string;
 }
 
 export interface ProphecyData {

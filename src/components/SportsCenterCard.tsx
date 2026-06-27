@@ -56,9 +56,12 @@ export default function SportsCenterCard({
   const avatarSeed = (data as any).avatarSeed || data.playerName || 'Tactician';
   const avatarUrl = `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(avatarSeed)}`;
 
+  const homeFlag = (data as any).homeFlag;
+  const awayFlag = (data as any).awayFlag;
+
   if (isVerdictCard) {
     /* =========================================================================
-       VERDICT CARD DESIGN: VAR CYBER-SHIELD PLAQUE WITH HIGH-VISIBILITY STATS
+       VERDICT CARD DESIGN: HANDCRAFTED ULTRA-PREMIUM EA TOTY VAR CYBER PLAQUE
        ========================================================================= */
     return (
       <div
@@ -117,27 +120,38 @@ export default function SportsCenterCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
           ) : (
-            <div className="relative w-full h-full p-5 flex flex-col justify-between text-white bg-gradient-to-b from-[#280512] via-[#0F0308] to-[#030712]">
+            <div className="relative w-full h-full p-5 flex flex-col justify-between text-white bg-gradient-to-b from-[#25040E] via-[#0E0308] to-[#02050E]">
               <div className="h-16" />
 
-              {/* Center Spotlight */}
+              {/* Center Spotlight (Structured for Zero Overflow) */}
               <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto text-center w-full px-2">
                 <div className="flex flex-col items-center gap-1.5 w-full">
                   
                   {/* Custom Manager Avatar Feature */}
-                  <div className="w-13 h-13 rounded-full border-2 border-rose-500/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(244,63,94,0.5)] overflow-hidden shrink-0 mb-0.5">
+                  <div className="w-12 h-12 rounded-full border-2 border-rose-500/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(244,63,94,0.5)] overflow-hidden shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full" />
                   </div>
 
-                  {/* Match Teams & Score Metric Badge */}
+                  {/* Match Teams, Country Flags & Score Metric Badge */}
                   {(data.matchTitle || data.matchScore) && (
-                    <div className="bg-black/90 border border-rose-500/50 px-3 py-0.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-md">
-                      <span className="text-[9px] font-black uppercase text-gray-200 tracking-wider">
-                        ⚽ {data.matchTitle || 'WORLD CUP MATCH'}
-                      </span>
+                    <div className="bg-black/90 border border-rose-500/60 px-3 py-1 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md max-w-[290px]">
+                      <div className="flex items-center gap-1 shrink-0">
+                        {homeFlag && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={homeFlag} alt="" className="w-3.5 h-2.5 object-cover rounded-xs border border-white/20" />
+                        )}
+                        <span className="text-[9px] font-black uppercase text-gray-200 tracking-wider truncate max-w-[130px]">
+                          {data.matchTitle || 'WORLD CUP MATCH'}
+                        </span>
+                        {awayFlag && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={awayFlag} alt="" className="w-3.5 h-2.5 object-cover rounded-xs border border-white/20" />
+                        )}
+                      </div>
+
                       {data.matchScore && (
-                        <span className="text-[9.5px] font-mono font-bold text-rose-300 bg-rose-500/25 px-1.5 py-0.2 rounded border border-rose-500/40">
+                        <span className="text-[9.5px] font-mono font-bold text-rose-300 bg-rose-500/30 px-1.5 py-0.2 rounded border border-rose-500/50 shrink-0">
                           {data.matchScore}
                         </span>
                       )}
@@ -146,7 +160,7 @@ export default function SportsCenterCard({
 
                   {/* Prominent VAR Verdict Title */}
                   <h2 
-                    className="font-bold text-[22px] sm:text-[24px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_14px_rgba(244,63,94,0.85)] max-w-[280px]"
+                    className="font-bold text-[20px] sm:text-[22px] tracking-widest uppercase leading-tight text-white drop-shadow-[0_4px_14px_rgba(244,63,94,0.85)] max-w-[280px]"
                     style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                   >
                     {data.verdict || 'KNOWS BALL'}
@@ -154,12 +168,12 @@ export default function SportsCenterCard({
 
                   {/* Manager Alias & Decree */}
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-[8.5px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/15 border border-amber-400/35 px-2.5 py-0.5 rounded-full shadow-sm">
+                    <span className="text-[8px] font-mono font-black tracking-widest uppercase text-amber-300 bg-amber-400/15 border border-amber-400/35 px-2.5 py-0.5 rounded-full shadow-sm">
                       MANAGER: {data.playerName || 'TACTICIAN'}
                     </span>
                     
                     {data.charge && (
-                      <p className="text-[9px] text-gray-300 font-semibold italic max-w-[260px] line-clamp-1">
+                      <p className="text-[8.5px] text-gray-300 font-semibold italic max-w-[250px] line-clamp-1">
                         &ldquo;{data.charge}&rdquo;
                       </p>
                     )}
@@ -175,7 +189,7 @@ export default function SportsCenterCard({
           {/* 1. OVR Rating & Position (Top Left Stack) */}
           <div className="absolute top-[44px] left-[26px] z-40 flex flex-col items-center pointer-events-none">
             <span 
-              className="text-[46px] tracking-tighter leading-none text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.95)]"
+              className="text-[44px] tracking-tighter leading-none text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.95)]"
               style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
             >
               {ovr}
@@ -203,16 +217,16 @@ export default function SportsCenterCard({
             </div>
           </div>
 
-          {/* 4. High-Contrast Stats Panel (Fully Visible Bottom Row) */}
-          <div className="absolute bottom-[54px] left-[24px] right-[24px] z-50 pointer-events-none">
-            <div className="w-full h-[52px] bg-[#040814]/98 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.95)] border-2 border-rose-500/80">
+          {/* 4. High-Contrast Stats Panel (Fully Visible Bottom Row, Zero Overflow) */}
+          <div className="absolute bottom-[50px] left-[24px] right-[24px] z-50 pointer-events-none">
+            <div className="w-full h-[50px] bg-[#040814]/98 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.95)] border-2 border-rose-500/80">
               {metrics.map(m => (
                 <div key={m.label} className="flex flex-col items-center flex-1 border-r last:border-r-0 border-white/15">
-                  <span className="text-[8.5px] font-black tracking-widest uppercase drop-shadow text-rose-400">
+                  <span className="text-[8px] font-black tracking-widest uppercase drop-shadow text-rose-400">
                     {m.label}
                   </span>
                   <span 
-                    className="text-[18px] font-black text-white leading-none mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]" 
+                    className="text-[17px] font-black text-white leading-none mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]" 
                     style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                   >
                     {m.val}

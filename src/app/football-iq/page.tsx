@@ -219,6 +219,8 @@ export default function FootballIQPage() {
       rarity,
       matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
       matchScore: userPred?.homeScore !== undefined ? `${userPred.homeScore} - ${userPred.awayScore}` : (match.home_score !== '' ? `${match.home_score} - ${match.away_score}` : undefined),
+      homeFlag: homeTeam.flag,
+      awayFlag: awayTeam.flag,
       statsJson: {
         prd: userPred?.homeScore !== undefined ? 92 : profile.predictionRating || 75,
         mgr: userPred?.managerRating || profile.managerRating || 85,
@@ -518,7 +520,9 @@ export default function FootballIQPage() {
                           avatarStyle: profile.avatarStyle,
                           avatarSeed: profile.avatarSeed,
                           matchTitle: activeVerdictCard.matchTitle,
-                          matchScore: activeVerdictCard.matchScore
+                          matchScore: activeVerdictCard.matchScore,
+                          homeFlag: activeVerdictCard.homeFlag,
+                          awayFlag: activeVerdictCard.awayFlag
                         }} />
                       ) : (
                         <SportsCenterCard data={{
