@@ -596,7 +596,7 @@ export default function ProfileSettingsPage() {
                 <div className="col-span-12 lg:col-span-4 flex flex-col justify-center items-center h-[520px] bg-[#12070A]/60 border border-rose-900/40 rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-md">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.2),transparent_70%)] pointer-events-none" />
                   <div className="relative flex items-center justify-center w-full h-full">
-                    <div className="scale-[0.92] origin-center shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
+                    <div className="scale-[0.80] min-[360px]:scale-[0.88] min-[400px]:scale-[0.95] sm:scale-100 origin-center shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
                       <SportsCenterCard data={managerCardData} />
                     </div>
                   </div>
