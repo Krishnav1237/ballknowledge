@@ -3,10 +3,10 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { Trophy, Share2, CheckCircle, Home, Download } from 'lucide-react';
+import { Trophy, Share2, CheckCircle, Home, Download, Shield, Sparkles } from 'lucide-react';
 import { getFlagEmoji } from '@/lib/matchUtils';
 
 interface CardDetailClientProps {
@@ -16,6 +16,7 @@ interface CardDetailClientProps {
 
 export default function CardDetailClient({ initialCard, profile }: CardDetailClientProps) {
   const [card, setCard] = useState(initialCard);
+  const [activeTab, setActiveTab] = useState<'verdict' | 'manager'>('verdict');
   const [tiltStyle, setTiltStyle] = useState({});
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -35,10 +36,11 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
     try {
       const dataUrl = await toPng(cardNodeRef.current, { cacheBust: true, quality: 0.95 });
       const link = document.createElement('a');
-      link.download = `${profile.username.replace(/\s+/g, '_')}_FIFA_Card.png`;
+      const cardTypeLabel = activeTab === 'verdict' ? 'Verdict_Card' : 'Manager_Deck';
+      link.download = `${profile.username.replace(/\s+/g, '_')}_${cardTypeLabel}.png`;
       link.href = dataUrl;
       link.click();
-      showStatus('Card PNG exported successfully!', 'success');
+      showStatus(`${activeTab === 'verdict' ? 'Verdict Card' : 'Manager Deck'} PNG exported successfully!`, 'success');
     } catch (err) {
       console.error('Export failed:', err);
       showStatus('Failed to export card image.', 'error');
@@ -94,8 +96,8 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
     const box = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - box.left - box.width / 2;
     const y = e.clientY - box.top - box.height / 2;
-    const tiltX = -(y / (box.height / 2)) * 12;
-    const tiltY = (x / (box.width / 2)) * 12;
+    const tiltX = -(y / (box.height / 2)) * 10;
+    const tiltY = (x / (box.width / 2)) * 10;
     setTiltStyle({
       transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`,
       transition: 'transform 0.05s ease'
@@ -118,16 +120,16 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
   };
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground flex flex-col justify-between pt-[52px] pb-6 px-4 md:px-6 select-none">
+    <div className="relative min-h-screen bg-[#030712] text-foreground flex flex-col justify-between pt-[56px] pb-8 px-4 md:px-8 select-none">
       
       {/* Inline Status Message */}
       {statusMsg && (
-        <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-semibold shadow-xl backdrop-blur-md transition-all animate-fade-in-down ${
+        <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 px-5 py-3.5 rounded-2xl border text-xs font-bold shadow-2xl backdrop-blur-xl transition-all animate-fade-in-down ${
           statusMsg.type === 'success'
-            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200'
             : statusMsg.type === 'error'
-            ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
-            : 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+            ? 'bg-rose-500/20 border-rose-500/40 text-rose-200'
+            : 'bg-amber-500/20 border-amber-500/40 text-amber-200'
         }`}>
           {statusMsg.text}
         </div>
@@ -142,135 +144,212 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
           className="object-cover object-center opacity-[0.25]" 
           priority 
         />
-
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-background/55 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#030712]/70 to-[#030712]" />
       </div>
 
       {/* Centered Heading */}
-      <header className="relative z-10 text-center flex flex-col items-center">
-        <h2 className="font-display font-black text-2xl sm:text-3.5xl text-white uppercase tracking-wider leading-none">
-          {profile.username}&apos;s VAR Verdict Card
+      <header className="relative z-10 text-center flex flex-col items-center mt-2">
+        <h2 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none">
+          {profile.username}&apos;s Official Card Showcase
         </h2>
-        <p className="text-gray-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wide mt-1.5">
-          World Cup 2026 Season • Supporter of {profile.favoriteClub || 'VAR FC'}
+        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">
+          World Cup 2026 Season • Supporter of {profile.favoriteNation || 'Argentina'}
         </p>
       </header>
 
-      {/* Main split display: visible side-by-side without scroll */}
-      <main className="relative z-10 flex-grow w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center py-6 overflow-hidden">
+      {/* Main split display */}
+      <main className="relative z-10 flex-grow w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center justify-center py-6">
         
-        {/* Left Column: Card floating exactly on the pedestal in background image */}
-        <div className="flex justify-center items-center relative z-20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ 
-              type: "spring", 
-              damping: 15, 
-              stiffness: 70, 
-              duration: 1.2 
-            }}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={tiltStyle}
-            className="relative card-3d-tilt filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] origin-center"
-          >
-            <SportsCenterCard cardRef={cardNodeRef} data={{
-              text: card.evidence ? card.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', '') : 'No evidence submitted.',
-              mode: 'take',
-              caseId: 2026,
-              fanbase: null,
-              isRivalry: false,
-              rarity: card.rarity,
-              ovr: card.rating,
-              rulingText: card.verdict,
-              verdict: card.verdict,
-              charge: card.charge,
-              sentence: card.sentence,
-              ach: { title: 'Reputation', desc: 'Graded', badge: '🔥' },
-              stats: [
-                { label: 'PRD', name: 'Prediction', val: (card.statsJson as any)?.prd ?? (card.statsJson as any)?.predictionPerfScore ?? card.rating },
-                { label: 'MGR', name: 'Manager Score', val: (card.statsJson as any)?.mgr ?? (card.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, card.rating - 3)) },
-                { label: 'HOT', name: 'Hot Take', val: (card.statsJson as any)?.hot ?? (card.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, card.rating + 2)) },
-                { label: 'RST', name: 'Roast Score', val: (card.statsJson as any)?.rst ?? (card.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, card.rating + 1)) }
-              ],
-              cardTheme: card.cardTheme || 'gold',
-              aiImageUrl: card.aiImageUrl,
-              countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-              playerName: profile.username,
-              playerPosition: card.rating >= 75 ? 'CF' : 'DM',
-              avatarStyle: profile.avatarStyle,
-              avatarSeed: profile.avatarSeed
-            }} />
-          </motion.div>
+        {/* Left Column: Dual Card Switcher Showcase */}
+        <div className="lg:col-span-6 flex flex-col items-center justify-center relative z-20">
+          
+          {/* Card Type Selector Tabs */}
+          <div className="flex bg-[#0B0F19]/90 border border-white/15 p-1.5 rounded-2xl mb-6 shadow-xl backdrop-blur-md w-full max-w-[340px]">
+            <button
+              onClick={() => setActiveTab('verdict')}
+              className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-[11px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeTab === 'verdict'
+                  ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5" /> Verdict Card
+            </button>
+            <button
+              onClick={() => setActiveTab('manager')}
+              className={`flex-1 py-2 px-3 rounded-xl font-display font-black text-[11px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeTab === 'manager'
+                  ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5" /> Manager Deck
+            </button>
+          </div>
+
+          {/* Active Card Frame Container */}
+          <div className="relative flex justify-center items-center w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -15 }}
+                transition={{ duration: 0.3 }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                style={tiltStyle}
+                className="relative card-3d-tilt origin-center"
+              >
+                {activeTab === 'verdict' ? (
+                  <SportsCenterCard cardRef={cardNodeRef} data={{
+                    text: card.evidence ? card.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', '') : 'No evidence submitted.',
+                    mode: 'take',
+                    caseId: 2026,
+                    fanbase: null,
+                    isRivalry: false,
+                    rarity: card.rarity,
+                    ovr: card.rating,
+                    rulingText: card.verdict,
+                    verdict: card.verdict,
+                    charge: card.charge,
+                    sentence: card.sentence,
+                    ach: { title: 'Reputation', desc: 'Graded', badge: '🔥' },
+                    stats: [
+                      { label: 'PRD', name: 'Prediction', val: (card.statsJson as any)?.prd ?? (card.statsJson as any)?.predictionPerfScore ?? card.rating },
+                      { label: 'MGR', name: 'Manager Score', val: (card.statsJson as any)?.mgr ?? (card.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, card.rating - 3)) },
+                      { label: 'HOT', name: 'Hot Take', val: (card.statsJson as any)?.hot ?? (card.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, card.rating + 2)) },
+                      { label: 'RST', name: 'Roast Score', val: (card.statsJson as any)?.rst ?? (card.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, card.rating + 1)) }
+                    ],
+                    cardTheme: card.cardTheme || 'gold',
+                    aiImageUrl: card.aiImageUrl,
+                    countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
+                    playerName: profile.username,
+                    playerPosition: card.rating >= 75 ? 'CF' : 'DM',
+                    avatarStyle: profile.avatarStyle,
+                    avatarSeed: profile.avatarSeed
+                  }} />
+                ) : (
+                  <SportsCenterCard cardRef={cardNodeRef} data={{
+                    text: 'Overall Tournament Manager Deck',
+                    mode: 'court',
+                    caseId: 2026,
+                    fanbase: null,
+                    isRivalry: false,
+                    rarity: 'Legendary',
+                    ovr: profile.overallRating || 88,
+                    rulingText: 'TOURNAMENT DECK',
+                    verdict: 'CERTIFIED CHEF',
+                    charge: 'Tournament Mastermind',
+                    sentence: 'Undisputed Tactician',
+                    ach: { title: 'Tournament Deck', desc: 'Active Deck', badge: '👑' },
+                    stats: [
+                      { label: 'PRD', name: 'Prediction', val: profile.predictionRating || 90 },
+                      { label: 'MGR', name: 'Manager Score', val: profile.managerRating || 88 },
+                      { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating || 85 },
+                      { label: 'RST', name: 'Roast Score', val: profile.roastScore || 92 }
+                    ],
+                    cardTheme: 'gold',
+                    aiImageUrl: profile.aiImageUrl,
+                    countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
+                    playerName: profile.username,
+                    playerPosition: 'MGR',
+                    avatarStyle: profile.avatarStyle,
+                    avatarSeed: profile.avatarSeed
+                  }} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* Right Column: Details & Social Share Plinth (Compact glassmorphic menu) */}
-        <div className="flex flex-col justify-center gap-4 w-full max-w-md mx-auto lg:mx-0">
-          <div className="bg-[#0B0F19]/80 border border-white/10 rounded-3xl p-5 md:p-6 shadow-xl text-white backdrop-blur-md">
-            <div className="flex justify-between items-center border-b border-white/10 pb-2.5 mb-3.5">
+        {/* Right Column: High-Contrast Detailed Metrics & Share Plinth */}
+        <div className="lg:col-span-6 flex flex-col justify-center gap-6 w-full max-w-xl mx-auto">
+          <div className="bg-[#0B0F19]/90 border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl text-white backdrop-blur-xl">
+            
+            {/* Header Status */}
+            <div className="flex justify-between items-center border-b border-white/15 pb-4 mb-5">
               <div>
-                <span className="text-[7.5px] font-black uppercase text-[#E11D48] tracking-widest bg-[#E11D48]/10 border border-[#E11D48]/25 px-2 py-0.5 rounded-full">
-                  VAR Official Report
+                <span className="text-[9px] font-black uppercase tracking-widest bg-[#E11D48]/15 border border-[#E11D48]/40 text-rose-300 px-3 py-1 rounded-full">
+                  {activeTab === 'verdict' ? 'VAR Official Report' : 'Overall Tournament Manager Dossier'}
                 </span>
-                <h4 className="font-display font-black text-base text-white uppercase mt-1 leading-none">{card.verdict}</h4>
+                <h4 className="font-display font-black text-xl md:text-2xl text-white uppercase mt-2 leading-none">
+                  {activeTab === 'verdict' ? card.verdict : 'FULL TOURNAMENT DECK'}
+                </h4>
               </div>
-              <span className="text-[9px] font-mono font-bold text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">OVR {card.rating}</span>
+              <div className="text-right">
+                <span className="text-xs font-mono font-black text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-lg block">
+                  {activeTab === 'verdict' ? `${card.rating} OVR` : `${profile.overallRating || 88} OVR`}
+                </span>
+              </div>
             </div>
             
-            <div className="space-y-3.5 text-xs text-gray-300 font-medium leading-relaxed max-h-[160px] overflow-y-auto pr-1">
-              <div>
-                <span className="text-zinc-400 font-black uppercase tracking-wider text-[8px] mr-1 block mb-1">Graded Statement:</span>
-                &ldquo;{card.evidence ? card.evidence.replace('Hot Take statement: "', '').split('" (VAR')[0] : 'No evidence submitted.'}&rdquo;
+            {/* Detailed Text Breakdown (High Contrast & Perfectly Visible) */}
+            <div className="space-y-4 text-sm text-gray-200 font-medium leading-relaxed">
+              <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
+                <span className="text-amber-400 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
+                  {activeTab === 'verdict' ? 'Audited Match Statement:' : 'Manager Profile Alias:'}
+                </span>
+                <p className="text-white font-semibold text-sm md:text-base">
+                  &ldquo;{activeTab === 'verdict' ? (card.evidence ? card.evidence.replace('Hot Take statement: "', '').split('" (VAR')[0] : 'No evidence submitted.') : profile.username}&rdquo;
+                </p>
               </div>
-              <div className="border-t border-white/5 pt-2.5 mt-2.5">
-                <span className="text-zinc-400 font-black uppercase tracking-wider text-[8px] mr-1 block mb-1">VAR Audited Evidence:</span>
-                {card.charge}
+
+              <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
+                <span className="text-rose-400 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
+                  {activeTab === 'verdict' ? 'VAR Audited Charge:' : 'National Allegiance:'}
+                </span>
+                <p className="text-gray-100 font-medium text-xs md:text-sm">
+                  {activeTab === 'verdict' ? card.charge : `${profile.favoriteNation || 'Argentina'} Kit & Allegiance`}
+                </p>
               </div>
-              {card.sentence && (
-                <div className="border-t border-white/5 pt-2.5 mt-2.5">
-                  <span className="text-zinc-400 font-black uppercase tracking-wider text-[8px] mr-1 block mb-1">Sentence Decree:</span>
-                  <span className="italic text-[#E11D48] font-bold">&ldquo;{card.sentence}&rdquo;</span>
+
+              {activeTab === 'verdict' && card.sentence && (
+                <div className="bg-black/40 border border-rose-500/30 p-4 rounded-2xl">
+                  <span className="text-rose-300 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
+                    Sentence Decree:
+                  </span>
+                  <p className="italic text-rose-400 font-bold text-xs md:text-sm">
+                    &ldquo;{card.sentence}&rdquo;
+                  </p>
                 </div>
               )}
             </div>
 
             {/* AI Background Generator Plinth */}
-            {!card.aiImageUrl && (
-              <div className="border-t border-white/10 pt-3.5 mt-3.5 flex flex-col gap-2">
+            {!card.aiImageUrl && activeTab === 'verdict' && (
+              <div className="border-t border-white/15 pt-4 mt-5 flex flex-col gap-2">
                 <button
                   onClick={handleGenerateAiBg}
                   disabled={generating}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 hover:from-amber-500/30 hover:to-yellow-500/20 border border-amber-500/40 hover:border-amber-500/60 text-amber-400 hover:text-white font-display font-black text-[10px] uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-amber-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-500/40 text-amber-300 font-display font-black text-xs uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                 >
                   {generating ? (
                     <>
-                      <div className="w-3.5 h-3.5 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
-                      <span>Synthesizing Cosmic TOTY Art...</span>
+                      <div className="w-4 h-4 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
+                      <span>Synthesizing Cosmic AI Card Art...</span>
                     </>
                   ) : (
                     <>
-                      <span>✨ Unlock AI Cosmic Background</span>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Unlock Full AI Cosmic Card Background</span>
                     </>
                   )}
                 </button>
-                <p className="text-[7.5px] text-zinc-400 text-center leading-normal">
-                  Powered by OpenRouter. Generates a custom country-themed FUT background illustration.
-                </p>
               </div>
             )}
 
             {/* Social Share panel */}
-            <div className="border-t border-white/10 pt-4 mt-4 flex justify-between items-center">
-              <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Share Verdict:</span>
+            <div className="border-t border-white/15 pt-5 mt-5 flex justify-between items-center">
+              <span className="text-xs font-black text-gray-300 uppercase tracking-widest">Share Active Card:</span>
               
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2.5 items-center">
                 {/* Download PNG Button */}
                 <button
                   onClick={handleDownloadPng}
                   disabled={downloading}
-                  className="p-2 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-lg transition-colors cursor-pointer"
-                  title="Download Card PNG"
+                  className="p-2.5 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/50 text-amber-300 rounded-xl transition-all cursor-pointer shadow-md"
+                  title="Download High-Res Card PNG"
                 >
                   <Download className="w-4 h-4" />
                 </button>
@@ -278,11 +357,11 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 {/* X/Twitter Share */}
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                    `Check out my Football IQ Verdict card! Graded at ${card.rating} OVR: ${card.verdict.toUpperCase()}. Can you beat this level of ball knowledge?`
+                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profile.overallRating} OVR: ${card.verdict.toUpperCase()}. Can you beat my Football IQ?`
                   )}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="social-share-btn social-btn-x cursor-pointer"
+                  className="p-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition-all cursor-pointer"
                   title="Post to X/Twitter"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -291,49 +370,23 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 {/* WhatsApp Share */}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                    `Check out my Football IQ Verdict card! Graded at ${card.rating} OVR: ${card.verdict.toUpperCase()}. Can you beat this level of ball knowledge? ${shareUrl}`
+                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profile.overallRating} OVR. Can you beat my Football IQ? ${shareUrl}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="social-share-btn social-btn-wa cursor-pointer"
+                  className="p-2.5 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 text-emerald-400 rounded-xl transition-all cursor-pointer"
                   title="Send via WhatsApp"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.248 8.477 3.517 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.79-4.396c1.598.947 3.51 1.448 5.466 1.449 5.518 0 10.006-4.486 10.01-10.001.002-2.673-1.039-5.184-2.929-7.076-1.89-1.89-4.4-2.93-7.08-2.932-5.521 0-10.007 4.486-10.012 10.002-.002 1.897.486 3.754 1.412 5.37L2.836 21.3l4.01-.105z"/></svg>
                 </a>
 
-                {/* Reddit Share */}
-                <a
-                  href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(
-                    `Check out this World Cup 2026 Verdict Card! Rated ${card.rating} OVR: ${card.verdict}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-share-btn social-btn-reddit cursor-pointer"
-                  title="Post on Reddit"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-.762 1.15c.037.168.056.337.056.506 0 2.151-2.43 3.9-5.43 3.9-3 0-5.43-1.749-5.43-3.9 0-.169.019-.338.056-.506a1.25 1.25 0 0 1-.762-1.15c0-.688.562-1.25 1.25-1.25.462 0 .862.256 1.07.638.9-.57 2.12-.939 3.47-.995l.732-2.3 2.18.5c.006.4.325.72.72.72a.72.72 0 0 0 .72-.72.72.72 0 0 0-.72-.72 1.07 1.07 0 0 0-1.01.76l-2.3-.53-.78 2.44c1.36.05 2.58.42 3.48.99.2-.38.6-.64 1.07-.64z"/></svg>
-                </a>
-
-                {/* Telegram Share */}
-                <a
-                  href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
-                    `Check out my Football IQ Verdict Card! Rated ${card.rating} OVR - ${card.verdict}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-share-btn social-btn-tg cursor-pointer"
-                  title="Send via Telegram"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.562 8.161c-.18.717-.962 4.084-1.362 5.447-.168.575-.544.697-.847.703-.687.012-1.187-.468-1.843-.9-.988-.65-1.543-1.05-2.5-1.674-1.1-.724-.387-1.124.237-1.774.163-.17.294-.488.563-.782.3-.324.6-.68.887-.999.3-.332.325-.562.2-.743-.119-.18-.544-.112-1.075.112-.662.28-1.887 1.112-3.774 2.224-.625.375-1.187.562-1.687.55-.556-.012-1.631-.312-2.431-.575-.987-.324-1.769-.487-1.7-.937.037-.237.387-.487 1.05-.75 4.1-1.787 6.837-2.962 8.212-3.524 3.912-1.612 4.725-1.899 5.256-1.912.119-.002.387.027.562.17.15.12.193.28.2.4.007.086.012.256.002.431z"/></svg>
-                </a>
-
                 {/* Copy Link */}
                 <button
                   onClick={handleCopyLink}
-                  className="social-share-btn social-btn-copy cursor-pointer"
+                  className="p-2.5 bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 rounded-xl transition-all cursor-pointer"
                   title="Copy Link"
                 >
-                  {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
+                  {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -343,14 +396,14 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
           <div className="flex gap-4 w-full">
             <Link
               href="/world-cup-hub"
-              className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-md text-center hover:scale-[1.01] transition-transform flex items-center justify-center gap-1.5"
+              className="flex-1 py-4 px-5 rounded-2xl bg-gradient-to-r from-[#881337] to-[#E11D48] hover:brightness-110 text-white font-display font-black text-xs uppercase tracking-widest shadow-xl text-center hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
             >
               <Trophy className="w-4 h-4" /> Grade My Takes
             </Link>
             
             <Link
               href="/"
-              className="py-3.5 px-6 rounded-xl bg-white/5 border border-white/10 text-gray-300 font-display font-black text-xs uppercase tracking-widest text-center hover:bg-white/10 transition-colors flex items-center justify-center gap-1.5"
+              className="py-4 px-6 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-display font-black text-xs uppercase tracking-widest text-center transition-all flex items-center justify-center gap-2"
             >
               <Home className="w-4 h-4" /> Hub Home
             </Link>
@@ -359,9 +412,9 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
 
       </main>
 
-      {/* Footer footer element to push page layout up */}
-      <footer className="relative z-10 text-center text-[8.5px] font-mono text-zinc-400 uppercase tracking-widest mt-2">
-        VAR Tribunal Collectibles Hub • 2026
+      {/* Footer */}
+      <footer className="relative z-10 text-center text-[9px] font-mono text-zinc-400 uppercase tracking-widest mt-4">
+        VAR Tribunal Collectibles Hub • World Cup 2026
       </footer>
 
     </div>
