@@ -196,8 +196,8 @@ export default function FootballIQPage() {
   const matchdayMatches = matches.filter(m => String(m.matchday) === String(selectedMatchday) && (m.type === 'group' || !m.type));
 
   const constructMatchCardObj = (match: Match) => {
-    const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: '' };
-    const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: '' };
+    const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: '', fifa_code: '' };
+    const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: '', fifa_code: '' };
     const userPred = userPreds[match.id];
 
     const ovr = userPred?.cardRating || (profile.overallRating >= 80 ? 88 : profile.overallRating >= 70 ? 76 : profile.overallRating >= 50 ? 62 : 42);
@@ -221,6 +221,8 @@ export default function FootballIQPage() {
       matchScore: userPred?.homeScore !== undefined ? `${userPred.homeScore} - ${userPred.awayScore}` : (match.home_score !== '' ? `${match.home_score} - ${match.away_score}` : undefined),
       homeFlag: homeTeam.flag,
       awayFlag: awayTeam.flag,
+      homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
+      awayFifaCode: (awayTeam as any).fifa_code || awayTeam.name_en?.slice(0, 3).toUpperCase(),
       statsJson: {
         prd: userPred?.homeScore !== undefined ? 92 : profile.predictionRating || 75,
         mgr: userPred?.managerRating || profile.managerRating || 85,
@@ -522,7 +524,9 @@ export default function FootballIQPage() {
                           matchTitle: activeVerdictCard.matchTitle,
                           matchScore: activeVerdictCard.matchScore,
                           homeFlag: activeVerdictCard.homeFlag,
-                          awayFlag: activeVerdictCard.awayFlag
+                          awayFlag: activeVerdictCard.awayFlag,
+                          homeFifaCode: (activeVerdictCard as any).homeFifaCode,
+                          awayFifaCode: (activeVerdictCard as any).awayFifaCode,
                         }} />
                       ) : (
                         <SportsCenterCard data={{
