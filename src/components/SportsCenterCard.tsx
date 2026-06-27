@@ -107,7 +107,7 @@ export default function SportsCenterCard({
               <stop offset="0%"   stopColor="#9CA3AF"/><stop offset="50%" stopColor="#4B5563"/><stop offset="100%" stopColor="#1F2937"/>
             </linearGradient>
             <filter id="vcard-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity={0.75}/>
+              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity="0.75"/>
             </filter>
           </defs>
 
@@ -150,7 +150,7 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG
+            ZONE A — TOP ROW: OVR | RARITY BADGE | FLAG (Aligned with Season Card)
             y: 44 / 46
             ══════════════════════════════════════════ */}
 
@@ -195,14 +195,13 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE B — USER AVATAR (Upper Center)
-            y: 96 – 196
-            If NOT predicted, show a sleek locked lock symbol instead of Dicebear
+            ZONE B — USER AVATAR (Upper Center - Height 120)
+            y: 90 – 210
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none" style={{ top: 96, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+        <div className="absolute z-40 pointer-events-none" style={{ top: 90, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
           <div
             style={{
-              width: 100, height: 100,
+              width: 120, height: 120,
               borderRadius: '50%',
               boxShadow: `0 0 0 2px ${glow}90, 0 0 22px ${glow}40, 0 8px 24px rgba(0,0,0,0.85)`,
               padding: 4,
@@ -223,10 +222,10 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE C — VERDICT HEADLINE / NAME (Shifted just above score pill)
-            y: 216
+            ZONE C — VERDICT HEADLINE (Lowered to bottom, just above Score)
+            y: 272
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 216, left: 16, right: 16 }}>
+        <div className="absolute z-40 pointer-events-none text-center" style={{ top: 272, left: 16, right: 16 }}>
           <h2
             className="text-white uppercase leading-none font-black text-[22px] tracking-[0.05em]"
             style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.95)' }}
@@ -236,10 +235,10 @@ export default function SportsCenterCard({
         </div>
 
         {/* ══════════════════════════════════════════
-            ZONE E — MATCH FIXTURE & SCORE (Shifted down, just above stats)
-            y: 260
+            ZONE E — MATCH FIXTURE & SCORE (Lowered to bottom, just above Stats)
+            y: 310
             ══════════════════════════════════════════ */}
-        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 260, left: 0, right: 0 }}>
+        <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 310, left: 0, right: 0 }}>
           <div
             className="rounded-lg px-4 py-2 flex items-center gap-3 backdrop-blur-md"
             style={{
