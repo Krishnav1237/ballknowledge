@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,14 +8,16 @@ import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { Trophy, Share2, CheckCircle, Home, Download, Shield, Sparkles } from 'lucide-react';
 import { getFlagEmoji } from '@/lib/matchUtils';
+import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 
 interface CardDetailClientProps {
   initialCard: any;
   profile: any;
 }
 
-export default function CardDetailClient({ initialCard, profile }: CardDetailClientProps) {
+export default function CardDetailClient({ initialCard, profile: initialProfile }: CardDetailClientProps) {
   const [card, setCard] = useState(initialCard);
+  const [profileState, setProfileState] = useState(initialProfile);
   const [activeTab, setActiveTab] = useState<'verdict' | 'manager'>('verdict');
   const [tiltStyle, setTiltStyle] = useState({});
   const [copied, setCopied] = useState(false);
@@ -23,6 +25,37 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
   const [downloading, setDownloading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const cardNodeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Hydrate from localStorage if available
+    const localProf = getStoredProfile();
+    if (localProf && localProf.username) {
+      setProfileState((prev: any) => ({
+        ...prev,
+        username: localProf.username || prev.username,
+        favoriteNation: localProf.favoriteNation || prev.favoriteNation,
+        overallRating: localProf.overallRating || prev.overallRating,
+        predictionRating: localProf.predictionRating,
+        managerRating: localProf.managerRating,
+        hotTakeRating: localProf.hotTakeRating,
+        roastScore: localProf.roastScore
+      }));
+    }
+
+    const localPreds = getStoredPredictions();
+    const matchIdKey = initialCard?.matchId || initialCard?.id;
+    if (localPreds && matchIdKey && localPreds[matchIdKey]) {
+      const pred = localPreds[matchIdKey] as any;
+      setCard((prev: any) => ({
+        ...prev,
+        rating: pred.cardRating || prev.rating,
+        verdict: pred.verdict || prev.verdict,
+        charge: pred.charge || prev.charge,
+        sentence: pred.sentence || prev.sentence,
+        evidence: pred.hotTakes?.[0]?.statement ? `Hot Take statement: "${pred.hotTakes[0].statement}"` : prev.evidence
+      }));
+    }
+  }, [initialCard]);
 
   const showStatus = (text: string, type: 'success' | 'error' | 'info') => {
     setStatusMsg({ text, type });
@@ -37,7 +70,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
       const dataUrl = await toPng(cardNodeRef.current, { cacheBust: true, quality: 0.95 });
       const link = document.createElement('a');
       const cardTypeLabel = activeTab === 'verdict' ? 'Verdict_Card' : 'Manager_Deck';
-      link.download = `${profile.username.replace(/\s+/g, '_')}_${cardTypeLabel}.png`;
+      link.download = `${profileState.username.replace(/\s+/g, '_')}_${cardTypeLabel}.png`;
       link.href = dataUrl;
       link.click();
       showStatus(`${activeTab === 'verdict' ? 'Verdict Card' : 'Manager Deck'} PNG exported successfully!`, 'success');
@@ -58,8 +91,8 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cardId: card.id,
-          username: profile.username,
-          favoriteNation: profile.favoriteNation,
+          username: profileState.username,
+          favoriteNation: profileState.favoriteNation,
           overallRating: card.rating,
           predictionRating: (card.statsJson as any)?.prd,
           hotTakeRating: (card.statsJson as any)?.hot,
@@ -150,10 +183,10 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
       {/* Centered Heading */}
       <header className="relative z-10 text-center flex flex-col items-center mt-2">
         <h2 className="font-display font-black text-2xl sm:text-4xl text-white uppercase tracking-wider leading-none">
-          {profile.username}&apos;s Official Card Showcase
+          {profileState.username}&apos;s Official Card Showcase
         </h2>
         <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">
-          World Cup 2026 Season • Supporter of {profile.favoriteNation || 'Argentina'}
+          World Cup 2026 Season • Supporter of {profileState.favoriteNation || 'Argentina'}
         </p>
       </header>
 
@@ -223,11 +256,11 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                     ],
                     cardTheme: card.cardTheme || 'gold',
                     aiImageUrl: card.aiImageUrl,
-                    countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-                    playerName: profile.username,
+                    countryFlag: profileState.favoriteNation ? getFlagEmoji(profileState.favoriteNation) : '🌍',
+                    playerName: profileState.username,
                     playerPosition: card.rating >= 75 ? 'CF' : 'DM',
-                    avatarStyle: profile.avatarStyle,
-                    avatarSeed: profile.avatarSeed
+                    avatarStyle: profileState.avatarStyle,
+                    avatarSeed: profileState.avatarSeed
                   }} />
                 ) : (
                   <SportsCenterCard cardRef={cardNodeRef} data={{
@@ -237,25 +270,25 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                     fanbase: null,
                     isRivalry: false,
                     rarity: 'Legendary',
-                    ovr: profile.overallRating || 88,
+                    ovr: profileState.overallRating || 88,
                     rulingText: 'TOURNAMENT DECK',
                     verdict: 'CERTIFIED CHEF',
                     charge: 'Tournament Mastermind',
                     sentence: 'Undisputed Tactician',
                     ach: { title: 'Tournament Deck', desc: 'Active Deck', badge: '👑' },
                     stats: [
-                      { label: 'PRD', name: 'Prediction', val: profile.predictionRating || 90 },
-                      { label: 'MGR', name: 'Manager Score', val: profile.managerRating || 88 },
-                      { label: 'HOT', name: 'Hot Take', val: profile.hotTakeRating || 85 },
-                      { label: 'RST', name: 'Roast Score', val: profile.roastScore || 92 }
+                      { label: 'PRD', name: 'Prediction', val: profileState.predictionRating || 90 },
+                      { label: 'MGR', name: 'Manager Score', val: profileState.managerRating || 88 },
+                      { label: 'HOT', name: 'Hot Take', val: profileState.hotTakeRating || 85 },
+                      { label: 'RST', name: 'Roast Score', val: profileState.roastScore || 92 }
                     ],
                     cardTheme: 'gold',
-                    aiImageUrl: profile.aiImageUrl,
-                    countryFlag: profile.favoriteNation ? getFlagEmoji(profile.favoriteNation) : '🌍',
-                    playerName: profile.username,
+                    aiImageUrl: profileState.aiImageUrl,
+                    countryFlag: profileState.favoriteNation ? getFlagEmoji(profileState.favoriteNation) : '🌍',
+                    playerName: profileState.username,
                     playerPosition: 'MGR',
-                    avatarStyle: profile.avatarStyle,
-                    avatarSeed: profile.avatarSeed
+                    avatarStyle: profileState.avatarStyle,
+                    avatarSeed: profileState.avatarSeed
                   }} />
                 )}
               </motion.div>
@@ -279,19 +312,19 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
               </div>
               <div className="text-right">
                 <span className="text-xs font-mono font-black text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-lg block">
-                  {activeTab === 'verdict' ? `${card.rating} OVR` : `${profile.overallRating || 88} OVR`}
+                  {activeTab === 'verdict' ? `${card.rating} OVR` : `${profileState.overallRating || 88} OVR`}
                 </span>
               </div>
             </div>
             
-            {/* Detailed Text Breakdown (High Contrast & Perfectly Visible) */}
+            {/* Detailed Text Breakdown */}
             <div className="space-y-4 text-sm text-gray-200 font-medium leading-relaxed">
               <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
                 <span className="text-amber-400 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
                   {activeTab === 'verdict' ? 'Audited Match Statement:' : 'Manager Profile Alias:'}
                 </span>
                 <p className="text-white font-semibold text-sm md:text-base">
-                  &ldquo;{activeTab === 'verdict' ? (card.evidence ? card.evidence.replace('Hot Take statement: "', '').split('" (VAR')[0] : 'No evidence submitted.') : profile.username}&rdquo;
+                  &ldquo;{activeTab === 'verdict' ? (card.evidence ? card.evidence.replace('Hot Take statement: "', '').split('" (VAR')[0] : 'No evidence submitted.') : profileState.username}&rdquo;
                 </p>
               </div>
 
@@ -300,7 +333,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                   {activeTab === 'verdict' ? 'VAR Audited Charge:' : 'National Allegiance:'}
                 </span>
                 <p className="text-gray-100 font-medium text-xs md:text-sm">
-                  {activeTab === 'verdict' ? card.charge : `${profile.favoriteNation || 'Argentina'} Kit & Allegiance`}
+                  {activeTab === 'verdict' ? card.charge : `${profileState.favoriteNation || 'Argentina'} Kit & Allegiance`}
                 </p>
               </div>
 
@@ -357,7 +390,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 {/* X/Twitter Share */}
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profile.overallRating} OVR: ${card.verdict.toUpperCase()}. Can you beat my Football IQ?`
+                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR: ${card.verdict.toUpperCase()}. Can you beat my Football IQ?`
                   )}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -370,7 +403,7 @@ export default function CardDetailClient({ initialCard, profile }: CardDetailCli
                 {/* WhatsApp Share */}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profile.overallRating} OVR. Can you beat my Football IQ? ${shareUrl}`
+                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR. Can you beat my Football IQ? ${shareUrl}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
