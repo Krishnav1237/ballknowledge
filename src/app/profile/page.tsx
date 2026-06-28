@@ -173,14 +173,15 @@ export default function ProfileSettingsPage() {
         return;
       }
 
-      setAvatarSeed(pendingPhoto);
+      const finalAvatar = data.aiImageUrl || pendingPhoto;
+      setAvatarSeed(finalAvatar);
       setIsSynthesizing(false);
 
       const updated: FootballIQProfile = {
         ...profile,
         username: username.trim().replace(/\s+/g, '_'),
         favoriteNation,
-        avatarSeed: pendingPhoto,
+        avatarSeed: finalAvatar,
       };
       setProfile(updated);
       saveStoredProfile(updated);
@@ -364,6 +365,7 @@ export default function ProfileSettingsPage() {
     clubName: favoriteClub || 'VAR FC',
     avatarStyle: avatarStyle,
     avatarSeed: avatarSeed,
+    aiImageUrl: avatarSeed.startsWith('http') ? avatarSeed : undefined,
     stats: [
       { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
       { label: 'MGR', name: 'Manager Score', val: profile.managerRating },

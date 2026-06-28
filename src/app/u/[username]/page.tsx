@@ -620,6 +620,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           playerPosition: activeVerdictCard.rating >= 75 ? 'CF' : 'DM',
                           avatarStyle: profile.avatarStyle,
                           avatarSeed: profile.avatarSeed,
+                          aiImageUrl: activeVerdictCard.aiImageUrl || undefined,
                           matchTitle: activeVerdictCard.matchTitle,
                           matchScore: activeVerdictCard.matchScore,
                           homeFlag: activeVerdictCard.homeFlag,
@@ -652,7 +653,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           playerName: profile.username,
                           playerPosition: 'MGR',
                           avatarStyle: profile.avatarStyle,
-                          avatarSeed: profile.avatarSeed
+                          avatarSeed: profile.avatarSeed,
+                          aiImageUrl: profile.avatarSeed.startsWith('http') ? profile.avatarSeed : undefined
                         }} />
                       )}
                     </div>

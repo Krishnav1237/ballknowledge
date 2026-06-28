@@ -51,7 +51,9 @@ export default function SportsCenterCard({
 
   const avatarStyle = (data as any).avatarStyle || 'fun-emoji';
   const avatarSeed = (data as any).avatarSeed || data.playerName || 'Tactician';
-  const avatarUrl = `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(avatarSeed)}`;
+  const avatarUrl = (avatarSeed.startsWith('data:image') || avatarSeed.startsWith('http') || avatarSeed.startsWith('/images'))
+    ? avatarSeed
+    : `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(avatarSeed)}`;
 
   const homeFlag: string | undefined = (data as any).homeFlag || data.homeFlag;
   const awayFlag: string | undefined = (data as any).awayFlag || data.awayFlag;
