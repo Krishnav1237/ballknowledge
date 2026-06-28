@@ -38,7 +38,8 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         predictionRating: localProf.predictionRating,
         managerRating: localProf.managerRating,
         hotTakeRating: localProf.hotTakeRating,
-        roastScore: localProf.roastScore
+        roastScore: localProf.roastScore,
+        avatarSeed: localProf.avatarSeed
       }));
     }
 
@@ -92,6 +93,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         body: JSON.stringify({
           cardId: card.id,
           username: profileState.username,
+          faceImage: profileState.avatarSeed,
           favoriteNation: profileState.favoriteNation,
           overallRating: card.rating,
           predictionRating: (card.statsJson as any)?.prd,

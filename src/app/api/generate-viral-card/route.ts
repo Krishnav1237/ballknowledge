@@ -25,7 +25,7 @@ function buildCompleteFifacardPrompt(params: {
 
   return (
     `A premium, ultra-high-fidelity, photorealistic EA Sports FC TOTY style player card portrait of a professional soccer player. ` +
-    `Subject: Upper-body action portrait of the athlete, angled in a dynamic three-quarter view, looking towards the camera with a confident, natural expression. ` +
+    `Subject: Upper-body portrait of the athlete, facing forward directly straight towards the camera in a confident, professional stance. ` +
     `Framing & Composition: The player's head and face must be positioned vertically in the middle-upper center of the image, leaving significant empty space (headroom) above the top of their head so their face is not too close to the top edge. ` +
     `Face Preservation: Strictly swap and replicate the exact face from the input reference image. The face in the generated output must be an identical, 100% exact match of the person in the reference image (a young clean-shaven Asian/Indian male, zero stubble, zero beard, zero mustache). Do NOT stylize, modify, or change the eyes, nose, lips, or jawline. Replicate their clear, transparent-framed glasses exactly as shown in the reference image (thin clear transparent rims, not white or thick). The face must look like a real photo of the person, completely natural, with no cartoonish or generalized features. ` +
     `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric textures, collar seams, and logos clearly visible. ` +
