@@ -53,7 +53,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Username is required' }, { status: 400 });
     }
 
-    const provider = process.env.IMAGE_GENERATION_PROVIDER || 'openrouter';
     const nation = favoriteNation || 'Argentina';
     const ovr    = overallRating   ?? 50;
     const prd    = predictionRating ?? 50;
@@ -75,9 +74,9 @@ export async function POST(request: Request) {
       playerPosition,
     });
 
-    // ─── Local template fallback if no keys configured ───
-    if (!process.env.FAL_API_KEY && !process.env.OPENROUTER_API_KEY) {
-      console.warn('AI Image Generation API keys are missing. Falling back to local template background.');
+    // ─── Local template fallback if OpenRouter key is missing ───
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.warn('OpenRouter API key is missing. Falling back to local template background.');
       return NextResponse.json({
         success: true,
         aiImageUrl: '/images/toty_bg_premium.webp',
@@ -95,122 +94,49 @@ export async function POST(request: Request) {
       });
     }
 
-    if (provider === 'fal') {
-      // ──────────────────────────────────────────────────────────────
-      // FAL.AI PROVIDER
-      // ──────────────────────────────────────────────────────────────
-      if (!process.env.FAL_API_KEY) {
-        return NextResponse.json(
-          { error: 'Fal.ai API key is not configured. Please set FAL_API_KEY.', code: 'FAL_KEY_MISSING' },
-          { status: 503 }
-        );
-      }
+    // ──────────────────────────────────────────────────────────────
+    // OPENROUTER PROVIDER
+    // ──────────────────────────────────────────────────────────────
+    const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux-1-schnell';
 
-      // If a face image is uploaded, use image-to-image/face guidance for perfect face immersion
-      const isImg2Img = !!faceImage;
-      const endpoint = isImg2Img 
-        ? 'https://queue.fal.run/fal-ai/flux/dev/image-to-image'
-        : 'https://queue.fal.run/fal-ai/flux/dev';
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://ballknowledge.vercel.app',
+          'X-Title': 'BallKnowledge World Cup 2026',
+        },
+        body: JSON.stringify({
+          model,
+          prompt,
+          n: 1,
+          aspect_ratio: '3:4',
+        }),
+        signal: AbortSignal.timeout(25_000),
+      });
 
-      const bodyPayload = isImg2Img
-        ? {
-            prompt,
-            image_url: faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`,
-            strength: 0.75,
-            image_size: '3:4',
-            sync_mode: true
-          }
-        : {
-            prompt,
-            image_size: '3:4',
-            sync_mode: true
-          };
-
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Key ${process.env.FAL_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(25_000),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          aiImageUrl = data?.images?.[0]?.url ?? '';
-        } else {
-          const errText = await response.text();
-          console.warn(`Fal.ai image gen failed (${response.status}):`, errText);
-          return NextResponse.json(
-            { error: `Fal.ai Image Generation failed: ${response.statusText}`, details: errText },
-            { status: response.status }
-          );
+      if (response.ok) {
+        const data = await response.json();
+        aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
+        if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
+          aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
         }
-      } catch (err: any) {
-        console.error('Fal.ai image generation error:', err);
+      } else {
+        const errText = await response.text();
+        console.warn(`OpenRouter image gen failed (${response.status}):`, errText);
         return NextResponse.json(
-          { error: 'Fal.ai image generation timed out or failed to complete', details: err?.message },
-          { status: 504 }
+          { error: `OpenRouter AI Image Generation failed: ${response.statusText}`, details: errText },
+          { status: response.status }
         );
       }
-
-    } else {
-      // ──────────────────────────────────────────────────────────────
-      // OPENROUTER PROVIDER (Default)
-      // ──────────────────────────────────────────────────────────────
-      if (!process.env.OPENROUTER_API_KEY) {
-        return NextResponse.json(
-          {
-            error: 'OpenRouter API key is not configured on the server. Please set OPENROUTER_API_KEY in environment variables.',
-            code: 'OPENROUTER_KEY_MISSING'
-          },
-          { status: 503 }
-        );
-      }
-
-      const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux-1-schnell';
-
-      try {
-        const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://ballknowledge.vercel.app',
-            'X-Title': 'BallKnowledge World Cup 2026',
-          },
-          body: JSON.stringify({
-            model,
-            prompt,
-            n: 1,
-            aspect_ratio: '3:4',
-          }),
-          signal: AbortSignal.timeout(25_000),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
-          if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
-            aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
-          }
-        } else {
-          const errText = await response.text();
-          console.warn(`OpenRouter image gen failed (${response.status}):`, errText);
-          return NextResponse.json(
-            { error: `OpenRouter AI Image Generation failed: ${response.statusText}`, details: errText },
-            { status: response.status }
-          );
-        }
-      } catch (err: any) {
-        console.error('OpenRouter image generation error:', err);
-        return NextResponse.json(
-          { error: 'OpenRouter AI image generation timed out or failed to complete', details: err?.message },
-          { status: 504 }
-        );
-      }
+    } catch (err: any) {
+      console.error('OpenRouter image generation error:', err);
+      return NextResponse.json(
+        { error: 'OpenRouter AI image generation timed out or failed to complete', details: err?.message },
+        { status: 504 }
+      );
     }
 
     // Persist card URL to DB if matching card found
