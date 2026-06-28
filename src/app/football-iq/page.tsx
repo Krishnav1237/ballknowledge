@@ -43,6 +43,7 @@ export default function FootballIQPage() {
   const [loadingMatches, setLoadingMatches] = useState(true);
   
   const [filterRarity, setFilterRarity] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'COMPLETED' | 'UPCOMING' | 'PREDICTED'>('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
   
@@ -237,11 +238,27 @@ export default function FootballIQPage() {
     const userPred = userPreds[match.id];
     const status = getMatchStatus(match);
 
-    if (filterRarity === 'ALL') return true;
-    if (filterRarity === 'LOCKED') return !userPred;
-    if (filterRarity === 'MISSED') return status === 'COMPLETED' && (!userPred || !userPred.resolved);
+    // 1. Rarity Filter
+    if (filterRarity !== 'ALL') {
+      if (filterRarity === 'LOCKED') {
+        if (userPred) return false;
+      } else if (filterRarity === 'MISSED') {
+        if (!(status === 'COMPLETED' && (!userPred || !userPred.resolved))) return false;
+      } else {
+        if (cardObj.rarity !== filterRarity) return false;
+      }
+    }
 
-    return cardObj.rarity === filterRarity;
+    // 2. Status Filter
+    if (filterStatus === 'COMPLETED') {
+      if (status !== 'COMPLETED') return false;
+    } else if (filterStatus === 'UPCOMING') {
+      if (status !== 'UPCOMING') return false;
+    } else if (filterStatus === 'PREDICTED') {
+      if (!userPred) return false;
+    }
+
+    return true;
   });
 
   const renderCardSlot = (match: Match) => {
@@ -272,11 +289,23 @@ export default function FootballIQPage() {
           <div className="flex justify-between items-start">
             <div className="flex flex-col items-center">
               <span className="font-mono font-black text-lg leading-none text-white">{cardObj.rating}</span>
-              <div className="flex gap-1 mt-1">
+              <div className="flex gap-1 mt-1 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
+                
+                {/* Score indicators */}
+                {getMatchStatus(match) === 'COMPLETED' && (
+                  <span className="font-mono text-[8px] font-black text-rose-400 bg-rose-500/10 px-1 rounded ml-1 border border-rose-500/20">
+                    {match.home_score}-{match.away_score}
+                  </span>
+                )}
+                {userPreds[match.id] && getMatchStatus(match) === 'UPCOMING' && (
+                  <span className="font-mono text-[8px] font-black text-amber-400 bg-amber-500/10 px-1 rounded ml-1 border border-amber-500/20">
+                    {userPreds[match.id].homeScore}-{userPreds[match.id].awayScore}
+                  </span>
+                )}
               </div>
             </div>
             <span className={`text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
@@ -393,26 +422,51 @@ export default function FootballIQPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { id: 'ALL', label: 'All Slots' },
-                    { id: 'LEGENDARY', label: 'Legendary' },
-                    { id: 'EPIC', label: 'Epic' },
-                    { id: 'RARE', label: 'Rare' },
-                    { id: 'COMMON', label: 'Common' },
-                  ].map(f => (
-                    <button
-                      key={f.id}
-                      onClick={() => setFilterRarity(f.id)}
-                      className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
-                        filterRarity === f.id
-                          ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
-                          : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
+                <div className="flex flex-col gap-1.5 pt-0.5">
+                  {/* Rarity filter row */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: 'ALL', label: 'All Slots' },
+                      { id: 'LEGENDARY', label: 'Legendary' },
+                      { id: 'EPIC', label: 'Epic' },
+                      { id: 'RARE', label: 'Rare' },
+                      { id: 'COMMON', label: 'Common' },
+                    ].map(f => (
+                      <button
+                        key={f.id}
+                        onClick={() => setFilterRarity(f.id)}
+                        className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                          filterRarity === f.id
+                            ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
+                            : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Status/Prediction filter row */}
+                  <div className="flex flex-wrap gap-1.5 border-t border-white/5 pt-1.5">
+                    {[
+                      { id: 'ALL', label: 'All Matches' },
+                      { id: 'COMPLETED', label: 'Completed' },
+                      { id: 'UPCOMING', label: 'Upcoming' },
+                      { id: 'PREDICTED', label: 'Predicted' },
+                    ].map(f => (
+                      <button
+                        key={f.id}
+                        onClick={() => setFilterStatus(f.id as any)}
+                        className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                          filterStatus === f.id
+                            ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
+                            : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Trackpad & Touch Native Scroll Container */}
