@@ -20,11 +20,13 @@ function buildCompleteFifacardPrompt(params: {
   const { nation } = params;
 
   return (
-    `Photorealistic, high-fidelity upper-body portrait of a professional soccer/football player, wearing the official ${nation} national team kit/jersey. ` +
-    `The face from the input reference image must be seamlessly and realistically integrated onto the player's head and neck with natural skin tones and matching lighting. ` +
-    `The player is standing in a confident, heroic stance. The jersey collar, fabric texture, and details are clean and sharp. ` +
-    `Background: A dark, premium, atmospheric stadium background with subtle glowing spotlights, gold energy swirls, and high-contrast sapphire blue tones. ` +
-    `CRITICAL: The generated image must contain ONLY the player and the background. Do NOT generate any cards, shields, borders, circular crops, text, numbers, badges, stats grids, or user interface overlays. It must be a clean, vertical, uncropped full-bleed portrait.`
+    `A premium, ultra-high-fidelity, photorealistic EA Sports FC TOTY style player card portrait of a professional soccer player. ` +
+    `Subject: Upper-body action portrait of the athlete, angled in a dynamic three-quarter view, looking towards the camera with a confident, natural smile or expression. ` +
+    `The face from the input reference image must be flawlessly and seamlessly blended onto the athlete's body, maintaining the person's exact facial structure, glasses, hair color, and features, with realistic skin textures, sharp focus, and dramatic cinematic lighting. ` +
+    `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric creases, stitching, and logos clearly visible. ` +
+    `Lighting: Professional studio lighting with a striking gold rim light tracing his profile, high-contrast shadows, and reflections in his eyes. ` +
+    `Background: An abstract, premium, high-end commercial card background featuring midnight-blue geometric patterns, glowing concentric gold bands, and abstract sapphire-blue elements. ` +
+    `CRITICAL: The output must contain ONLY the player's upper-body and the abstract background. Do NOT generate any borders, card frames, text overlays, rating numbers, flags, circular crops, or user interface elements. The portrait must be clean and fill the entire 3:4 canvas.`
   );
 }
 
@@ -96,7 +98,7 @@ export async function POST(request: Request) {
     // ──────────────────────────────────────────────────────────────
     // OPENROUTER PROVIDER
     // ──────────────────────────────────────────────────────────────
-    const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-klein-4b';
+    const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-pro';
 
     try {
       const response = await fetch('https://openrouter.ai/api/v1/images', {
