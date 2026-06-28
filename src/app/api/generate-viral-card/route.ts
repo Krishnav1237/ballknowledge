@@ -23,24 +23,24 @@ function buildCompleteFifacardPrompt(params: {
   let rarityBackgroundDesc = '';
   if (ovr >= 90) {
     // Legendary / TOTY
-    rarityBackgroundDesc = "A prestigious, luminous gold and deep royal blue abstract background, featuring glowing concentric gold tracks, floating sapphire crystals, and dynamic golden spotlight beams.";
+    rarityBackgroundDesc = "A bright, prestigious, luminous gold and vibrant royal blue abstract stadium background, featuring glowing concentric gold tracks, floating shiny sapphire crystals, and powerful golden spotlight beams illuminating the player.";
   } else if (ovr >= 75) {
     // Epic / Purple
-    rarityBackgroundDesc = "A mysterious, high-contrast dark indigo and glowing violet-neon background, featuring abstract geometric energy rings and deep purple stellar dust.";
+    rarityBackgroundDesc = "A bright, high-contrast violet-neon and dynamic indigo background, featuring glowing geometric energy rings, star field lights, and bright violet spotlights.";
   } else if (ovr >= 60) {
     // Rare / Blue
-    rarityBackgroundDesc = "A modern, high-tech dark carbon and electric cyan-blue background, featuring neon digital grid tracks, glowing light bands, and cybernetic patterns.";
+    rarityBackgroundDesc = "A bright, futuristic electric cyan-blue background, featuring glowing digital grid tracks, bright neon light bands, and luminous stadium floodlights.";
   } else {
     // Common / Rose
-    rarityBackgroundDesc = "A sleek, clean dark gray and crimson-rose textured background, featuring soft ruby-red light leaks, abstract dark brushstrokes, and minimal spotlight beams.";
+    rarityBackgroundDesc = "A bright, clean crimson-rose and light gray textured background, featuring vivid ruby-red spotlights, clean light beams, and soft studio background lighting.";
   }
 
   return (
     `A premium, ultra-high-fidelity, photorealistic EA Sports FC TOTY style player card portrait of a professional soccer player. ` +
-    `Subject: Upper-body action portrait of the athlete, angled in a dynamic three-quarter view, looking towards the camera with a confident, natural smile or expression. ` +
-    `The face from the input reference image must be flawlessly and seamlessly blended onto the athlete's body, maintaining the person's exact facial structure, glasses, hair color, and features, with realistic skin textures, sharp focus, and dramatic cinematic lighting. ` +
-    `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric creases, stitching, and logos clearly visible. ` +
-    `Lighting: Professional studio lighting with a striking gold rim light tracing his profile, high-contrast shadows, and reflections in his eyes. ` +
+    `Subject: Upper-body action portrait of the athlete, angled in a dynamic three-quarter view, looking towards the camera with a confident, natural expression. ` +
+    `Face Preservation: Strictly replicate the face features of the person in the input reference image. The player MUST be completely clean-shaven (no beard, no stubble, no mustache, no facial hair whatsoever). They MUST wear their transparent clear-framed glasses exactly as shown in the reference image. The facial skin tones, glasses transparency, clean-shaven youth look, and hair style must match the reference image exactly. ` +
+    `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric textures, collar seams, and logos clearly visible. ` +
+    `Lighting & Visibility: Extremely bright, vivid studio spotlight lighting illuminating the player's face, neck, and jersey from the front and side. Use a striking gold rim light tracing his profile to pop him out of the background. Ensure the face and jersey are fully, brightly lit with no dark face shadows. ` +
     `Background: ${rarityBackgroundDesc} ` +
     `CRITICAL: The output must contain ONLY the player's upper-body and the abstract background. Do NOT generate any borders, card frames, text overlays, rating numbers, flags, circular crops, or user interface elements. The portrait must be clean and fill the entire 3:4 canvas.`
   );
