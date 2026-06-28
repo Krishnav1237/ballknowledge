@@ -268,7 +268,7 @@ export default function SportsCenterCard({
             ══════════════════════════════════════════ */}
         <div className="absolute z-40 pointer-events-none flex justify-center" style={{ top: 310, left: 0, right: 0 }}>
           <div
-            className="rounded-lg px-4 py-2 flex items-center gap-3 backdrop-blur-md"
+            className="rounded-lg px-4 py-2 flex items-center gap-3"
             style={{
               background: 'rgba(2,4,16,0.92)',
               border: `1px solid ${glow}40`,
@@ -337,8 +337,8 @@ export default function SportsCenterCard({
   return (
     <div
       ref={cardRef}
-      className="relative w-[340px] h-[480px] bg-transparent select-none transition-all duration-500"
-      style={{ fontFamily: "'Outfit', sans-serif" }}
+      className="relative w-[340px] h-[480px] select-none transition-all duration-500"
+      style={{ fontFamily: "'Outfit', sans-serif", background: '#050A12' }}
     >
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 340 480" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -414,7 +414,7 @@ export default function SportsCenterCard({
           >
             {data.playerName || 'MANAGER'}
           </h2>
-          <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md backdrop-blur-sm text-amber-300 bg-amber-400/15 border border-amber-400/40">
+          <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md text-amber-300 bg-amber-400/30 border border-amber-400/60">
             👑 {data.verdict || 'KNOWS BALL'}
           </span>
         </div>
@@ -428,7 +428,7 @@ export default function SportsCenterCard({
 
         {/* Brand badge */}
         <div className="absolute top-[46px] left-0 right-0 flex justify-center items-center z-40 pointer-events-none">
-          <div className="flex items-center gap-1.5 bg-[#020612]/90 rounded-full px-3 py-1 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.95)] border border-amber-400/40">
+          <div className="flex items-center gap-1.5 bg-[#020612] rounded-full px-3 py-1 shadow-[0_4px_16px_rgba(0,0,0,0.95)] border border-amber-400/40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/ball_knowledge_logo.png" alt="Ball Knowledge" className="w-4 h-4 object-contain rounded-full drop-shadow"/>
             <span className="text-[8.5px] font-black tracking-widest uppercase text-white">
@@ -439,14 +439,14 @@ export default function SportsCenterCard({
 
         {/* Country flag */}
         <div className="absolute top-[46px] right-[26px] z-40 pointer-events-none">
-          <div className="flex items-center justify-center bg-[#020612]/90 rounded-full w-8 h-8 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.9)] border border-amber-400/40">
+          <div className="flex items-center justify-center bg-[#020612] rounded-full w-8 h-8 shadow-[0_4px_12px_rgba(0,0,0,0.9)] border border-amber-400/40">
             <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
         </div>
 
         {/* Stats panel */}
         <div className="absolute bottom-[64px] left-[28px] right-[28px] z-40 pointer-events-none">
-          <div className="w-full h-[52px] bg-[#020612]/95 rounded-xl flex items-center justify-between px-2 py-1 backdrop-blur-xl shadow-[0_6px_20px_rgba(0,0,0,0.95)] border border-amber-400/40">
+          <div className="w-full h-[52px] bg-[#020612] rounded-xl flex items-center justify-between px-2 py-1 shadow-[0_6px_20px_rgba(0,0,0,0.95)] border border-amber-400/40">
             {metrics.map((m) => (
               <div key={m.label} className="flex flex-col items-center flex-1 border-r last:border-r-0 border-white/10">
                 <span className="text-[8.5px] font-black tracking-widest uppercase drop-shadow text-amber-300">{m.label}</span>

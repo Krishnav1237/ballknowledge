@@ -175,7 +175,7 @@ export default function FootballIQPage() {
         width: 340,
         height: 480,
         pixelRatio: 3,
-        backgroundColor: 'transparent',
+        backgroundColor: '#050A12',
         // Prevents cross-origin CSS fetch error for Google Fonts in production
         skipFonts: true,
       });

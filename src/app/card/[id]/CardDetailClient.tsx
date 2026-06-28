@@ -81,8 +81,9 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         height: 480,
         // Retina 3× export for premium print/share quality
         pixelRatio: 3,
-        // Transparent background — the card SVG frame clips everything cleanly
-        backgroundColor: 'transparent',
+        // Dark background matching the card root — area outside shield clip renders
+        // dark rather than white/transparent, matching the on-screen look exactly
+        backgroundColor: '#050A12',
         // MUST be true: html-to-image tries to re-fetch Google Fonts CSS which fails
         // with CORS / network errors in production. Fonts already loaded by the browser
         // still render correctly in the canvas output.
