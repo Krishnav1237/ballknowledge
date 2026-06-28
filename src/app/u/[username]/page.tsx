@@ -33,7 +33,7 @@ interface Match {
   away_team_label?: string;
 }
 
-const SYSTEM_DATE = new Date('2026-06-11T12:00:00Z');
+const getSystemDate = () => new Date();
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username: rawUsername } = use(params);
@@ -46,7 +46,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [filterRarity, setFilterRarity] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'COMPLETED' | 'UPCOMING' | 'PREDICTED'>('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
@@ -117,23 +116,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const totalMatches = cards.length;
   let exactCount = 0;
 
-  let legendaryCount = 0;
-  let epicCount = 0;
-  let rareCount = 0;
-  let commonCount = 0;
-
   cards.forEach(c => {
-    const ovr = c.rating || 50;
-    if (ovr >= 85) legendaryCount++;
-    else if (ovr >= 70) epicCount++;
-    else if (ovr >= 45) rareCount++;
-    else commonCount++;
-
     if ((c.statsJson as any)?.exactScore) exactCount++;
   });
 
   const accuracy = totalMatches > 0 ? Math.round((exactCount / totalMatches) * 100) : 0;
-  const totalAlbumSlots = 72;
+  const totalAlbumSlots = 16;
   const albumProgressPercent = Math.min(100, Math.round((totalMatches / totalAlbumSlots) * 100));
 
   let playstyle = 'Rookie Fan';
@@ -154,8 +142,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
   const getMatchStatus = (match: Match) => {
     const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-    const timeDiff = SYSTEM_DATE.getTime() - kickoff.getTime();
-    if (timeDiff >= 2 * 60 * 60 * 1000) {
+    const now = getSystemDate();
+    const timeDiff = now.getTime() - kickoff.getTime();
+    if (match.finished === 'TRUE' || timeDiff >= 2 * 60 * 60 * 1000) {
       return 'COMPLETED';
     } else if (timeDiff >= 0) {
       return 'LIVE';
@@ -219,7 +208,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     handleCopyLink('insta', urlStr);
   };
 
-  const groupMatches = matches.filter(m => m.type === 'group' || !m.type);
 
   const getPublicCardForMatch = (matchId: string) => {
     return cards.find(c => c.matchId === matchId);
@@ -230,68 +218,240 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: '', fifa_code: '' };
     const claimedCard = getPublicCardForMatch(match.id);
 
-    const ovr = claimedCard?.rating || (profile.overallRating >= 80 ? 88 : profile.overallRating >= 70 ? 76 : profile.overallRating >= 50 ? 62 : 42);
-    let rarity = 'COMMON';
-    if (ovr >= 85) rarity = 'LEGENDARY';
-    else if (ovr >= 70) rarity = 'EPIC';
-    else if (ovr >= 45) rarity = 'RARE';
+    if (!claimedCard) {
+      // Unpredicted match slot: LOCKED state with actual match info, no mock ratings/verdicts
+      return {
+        id: `unpredicted-${match.id}`,
+        matchId: match.id,
+        rating: 0,
+        verdict: 'UNPREDICTED',
+        charge: 'LOCKED FIXTURE',
+        sentence: 'No prediction submitted',
+        evidence: 'No prediction data found.',
+        rarity: 'COMMON',
+        matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
+        matchScore: (match.finished === 'TRUE' || getMatchStatus(match) === 'COMPLETED') ? `${match.home_score} - ${match.away_score}` : undefined,
+        homeFlag: homeTeam.flag,
+        awayFlag: awayTeam.flag,
+        homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
+        awayFifaCode: (awayTeam as any).fifa_code || awayTeam.name_en?.slice(0, 3).toUpperCase(),
+        isPredicted: false,
+        statsJson: { prd: 0, mgr: 0, hot: 0, rst: 0 }
+      };
+    }
 
-    const verdictText = claimedCard?.verdict || (ovr >= 85 ? 'VISIONARY PROPHET' : ovr >= 70 ? 'TACTICAL MASTERMIND' : ovr >= 45 ? 'DELUSION MERCHANT' : 'PENALTY MERCHANT');
-
+    // Resolved card: pull actual database card payload (no mock data)
     return {
-      id: claimedCard?.id || match.id,
+      id: claimedCard.id,
       matchId: match.id,
-      rating: ovr,
-      verdict: verdictText,
-      charge: claimedCard?.charge || `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-      sentence: claimedCard?.sentence || `Matchday ${match.matchday} Verdict`,
-      evidence: `Hot Take statement: "${claimedCard?.evidence || 'Tactical Mastermind'}"`,
-      rarity,
+      rating: claimedCard.rating,
+      verdict: claimedCard.verdict,
+      charge: claimedCard.charge,
+      sentence: claimedCard.sentence,
+      evidence: claimedCard.evidence,
+      rarity: claimedCard.rarity,
       matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-      matchScore: match.home_score !== '' ? `${match.home_score} - ${match.away_score}` : undefined,
+      matchScore: (match.finished === 'TRUE' || getMatchStatus(match) === 'COMPLETED') ? `${match.home_score} - ${match.away_score}` : undefined,
       homeFlag: homeTeam.flag,
       awayFlag: awayTeam.flag,
       homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
       awayFifaCode: (awayTeam as any).fifa_code || awayTeam.name_en?.slice(0, 3).toUpperCase(),
-      isPredicted: !!claimedCard,
-      statsJson: {
-        prd: profile.predictionRating || 85,
-        mgr: profile.managerRating || 88,
-        hot: profile.hotTakeRating || 82,
-        rst: profile.roastScore || 80
-      }
+      isPredicted: true,
+      statsJson: claimedCard.statsJson
     };
   };
 
-  const filteredMatches = groupMatches.filter(match => {
-    const cardObj = constructPublicMatchCardObj(match);
-    const claimedCard = getPublicCardForMatch(match.id);
-    const status = getMatchStatus(match);
+  // ── Round of 32 only ──────────────────────────────────────────────────────
+  const r32Matches = matches.filter(m => m.type === 'r32');
+  const predictedMatches = r32Matches.filter(m => getPublicCardForMatch(m.id));
+  const earnedCards = predictedMatches.map(m => constructPublicMatchCardObj(m));
 
-    // 1. Rarity Filter
-    if (filterRarity !== 'ALL') {
-      if (filterRarity === 'LOCKED') {
-        if (claimedCard) return false;
-      } else if (filterRarity === 'MISSED') {
-        if (!(status === 'COMPLETED' && !claimedCard)) return false;
-      } else {
-        if (cardObj.rarity !== filterRarity) return false;
-      }
+  // 2. Exactly one locked card for each rarity to showcase tiers
+  const lockedCards = [
+    {
+      id: 'locked-common',
+      matchId: 'locked-common',
+      rating: 42,
+      rarity: 'COMMON',
+      verdict: 'LOCKED COMMON',
+      charge: 'LOCKED STICKER SLOT',
+      sentence: 'Predict matches to unlock Common cards',
+      evidence: 'No prediction data found.',
+      matchTitle: 'LOCKED SLOT',
+      isPredicted: false,
+      countryFlag: '🔒',
+      statsJson: { prd: 40, mgr: 40, hot: 40, rst: 40, ovr: 40 }
+    },
+    {
+      id: 'locked-rare',
+      matchId: 'locked-rare',
+      rating: 62,
+      rarity: 'RARE',
+      verdict: 'LOCKED RARE',
+      charge: 'LOCKED STICKER SLOT',
+      sentence: 'Predict matches to unlock Rare cards',
+      evidence: 'No prediction data found.',
+      matchTitle: 'LOCKED SLOT',
+      isPredicted: false,
+      countryFlag: '🔒',
+      statsJson: { prd: 60, mgr: 60, hot: 60, rst: 60, ovr: 60 }
+    },
+    {
+      id: 'locked-epic',
+      matchId: 'locked-epic',
+      rating: 76,
+      rarity: 'EPIC',
+      verdict: 'LOCKED EPIC',
+      charge: 'LOCKED STICKER SLOT',
+      sentence: 'Predict matches to unlock Epic cards',
+      evidence: 'No prediction data found.',
+      matchTitle: 'LOCKED SLOT',
+      isPredicted: false,
+      countryFlag: '🔒',
+      statsJson: { prd: 75, mgr: 75, hot: 75, rst: 75, ovr: 75 }
+    },
+    {
+      id: 'locked-legendary',
+      matchId: 'locked-legendary',
+      rating: 88,
+      rarity: 'LEGENDARY',
+      verdict: 'LOCKED LEGENDARY',
+      charge: 'LOCKED STICKER SLOT',
+      sentence: 'Predict matches to unlock Legendary cards',
+      evidence: 'No prediction data found.',
+      matchTitle: 'LOCKED SLOT',
+      isPredicted: false,
+      countryFlag: '🔒',
+      statsJson: { prd: 90, mgr: 90, hot: 90, rst: 90, ovr: 90 }
+    }
+  ];
+
+  const allDisplayCards = [...earnedCards, ...lockedCards];
+
+  // ── Filter + slice logic (R32 only) ──────────────────────────────────────
+  const getFilteredCards = () => {
+    if (filterStatus === 'ALL') {
+      return allDisplayCards;
     }
 
-    // 2. Status Filter
     if (filterStatus === 'COMPLETED') {
-      if (status !== 'COMPLETED') return false;
-    } else if (filterStatus === 'UPCOMING') {
-      if (status !== 'UPCOMING') return false;
-    } else if (filterStatus === 'PREDICTED') {
-      if (!claimedCard) return false;
+      return r32Matches
+        .filter(m => getMatchStatus(m) === 'COMPLETED')
+        .sort((a, b) =>
+          parseLocalDate(b.local_date, b.stadium_id).getTime() -
+          parseLocalDate(a.local_date, a.stadium_id).getTime()
+        )
+        .slice(0, 5)
+        .map(m => constructPublicMatchCardObj(m));
     }
 
-    return true;
-  });
+    if (filterStatus === 'UPCOMING') {
+      return r32Matches
+        .filter(m => getMatchStatus(m) === 'UPCOMING' || getMatchStatus(m) === 'LIVE')
+        .sort((a, b) =>
+          parseLocalDate(a.local_date, a.stadium_id).getTime() -
+          parseLocalDate(b.local_date, b.stadium_id).getTime()
+        )
+        .slice(0, 5)
+        .map(m => constructPublicMatchCardObj(m));
+    }
 
-  const activeVerdictCard = selectedCard || (groupMatches.length > 0 ? constructPublicMatchCardObj(groupMatches[0]) : null);
+    if (filterStatus === 'PREDICTED') {
+      return earnedCards;
+    }
+
+    return allDisplayCards;
+  };
+
+  const filteredCards = getFilteredCards();
+
+  const renderCardSlot = (cardObj: any) => {
+    const isLocked = cardObj.matchId.startsWith('locked-');
+    const match = matches.find(m => m.id === cardObj.matchId);
+    
+    const homeTeam = match 
+      ? (teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: 'https://flagcdn.com/w80/un.png' }) 
+      : { name_en: 'Locked', flag: '' };
+    const awayTeam = match 
+      ? (teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: 'https://flagcdn.com/w80/un.png' }) 
+      : { name_en: 'Slot', flag: '' };
+
+    const isSelected = selectedCard?.matchId === cardObj.matchId;
+
+    let borderGlow = 'border-white/20';
+    let textGlow = 'text-gray-300';
+    let ringColor = 'ring-white';
+    if (cardObj.rarity === 'LEGENDARY') { borderGlow = 'border-amber-400/50'; textGlow = 'text-amber-400'; ringColor = 'ring-amber-400'; }
+    else if (cardObj.rarity === 'EPIC') { borderGlow = 'border-purple-400/50'; textGlow = 'text-purple-400'; ringColor = 'ring-purple-400'; }
+    else if (cardObj.rarity === 'RARE') { borderGlow = 'border-blue-500/50'; textGlow = 'text-blue-400'; ringColor = 'ring-blue-400'; }
+    else { borderGlow = 'border-rose-500/40'; textGlow = 'text-rose-400'; ringColor = 'ring-rose-500'; }
+
+    const publicCard = match ? getPublicCardForMatch(match.id) : null;
+
+    return (
+      <div
+        key={cardObj.id}
+        onClick={() => {
+          setSelectedCard(cardObj);
+          setActiveRightTab('verdict');
+        }}
+        className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
+          isSelected ? `ring-2 ${ringColor} ring-offset-2 ring-offset-black scale-[1.02]` : ''
+        }`}
+      >
+        <div className={`min-h-[116px] w-full overflow-hidden bg-[#0B0F19]/95 border ${borderGlow} rounded-2xl p-3 flex flex-col justify-between backdrop-blur-md shadow-lg transition-all duration-200 hover:shadow-xl`}>
+          {/* TOP: rating + flags + rarity badge */}
+          <div className="flex justify-between items-start gap-2 min-w-0">
+            <div className="flex flex-col items-start min-w-0 shrink-0">
+              <span className="font-display font-black text-xl leading-none text-white tracking-tighter">{cardObj.rating}</span>
+              <div className="flex gap-1 mt-1 items-center flex-wrap">
+                {isLocked ? (
+                  <span className="text-[10px]">🔒</span>
+                ) : (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded-sm border border-white/10" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded-sm border border-white/10" />
+                  </>
+                )}
+                {!isLocked && match && getMatchStatus(match) === 'COMPLETED' && (
+                  <span className="font-mono text-[7px] font-black text-rose-400 bg-rose-500/10 px-1 rounded border border-rose-500/20 whitespace-nowrap">
+                    {match.home_score}-{match.away_score}
+                  </span>
+                )}
+                {!isLocked && match && publicCard && getMatchStatus(match) === 'UPCOMING' && (
+                  <span className="font-mono text-[7px] font-black text-amber-400 bg-amber-500/10 px-1 rounded border border-amber-500/20 whitespace-nowrap">
+                    {publicCard.homeScore || publicCard.predHomeScore || 0}-{publicCard.awayScore || publicCard.predAwayScore || 0}
+                  </span>
+                )}
+              </div>
+            </div>
+            <span className={`shrink-0 text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
+              {cardObj.rarity.slice(0, 3)}
+            </span>
+          </div>
+
+          {/* MIDDLE: verdict label */}
+          <div className="overflow-hidden py-1">
+            <p className="font-display font-black text-[10px] text-white tracking-wide uppercase leading-tight line-clamp-1 text-center">
+              {cardObj.verdict}
+            </p>
+          </div>
+
+          {/* BOTTOM: group / inspect */}
+          <div className="border-t border-white/10 pt-1.5 flex justify-between items-center gap-1 min-w-0">
+            <span className="text-[7.5px] font-black text-zinc-400 uppercase tracking-widest truncate min-w-0">
+              {isLocked ? 'LOCKED SLOT' : match?.type === 'r32' ? 'ROUND OF 32' : match?.type === 'r16' ? 'ROUND OF 16' : match?.type === 'qf' ? 'QUARTER FINAL' : match?.type === 'sf' ? 'SEMI FINAL' : `GROUP ${match?.group || 'STAGE'}`}
+            </span>
+            <span className="shrink-0 text-[7.5px] text-amber-400 group-hover:text-amber-300 transition-all font-black uppercase tracking-widest">INSPECT</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const activeVerdictCard = selectedCard || (earnedCards.length > 0 ? earnedCards[0] : lockedCards[3]);
 
   const activeShareUrl = activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile');
   const activeShareText = activeRightTab === 'verdict' && activeVerdictCard
@@ -299,7 +459,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     : `Check out ${profile.username}'s official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`;
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] pb-8 select-none">
+    <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] select-none">
       
       {/* Background Stadium Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -307,247 +467,133 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           src="/images/world_cup_stadium.webp" 
           alt="World Cup Stadium background" 
           fill 
-          className="object-cover object-center opacity-[0.22]" 
+          className="object-cover object-center opacity-[0.48]" 
           priority 
         />
         <div className="absolute inset-0 bg-[#030712]/75" />
       </div>
 
-      <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-8 pt-2 pb-4 w-full flex-grow flex flex-col min-h-0">
-        <div className="relative w-full bg-[#0B0F19]/90 border border-white/15 rounded-3xl shadow-2xl flex flex-col flex-grow min-h-0 mt-2 backdrop-blur-xl overflow-hidden">
+      <div className="relative z-10 w-full flex-grow flex flex-col min-h-0">
+        
+        {/* Header Panel merged seamlessly with Navbar */}
+        <div className="shrink-0 border-b border-white/10 bg-[#0B0F19]/80 backdrop-blur-md px-6 sm:px-12 py-5 flex flex-col items-center justify-center text-center w-full shadow-lg">
+          <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
+            {profile.username}&apos;S <span className="text-[#E11D48]">BINDER</span>
+          </h1>
+          <p className="text-zinc-400 text-[10px] sm:text-xs mt-2.5 font-black uppercase tracking-widest leading-none">
+            WORLD CUP 2026 DOSSIER <span className="text-zinc-600 mx-2">•</span> EARNED VERDICT CARDS
+          </p>
+        </div>
+
+        <div className="px-6 sm:px-12 py-8 relative flex-grow w-full flex flex-col">
           
-          {/* Header Panel */}
-          <div className="shrink-0 border-b border-white/10 bg-black/40 p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 w-full">
-            <div>
-              <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
-                {profile.username}&apos;S <span className="text-[#E11D48]">BINDER</span>
-              </h1>
-              <p className="text-gray-400 text-[10px] sm:text-xs mt-1.5 font-bold uppercase tracking-widest leading-none">
-                WORLD CUP 2026 DOSSIER <span className="text-zinc-500 mx-2">•</span> EARNED VERDICT CARDS
-              </p>
+          {/* TOP ROW: Filters (left) + Deck/Verdict Switcher (right) — exact same horizontal line */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 mb-3 items-center">
+            {/* LEFT: Filters + Stats */}
+            <div className="lg:col-span-7 flex flex-wrap items-center gap-5">
+              <div className="bg-black/40 border border-white/5 p-1 rounded-xl flex gap-0.5 w-fit shadow-inner">
+                {[
+                  { id: 'ALL',       label: 'R32',        sub: 'all 16'    },
+                  { id: 'COMPLETED', label: 'Completed',  sub: 'last 5'    },
+                  { id: 'UPCOMING',  label: 'Upcoming',   sub: 'next 5'    },
+                  { id: 'PREDICTED', label: 'My Picks',   sub: 'predicted' },
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setFilterStatus(f.id as any)}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex flex-col items-center ${
+                      filterStatus === f.id
+                        ? 'bg-[#E11D48] text-white shadow-[0_0_8px_rgba(225,29,72,0.3)]'
+                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider leading-tight">{f.label}</span>
+                    <span className={`text-[7px] uppercase tracking-widest leading-none mt-0.5 ${ filterStatus === f.id ? 'text-white/70' : 'text-zinc-600' }`}>{f.sub}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Progress:</span>
+                  <span className="text-xs font-black text-white bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
+                    {totalMatches}/{totalAlbumSlots} <span className="text-[#E11D48] text-[10px] ml-1 font-bold">{albumProgressPercent}%</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Accuracy:</span>
+                  <span className="text-xs font-black text-emerald-400 bg-emerald-500/5 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
+                    {accuracy}%
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* SPACER: divider column */}
+            <div className="hidden lg:block lg:col-span-1" />
+            {/* RIGHT: Deck/Verdict Switcher — same row as filters */}
+            <div className="lg:col-span-4 flex">
+              <div className="flex bg-black/60 border border-white/15 p-1 rounded-xl shadow-md w-full z-20">
+                <button
+                  onClick={() => setActiveRightTab('deck')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-display font-black text-[10px] sm:text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    activeRightTab === 'deck'
+                      ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-md'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Trophy className="w-4 h-4" /> Tournament Deck
+                </button>
+                <button
+                  onClick={() => setActiveRightTab('verdict')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-display font-black text-[10px] sm:text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    activeRightTab === 'verdict'
+                      ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Shield className="w-4 h-4" /> Verdict Card
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="p-2 sm:p-4 relative flex-grow flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 relative z-10 flex-grow items-start">
+          {/* MAIN CONTENT GRID: card slots (left) + divider + card preview (right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 flex-grow items-stretch">
+            
+            {/* LEFT PAGE: ALBUM SLOTS GRID WITH SMOOTH TRACKPAD SCROLL CONTAINER */}
+            <div className="lg:col-span-7 flex flex-col gap-4">
               
-              {/* LEFT PAGE: ALBUM SLOTS GRID WITH SMOOTH TRACKPAD SCROLL CONTAINER */}
-              <div className="lg:col-span-7 p-3 sm:p-4 flex flex-col gap-2.5 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
-                
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
-                  <div>
-                    <h2 className="font-display font-black text-lg text-white uppercase tracking-wider">
-                      Tournament Album Sticker Slots
-                    </h2>
-                    <div className="flex gap-3 mt-1.5 text-xs font-black uppercase tracking-wider">
-                      <span className="text-amber-400">🏆 {legendaryCount} LEG</span>
-                      <span className="text-purple-400">🔥 {epicCount} EPC</span>
-                      <span className="text-blue-400">⚡ {rareCount} RRE</span>
-                      <span className="text-gray-400">🪙 {commonCount} CMN</span>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => {
-                      setSelectedCard(null);
-                      setFilterRarity('ALL');
-                    }}
-                    className="px-3.5 py-1.5 text-xs font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-xl uppercase tracking-wider hover:bg-rose-500/20 transition-all cursor-pointer shrink-0"
-                  >
-                    Reset Filter
-                  </button>
-                </div>
-
-                 <div className="grid grid-cols-2 gap-3 bg-black/50 border border-white/10 rounded-xl p-2.5 shadow-md">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-[10px] font-black text-gray-300 uppercase tracking-widest">
-                      <span>Album Progress</span>
-                      <span className="font-mono text-white font-bold">{totalMatches}/{totalAlbumSlots}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
-                      </div>
-                      <span className="font-mono text-[10px] font-black text-[#E11D48] shrink-0">{albumProgressPercent}%</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-[10px] font-black text-gray-300 uppercase tracking-widest">
-                      <span>Exact Accuracy</span>
-                      <span className="font-mono text-white font-bold">{accuracy}%</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700" style={{ width: `${accuracy}%` }} />
-                      </div>
-                      <span className="font-mono text-[10px] font-black text-emerald-400 shrink-0">EXACT</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5 pt-0.5">
-                  {/* Rarity filter row */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { id: 'ALL', label: 'All Slots' },
-                      { id: 'LEGENDARY', label: 'Legendary' },
-                      { id: 'EPIC', label: 'Epic' },
-                      { id: 'RARE', label: 'Rare' },
-                      { id: 'COMMON', label: 'Common' },
-                    ].map(f => (
-                      <button
-                        key={f.id}
-                        onClick={() => setFilterRarity(f.id)}
-                        className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
-                          filterRarity === f.id
-                            ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
-                            : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Status/Prediction filter row */}
-                  <div className="flex flex-wrap gap-1.5 border-t border-white/5 pt-1.5">
-                    {[
-                      { id: 'ALL', label: 'All Matches' },
-                      { id: 'COMPLETED', label: 'Completed' },
-                      { id: 'UPCOMING', label: 'Upcoming' },
-                      { id: 'PREDICTED', label: 'Predicted' },
-                    ].map(f => (
-                      <button
-                        key={f.id}
-                        onClick={() => setFilterStatus(f.id as any)}
-                        className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
-                          filterStatus === f.id
-                            ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
-                            : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Trackpad & Touch Native Scroll Container */}
                 <div 
-                  className="overflow-y-auto max-h-[460px] pr-2 space-y-2.5 custom-scrollbar touch-pan-y overscroll-contain"
+                  className="overflow-y-auto max-h-[660px] pr-2 space-y-2.5 custom-scrollbar touch-pan-y overscroll-contain"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
-                  {filteredMatches.length === 0 ? (
-                    <div className="text-center py-16 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-2xl bg-black/20">
+                  {filteredCards.length === 0 ? (
+                    <div className="text-center py-20 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-2xl bg-black/20">
                       <ShieldAlert className="w-8 h-8 text-gray-400 mb-2.5" />
                       <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No matching slots found on this matchday</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 p-1">
-                      {filteredMatches.map(match => {
-                        const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || (match as any).home_team_name_en || 'Home', flag: 'https://flagcdn.com/w80/un.png' };
-                        const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: 'https://flagcdn.com/w80/un.png' };
-                        const cardObj = constructPublicMatchCardObj(match);
-                        const claimedCard = getPublicCardForMatch(match.id);
-                        const isSelected = selectedCard?.matchId === match.id;
-
-                        let borderGlow = 'border-white/20';
-                        let textGlow = 'text-gray-300';
-                        if (cardObj.rarity === 'LEGENDARY') { borderGlow = 'border-amber-400/50'; textGlow = 'text-amber-300'; }
-                        else if (cardObj.rarity === 'EPIC') { borderGlow = 'border-purple-400/50'; textGlow = 'text-purple-300'; }
-                        else if (cardObj.rarity === 'RARE') { borderGlow = 'border-rose-500/50'; textGlow = 'text-rose-300'; }
-                        else { borderGlow = 'border-sky-400/40'; textGlow = 'text-sky-300'; }
-
-                        return (
-                          <div
-                            key={match.id}
-                            onClick={() => {
-                              setSelectedCard(cardObj);
-                              setActiveRightTab('verdict');
-                            }}
-                            className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
-                              isSelected ? 'ring-2 ring-amber-400 scale-[1.02]' : ''
-                            }`}
-                          >
-                            <div className={`h-28 w-full bg-[#0B0F19]/90 border ${borderGlow} rounded-xl p-2.5 flex flex-col justify-between backdrop-blur-md shadow-lg`}>
-                              <div className="flex justify-between items-start">
-                                <div className="flex flex-col items-center">
-                                  <span className="font-mono font-black text-lg leading-none text-[#FFFFFF]">{cardObj.rating}</span>
-                                  <div className="flex gap-1 mt-1 items-center">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={homeTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={awayTeam.flag || 'https://flagcdn.com/w80/un.png'} alt="" className="w-4 h-3 object-cover rounded shadow-xs border border-white/10" />
-                                    
-                                    {/* Score indicators */}
-                                    {getMatchStatus(match) === 'COMPLETED' && (
-                                      <span className="font-mono text-[8px] font-black text-rose-400 bg-rose-500/10 px-1 rounded ml-1 border border-rose-500/20">
-                                        {match.home_score}-{match.away_score}
-                                      </span>
-                                    )}
-                                    {claimedCard && getMatchStatus(match) === 'UPCOMING' && (
-                                      <span className="font-mono text-[8px] font-black text-amber-400 bg-amber-500/10 px-1 rounded ml-1 border border-amber-500/20">
-                                        {claimedCard.homeScore || claimedCard.predHomeScore || 0}-{claimedCard.awayScore || claimedCard.predAwayScore || 0}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <span className={`text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/80 border border-white/10 ${textGlow}`}>
-                                  {cardObj.rarity.slice(0, 3)}
-                                </span>
-                              </div>
-
-                              <div className="text-center my-auto py-1">
-                                <p className="font-sans font-black text-[9.5px] text-white tracking-wide uppercase leading-tight line-clamp-2 px-0.5">
-                                  {cardObj.verdict}
-                                </p>
-                              </div>
-
-                              <div className="border-t border-white/10 pt-1 flex justify-between items-center text-[7.5px] font-bold text-gray-400 uppercase tracking-widest">
-                                <span>GROUP {match.group || 'STAGE'}</span>
-                                <span className="text-amber-400 group-hover:underline">INSPECT</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 p-1">
+                      {filteredCards.map(card => renderCardSlot(card))}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="lg:col-span-5 lg:sticky lg:top-4 h-fit p-2.5 sm:p-3.5 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
-                
-                <div className="flex bg-black/60 border border-white/15 p-1 rounded-xl mb-1.5 shadow-md w-full z-20">
-                  <button
-                    onClick={() => setActiveRightTab('deck')}
-                    className={`flex-1 py-1.5 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      activeRightTab === 'deck'
-                        ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-white shadow-md'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <Trophy className="w-3.5 h-3.5" /> Tournament Deck
-                  </button>
-                  <button
-                    onClick={() => setActiveRightTab('verdict')}
-                    className={`flex-1 py-1.5 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      activeRightTab === 'verdict'
-                        ? 'bg-gradient-to-r from-[#881337] to-[#E11D48] text-white shadow-md'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <Shield className="w-3.5 h-3.5" /> Verdict Card
-                  </button>
-                </div>
+              {/* VERTICAL DIVIDER LINE */}
+              <div className="hidden lg:flex lg:col-span-1 justify-center items-stretch">
+                <div className="w-[1px] h-full bg-gradient-to-b from-white/0 via-white/10 to-white/0" />
+              </div>
 
-                <div className="flex flex-col items-center justify-center w-full relative z-20 h-[430px] my-2">
+              <div className="lg:col-span-4 lg:sticky lg:top-4 h-fit flex flex-col items-center justify-start gap-2 relative overflow-hidden self-start bg-[#090D16]/98 border border-white/10 rounded-2xl pt-3 pb-4 px-4 shadow-[0_12px_40px_rgba(0,0,0,0.85)] w-full">
+
+                <div className="flex flex-col items-center justify-center w-full relative z-20">
                   <div ref={cardPedestalRef} className="relative flex justify-center items-center h-full w-full">
                     <div 
                       onMouseMove={handlePedestalMouseMove}
                       onMouseLeave={handlePedestalMouseLeave}
                       style={pedestalTiltStyle}
-                      className="relative card-3d-tilt origin-center scale-[0.78] min-[380px]:scale-[0.82] sm:scale-[0.84] lg:scale-[0.80] xl:scale-[0.86]"
+                      className="relative card-3d-tilt origin-center scale-[0.82] min-[380px]:scale-[0.84] sm:scale-[0.86] lg:scale-[0.84] xl:scale-[0.88] -my-8 lg:-my-10"
                     >
                       {activeRightTab === 'verdict' && activeVerdictCard ? (
                         <SportsCenterCard data={{
@@ -614,7 +660,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 </div>
 
                 {/* HIGH-SET SHARE PLINTH WITH ALL SOCIAL PLATFORMS */}
-                <div className="mt-0.5 border-t border-white/10 pt-1 z-20 flex flex-col gap-1.5">
+                <div className="border-t border-white/10 pt-1 z-20 flex flex-col gap-1">
                   <div className="flex justify-between items-center bg-black/70 border border-white/15 rounded-xl p-2 backdrop-blur-md shadow-lg">
                     <span className="text-[9.5px] font-black text-gray-300 uppercase tracking-widest pl-1">
                       Instant Share:
@@ -702,7 +748,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           </div>
 
         </div>
-      </div>
 
     </div>
   );

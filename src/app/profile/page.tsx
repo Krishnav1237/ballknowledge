@@ -36,6 +36,17 @@ export default function ProfileSettingsPage() {
 
   // Settings Save State
   const [saveLoading, setSaveLoading] = useState(false);
+  // Toast notification (replaces all alert() calls)
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'warn' } | null>(null);
+  const showToast = (text: string, type: 'success' | 'error' | 'warn' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  
+  // Custom Credentials Auth Inputs
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -65,7 +76,7 @@ export default function ProfileSettingsPage() {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Photo size too large! Please choose an image smaller than 5MB.");
+      showToast('Photo too large. Please choose an image under 5MB.', 'error');
       return;
     }
 
@@ -123,15 +134,15 @@ export default function ProfileSettingsPage() {
   const runAISynthesis = async () => {
     if (!profile) return;
     if (!username.trim()) {
-      alert('Please fill out your Manager Alias registration ID first!');
+      showToast('Please enter your Manager Alias first.', 'warn');
       return;
     }
     if (!favoriteNation.trim()) {
-      alert('Please fill out your Supporting Country first!');
+      showToast('Please enter your Supporting Country first.', 'warn');
       return;
     }
     if (!pendingPhoto) {
-      alert('Please select and upload a source face photo first!');
+      showToast('Please upload a face photo first.', 'warn');
       return;
     }
 
@@ -157,7 +168,7 @@ export default function ProfileSettingsPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        alert(`🚨 AI Card Generation Notice: ${data.error || 'Server error occurred'}`);
+        showToast(`AI Error: ${data.error || 'Server error'}`, 'error');
         setIsSynthesizing(false);
         return;
       }
@@ -182,18 +193,18 @@ export default function ProfileSettingsPage() {
       }
 
       if (data.aiImageUrl) {
-        alert('✨ Immersion Complete! High-quality AI FIFA trading card generated successfully.');
+        showToast('AI card generated successfully!', 'success');
       }
     } catch (err: any) {
       setIsSynthesizing(false);
-      alert(`🚨 Generation Error: ${err?.message || 'Failed to connect to AI image synthesis engine.'}`);
+      showToast(`Generation error: ${err?.message || 'Failed to connect to AI engine.'}`, 'error');
     }
   };
 
   const handleSaveSettings = async () => {
     if (!profile) return;
     if (!username.trim()) {
-      alert('Username cannot be empty.');
+      showToast('Username cannot be empty.', 'warn');
       return;
     }
     setSaveLoading(true);
@@ -211,10 +222,10 @@ export default function ProfileSettingsPage() {
       setFavoriteClub(synced.favoriteClub || '');
       setFavoriteNation(synced.favoriteNation || '');
       setRole(synced.role);
-      alert('Settings saved and synchronized with database! 🤝');
+      showToast('Settings saved and synced!', 'success');
     } catch (e) {
       console.warn('Failed to sync settings with database:', e);
-      alert('Settings saved locally, but database sync failed.');
+      showToast('Saved locally (database sync failed).', 'warn');
     } finally {
       setSaveLoading(false);
     }
@@ -230,51 +241,80 @@ export default function ProfileSettingsPage() {
     );
   }
 
-  // Simulated login execution flow
-  const handleSocialSignIn = (provider: 'google' | 'facebook' | 'discord') => {
-    setAuthLoading(true);
-    setAuthProgress(10);
-    setAuthStage("Establishing connection with authentication vault...");
-    
-    const interval = setInterval(() => {
-      setAuthProgress(p => {
-        if (p >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        
-        // Update stage texts based on progress
-        if (p > 80) setAuthStage("Loading user statistics & OVR cards...");
-        else if (p > 50) setAuthStage("Validating credentials with VAR databases...");
-        else if (p > 25) setAuthStage(`Decrypting ${provider} credentials token...`);
-        
-        return p + Math.floor(Math.random() * 20) + 5;
-      });
-    }, 200);
+  // Toast banner component
+  const Toast = toastMessage ? (
+    <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-2xl font-bold text-sm shadow-2xl border backdrop-blur-md transition-all animate-in slide-in-from-top-4 duration-300 ${
+      toastMessage.type === 'success' ? 'bg-emerald-900/90 border-emerald-500/30 text-emerald-200' :
+      toastMessage.type === 'error'   ? 'bg-red-900/90 border-red-500/30 text-red-200' :
+                                        'bg-amber-900/90 border-amber-500/30 text-amber-200'
+    }`}>{toastMessage.text}</div>
+  ) : null;
 
-    setTimeout(async () => {
+  // Custom Credentials Authentication handler
+  const handleCredentialsAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !password.trim()) {
+      showToast('Please enter a username and password.', 'warn');
+      return;
+    }
+    
+    setAuthLoading(true);
+    setAuthProgress(30);
+    setAuthStage(authMode === 'signup' ? 'Signing up credentials...' : 'Verifying credentials...');
+
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: authMode,
+          username: username.trim(),
+          password: password.trim(),
+          favoriteClub: favoriteClub || 'VAR FC',
+          favoriteNation: favoriteNation || 'Argentina'
+        })
+      });
+
+      setAuthProgress(70);
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.error || 'Authentication failed.', 'error');
+        setAuthLoading(false);
+        return;
+      }
+
+      setAuthProgress(100);
+      setAuthStage('Access granted!');
+      
       const loggedInProfile: FootballIQProfile = {
-        ...profile,
+        ...data.profile,
         isAuthenticated: true,
-        authProvider: provider,
-        xp: profile.xp || 1200,
-        points: profile.points || 150
+        collectedCards: data.profile.collectedCards || []
       };
 
       setProfile(loggedInProfile);
       saveStoredProfile(loggedInProfile);
-      setAuthLoading(false);
-      setAuthProgress(0);
+      
+      // Update settings inputs with db profile values
+      setUsername(data.profile.username);
+      setFavoriteClub(data.profile.favoriteClub || '');
+      setFavoriteNation(data.profile.favoriteNation || '');
+      setRole(data.profile.role);
+      setAvatarSeed(data.profile.avatarSeed);
+      setAvatarStyle(data.profile.avatarStyle);
+
+      showToast(data.message || 'Locker room access active!', 'success');
       
       // Dispatch storage event to sync Navbar changes instantly
       window.dispatchEvent(new Event('storage'));
-
-      try {
-        await syncProfileWithDb(loggedInProfile);
-      } catch (err) {
-        console.warn('DB sync failed after social login:', err);
-      }
-    }, 2200);
+    } catch (err: any) {
+      showToast('Connection failed. Please try again.', 'error');
+      console.error('[Auth Client] Error:', err);
+    } finally {
+      setAuthLoading(false);
+      setAuthProgress(0);
+    }
   };
 
 
@@ -291,8 +331,8 @@ export default function ProfileSettingsPage() {
       localStorage.removeItem('var_cards_profile');
       localStorage.removeItem('var_cards_predictions');
       window.dispatchEvent(new Event('storage'));
-      alert('Contract terminated. Campaign progress wiped. Resetting manager profile...');
-      window.location.href = '/world-cup-hub';
+      showToast('Contract terminated. Profile reset.', 'warn');
+      setTimeout(() => { window.location.href = '/world-cup-hub'; }, 1500);
     }
   };
 
@@ -339,7 +379,7 @@ export default function ProfileSettingsPage() {
       {/* CASE A: SIGNED OUT (OAUTH AUTHENTICATION LOCKER ROOM)                  */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {!profile.isAuthenticated ? (
-        <div className="relative w-screen min-h-screen flex flex-col justify-center items-center px-6 pt-[52px] z-10">
+        <div className="relative w-full min-h-screen flex flex-col justify-center items-center px-6 pt-[52px] z-10">
           
           {/* Locker Room Background (High Contrast, Immersive) */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -347,7 +387,7 @@ export default function ProfileSettingsPage() {
               src="/images/locker_room_auth.webp" 
               alt="Locker Room Authentication Background" 
               fill 
-              className="object-cover opacity-[0.40] object-center" 
+              className="object-cover opacity-[0.52] object-center" 
               priority 
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-background/60 to-background" />
@@ -366,10 +406,6 @@ export default function ProfileSettingsPage() {
             <div className="bg-[#12070A]/85 border border-rose-900/35 rounded-[2rem] p-6 md:p-8 space-y-5 shadow-[0_0_50px_rgba(225,29,72,0.15)] relative backdrop-blur-md">
               <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#881337] via-[#E11D48] to-[#881337]" />
               
-              <h3 className="font-display font-black text-xs text-rose-300 uppercase tracking-widest border-b border-rose-900/30 pb-3">
-                Choose Authentication Provider
-              </h3>
-
               {authLoading ? (
                 /* Preloading Progress State */
                 <div className="py-6 flex flex-col items-center justify-center text-center">
@@ -379,58 +415,105 @@ export default function ProfileSettingsPage() {
                   </div>
                   
                   <h4 className="font-display font-black text-xs uppercase tracking-widest text-[#E11D48] animate-pulse">
-                    Authorizing Session
+                    {authStage}
                   </h4>
                   
                   <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden relative mt-4 max-w-[200px] mx-auto">
                     <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#881337] to-[#E11D48] transition-all duration-300" style={{ width: `${authProgress}%` }} />
                   </div>
-                  
-                  <p className="text-[9px] font-sans font-black text-gray-400 uppercase tracking-wider mt-2.5 px-4 leading-relaxed line-clamp-1">
-                    {authStage}
-                  </p>
                 </div>
               ) : (
-                /* Provider Buttons */
-                <div className="space-y-3 pt-2">
-                  
-                  {/* Google */}
-                  <button
-                    onClick={() => handleSocialSignIn('google')}
-                    className="w-full h-12 rounded-xl bg-rose-950/10 border border-rose-900/40 hover:bg-rose-900/20 hover:border-rose-500/50 transition-all text-white font-display font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 cursor-pointer group hover:shadow-[0_4px_12px_rgba(225,29,72,0.15)] active:scale-98"
-                  >
-                    {/* Simulated Google Logo */}
-                    <svg className="w-4 h-4 fill-white shrink-0 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                       <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.51 0-6.377-2.87-6.377-6.38 0-3.51 2.867-6.379 6.377-6.379 1.616 0 3.086.61 4.22 1.625l3.24-3.24C19.07 2.06 15.89 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c5.898 0 10.741-4.229 10.741-11.24 0-.648-.065-1.32-.194-1.955H12.24z" />
-                    </svg>
-                    SIGN IN WITH GOOGLE
-                  </button>
+                /* Credentials Form */
+                <form onSubmit={handleCredentialsAuth} className="space-y-4 pt-2">
+                  <div className="flex bg-[#13070A] p-1 rounded-xl border border-rose-950/45">
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('signin')}
+                      className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                        authMode === 'signin'
+                          ? 'bg-[#E11D48] text-white shadow-md'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('signup')}
+                      className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                        authMode === 'signup'
+                          ? 'bg-[#E11D48] text-white shadow-md'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
 
-                  {/* Discord */}
-                  <button
-                    onClick={() => handleSocialSignIn('discord')}
-                    className="w-full h-12 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/25 hover:bg-[#5865F2] hover:border-[#5865F2] transition-all text-[#5865F2] hover:text-white font-display font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 cursor-pointer group hover:shadow-[0_4px_12px_rgba(88,101,242,0.25)] active:scale-98"
-                  >
-                    {/* Simulated Discord Logo */}
-                    <svg className="w-4 h-4 fill-current shrink-0 group-hover:scale-110 transition-transform" viewBox="0 0 127.14 96.36">
-                      <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.9-.65,1.76-1.34,2.58-2.07a75.79,75.79,0,0,0,72.68,0c.83.73,1.68,1.42,2.58,2.07a68.52,68.52,0,0,1-10.5,5,78.82,78.82,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.07,48.12,123.32,25.35,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.14,46,96.14,53,91,65.69,84.69,65.69Z"/>
-                    </svg>
-                    SIGN IN WITH DISCORD
-                  </button>
+                  <div className="space-y-1.5 text-left">
+                    <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
+                      Manager Alias
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      placeholder="tactical_titan"
+                      className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner font-mono"
+                    />
+                  </div>
 
-                  {/* Facebook */}
-                  <button
-                    onClick={() => handleSocialSignIn('facebook')}
-                    className="w-full h-12 rounded-xl bg-[#1877F2]/10 border border-[#1877F2]/25 hover:bg-[#1877F2] hover:border-[#1877F2] transition-all text-[#1877F2] hover:text-white font-display font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 cursor-pointer group hover:shadow-[0_4px_12px_rgba(24,119,242,0.25)] active:scale-98"
-                  >
-                    {/* Simulated Facebook Logo */}
-                    <svg className="w-4 h-4 fill-current shrink-0 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                    </svg>
-                    SIGN IN WITH FACEBOOK
-                  </button>
+                  <div className="space-y-1.5 text-left">
+                    <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
+                      Security Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner"
+                    />
+                  </div>
 
-                </div>
+                  {authMode === 'signup' && (
+                    <>
+                      <div className="space-y-1.5 text-left">
+                        <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
+                          National Allegiance
+                        </label>
+                        <input
+                          type="text"
+                          value={favoriteNation}
+                          onChange={e => setFavoriteNation(e.target.value)}
+                          placeholder="e.g. Argentina, Germany"
+                          className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner"
+                        />
+                      </div>
+                      <div className="space-y-1.5 text-left">
+                        <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
+                          Supporting Club
+                        </label>
+                        <input
+                          type="text"
+                          value={favoriteClub}
+                          onChange={e => setFavoriteClub(e.target.value)}
+                          placeholder="e.g. Real Madrid, Arsenal"
+                          className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full h-11 rounded-xl bg-gradient-to-r from-[#E11D48] to-[#881337] hover:from-rose-500 hover:to-[#a21a3a] text-white font-display font-black text-[10px] uppercase tracking-widest cursor-pointer group shadow-[0_4px_12px_rgba(225,29,72,0.2)] hover:shadow-[0_4px_16px_rgba(225,29,72,0.35)] active:scale-98 transition-all"
+                  >
+                    {authMode === 'signin' ? 'ENTER LOCKER ROOM' : 'CREATE MANAGER PROFILE'}
+                  </button>
+                </form>
               )}
             </div>
 
@@ -445,7 +528,7 @@ export default function ProfileSettingsPage() {
               src="/images/world_cup_stadium.webp"
               alt="World Cup Stadium Background"
               fill
-              className="object-cover opacity-[0.25] object-center scale-102"
+              className="object-cover opacity-[0.52] object-center scale-102"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/70 to-[#07090E]" />
@@ -589,6 +672,9 @@ export default function ProfileSettingsPage() {
                     >
                       <RotateCcw className="w-3.5 h-3.5" /> Wipe Campaign &amp; Reset Profile
                     </button>
+                    {resetMessage && (
+                      <p className="text-xs text-amber-400 font-bold mt-2 text-center">{resetMessage}</p>
+                    )}
                   </div>
                 </div>
 
@@ -695,6 +781,7 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
       )}
+      {Toast}
     </div>
   );
 }

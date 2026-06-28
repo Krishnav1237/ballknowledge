@@ -67,39 +67,6 @@ const SIMULATED_BANTER = [
   'VAR is saving them again, unbelievable 🙄'
 ];
 
-/**
- * Retrieves cached chat messages for a specific match from local storage.
- * 
- * @param {string} matchId - The unique match ID.
- * @returns {ChatMessage[]} Array of cached messages.
- */
-function getStoredMessages(matchId: string): ChatMessage[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(`bk_chat_${matchId}`);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Saves chat messages back to local storage.
- * Caps the messages at the latest 200 items to prevent bloating the local storage quota.
- * 
- * @param {string} matchId - The unique match ID.
- * @param {ChatMessage[]} messages - Array of chat messages.
- */
-function saveMessages(matchId: string, messages: ChatMessage[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    // Keep last 200 messages to respect browser storage limits
-    const trimmed = messages.slice(-200);
-    localStorage.setItem(`bk_chat_${matchId}`, JSON.stringify(trimmed));
-  } catch { /* ignore local storage full errors */ }
-}
-
-
 // Format time
 function formatTime(ts: number): string {
   const d = new Date(ts);
@@ -125,136 +92,71 @@ export default function MatchLiveChat({
   const inputRef = useRef<HTMLInputElement>(null);
   const alias = managerAlias || 'Anonymous';
 
-  // Load messages on mount with initial seeded banter
-  useEffect(() => {
-    let msgs = getStoredMessages(matchId);
-    if (msgs.length === 0) {
-      const systemMsg: ChatMessage = {
-        id: generateId(),
-        matchId,
-        author: 'SYSTEM',
-        text: isLive
-          ? `⚽ ${homeTeam} vs ${awayTeam} is LIVE! The banter zone is open. Predictions are locked.`
-          : `⚽ ${homeTeam} vs ${awayTeam} chat log.`,
-        timestamp: Date.now() - 3600000,
-        reactions: {},
-        type: 'system',
-      };
-
-      const seedCount = isLive ? 3 : 8;
-      const seedMsgs: ChatMessage[] = [systemMsg];
-
-      for (let i = 0; i < seedCount; i++) {
-        const randomManager = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
-        const randomText = SIMULATED_BANTER[Math.floor(Math.random() * SIMULATED_BANTER.length)];
-        const reactionEmoji = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
-
-        seedMsgs.push({
-          id: generateId(),
-          matchId,
-          author: randomManager,
-          text: randomText,
-          timestamp: Date.now() - (seedCount - i) * 300000,
-          reactions: Math.random() > 0.4 ? { [reactionEmoji]: Math.floor(Math.random() * 5) + 1 } : {},
-          type: 'message',
-        });
+  // Fetch messages from database endpoint
+  const fetchChatMessages = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chat/${matchId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.messages) {
+          setMessages(data.messages);
+        }
       }
-
-      msgs = seedMsgs;
-      saveMessages(matchId, msgs);
+    } catch (e) {
+      console.warn('Failed to fetch chat messages from DB:', e);
     }
-    setMessages(msgs);
-  }, [matchId, isLive, homeTeam, awayTeam]);
-
-  // Poll for new messages every 3 seconds to pick up chat changes from other tabs or mock sources
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const latest = getStoredMessages(matchId);
-      setMessages(prev => {
-        // Only trigger react state update if message count changes
-        if (latest.length !== prev.length) return latest;
-        return prev;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
   }, [matchId]);
 
-  // Simulates other live managers joining the banter room in real-time during live matches
+  // Load and poll chat messages from DB every 3 seconds
   useEffect(() => {
-    if (!isLive) return;
-
-    const interval = setInterval(() => {
-      // 35% chance to post a message every 10 seconds to create active tournament feel
-      if (Math.random() > 0.35) return;
-
-      const randomManager = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
-      const randomText = SIMULATED_BANTER[Math.floor(Math.random() * SIMULATED_BANTER.length)];
-      const reactionEmoji = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
-
-      const msg: ChatMessage = {
-        id: generateId(),
-        matchId,
-        author: randomManager,
-        text: randomText,
-        timestamp: Date.now(),
-        reactions: Math.random() > 0.6 ? { [reactionEmoji]: 1 } : {},
-        type: 'message',
-      };
-
-      setMessages(prev => {
-        // Prevent inserting identical duplicate messages
-        if (prev.some(m => m.text === msg.text && m.author === msg.author)) return prev;
-        const updated = [...prev, msg];
-        saveMessages(matchId, updated);
-        return updated;
-      });
-    }, 10000);
-
+    fetchChatMessages();
+    const interval = setInterval(fetchChatMessages, 3000);
     return () => clearInterval(interval);
-  }, [matchId, isLive]);
+  }, [fetchChatMessages]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = useCallback((text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || sending) return;
     setSending(true);
 
-    const msg: ChatMessage = {
-      id: generateId(),
-      matchId,
-      author: alias,
-      text: text.trim(),
-      timestamp: Date.now(),
-      reactions: {},
-      type: 'message',
-    };
-
-    setMessages(prev => {
-      const updated = [...prev, msg];
-      saveMessages(matchId, updated);
-      return updated;
-    });
-
-    setInput('');
-    setSending(false);
-    inputRef.current?.focus();
+    try {
+      const res = await fetch(`/api/chat/${matchId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: alias,
+          text: text.trim()
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.message) {
+          setMessages(prev => [...prev, data.message]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to post message to chat DB:', err);
+    } finally {
+      setInput('');
+      setSending(false);
+      inputRef.current?.focus();
+    }
   }, [matchId, alias, sending]);
 
   const addReaction = useCallback((messageId: string, emoji: string) => {
     setMessages(prev => {
-      const updated = prev.map(m => {
+      return prev.map(m => {
         if (m.id !== messageId) return m;
         const reactions = { ...m.reactions };
         reactions[emoji] = (reactions[emoji] || 0) + 1;
         return { ...m, reactions };
       });
-      saveMessages(matchId, updated);
-      return updated;
     });
-  }, [matchId]);
+  }, []);
 
   const isReadOnly = isCompleted && !isLive;
 

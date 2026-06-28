@@ -43,6 +43,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sortBy = searchParams.get('sort') || 'overall'; // overall | prediction | hottake
   const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 100);
+  const showMocks = searchParams.get('showMocks') === 'true';
 
   try {
     const orderField =
@@ -99,35 +100,34 @@ export async function GET(request: Request) {
       updatedAt: p.updatedAt.toISOString(),
     }));
 
-    // If fewer than 3 real users, inject mocks so the leaderboard is never blank
+    // Only inject mocks if explicitly requested or if database is completely empty and developer desires bootstrapping
     let combinedEntries: Omit<LeaderboardEntry, 'rank'>[] = realEntries;
-    if (realEntries.length < 3) {
-      // Sort mocks by the requested field
+    if (showMocks && realEntries.length < 3) {
       const sortedMocks = [...MOCK_ENTRIES].sort((a, b) => {
         if (sortBy === 'prediction') return b.predictionRating - a.predictionRating;
         if (sortBy === 'hottake') return b.hotTakeRating - a.hotTakeRating;
         return b.overallRating - a.overallRating;
       });
 
-      // Merge real users on top of mocks (real users take precedence)
       const realUsernames = new Set(realEntries.map(e => e.username.toLowerCase()));
       const filteredMocks = sortedMocks.filter(m => !realUsernames.has(m.username.toLowerCase()));
       combinedEntries = [...realEntries, ...filteredMocks].slice(0, limit);
     }
 
-    // Always rank all entries
     const entries: LeaderboardEntry[] = combinedEntries.map((e, i) => ({ ...e, rank: i + 1 }));
-
     return NextResponse.json({ entries, total: entries.length, sortBy });
+
   } catch (error) {
     console.error('[Leaderboard API] DB error:', error);
-    // Serve sorted mocks on DB failure so page is never broken
-    const sortedMocks = [...MOCK_ENTRIES].sort((a, b) => {
-      if (sortBy === 'prediction') return b.predictionRating - a.predictionRating;
-      if (sortBy === 'hottake') return b.hotTakeRating - a.hotTakeRating;
-      return b.overallRating - a.overallRating;
-    });
-    const mockEntries = sortedMocks.slice(0, limit).map((e, i) => ({ ...e, rank: i + 1 }));
-    return NextResponse.json({ entries: mockEntries, total: mockEntries.length, sortBy, isMock: true });
+    if (showMocks) {
+      const sortedMocks = [...MOCK_ENTRIES].sort((a, b) => {
+        if (sortBy === 'prediction') return b.predictionRating - a.predictionRating;
+        if (sortBy === 'hottake') return b.hotTakeRating - a.hotTakeRating;
+        return b.overallRating - a.overallRating;
+      });
+      const mockEntries = sortedMocks.slice(0, limit).map((e, i) => ({ ...e, rank: i + 1 }));
+      return NextResponse.json({ entries: mockEntries, total: mockEntries.length, sortBy, isMock: true });
+    }
+    return NextResponse.json({ error: 'Database is temporarily unavailable.' }, { status: 500 });
   }
 }

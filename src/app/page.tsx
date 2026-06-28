@@ -31,6 +31,7 @@ export default function Home() {
   const [stats, setStats] = useState({ takes: 0, cases: 0, cards: 0 });
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [nationSearch, setNationSearch] = useState('');
   
   useEffect(() => {
     setMounted(true);
@@ -662,54 +663,94 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* NATIONS: select country narrative                                      */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 px-6 bg-[#030712] border-t border-gray-800 relative overflow-hidden">
-        {/* Nations: stadium at visible opacity */}
+      <section className="py-16 md:py-20 px-6 bg-[#030712] border-t border-gray-800 relative overflow-hidden">
+        {/* Background */}
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/images/world_cup_hub_bg.webp" alt="" fill className="object-cover opacity-[0.12] object-center" sizes="100vw" />
+          <Image src="/images/world_cup_hub_bg.webp" alt="" fill className="object-cover opacity-[0.24] object-center" sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/80 via-[#030712]/40 to-[#030712]/80" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="mb-12 md:mb-16 text-center">
-            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">NATIONS · SELECT FIXTURE CAMPAIGN</p>
+          {/* Header */}
+          <div className="mb-10 md:mb-12 text-center">
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">ROUND OF 32 · 32 NATIONS QUALIFIED</p>
             <h2 className="font-serif italic font-black text-4xl sm:text-5xl md:text-6xl text-white leading-tight">
               Pick your nation.<br />
               <span className="text-[#E11D48]">Own the narrative.</span>
             </h2>
             <p className="font-serif text-zinc-400 text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed font-medium">
-              Every fanbase has its delusions. Select your nation to forecast upcoming fixtures, submit hot takes, and defend your country narrative.
+              The 32 nations who qualified for the Round of 32 knockout stage. Pick yours to predict their fixtures, submit hot takes, and claim Verdict Cards.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {COUNTRIES.map((c, i) => (
-              <motion.div
-                key={c.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ delay: i * 0.04, duration: 0.45 }}
-              >
-                <Link href={c.href}
-                  className="group flex flex-col p-5 sm:p-6 rounded-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full shadow-lg bg-[#0B0F19]/90 backdrop-blur-sm border hover:border-white/20 hover:bg-[#111827] text-white"
-                  style={{ border: `1px solid ${c.color}30` }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-3xl sm:text-4xl">{c.flag}</span>
-                    <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded"
-                          style={{ background: c.color + '20', color: c.color }}>
-                      {c.verdict}
-                    </span>
-                  </div>
-                  <h3 className="font-sans font-black text-base sm:text-lg md:text-xl text-white mb-2">{c.name}</h3>
-                  <p className="font-serif text-zinc-400 text-xs sm:text-sm leading-relaxed flex-1">{c.story}</p>
-
-                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mt-4 group-hover:translate-x-1 transition-transform inline-block"
-                        style={{ color: c.color }}>
-                    Predict fixture →
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
+          {/* Search Row */}
+          <div className="flex justify-center mb-10">
+            <div className="relative w-full max-w-md">
+              <input
+                id="nation-search"
+                type="text"
+                placeholder="Search R32 nation..."
+                value={nationSearch}
+                onChange={e => setNationSearch(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#E11D48]/50 focus:ring-1 focus:ring-[#E11D48]/20 transition-all shadow-inner"
+              />
+              {nationSearch && (
+                <button onClick={() => setNationSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-sm cursor-pointer">✕</button>
+              )}
+            </div>
           </div>
+
+          {/* Nations Grid - Rebuilt with larger cards */}
+          {(() => {
+            const filtered = COUNTRIES.filter(c => {
+              return nationSearch === '' || 
+                c.name.toLowerCase().includes(nationSearch.toLowerCase()) || 
+                (c.fifa && c.fifa.toLowerCase().includes(nationSearch.toLowerCase()));
+            });
+            return filtered.length === 0 ? (
+              <div className="text-center py-20 text-zinc-500 font-bold text-sm">No nations found for &ldquo;{nationSearch}&rdquo;</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {filtered.map((c, i) => (
+                  <motion.div
+                    key={c.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-30px' }}
+                    transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.4 }}
+                  >
+                    <Link href={c.href}
+                      className="group flex flex-col p-6 rounded-3xl transition-all duration-300 hover:scale-[1.03] cursor-pointer h-full shadow-2xl bg-[#0B0F19]/90 backdrop-blur-sm border hover:border-white/20 hover:bg-[#111827] text-white"
+                      style={{ border: `1px solid ${c.color}28` }}>
+                      {/* Flag + badges */}
+                      <div className="flex items-start justify-between mb-4">
+                        <span className="text-4xl sm:text-5xl leading-none transition-transform duration-300 group-hover:scale-110">{c.flag}</span>
+                        <div className="flex flex-col items-end gap-1 font-mono">
+                          <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border"
+                                style={{ background: c.color + '15', color: c.color, borderColor: c.color + '30' }}>
+                            GRP {c.group}
+                          </span>
+                          <span className="text-[7.5px] font-bold text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
+                            {c.qualified}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Verdict badge */}
+                      <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider mb-2 leading-tight block"
+                            style={{ color: c.color }}>
+                        {c.verdict}
+                      </span>
+                      <h3 className="font-sans font-black text-base sm:text-lg text-white mb-2 leading-tight uppercase tracking-tight">{c.name}</h3>
+                      <p className="font-serif text-zinc-400 text-xs leading-relaxed flex-1 font-medium">{c.story}</p>
+                      <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mt-4 group-hover:translate-x-1 transition-transform inline-block"
+                            style={{ color: c.color }}>
+                        Predict fixture →
+                      </span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </section>
 

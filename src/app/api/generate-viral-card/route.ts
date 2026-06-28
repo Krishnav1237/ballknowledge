@@ -75,6 +75,26 @@ export async function POST(request: Request) {
       playerPosition,
     });
 
+    // ─── Local template fallback if no keys configured ───
+    if (!process.env.FAL_API_KEY && !process.env.OPENROUTER_API_KEY) {
+      console.warn('AI Image Generation API keys are missing. Falling back to local template background.');
+      return NextResponse.json({
+        success: true,
+        aiImageUrl: '/images/toty_bg_premium.webp',
+        cardConfig: {
+          username: username.toUpperCase(),
+          faceImage,
+          nation,
+          ovr,
+          stats: { prd, htk: hot, sel: mgr, cmy: rst },
+          statsJson: { prd, mgr, hot, rst },
+          verdict,
+          charge,
+          sentence,
+        },
+      });
+    }
+
     if (provider === 'fal') {
       // ──────────────────────────────────────────────────────────────
       // FAL.AI PROVIDER

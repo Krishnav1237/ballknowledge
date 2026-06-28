@@ -6,7 +6,7 @@ export async function GET() {
     const teams = await fetchWorldCupTeams();
     return NextResponse.json(teams, {
       headers: {
-        'Cache-Control': 'public, max-age=600, s-maxage=3600, stale-while-revalidate=86400'
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
       }
     });
   } catch (error) {

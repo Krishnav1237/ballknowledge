@@ -30,24 +30,19 @@ function readJsonFile(filename: string): any[] {
 
 /**
  * Returns all World Cup 2026 matches.
- * Reads from disk once per process lifetime, cached in memory thereafter.
+ * Reads fresh data from disk to support real-time data syncs.
  */
 export async function fetchWorldCupMatches(): Promise<any[]> {
-  if (!matchesData) {
-    matchesData = readJsonFile('football.matches.json');
-  }
-  return matchesData;
+  return readJsonFile('football.matches.json');
 }
 
 /**
  * Returns all World Cup 2026 teams.
- * Reads from disk once per process lifetime, cached in memory thereafter.
+ * Reads fresh data from disk to support real-time data syncs.
  */
 export async function fetchWorldCupTeams(): Promise<any[]> {
-  if (!teamsData) {
-    teamsData = readJsonFile('football.teams.json');
-  }
-  return teamsData;
+  return readJsonFile('football.teams.json');
 }
+
 
 

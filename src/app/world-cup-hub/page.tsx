@@ -60,7 +60,7 @@ export default function WorldCupHub() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'schedule' | 'groups'>('schedule');
-  const [scheduleFilter, setScheduleFilter] = useState<'today' | 'tomorrow' | 'upcoming' | 'completed' | 'live'>('today');
+  const [scheduleFilter, setScheduleFilter] = useState<'today' | 'upcoming' | 'completed' | 'live'>('today');
   const [profile, setProfile] = useState<any>(null);
   const [userPreds, setUserPreds] = useState<any>({});
   const [todayFormatted, setTodayFormatted] = useState<string>('June 16, 2026');
@@ -107,6 +107,43 @@ export default function WorldCupHub() {
     fetchTournamentData();
   }, []);
 
+  const getMatchStatus = (match: Match) => {
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
+    const timeDiff = new Date().getTime() - kickoff.getTime();
+    if (match.finished === 'TRUE' || timeDiff >= 2 * 60 * 60 * 1000) {
+      return 'COMPLETED';
+    } else if (timeDiff >= 0) {
+      return 'LIVE';
+    } else {
+      return 'UPCOMING';
+    }
+  };
+
+  // Filter to Round of 32 matches only for the schedule
+  const filteredMatches = matches.filter(match => {
+    if (match.type !== 'r32') return false;
+    const status = getMatchStatus(match);
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
+    
+    if (scheduleFilter === 'completed') {
+      return status === 'COMPLETED';
+    } else if (scheduleFilter === 'live') {
+      return status === 'LIVE';
+    } else if (scheduleFilter === 'today') {
+      return isSameUTCDate(kickoff, new Date());
+    } else {
+      // Upcoming: not today, not finished
+      return kickoff.getTime() > new Date().getTime() && !isSameUTCDate(kickoff, new Date());
+    }
+  }).sort((a, b) => parseLocalDate(a.local_date, a.stadium_id).getTime() - parseLocalDate(b.local_date, b.stadium_id).getTime());
+
+  // Auto-switch filter from 'today' to 'upcoming' if no matches today
+  useEffect(() => {
+    if (!loading && scheduleFilter === 'today' && filteredMatches.length === 0) {
+      setScheduleFilter('upcoming');
+    }
+  }, [loading, filteredMatches.length, scheduleFilter]);
+
   if (error) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center pt-[52px]">
@@ -129,27 +166,19 @@ export default function WorldCupHub() {
     );
   }
 
-  // Get match status relative to real current time
-  const getMatchStatus = (match: Match) => {
-    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-    const timeDiff = new Date().getTime() - kickoff.getTime();
-    
-    if (timeDiff >= 2 * 60 * 60 * 1000) {
-      return 'COMPLETED';
-    } else if (timeDiff >= 0) {
-      return 'LIVE';
-    } else {
-      return 'UPCOMING';
-    }
-  };
 
-  // Helper to resolve scores (either from prediction cache, actual deterministic values, or raw data)
+  // Resolve match score — prefer real API scores, fall back to deterministic
   const getResolvedScore = (match: Match, team: 'home' | 'away') => {
     const status = getMatchStatus(match);
     if (status === 'COMPLETED' || status === 'LIVE') {
-      const homeTeam = teams.find(t => t.id === match.home_team_id)?.name_en || (match as any).home_team_label || 'Home';
-      const awayTeam = teams.find(t => t.id === match.away_team_id)?.name_en || (match as any).away_team_label || 'Away';
-      const result = getDeterministicMatchResult(match.id, homeTeam, awayTeam, match);
+      // Use real API scores if available
+      if (match.home_score !== '' && match.home_score !== null && match.home_score !== undefined) {
+        return team === 'home' ? match.home_score : match.away_score;
+      }
+      // Fall back to deterministic result
+      const homeTeamName = teams.find(t => t.id === match.home_team_id)?.name_en || (match as any).home_team_label || 'Home';
+      const awayTeamName = teams.find(t => t.id === match.away_team_id)?.name_en || (match as any).away_team_label || 'Away';
+      const result = getDeterministicMatchResult(match.id, homeTeamName, awayTeamName, match);
       return team === 'home' ? result.homeScore : result.awayScore;
     }
     return '-';
@@ -233,22 +262,6 @@ export default function WorldCupHub() {
     });
   };
 
-  // Filter matches for schedule tabs
-  const filteredMatches = matches.filter(match => {
-    const status = getMatchStatus(match);
-    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-    
-    if (scheduleFilter === 'completed') {
-      return status === 'COMPLETED';
-    } else if (scheduleFilter === 'live') {
-      return status === 'LIVE';
-    } else if (scheduleFilter === 'today') {
-      return isSameUTCDate(kickoff, new Date()) && status !== 'COMPLETED';
-    } else {
-      // Upcoming
-      return kickoff.getTime() > new Date().getTime() && !isSameUTCDate(kickoff, new Date());
-    }
-  }).sort((a, b) => parseLocalDate(a.local_date, a.stadium_id).getTime() - parseLocalDate(b.local_date, b.stadium_id).getTime());
 
   return (
     <div className="relative min-h-screen bg-background text-foreground pb-16 overflow-hidden pt-[52px]">
@@ -274,7 +287,7 @@ export default function WorldCupHub() {
           src="/images/world_cup_hub_bg.webp" 
           alt="World Cup Hub Background" 
           fill 
-          className="object-cover opacity-[0.38] object-center scale-102" 
+          className="object-cover opacity-[0.62] object-center scale-102" 
           priority 
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#030712]/45 to-background" />
@@ -347,7 +360,7 @@ export default function WorldCupHub() {
             {/* Section 2: Fixture Sub-Filters (only active on Schedule tab) */}
             {activeTab === 'schedule' && (
               <div className="space-y-2 border-t border-white/5 pt-4">
-                <span className="block text-[11px] font-black text-zinc-400 uppercase tracking-[0.2em] px-1">Filter Fixtures</span>
+                <span className="block text-[11px] font-black text-zinc-400 uppercase tracking-[0.2em] px-1">Round of 32</span>
                 <div className="flex flex-col space-y-1.5">
                   {[
                     { id: 'today', label: todayLabel },
@@ -445,7 +458,7 @@ export default function WorldCupHub() {
                           {/* Match Header metadata */}
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-[9px] font-black uppercase tracking-wider text-[#E11D48] font-mono">
-                              Group {match.group} • Match {match.id}
+                              Round of 32 • Match {match.id}
                             </span>
                             
                             {/* Status Badge */}

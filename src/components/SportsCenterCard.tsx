@@ -25,17 +25,9 @@ function get4Metrics(data: VerdictData): [
 }
 
 /* ——— Rarity colour tokens ——— */
-function rarityTokens(rarity: string, isPredicted: boolean) {
-  if (!isPredicted) {
-    return {
-      glow: '#4B5563',
-      border: 'url(#vcard-locked-grad)',
-      bg: 'from-[#111827] via-[#0F172A] to-[#030712]',
-      text: 'text-gray-400'
-    };
-  }
+function rarityTokens(rarity: string) {
   switch (rarity) {
-    case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-toty-grad)',   bg: 'from-[#00112A] via-[#020713] to-[#000205]', text: 'text-amber-400' };
+    case 'LEGENDARY': return { glow: '#F59E0B', border: 'url(#vcard-toty-grad)',   bg: 'from-[#1A0E00] via-[#0D0700] to-[#060300]', text: 'text-amber-400' };
     case 'EPIC':      return { glow: '#A855F7', border: 'url(#vcard-purple-grad)', bg: 'from-[#12021C] via-[#06020C] to-[#020308]', text: 'text-purple-400' };
     case 'RARE':      return { glow: '#3B82F6', border: 'url(#vcard-blue-grad)',   bg: 'from-[#020B1C] via-[#02040C] to-[#020308]', text: 'text-blue-400' };
     default:          return { glow: '#E11D48', border: 'url(#vcard-rose-grad)',   bg: 'from-[#1A0308] via-[#080208] to-[#020308]', text: 'text-rose-400' };
@@ -54,8 +46,8 @@ export default function SportsCenterCard({
 
   const isPredicted = data.isPredicted !== false; // defaults to true for backward compatibility
   const ovr = data.ovr || 50;
-  const rarity = isPredicted ? (data.rarity || 'COMMON') : 'LOCKED';
-  const tok = rarityTokens(rarity, isPredicted);
+  const rarity = data.rarity || 'COMMON';
+  const tok = rarityTokens(rarity);
 
   const avatarStyle = (data as any).avatarStyle || 'fun-emoji';
   const avatarSeed = (data as any).avatarSeed || data.playerName || 'Tactician';
@@ -72,7 +64,7 @@ export default function SportsCenterCard({
   const awayShort = awayFifaCode || titleParts[1]?.trim().slice(0, 3).toUpperCase() || 'AWY';
 
   const score: string | undefined = data.matchScore;
-  const verdictLabel = isPredicted ? (data.verdict || 'KNOWS BALL').toUpperCase() : 'NO PREDICTION';
+  const verdictLabel = (data.verdict || 'KNOWS BALL').toUpperCase();
 
   if (isVerdictCard) {
     const glow = tok.glow;
@@ -96,10 +88,11 @@ export default function SportsCenterCard({
             </linearGradient>
             <linearGradient id="vcard-toty-grad" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
               <stop offset="0%"   stopColor="#FFFBEB"/>
-              <stop offset="25%"  stopColor="#D4AF37"/>
-              <stop offset="55%"  stopColor="#0E3060"/>
-              <stop offset="85%"  stopColor="#2563EB"/>
-              <stop offset="100%" stopColor="#D97706"/>
+              <stop offset="20%"  stopColor="#FDE68A"/>
+              <stop offset="45%"  stopColor="#F59E0B"/>
+              <stop offset="70%"  stopColor="#D97706"/>
+              <stop offset="85%"  stopColor="#92400E"/>
+              <stop offset="100%" stopColor="#451A00"/>
             </linearGradient>
             <linearGradient id="vcard-purple-grad" x1="0" y1="0" x2="340" y2="480" gradientUnits="userSpaceOnUse">
               <stop offset="0%"   stopColor="#F3E8FF"/><stop offset="35%" stopColor="#A855F7"/><stop offset="70%" stopColor="#7C3AED"/><stop offset="100%" stopColor="#3B0764"/>
@@ -114,7 +107,7 @@ export default function SportsCenterCard({
               <stop offset="0%"   stopColor="#9CA3AF"/><stop offset="50%" stopColor="#4B5563"/><stop offset="100%" stopColor="#1F2937"/>
             </linearGradient>
             <filter id="vcard-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity="0.75"/>
+              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor={glow} floodOpacity={isPredicted ? "0.75" : "0.22"}/>
             </filter>
             <clipPath id="vcard-shield-clip">
               <path d="M 16,40 C 16,40 42,8 94,8 L 170,4 L 246,8 C 298,8 324,40 324,40 L 332,360 C 332,390 278,444 170,476 C 62,444 8,390 8,360 Z" />
@@ -125,6 +118,7 @@ export default function SportsCenterCard({
           <path
             d="M 16,40 C 16,40 42,8 94,8 L 170,4 L 246,8 C 298,8 324,40 324,40 L 332,360 C 332,390 278,444 170,476 C 62,444 8,390 8,360 Z"
             stroke={tok.border} strokeWidth="4" fill="none" filter="url(#vcard-glow)"
+            opacity={isPredicted ? 1 : 0.65}
           />
           {/* Inner whisker */}
           <path
@@ -144,7 +138,7 @@ export default function SportsCenterCard({
 
         {/* ── Background fill (clipped to shield) ── */}
         <div
-          className="absolute inset-0 overflow-hidden"
+          className={`absolute inset-0 overflow-hidden ${!isPredicted ? 'saturate-[0.65] opacity-75' : ''}`}
           style={{ clipPath: 'url(#vcard-shield-clip)' }}
         >
           {data.aiImageUrl ? (
@@ -177,7 +171,7 @@ export default function SportsCenterCard({
             className="block text-white leading-none font-black text-[44px]"
             style={{ fontFamily: "'Oswald', sans-serif", textShadow: '0 4px 10px rgba(0,0,0,0.9)' }}
           >
-            {isPredicted ? ovr : '--'}
+            {ovr}
           </span>
           <span className="block text-center font-black text-[10px] tracking-[0.2em] uppercase mt-0.5" style={{ color: glow }}>
             VAR
@@ -196,7 +190,7 @@ export default function SportsCenterCard({
           >
             <div className="w-1.5 h-1.5 rounded-full" style={{ background: glow, boxShadow: `0 0 6px ${glow}` }} />
             <span className="font-black uppercase text-[8px] tracking-[0.25em]" style={{ color: glow }}>
-              {rarity}
+              {!isPredicted ? `LOCKED ${rarity}` : rarity}
             </span>
           </div>
         </div>
@@ -207,7 +201,7 @@ export default function SportsCenterCard({
             className="flex items-center justify-center rounded-full w-8 h-8"
             style={{ background: 'rgba(2,4,16,0.94)', border: `1px solid ${glow}55`, boxShadow: '0 3px 10px rgba(0,0,0,0.8)' }}
           >
-            <span className="text-[14px] leading-none">{isPredicted ? (data.countryFlag || '🌍') : '🔒'}</span>
+            <span className="text-[14px] leading-none">{data.countryFlag || '🌍'}</span>
           </div>
         </div>
 
@@ -227,14 +221,19 @@ export default function SportsCenterCard({
                 background: `radial-gradient(circle, ${glow}20, rgba(0,0,0,0.95))`,
               }}
             >
-              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.8)' }}>
-                {isPredicted ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatarUrl} alt="Manager" className="w-full h-full object-cover" />
-                ) : (
-                  <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v-6.75a2.25 2.25 0 002.25-2.25z"></path>
-                  </svg>
+              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center relative" style={{ border: `2.5px solid ${glow}60`, background: 'rgba(0,0,0,0.8)' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={avatarUrl} 
+                  alt="Manager" 
+                  className={`w-full h-full object-cover ${!isPredicted ? 'opacity-30 grayscale' : ''}`} 
+                />
+                {!isPredicted && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/45 z-10">
+                    <svg className="w-8 h-8 text-white/80 drop-shadow-[0 2px 8px rgba(0,0,0,0.8)]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v-6.75a2.25 2.25 0 002.25-2.25z"></path>
+                    </svg>
+                  </div>
                 )}
               </div>
             </div>
@@ -314,7 +313,7 @@ export default function SportsCenterCard({
                   className="text-[18px] font-black text-white leading-none mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
                   style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
                 >
-                  {isPredicted ? m.val : '--'}
+                  {m.val}
                 </span>
               </div>
             ))}

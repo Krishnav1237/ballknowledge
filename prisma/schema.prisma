@@ -26,6 +26,7 @@ model FootballIQProfile {
   season           String            @default("World Cup 2026")
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  passwordHash     String?
   predictions      MatchPrediction[]
   matchCards       MatchCard[]
   chatMessages     ChatMessage[]
@@ -72,6 +73,7 @@ model ChatMessage {
   createdAt   DateTime          @default(now())
 
   @@index([profileId, matchId])
+  @@index([matchId, createdAt])
 }
 
 model MatchCard {

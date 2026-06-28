@@ -19,9 +19,9 @@ BallKnowledge is a premium World Cup 2026 prediction and debate platform. Fans l
 Locker Room → World Cup Hub → Match Room → VAR Tribunal → Verdict Card → My Card → Share
 ```
 
-1. **Locker Room** (`/profile`) — Manage manager profile settings in a widescreen 3-column cockpit (Identity, FUT Card Spotlight, Telemetry & Operations)
+1. **Locker Room** (`/profile`) — Manage manager profile settings in a widescreen 3-column cockpit (Identity, FUT Card Spotlight, Telemetry & Operations) with secure credentials authentication.
 2. **World Cup Hub** (`/world-cup-hub`) — Browse all 104 fixtures across Groups A–L with live standings
-3. **Match Room** (`/match/[id]`) — Before kickoff: lock score prediction, MOTM, goalscorer, hot takes, and Best XI squad. Once the match starts, a live banter chat opens
+3. **Match Room** (`/match/[id]`) — Before kickoff: lock score prediction, MOTM, goalscorer, hot takes, and Best XI squad. Once the match starts, a shared database live banter chat opens.
 4. **VAR Tribunal** — After a match completes, the AI grades your hot takes and checks your score prediction against actual results
 5. **Verdict Card** — A custom FIFA-style collectible card is generated based on your performance score
 6. **My Card** (`/football-iq`) — View your Football IQ card and collected card album
@@ -36,7 +36,7 @@ Locker Room → World Cup Hub → Match Room → VAR Tribunal → Verdict Card �
 | Framework | Next.js 16.2.9 (App Router, Turbopack) |
 | Language | TypeScript, React 19 |
 | Database | PostgreSQL via Prisma Client v6 |
-| State | localStorage-first with optional DB sync |
+| State | localStorage-first with secure credentials login & database-backed live chat |
 | AI | OpenRouter → Groq → Nvidia NIM → Deterministic fallback |
 | Styling | Tailwind CSS v4, Dark Glassmorphism, custom CSS |
 | Animation | Framer Motion, GSAP + ScrollTrigger, Lenis |
@@ -185,11 +185,13 @@ src/
 │       ├── profile/[username]/   # GET public profile
 │       ├── card/[id]/            # GET shared card data
 │       ├── leaderboard/          # GET ranked leaderboard entries
+│       ├── auth/                 # POST: Secure manager sign-in/sign-up
+│       ├── chat/[matchId]/       # GET/POST: Database-backed room banter chat
 │       └── stats/                # GET community counter stats
 ├── components/
 │   ├── TacticalPitch.tsx         # Interactive 4-3-3 squad builder grid
 │   ├── PredictionModal.tsx       # Predictions + hot takes form
-│   ├── MatchLiveChat.tsx         # localStorage banter chat (live matches)
+│   ├── MatchLiveChat.tsx         # Database-backed banter chat (live matches)
 │   ├── SportsCenterCard.tsx      # FIFA-style card renderer (canvas + SVG)
 │   ├── FlagImage.tsx             # flagcdn.com flag images w/ emoji fallback
 │   ├── Navbar.tsx                # Solid top header (bg-[#0B0F19], no transparency)

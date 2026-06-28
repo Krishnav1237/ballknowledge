@@ -163,12 +163,18 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     const initialSlot = getFirstActiveSlot((matchPred?.lineup || {}) as Record<string, Player>);
     setSelectedSlot(initialSlot);
 
-    // Auto-open predictions/hot takes modal on page load if predictions are not locked
+    // Auto-open predictions/hot takes modal on page load if predictions are not locked and the match is upcoming
     const isLocked = matchPred && matchPred.locked;
-    if (!isLocked) {
+    let isUpcoming = true;
+    if (match) {
+      const kickoff = parseLocalDate(match.local_date, match.stadium_id);
+      const timeDiff = new Date().getTime() - kickoff.getTime();
+      isUpcoming = timeDiff < 0;
+    }
+    if (!isLocked && !(matchPred?.resolved) && isUpcoming) {
       setShowPredictionModal(true);
     }
-  }, [matchId]);
+  }, [matchId, match]);
 
   if (error) {
     return (
@@ -193,11 +199,11 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_label || 'Home', flag: '', groups: 'A' };
   const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_label || 'Away', flag: '', groups: 'A' };
 
-  // Determine Match Status using real current time
+  // Determine Match Status using real current time + finished flag
   const kickoff = parseLocalDate(match.local_date, match.stadium_id);
   const timeDiff = new Date().getTime() - kickoff.getTime();
   let status: 'UPCOMING' | 'LIVE' | 'COMPLETED' = 'UPCOMING';
-  if (timeDiff >= 2 * 60 * 60 * 1000) {
+  if (match.finished === 'TRUE' || timeDiff >= 2 * 60 * 60 * 1000) {
     status = 'COMPLETED';
   } else if (timeDiff >= 0) {
     status = 'LIVE';
@@ -465,7 +471,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           src="/images/match_details_bg.webp" 
           alt="Match Dugout Background" 
           fill 
-          className="object-cover opacity-[0.25] object-center scale-102" 
+          className="object-cover opacity-[0.52] object-center scale-102" 
           priority 
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-background/20 to-background" />
@@ -752,10 +758,17 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   <div className="font-display font-black text-4xl lg:text-5xl leading-none tracking-wider">
                     {status === 'UPCOMING'
                       ? <span className="text-gray-500">- : -</span>
-                      : <span className="text-white">{match.home_score} : {match.away_score}</span>}
+                      : <span className="text-white">
+                          {match.home_score !== '' && match.home_score !== null && match.home_score !== undefined
+                            ? `${match.home_score} : ${match.away_score}`
+                            : '- : -'
+                          }
+                        </span>}
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{match.group} · {match.matchday}</span>
+                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                      {match.type === 'r32' ? 'Round of 32' : match.type === 'r16' ? 'Round of 16' : match.type === 'qf' ? 'Quarter Final' : match.type === 'sf' ? 'Semi Final' : match.type === 'final' ? 'FINAL' : `Group ${match.group}`}
+                    </span>
                     <span className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${
                       status === 'LIVE' ? 'text-red-400 bg-red-950/20 border-red-900/30'
                       : status === 'COMPLETED' ? 'text-gray-400 bg-black/30 border-white/10'
