@@ -368,10 +368,9 @@ export default function SportsCenterCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover"/>
         ) : (
-          <div className="relative w-full h-full p-6 flex flex-col justify-between text-white bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]">
-            <div className="h-20"/>
-            <div className="flex-1 flex flex-col items-center justify-center z-10 relative my-auto text-center w-full px-2">
-              <div className="w-14 h-14 rounded-full border-2 border-amber-400/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0 mb-1.5">
+          <div className="relative w-full h-full p-6 flex flex-col justify-end text-white bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]">
+            <div className="flex flex-col items-center justify-end z-10 relative text-center w-full px-2 pb-[114px]">
+              <div className="w-14 h-14 rounded-full border-2 border-amber-400/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0 mb-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full"/>
               </div>
@@ -383,7 +382,6 @@ export default function SportsCenterCard({
                 👑 {data.verdict || 'KNOWS BALL'}
               </span>
             </div>
-            <div className="h-20"/>
           </div>
         )}
 
