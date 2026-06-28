@@ -112,7 +112,7 @@ export async function POST(request: Request) {
           prompt,
           n: 1,
           aspect_ratio: '3:4',
-          input_references: faceImage ? [faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`] : []
+          input_references: faceImage ? [{ url: faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}` }] : []
         }),
         signal: AbortSignal.timeout(25_000),
       });
