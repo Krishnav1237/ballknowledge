@@ -83,8 +83,10 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         pixelRatio: 3,
         // Transparent background — the card SVG frame clips everything cleanly
         backgroundColor: 'transparent',
-        // Ensure all elements are fully rendered before capture
-        skipFonts: false,
+        // MUST be true: html-to-image tries to re-fetch Google Fonts CSS which fails
+        // with CORS / network errors in production. Fonts already loaded by the browser
+        // still render correctly in the canvas output.
+        skipFonts: true,
       });
 
       // Restore original transform

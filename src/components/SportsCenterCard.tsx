@@ -391,10 +391,26 @@ export default function SportsCenterCard({
         )}
 
         {/* Username and Verdict Pill just above the stats panel */}
-        <div className="absolute bottom-[124px] left-0 right-0 flex flex-col items-center z-40 text-center w-full px-2 pointer-events-none">
+        <div className="absolute bottom-[124px] left-0 right-0 flex flex-col items-center z-40 text-center w-full px-3 pointer-events-none">
           <h2
-            className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
-            style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+            className="font-bold tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] w-full text-center"
+            style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontWeight: 900,
+              fontSize:
+                (data.playerName || 'MANAGER').length > 18
+                  ? '13px'
+                  : (data.playerName || 'MANAGER').length > 14
+                  ? '16px'
+                  : (data.playerName || 'MANAGER').length > 11
+                  ? '19px'
+                  : (data.playerName || 'MANAGER').length > 8
+                  ? '22px'
+                  : '26px',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+              lineHeight: 1.1,
+            }}
           >
             {data.playerName || 'MANAGER'}
           </h2>

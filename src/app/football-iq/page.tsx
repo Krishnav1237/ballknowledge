@@ -176,7 +176,8 @@ export default function FootballIQPage() {
         height: 480,
         pixelRatio: 3,
         backgroundColor: 'transparent',
-        skipFonts: false,
+        // Prevents cross-origin CSS fetch error for Google Fonts in production
+        skipFonts: true,
       });
 
       captureTarget.style.transform = prevTransform;
