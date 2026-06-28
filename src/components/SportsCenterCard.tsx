@@ -373,8 +373,23 @@ export default function SportsCenterCard({
         {data.aiImageUrl ? (
           <div className="relative w-full h-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }}/>
-            {/* Readability shadow gradients */}
+            {/* Image starts at y=72px — below the BallKnowledge badge (~46px top + 26px height)
+                and the shield top notch, so the face is centered in the usable card area.
+                The dark card bg (#050A12) fills the 72px gap behind the badge overlay. */}
+            <img
+              src={data.aiImageUrl}
+              alt="AI FIFA Card"
+              style={{
+                position: 'absolute',
+                top: '72px',
+                left: 0,
+                width: '100%',
+                height: 'calc(100% - 72px)',
+                objectFit: 'cover',
+                objectPosition: 'center top',
+              }}
+            />
+            {/* Readability shadow gradients — cover the full card (not just image area) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none z-10" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none z-10" />
           </div>
