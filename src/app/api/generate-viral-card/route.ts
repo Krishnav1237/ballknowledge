@@ -17,7 +17,23 @@ function buildCompleteFifacardPrompt(params: {
   verdict?: string;
   playerPosition?: string;
 }) {
-  const { nation } = params;
+  const { nation, ovr } = params;
+
+  // Determine rarity background color scheme
+  let rarityBackgroundDesc = '';
+  if (ovr >= 90) {
+    // Legendary / TOTY
+    rarityBackgroundDesc = "A prestigious, luminous gold and deep royal blue abstract background, featuring glowing concentric gold tracks, floating sapphire crystals, and dynamic golden spotlight beams.";
+  } else if (ovr >= 75) {
+    // Epic / Purple
+    rarityBackgroundDesc = "A mysterious, high-contrast dark indigo and glowing violet-neon background, featuring abstract geometric energy rings and deep purple stellar dust.";
+  } else if (ovr >= 60) {
+    // Rare / Blue
+    rarityBackgroundDesc = "A modern, high-tech dark carbon and electric cyan-blue background, featuring neon digital grid tracks, glowing light bands, and cybernetic patterns.";
+  } else {
+    // Common / Rose
+    rarityBackgroundDesc = "A sleek, clean dark gray and crimson-rose textured background, featuring soft ruby-red light leaks, abstract dark brushstrokes, and minimal spotlight beams.";
+  }
 
   return (
     `A premium, ultra-high-fidelity, photorealistic EA Sports FC TOTY style player card portrait of a professional soccer player. ` +
@@ -25,7 +41,7 @@ function buildCompleteFifacardPrompt(params: {
     `The face from the input reference image must be flawlessly and seamlessly blended onto the athlete's body, maintaining the person's exact facial structure, glasses, hair color, and features, with realistic skin textures, sharp focus, and dramatic cinematic lighting. ` +
     `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric creases, stitching, and logos clearly visible. ` +
     `Lighting: Professional studio lighting with a striking gold rim light tracing his profile, high-contrast shadows, and reflections in his eyes. ` +
-    `Background: An abstract, premium, high-end commercial card background featuring midnight-blue geometric patterns, glowing concentric gold bands, and abstract sapphire-blue elements. ` +
+    `Background: ${rarityBackgroundDesc} ` +
     `CRITICAL: The output must contain ONLY the player's upper-body and the abstract background. Do NOT generate any borders, card frames, text overlays, rating numbers, flags, circular crops, or user interface elements. The portrait must be clean and fill the entire 3:4 canvas.`
   );
 }
