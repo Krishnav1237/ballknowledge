@@ -365,7 +365,7 @@ export default function ProfileSettingsPage() {
     clubName: favoriteClub || 'VAR FC',
     avatarStyle: avatarStyle,
     avatarSeed: avatarSeed,
-    aiImageUrl: avatarSeed.startsWith('http') ? avatarSeed : undefined,
+    aiImageUrl: (avatarSeed.startsWith('http') || avatarSeed.startsWith('data:image')) ? avatarSeed : undefined,
     stats: [
       { label: 'PRD', name: 'Prediction', val: profile.predictionRating },
       { label: 'MGR', name: 'Manager Score', val: profile.managerRating },

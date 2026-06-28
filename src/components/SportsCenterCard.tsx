@@ -377,21 +377,21 @@ export default function SportsCenterCard({
                 <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full" />
               </div>
             </div>
-
-            {/* Username and Verdict Pill just above the stats panel */}
-            <div className="absolute bottom-[124px] left-0 right-0 flex flex-col items-center z-10 text-center w-full px-2 pointer-events-none">
-              <h2
-                className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
-                style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
-              >
-                {data.playerName || 'MANAGER'}
-              </h2>
-              <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md backdrop-blur-sm text-amber-300 bg-amber-400/15 border border-amber-400/40">
-                👑 {data.verdict || 'KNOWS BALL'}
-              </span>
-            </div>
           </div>
         )}
+
+        {/* Username and Verdict Pill just above the stats panel */}
+        <div className="absolute bottom-[124px] left-0 right-0 flex flex-col items-center z-40 text-center w-full px-2 pointer-events-none">
+          <h2
+            className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
+            style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+          >
+            {data.playerName || 'MANAGER'}
+          </h2>
+          <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md backdrop-blur-sm text-amber-300 bg-amber-400/15 border border-amber-400/40">
+            👑 {data.verdict || 'KNOWS BALL'}
+          </span>
+        </div>
 
         {/* OVR */}
         <div className="absolute top-[44px] left-[26px] z-40 flex flex-col items-center pointer-events-none">

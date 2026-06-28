@@ -654,7 +654,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           playerPosition: 'MGR',
                           avatarStyle: profile.avatarStyle,
                           avatarSeed: profile.avatarSeed,
-                          aiImageUrl: profile.avatarSeed.startsWith('http') ? profile.avatarSeed : undefined
+                          aiImageUrl: (profile.avatarSeed.startsWith('http') || profile.avatarSeed.startsWith('data:image')) ? profile.avatarSeed : undefined
                         }} />
                       )}
                     </div>
