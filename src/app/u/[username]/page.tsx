@@ -486,13 +486,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                   </button>
                 </div>
 
-                <div className="flex flex-col items-center justify-center w-full relative z-20 h-[385px] my-1">
+                <div className="flex flex-col items-center justify-center w-full relative z-20 h-[430px] my-2">
                   <div ref={cardPedestalRef} className="relative flex justify-center items-center h-full w-full">
                     <div 
                       onMouseMove={handlePedestalMouseMove}
                       onMouseLeave={handlePedestalMouseLeave}
                       style={pedestalTiltStyle}
-                      className="relative card-3d-tilt origin-center scale-[0.70] min-[380px]:scale-[0.74] sm:scale-[0.76] lg:scale-[0.72] xl:scale-[0.78]"
+                      className="relative card-3d-tilt origin-center scale-[0.78] min-[380px]:scale-[0.82] sm:scale-[0.84] lg:scale-[0.80] xl:scale-[0.86]"
                     >
                       {activeRightTab === 'verdict' && activeVerdictCard ? (
                         <SportsCenterCard data={{
