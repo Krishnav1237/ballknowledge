@@ -19,41 +19,44 @@ function buildCompleteFifacardPrompt(params: {
 }) {
   const { nation } = params;
 
+  // IMPORTANT: Do NOT describe the face, hair, skin, eyes, or any physical features
+  // in this prompt. The reference image is the SOLE identity source for the subject.
+  // Any face description in text OVERRIDES the reference and causes hallucination.
   return (
-    // ── CORE TASK ─────────────────────────────────────────────────────────────
-    `A premium photorealistic sports trading card portrait in the style of EA Sports FC. ` +
-    `The subject is the person shown in the reference image — reproduce their face accurately: ` +
-    `same skin tone, same eye shape, same nose, same jawline, same hair, same thin ` +
-    `transparent-framed glasses. Clean-shaven with zero facial hair. ` +
+    // ── TASK: tell the model what to DO, not who the person IS ────────────────
+    `Transform the reference image into a premium EA Sports FC trading card portrait. ` +
+    `Use the face from the reference image exactly as-is — same face, same features, ` +
+    `same expression — just place the person in a new setting as described below. ` +
 
     // ── FRAMING ───────────────────────────────────────────────────────────────
-    `Shot type: Natural medium portrait, waist-up. The head fills roughly 35–40% of the ` +
-    `canvas height, positioned in the upper-center area. The body is turned at a slight ` +
-    `three-quarter angle — dynamic but relaxed, like a professional headshot for a ` +
-    `football club media day. Jersey clearly visible from collar to waist. ` +
+    `Framing: Waist-up medium portrait shot. Head in the upper-center of the frame, ` +
+    `filling about 35–40% of the canvas height. Slight three-quarter body turn ` +
+    `for a dynamic sports-card look. Jersey fully visible from collar to waist. ` +
 
-    // ── CLOTHING ──────────────────────────────────────────────────────────────
-    `Clothing: The official ${nation} national football team kit — clean fabric with realistic ` +
-    `weave texture, team badge on chest, visible collar and sleeve details. ` +
+    // ── CLOTHING: this is the ONLY thing being changed from the reference ──────
+    `Change clothing only: dress the subject in the official ${nation} national football ` +
+    `team jersey. The jersey should have realistic fabric texture, visible team badge, ` +
+    `collar, and sleeve details. Keep everything above the neckline identical to the reference. ` +
 
     // ── LIGHTING ──────────────────────────────────────────────────────────────
-    `Lighting: Cinematic studio lighting. Strong warm key light from the front-left that ` +
-    `illuminates the face and jersey brightly. Subtle golden rim light on the shoulders ` +
-    `and hair. The lighting should make the subject look premium and vibrant, not flat or dark. ` +
+    `Lighting: Professional three-point studio lighting — bright warm key light ` +
+    `from front-left, soft fill from right, subtle warm gold rim light on shoulders and hair. ` +
+    `Face and jersey both well-lit, vibrant, not dark or moody. ` +
 
     // ── BACKGROUND ────────────────────────────────────────────────────────────
-    `Background: A rich deep dark navy-to-black radial gradient with a warm amber-gold ` +
-    `spotlight glow centered behind the subject. The background should complement a gold ` +
-    `card border — atmospheric, premium, and non-distracting. No patterns, no particles, ` +
-    `no text. ` +
+    `Background: Dark navy-to-black radial gradient with a warm amber-gold spotlight ` +
+    `glow behind the subject. Minimal and atmospheric — no patterns, no particles, no text. ` +
 
     // ── STYLE ─────────────────────────────────────────────────────────────────
-    `Style: Photorealistic — the output must look like a real studio photo, not a digital ` +
-    `illustration or game asset. Realistic skin, sharp fabric detail, natural expressions. ` +
+    `Photorealistic output — looks like a real professional sports photograph, ` +
+    `not an illustration or CGI render. Accurate skin texture, natural lighting, sharp details. ` +
 
-    // ── CONSTRAINTS ───────────────────────────────────────────────────────────
-    `Do NOT include card borders, rating numbers, text, flags, watermarks, UI overlays, ` +
-    `or any design elements. Clean portrait filling the full canvas, edge to edge.`
+    // ── HARD CONSTRAINTS ──────────────────────────────────────────────────────
+    `IMPORTANT: Do NOT change the person's face, skin tone, hair, or any facial feature. ` +
+    `Do NOT add glasses if they are not in the reference. ` +
+    `Do NOT add facial hair if not in the reference. ` +
+    `Do NOT change ethnicity or skin tone. ` +
+    `No card frames, no text, no UI elements, no flags, no ratings.`
   );
 }
 
