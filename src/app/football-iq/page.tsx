@@ -464,13 +464,13 @@ export default function FootballIQPage() {
                   </button>
                 </div>
 
-                <div className="flex flex-col items-center justify-center w-full relative z-20 flex-grow py-0 my-0">
-                  <div ref={cardPedestalRef} className="relative flex justify-center items-center">
+                <div className="flex flex-col items-center justify-center w-full relative z-20 h-[385px] my-1">
+                  <div ref={cardPedestalRef} className="relative flex justify-center items-center h-full w-full">
                     <div 
                       onMouseMove={handlePedestalMouseMove}
                       onMouseLeave={handlePedestalMouseLeave}
                       style={pedestalTiltStyle}
-                      className="relative card-3d-tilt origin-center scale-[0.76] sm:scale-[0.80] lg:scale-[0.80] xl:scale-[0.84]"
+                      className="relative card-3d-tilt origin-center scale-[0.70] min-[380px]:scale-[0.74] sm:scale-[0.76] lg:scale-[0.72] xl:scale-[0.78]"
                     >
                       {activeRightTab === 'verdict' && activeVerdictCard ? (
                         <SportsCenterCard data={{
