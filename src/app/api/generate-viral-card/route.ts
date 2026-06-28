@@ -20,12 +20,11 @@ function buildCompleteFifacardPrompt(params: {
   const { nation } = params;
 
   return (
-    `Extremely high-quality, photorealistic portrait of a professional football player, upper-body view, wearing the official custom ${nation} national team jersey/kit in a heroic pose. ` +
-    `The player's face should be clearly visible, center frame, realistic skin, matching lighting, with the jersey collar and logo fully visible. ` +
-    `The face must be seamlessly and realistically immersed into the athlete's body and jersey collar with no obvious paste-over. ` +
-    `Background: Deep midnight sapphire blue textured background with 3D metallic gold swirling rings, glowing blue sapphire crystals, and dynamic stadium spotlights taking up the entire card space. ` +
-    `The entire composition should have a clean space on the top-left, center-top, and lower third for card statistics overlays, in the style of EA Sports FC TOTY trading cards. ` +
-    `Cinematic lighting, high-contrast, commercial EA Sports FC TOTY trading card background, masterpiece, ultra-detailed 8k render.`
+    `Photorealistic, high-fidelity upper-body portrait of a professional soccer/football player, wearing the official ${nation} national team kit/jersey. ` +
+    `The face from the input reference image must be seamlessly and realistically integrated onto the player's head and neck with natural skin tones and matching lighting. ` +
+    `The player is standing in a confident, heroic stance. The jersey collar, fabric texture, and details are clean and sharp. ` +
+    `Background: A dark, premium, atmospheric stadium background with subtle glowing spotlights, gold energy swirls, and high-contrast sapphire blue tones. ` +
+    `CRITICAL: The generated image must contain ONLY the player and the background. Do NOT generate any cards, shields, borders, circular crops, text, numbers, badges, stats grids, or user interface overlays. It must be a clean, vertical, uncropped full-bleed portrait.`
   );
 }
 
@@ -113,6 +112,7 @@ export async function POST(request: Request) {
           prompt,
           n: 1,
           aspect_ratio: '3:4',
+          input_references: faceImage ? [faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`] : []
         }),
         signal: AbortSignal.timeout(25_000),
       });
