@@ -368,16 +368,23 @@ export default function SportsCenterCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover"/>
         ) : (
-          <div className="relative w-full h-full p-6 flex flex-col justify-end text-white bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]">
-            <div className="flex flex-col items-center justify-end z-10 relative text-center w-full px-2 pb-[114px]">
-              <div className="w-14 h-14 rounded-full border-2 border-amber-400/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0 mb-2">
+          <div className="relative w-full h-full text-white bg-gradient-to-b from-[#1F1504] via-[#0B0F19] to-[#030712]">
+            {/* Avatar centered in the middle of the card */}
+            <div className="absolute top-[172px] left-0 right-0 flex justify-center z-10 pointer-events-none">
+              <div className="w-[66px] h-[66px] rounded-full border-2 border-amber-400/60 p-0.5 bg-black/60 shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full"/>
+                <img src={avatarUrl} alt="Manager Avatar" className="w-full h-full object-cover rounded-full" />
               </div>
+            </div>
+
+            {/* Username and Verdict Pill just above the stats panel */}
+            <div className="absolute bottom-[124px] left-0 right-0 flex flex-col items-center z-10 text-center w-full px-2 pointer-events-none">
               <h2
                 className="font-bold text-[24px] sm:text-[26px] tracking-widest uppercase leading-none text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)] truncate max-w-[270px]"
-                style={{ fontFamily:"'Oswald',sans-serif", fontWeight:900 }}
-              >{data.playerName || 'MANAGER'}</h2>
+                style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 900 }}
+              >
+                {data.playerName || 'MANAGER'}
+              </h2>
               <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md backdrop-blur-sm text-amber-300 bg-amber-400/15 border border-amber-400/40">
                 👑 {data.verdict || 'KNOWS BALL'}
               </span>
