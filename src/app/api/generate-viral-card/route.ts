@@ -20,16 +20,16 @@ function buildCompleteFifacardPrompt(params: {
   const { nation } = params;
 
   // The card frame itself is always gold and royal blue for the manager card layout.
-  // To blend in perfectly with the gold shield frame and gold borders, we must always generate a matching gold and midnight-blue background.
-  const rarityBackgroundDesc = "A prestigious, luminous gold and vibrant royal blue abstract stadium background, featuring glowing concentric gold tracks, floating shiny sapphire crystals, and powerful golden spotlight beams illuminating the player.";
+  // We use a clean, subtle gold and royal blue background to blend in perfectly with the borders without clashing or clutter.
+  const rarityBackgroundDesc = "A clean, minimal, and elegant dark metallic background with a subtle royal blue wash and soft gold spotlights. The background must be simple and non-cluttered, with NO complex busy textures, NO heavy graphics, and NO massive floating particles.";
 
   return (
     `A premium, ultra-high-fidelity, photorealistic EA Sports FC TOTY style player card portrait of a professional soccer player. ` +
-    `Subject & Pose: Upper-body portrait of the athlete, facing forward directly straight towards the camera in a confident, professional stance. ` +
+    `Subject & Pose: Upper-body action portrait of the athlete. The player's torso is positioned at a subtle, natural angle (three-quarter turn) to give a dynamic and premium sports card look, with their head slightly turned toward the camera. It must NOT look like a flat, straight passport photo. ` +
     `Framing & Shot Type: The camera must be zoomed out to a medium shot or chest-up portrait (do NOT generate a close-up or headshot). The player's head, full neck, shoulders, and chest must be fully visible. There must be significant headroom (empty space) above their head so it doesn't touch the top edge. The player's head must occupy only about 25% of the vertical canvas height, leaving the rest of the canvas to display their jersey clearly down to their mid-chest. ` +
-    `Face Preservation: Strictly swap and replicate the exact face from the input reference image. The face in the generated output must be an identical, 100% exact match of the person in the reference image (a young clean-shaven Asian/Indian male, zero stubble, zero beard, zero mustache). Do NOT stylize, modify, or change the eyes, nose, lips, or jawline. Replicate their clear, transparent-framed glasses exactly as shown in the reference image (thin clear transparent rims, not white or thick). The face must look like a real photo of the person, completely natural, with no cartoonish or generalized features. ` +
+    `Face Preservation: Strictly replicate the face from the input reference image. The face must be seamlessly mapped onto the head at the natural angle, maintaining a 100% exact match of the person in the reference image (a young clean-shaven Asian/Indian male, zero stubble, zero beard, zero mustache, and clear transparent-framed glasses exactly as shown, with thin transparent rims). Preserve all unique facial features, eye shape, nose shape, and mouth shape precisely, with zero alterations or cartoonish distortions. ` +
     `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric textures, collar seams, and logos clearly visible. ` +
-    `Lighting & Visibility: Extremely bright, vivid studio spotlight lighting illuminating the player's face, neck, and jersey from the front and side. Use a striking gold rim light tracing his profile to pop him out of the background. Ensure the face and jersey are fully, brightly lit with no dark face shadows. ` +
+    `Lighting & Visibility: Extremely clean, bright studio spotlight lighting that clearly illuminates both the player's face and the details of their jersey, with a soft gold rim light outline. The lighting must be balanced and even, showing both face and jersey detail vividly. ` +
     `Background: ${rarityBackgroundDesc} ` +
     `CRITICAL: The output must contain ONLY the player's upper-body and the abstract background. Do NOT generate any borders, card frames, text overlays, rating numbers, flags, circular crops, or user interface elements. The portrait must be clean and fill the entire 3:4 canvas.`
   );
