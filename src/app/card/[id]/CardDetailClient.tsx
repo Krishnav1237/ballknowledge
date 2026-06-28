@@ -68,7 +68,28 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
     setDownloading(true);
     showStatus('Preparing high-resolution PNG export...', 'info');
     try {
-      const dataUrl = await toPng(cardNodeRef.current, { cacheBust: true, quality: 0.95 });
+      // Temporarily reset any CSS transforms on the card node so html-to-image
+      // captures the intrinsic 340×480 card at full fidelity without scale distortion.
+      const el = cardNodeRef.current;
+      const prevTransform = el.style.transform;
+      el.style.transform = 'none';
+
+      const dataUrl = await toPng(el, {
+        cacheBust: true,
+        // Exact card intrinsic dimensions — prevents clipping from CSS scale wrappers
+        width: 340,
+        height: 480,
+        // Retina 3× export for premium print/share quality
+        pixelRatio: 3,
+        // Transparent background — the card SVG frame clips everything cleanly
+        backgroundColor: 'transparent',
+        // Ensure all elements are fully rendered before capture
+        skipFonts: false,
+      });
+
+      // Restore original transform
+      el.style.transform = prevTransform;
+
       const link = document.createElement('a');
       const cardTypeLabel = activeTab === 'verdict' ? 'Verdict_Card' : 'Manager_Deck';
       link.download = `${profileState.username.replace(/\s+/g, '_')}_${cardTypeLabel}.png`;

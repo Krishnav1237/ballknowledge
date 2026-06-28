@@ -55,6 +55,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const [downloading, setDownloading] = useState(false);
 
   const cardPedestalRef = useRef<HTMLDivElement>(null);
+  // Separate ref attached directly to the SportsCenterCard root (340×480) for clean PNG export
+  const cardCaptureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchPublicProfile() {
@@ -187,10 +189,26 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   };
 
   const handleDownloadPng = async () => {
-    if (!cardPedestalRef.current) return;
+    // Use the direct card ref (340×480 intrinsic) rather than the scaled pedestal wrapper
+    const captureTarget = cardCaptureRef.current || cardPedestalRef.current;
+    if (!captureTarget) return;
     setDownloading(true);
     try {
-      const dataUrl = await toPng(cardPedestalRef.current, { cacheBust: true, quality: 0.95 });
+      // Temporarily zero out any inline transform so html-to-image captures at true size
+      const prevTransform = captureTarget.style.transform;
+      captureTarget.style.transform = 'none';
+
+      const dataUrl = await toPng(captureTarget, {
+        cacheBust: true,
+        width: 340,
+        height: 480,
+        pixelRatio: 3,
+        backgroundColor: 'transparent',
+        skipFonts: false,
+      });
+
+      captureTarget.style.transform = prevTransform;
+
       const link = document.createElement('a');
       const label = selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Tournament_Deck';
       link.download = `${profile.username.replace(/\s+/g, '_')}_${label}.png`;
@@ -596,7 +614,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                       className="relative card-3d-tilt origin-center scale-[0.82] min-[380px]:scale-[0.84] sm:scale-[0.86] lg:scale-[0.84] xl:scale-[0.88] -my-8 lg:-my-10"
                     >
                       {activeRightTab === 'verdict' && activeVerdictCard ? (
-                        <SportsCenterCard data={{
+                        <SportsCenterCard cardRef={cardCaptureRef} data={{
                           text: activeVerdictCard.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
                           mode: 'take',
                           caseId: 2026,
@@ -630,7 +648,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           isPredicted: activeVerdictCard.isPredicted,
                         }} />
                       ) : (
-                        <SportsCenterCard data={{
+                        <SportsCenterCard cardRef={cardCaptureRef} data={{
                           text: `Loyal supporter of ${profile.favoriteNation || 'Argentina'}. Fighting for tactical ball knowledge in the 2026 tournament.`,
                           mode: 'court',
                           caseId: 1000,
