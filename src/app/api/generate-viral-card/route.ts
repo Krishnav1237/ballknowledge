@@ -17,29 +17,17 @@ function buildCompleteFifacardPrompt(params: {
   verdict?: string;
   playerPosition?: string;
 }) {
-  const { nation, ovr } = params;
+  const { nation } = params;
 
-  // Determine rarity background color scheme
-  let rarityBackgroundDesc = '';
-  if (ovr >= 90) {
-    // Legendary / TOTY
-    rarityBackgroundDesc = "A bright, prestigious, luminous gold and vibrant royal blue abstract stadium background, featuring glowing concentric gold tracks, floating shiny sapphire crystals, and powerful golden spotlight beams illuminating the player.";
-  } else if (ovr >= 75) {
-    // Epic / Purple
-    rarityBackgroundDesc = "A bright, high-contrast violet-neon and dynamic indigo background, featuring glowing geometric energy rings, star field lights, and bright violet spotlights.";
-  } else if (ovr >= 60) {
-    // Rare / Blue
-    rarityBackgroundDesc = "A bright, futuristic electric cyan-blue background, featuring glowing digital grid tracks, bright neon light bands, and luminous stadium floodlights.";
-  } else {
-    // Common / Rose
-    rarityBackgroundDesc = "A bright, clean crimson-rose and light gray textured background, featuring vivid ruby-red spotlights, clean light beams, and soft studio background lighting.";
-  }
+  // The card frame itself is always gold and royal blue for the manager card layout.
+  // To blend in perfectly with the gold shield frame and gold borders, we must always generate a matching gold and midnight-blue background.
+  const rarityBackgroundDesc = "A prestigious, luminous gold and vibrant royal blue abstract stadium background, featuring glowing concentric gold tracks, floating shiny sapphire crystals, and powerful golden spotlight beams illuminating the player.";
 
   return (
     `A premium, ultra-high-fidelity, photorealistic EA Sports FC TOTY style player card portrait of a professional soccer player. ` +
     `Subject: Upper-body action portrait of the athlete, angled in a dynamic three-quarter view, looking towards the camera with a confident, natural expression. ` +
     `Framing & Composition: The player's head and face must be positioned vertically in the middle-upper center of the image, leaving significant empty space (headroom) above the top of their head so their face is not too close to the top edge. ` +
-    `Face Preservation: Strictly replicate the face features of the person in the input reference image. The player MUST be completely clean-shaven (no beard, no stubble, no mustache, no facial hair whatsoever). They MUST wear their transparent clear-framed glasses exactly as shown in the reference image. The facial skin tones, glasses transparency, clean-shaven youth look, and hair style must match the reference image exactly. ` +
+    `Face Preservation: Strictly swap and replicate the exact face from the input reference image. The face in the generated output must be an identical, 100% exact match of the person in the reference image (a young clean-shaven Asian/Indian male, zero stubble, zero beard, zero mustache). Do NOT stylize, modify, or change the eyes, nose, lips, or jawline. Replicate their clear, transparent-framed glasses exactly as shown in the reference image (thin clear transparent rims, not white or thick). The face must look like a real photo of the person, completely natural, with no cartoonish or generalized features. ` +
     `Clothing: Wearing the official custom ${nation} national team jersey/kit, with detailed fabric textures, collar seams, and logos clearly visible. ` +
     `Lighting & Visibility: Extremely bright, vivid studio spotlight lighting illuminating the player's face, neck, and jersey from the front and side. Use a striking gold rim light tracing his profile to pop him out of the background. Ensure the face and jersey are fully, brightly lit with no dark face shadows. ` +
     `Background: ${rarityBackgroundDesc} ` +
