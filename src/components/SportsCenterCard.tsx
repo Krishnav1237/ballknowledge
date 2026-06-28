@@ -414,7 +414,22 @@ export default function SportsCenterCard({
           >
             {data.playerName || 'MANAGER'}
           </h2>
-          <span className="inline-block text-[10px] font-black tracking-widest uppercase mt-2 px-4 py-1 rounded-md shadow-md text-amber-300 bg-amber-400/30 border border-amber-400/60">
+          {/* Verdict pill — whitespace-nowrap prevents two-line wrapping */}
+          <span
+            className="inline-block font-black uppercase mt-2 px-3 py-1 rounded-md shadow-md text-amber-300 bg-amber-400/30 border border-amber-400/60 max-w-[260px] overflow-hidden"
+            style={{
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.08em',
+              fontSize:
+                (data.verdict || 'KNOWS BALL').length > 20
+                  ? '7px'
+                  : (data.verdict || 'KNOWS BALL').length > 15
+                  ? '8px'
+                  : (data.verdict || 'KNOWS BALL').length > 10
+                  ? '9px'
+                  : '10px',
+            }}
+          >
             👑 {data.verdict || 'KNOWS BALL'}
           </span>
         </div>

@@ -128,6 +128,15 @@ export async function POST(request: Request) {
     const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-pro';
 
     try {
+      // Build the full image data URL for the face reference
+      const faceDataUrl = faceImage
+        ? (faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`)
+        : null;
+
+      // Use /v1/images with input_references — confirmed by the BFL endpoint capability query:
+      // GET /api/v1/images/models/black-forest-labs/flux.2-pro/endpoints shows
+      // input_references is supported (min:0, max:8). The reference is used by
+      // Flux.2 Pro for visual identity/face preservation across the generation.
       const response = await fetch('https://openrouter.ai/api/v1/images', {
         method: 'POST',
         headers: {
@@ -141,21 +150,24 @@ export async function POST(request: Request) {
           prompt,
           n: 1,
           aspect_ratio: '3:4',
-          input_references: faceImage ? [{
-            type: "image_url",
-            image_url: {
-              url: faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`
-            }
-          }] : []
+          output_format: 'jpeg',
+          safety_tolerance: 6, // passthrough param — maximum permissiveness
+          // Face reference image for identity preservation
+          ...(faceDataUrl ? {
+            input_references: [{
+              type: 'image_url',
+              image_url: { url: faceDataUrl },
+            }],
+          } : {}),
         }),
-        signal: AbortSignal.timeout(50_000),
+        signal: AbortSignal.timeout(55_000),
       });
 
       if (response.ok) {
         const data = await response.json();
-        aiImageUrl = data?.data?.[0]?.url ?? data?.data?.[0]?.b64_json ?? '';
-        if (data?.data?.[0]?.b64_json && !aiImageUrl.startsWith('http')) {
-          aiImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+        aiImageUrl = data?.data?.[0]?.url ?? '';
+        if (!aiImageUrl && data?.data?.[0]?.b64_json) {
+          aiImageUrl = `data:image/jpeg;base64,${data.data[0].b64_json}`;
         }
       } else {
         const errText = await response.text();
