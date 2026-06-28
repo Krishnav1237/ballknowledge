@@ -336,11 +336,11 @@ export default function FootballIQPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-6 relative flex-grow flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 flex-grow items-start">
+          <div className="p-2 sm:p-4 relative flex-grow flex flex-col">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 relative z-10 flex-grow items-start">
               
               {/* LEFT PAGE: ALBUM SLOTS GRID WITH SMOOTH TRACKPAD SCROLL CONTAINER */}
-              <div className="lg:col-span-7 p-4 sm:p-6 flex flex-col gap-4 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
+              <div className="lg:col-span-7 p-3 sm:p-4 flex flex-col gap-2.5 border border-white/10 bg-[#070B14]/80 rounded-2xl backdrop-blur-md shadow-xl">
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-3 gap-2">
                   <div>
@@ -366,34 +366,34 @@ export default function FootballIQPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 bg-black/50 border border-white/10 rounded-2xl p-3.5 shadow-md">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex justify-between items-center text-xs font-black text-gray-300 uppercase tracking-widest">
+                 <div className="grid grid-cols-2 gap-3 bg-black/50 border border-white/10 rounded-xl p-2.5 shadow-md">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-[10px] font-black text-gray-300 uppercase tracking-widest">
                       <span>Album Progress</span>
                       <span className="font-mono text-white font-bold">{totalMatches}/{totalAlbumSlots}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${albumProgressPercent}%` }} />
                       </div>
-                      <span className="font-mono text-xs font-black text-[#E11D48] shrink-0">{albumProgressPercent}%</span>
+                      <span className="font-mono text-[10px] font-black text-[#E11D48] shrink-0">{albumProgressPercent}%</span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex justify-between items-center text-xs font-black text-gray-300 uppercase tracking-widest">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-[10px] font-black text-gray-300 uppercase tracking-widest">
                       <span>Exact Accuracy</span>
                       <span className="font-mono text-white font-bold">{accuracy}%</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700" style={{ width: `${accuracy}%` }} />
                       </div>
-                      <span className="font-mono text-xs font-black text-emerald-400 shrink-0">EXACT</span>
+                      <span className="font-mono text-[10px] font-black text-emerald-400 shrink-0">EXACT</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {[
                     { id: 'ALL', label: 'All Slots' },
                     { id: 'LEGENDARY', label: 'Legendary' },
@@ -404,7 +404,7 @@ export default function FootballIQPage() {
                     <button
                       key={f.id}
                       onClick={() => setFilterRarity(f.id)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                      className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
                         filterRarity === f.id
                           ? 'bg-[#E11D48]/20 border-[#E11D48] text-white shadow-md'
                           : 'bg-black/40 border-white/10 text-gray-400 hover:bg-black/60 hover:text-white'
@@ -417,7 +417,7 @@ export default function FootballIQPage() {
 
                 {/* Trackpad & Touch Native Scroll Container */}
                 <div 
-                  className="overflow-y-auto max-h-[540px] pr-2 space-y-3 custom-scrollbar touch-pan-y overscroll-contain"
+                  className="overflow-y-auto max-h-[460px] pr-2 space-y-2.5 custom-scrollbar touch-pan-y overscroll-contain"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   {loadingMatches ? (
@@ -438,10 +438,9 @@ export default function FootballIQPage() {
                 </div>
               </div>
 
-              {/* RIGHT PAGE: STICKY DUAL CARD PREVIEW & INSTANT HIGH-SET SHARE PLINTH */}
-              <div className="lg:col-span-5 lg:sticky lg:top-4 h-fit p-3.5 sm:p-5 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
+              <div className="lg:col-span-5 lg:sticky lg:top-4 h-fit p-2.5 sm:p-3.5 border border-white/10 bg-[#070B14]/80 rounded-2xl flex flex-col justify-between shadow-xl backdrop-blur-md relative overflow-hidden">
                 
-                <div className="flex bg-black/60 border border-white/15 p-1.5 rounded-2xl mb-2 shadow-md w-full z-20">
+                <div className="flex bg-black/60 border border-white/15 p-1 rounded-xl mb-1.5 shadow-md w-full z-20">
                   <button
                     onClick={() => setActiveRightTab('deck')}
                     className={`flex-1 py-1.5 px-3 rounded-xl font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -537,8 +536,8 @@ export default function FootballIQPage() {
                 </div>
 
                 {/* HIGH-SET SHARE PLINTH WITH ALL SOCIAL PLATFORMS */}
-                <div className="mt-1 border-t border-white/10 pt-2 z-20 flex flex-col gap-2">
-                  <div className="flex justify-between items-center bg-black/70 border border-white/15 rounded-2xl p-2.5 backdrop-blur-md shadow-lg">
+                <div className="mt-0.5 border-t border-white/10 pt-1 z-20 flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center bg-black/70 border border-white/15 rounded-xl p-2 backdrop-blur-md shadow-lg">
                     <span className="text-[9.5px] font-black text-gray-300 uppercase tracking-widest pl-1">
                       Instant Share:
                     </span>
