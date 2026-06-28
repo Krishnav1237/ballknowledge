@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { VerdictData } from '@/lib/tribunalDB';
@@ -9,7 +10,9 @@ import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
   User, 
   Sparkles, 
-  RotateCcw
+  RotateCcw,
+  Download,
+  Share2
 } from 'lucide-react';
 
 export default function ProfileSettingsPage() {
@@ -43,6 +46,38 @@ export default function ProfileSettingsPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
   const [resetMessage, setResetMessage] = useState<string | null>(null);
+  
+  // Card export & sharing states
+  const [downloading, setDownloading] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPng = async () => {
+    if (!cardRef.current) return;
+    setDownloading(true);
+    showToast('Preparing high-resolution PNG export...', 'success');
+    try {
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, quality: 0.95 });
+      const link = document.createElement('a');
+      link.download = `${username.replace(/\s+/g, '_')}_Manager_Card.png`;
+      link.href = dataUrl;
+      link.click();
+      showToast('Manager Card PNG exported successfully!', 'success');
+    } catch (err) {
+      console.error('Export failed:', err);
+      showToast('Failed to export card image.', 'error');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    const shareUrl = `${window.location.origin}/u/${username}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedLink(true);
+    showToast('Share link copied to clipboard!', 'success');
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
   
   // Custom Credentials Auth Inputs
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -681,12 +716,30 @@ export default function ProfileSettingsPage() {
                 </div>
 
                 {/* ══ COLUMN 2: Live Card Preview Showcase (col-span-12 lg:col-span-4) ══ */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col justify-center items-center h-[520px] bg-[#12070A]/60 border border-rose-900/40 rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-md">
+                <div className="col-span-12 lg:col-span-4 flex flex-col justify-between items-center h-[520px] bg-[#12070A]/60 border border-rose-900/40 rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-md">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(225,29,72,0.2),transparent_70%)] pointer-events-none" />
-                  <div className="relative flex items-center justify-center w-full h-full">
-                    <div className="scale-[0.80] min-[360px]:scale-[0.88] min-[400px]:scale-[0.95] sm:scale-100 origin-center shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
-                      <SportsCenterCard data={managerCardData} />
+                  <div className="relative flex-grow flex items-center justify-center w-full">
+                    <div ref={cardRef} className="scale-[0.76] min-[360px]:scale-[0.82] min-[400px]:scale-[0.88] sm:scale-[0.92] origin-center shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
+                      <SportsCenterCard cardRef={cardRef} data={managerCardData} />
                     </div>
+                  </div>
+                  {/* Share & Download Actions */}
+                  <div className="w-full flex gap-3 mt-auto mb-2 shrink-0 z-10">
+                    <button
+                      type="button"
+                      disabled={downloading}
+                      onClick={handleDownloadPng}
+                      className="flex-grow h-10 rounded-xl bg-[#13070A]/90 hover:bg-rose-950/40 border border-rose-900/40 text-white font-sans font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                    >
+                      <Download className="w-3.5 h-3.5" /> {downloading ? 'EXPORTING...' : 'DOWNLOAD PNG'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyShareLink}
+                      className="flex-grow h-10 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-white font-sans font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> {copiedLink ? 'COPIED!' : 'SHARE LINK'}
+                    </button>
                   </div>
                 </div>
 
