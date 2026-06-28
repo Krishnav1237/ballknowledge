@@ -146,7 +146,7 @@ export default function SportsCenterCard({
           {data.aiImageUrl ? (
             <div className="relative w-full h-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover scale-[1.12] translate-y-[32px] origin-top" />
+              <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
               {/* Readability shadow gradients */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none z-10" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none z-10" />
@@ -373,7 +373,7 @@ export default function SportsCenterCard({
         {data.aiImageUrl ? (
           <div className="relative w-full h-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover scale-[1.12] translate-y-[32px] origin-top"/>
+            <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover"/>
             {/* Readability shadow gradients */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none z-10" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none z-10" />
