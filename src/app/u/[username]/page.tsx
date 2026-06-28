@@ -194,21 +194,25 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     if (!captureTarget) return;
     setDownloading(true);
     try {
-      // Temporarily zero out any inline transform so html-to-image captures at true size
+      // Temporarily zero out transform AND background so only the
+      // shield-clipped card shape exports — corners are fully transparent
       const prevTransform = captureTarget.style.transform;
+      const prevBackground = captureTarget.style.background;
       captureTarget.style.transform = 'none';
+      captureTarget.style.background = 'transparent';
 
       const dataUrl = await toPng(captureTarget, {
         cacheBust: true,
         width: 340,
         height: 480,
         pixelRatio: 3,
-        backgroundColor: '#050A12',
+        backgroundColor: 'transparent',
         // Prevents cross-origin CSS fetch error for Google Fonts in production
         skipFonts: true,
       });
 
       captureTarget.style.transform = prevTransform;
+      captureTarget.style.background = prevBackground;
 
       const link = document.createElement('a');
       const label = selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Tournament_Deck';

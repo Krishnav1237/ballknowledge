@@ -20,41 +20,40 @@ function buildCompleteFifacardPrompt(params: {
   const { nation } = params;
 
   return (
-    // ── IDENTITY — this is the #1 priority ──────────────────────────────────
-    `HIGHEST PRIORITY: This is a face-matched portrait. The reference image provided is the IDENTITY SOURCE. ` +
-    `You MUST faithfully reproduce the subject's exact face with maximum biometric accuracy: ` +
-    `same skin tone, same eye shape and eye distance, same nose bridge width and tip shape, ` +
-    `same lip thickness, same jawline, same cheekbone structure, same hairline and hair style, ` +
-    `same thin transparent-framed rectangular glasses (do NOT change the frames to any other style). ` +
-    `The face must look IDENTICAL to the reference — not a lookalike, not an approximation — IDENTICAL. ` +
+    // ── CORE TASK ─────────────────────────────────────────────────────────────
+    `A premium photorealistic sports trading card portrait in the style of EA Sports FC. ` +
+    `The subject is the person shown in the reference image — reproduce their face accurately: ` +
+    `same skin tone, same eye shape, same nose, same jawline, same hair, same thin ` +
+    `transparent-framed glasses. Clean-shaven with zero facial hair. ` +
 
-    // ── STYLE — strictly photorealistic, zero stylization ────────────────────
-    `Art Style: Ultra-high-fidelity PHOTOREALISTIC photography. ` +
-    `ABSOLUTELY NO cartoon, anime, illustration, painting, sketch, game-art, CGI-render, ` +
-    `plastic-skin, clay-render, watercolor, or any non-photographic stylization whatsoever. ` +
-    `The output must look like a REAL PHOTOGRAPH taken with a professional sports camera. ` +
-    `Skin texture must show real pores, natural shading, and realistic subsurface scattering. ` +
+    // ── FRAMING ───────────────────────────────────────────────────────────────
+    `Shot type: Natural medium portrait, waist-up. The head fills roughly 35–40% of the ` +
+    `canvas height, positioned in the upper-center area. The body is turned at a slight ` +
+    `three-quarter angle — dynamic but relaxed, like a professional headshot for a ` +
+    `football club media day. Jersey clearly visible from collar to waist. ` +
 
-    // ── FRAMING — medium shot showing jersey ─────────────────────────────────
-    `Framing: Medium-shot portrait, chest-and-waist-up view. The player's head occupies roughly ` +
-    `30–35% of the canvas height, centered in the upper half. The jersey must be clearly visible ` +
-    `from the collar down to the waist. Slight three-quarter body angle for dynamic feel. ` +
-    `Do NOT generate a tight headshot or extreme close-up. ` +
+    // ── CLOTHING ──────────────────────────────────────────────────────────────
+    `Clothing: The official ${nation} national football team kit — clean fabric with realistic ` +
+    `weave texture, team badge on chest, visible collar and sleeve details. ` +
 
-    // ── CLOTHING ─────────────────────────────────────────────────────────────
-    `Clothing: Official ${nation} national football team jersey with realistic fabric texture, ` +
-    `visible seams, Adidas/Nike logo, and sponsor badge. Clean-shaven face with zero stubble. ` +
+    // ── LIGHTING ──────────────────────────────────────────────────────────────
+    `Lighting: Cinematic studio lighting. Strong warm key light from the front-left that ` +
+    `illuminates the face and jersey brightly. Subtle golden rim light on the shoulders ` +
+    `and hair. The lighting should make the subject look premium and vibrant, not flat or dark. ` +
 
-    // ── LIGHTING & BACKGROUND ────────────────────────────────────────────────
-    `Lighting: Professional studio three-point lighting — bright key light from front-left, ` +
-    `soft fill from right, and a subtle warm gold rim light outlining the shoulders. ` +
-    `Background: Clean dark metallic gradient with a subtle deep navy-blue vignette and faint ` +
-    `gold ambient glow. Minimal and non-distracting — no particles, no text, no UI elements. ` +
+    // ── BACKGROUND ────────────────────────────────────────────────────────────
+    `Background: A rich deep dark navy-to-black radial gradient with a warm amber-gold ` +
+    `spotlight glow centered behind the subject. The background should complement a gold ` +
+    `card border — atmospheric, premium, and non-distracting. No patterns, no particles, ` +
+    `no text. ` +
 
-    // ── HARD CONSTRAINTS ─────────────────────────────────────────────────────
-    `CRITICAL CONSTRAINTS: Output ONLY the player portrait against the background. ` +
-    `Do NOT add card frames, rating numbers, text overlays, flags, watermarks, or borders. ` +
-    `The canvas must be filled edge-to-edge with the portrait and background only.`
+    // ── STYLE ─────────────────────────────────────────────────────────────────
+    `Style: Photorealistic — the output must look like a real studio photo, not a digital ` +
+    `illustration or game asset. Realistic skin, sharp fabric detail, natural expressions. ` +
+
+    // ── CONSTRAINTS ───────────────────────────────────────────────────────────
+    `Do NOT include card borders, rating numbers, text, flags, watermarks, UI overlays, ` +
+    `or any design elements. Clean portrait filling the full canvas, edge to edge.`
   );
 }
 

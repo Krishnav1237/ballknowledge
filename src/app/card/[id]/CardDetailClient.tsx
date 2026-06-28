@@ -68,11 +68,13 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
     setDownloading(true);
     showStatus('Preparing high-resolution PNG export...', 'info');
     try {
-      // Temporarily reset any CSS transforms on the card node so html-to-image
-      // captures the intrinsic 340×480 card at full fidelity without scale distortion.
+      // Temporarily reset any CSS transforms AND the rectangular background so that
+      // only the shield-clipped card shape exports — corners are fully transparent.
       const el = cardNodeRef.current;
       const prevTransform = el.style.transform;
+      const prevBackground = el.style.background;
       el.style.transform = 'none';
+      el.style.background = 'transparent';
 
       const dataUrl = await toPng(el, {
         cacheBust: true,
@@ -81,17 +83,15 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         height: 480,
         // Retina 3× export for premium print/share quality
         pixelRatio: 3,
-        // Dark background matching the card root — area outside shield clip renders
-        // dark rather than white/transparent, matching the on-screen look exactly
-        backgroundColor: '#050A12',
-        // MUST be true: html-to-image tries to re-fetch Google Fonts CSS which fails
-        // with CORS / network errors in production. Fonts already loaded by the browser
-        // still render correctly in the canvas output.
+        // Transparent canvas — only the shield-shaped area is opaque
+        backgroundColor: 'transparent',
+        // Prevents cross-origin Google Fonts CSS fetch error in production
         skipFonts: true,
       });
 
-      // Restore original transform
+      // Restore original styles
       el.style.transform = prevTransform;
+      el.style.background = prevBackground;
 
       const link = document.createElement('a');
       const cardTypeLabel = activeTab === 'verdict' ? 'Verdict_Card' : 'Manager_Deck';
