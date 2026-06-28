@@ -126,7 +126,7 @@ export async function POST(request: Request) {
             }
           }] : []
         }),
-        signal: AbortSignal.timeout(25_000),
+        signal: AbortSignal.timeout(50_000),
       });
 
       if (response.ok) {
@@ -168,7 +168,8 @@ export async function POST(request: Request) {
       aiImageUrl,
       cardConfig: {
         username: username.toUpperCase(),
-        faceImage,
+        // NOTE: faceImage is NOT returned to the client to keep response payload small.
+        // The client should use its own locally-stored avatarSeed for card display.
         nation,
         ovr,
         stats: { prd, htk: hot, sel: mgr, cmy: rst },

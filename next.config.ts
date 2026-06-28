@@ -10,6 +10,19 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
   },
+  {
+    // Permissive CSP for image CDNs used by OpenRouter / BFL / DiceBear
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https: http:",
+      "connect-src 'self' https://openrouter.ai https://api.dicebear.com https://flagcdn.com",
+      "frame-ancestors 'none'",
+    ].join('; '),
+  },
 ];
 
 const nextConfig: NextConfig = {
@@ -19,10 +32,18 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'flagcdn.com' },
       // DiceBear avatar API (used for default avatars)
       { protocol: 'https', hostname: 'api.dicebear.com' },
-      // OpenRouter / Fal.ai CDN — serves AI-generated card images
+      // OpenRouter CDN — image generation results
+      { protocol: 'https', hostname: '**.openrouter.ai' },
+      { protocol: 'https', hostname: 'openrouter.ai' },
+      // Fal.ai CDN — alternative OpenRouter image delivery
       { protocol: 'https', hostname: '**.fal.media' },
       { protocol: 'https', hostname: 'fal.media' },
-      { protocol: 'https', hostname: '**.openrouter.ai' },
+      // Black Forest Labs (Flux) CDN — direct BFL image delivery
+      { protocol: 'https', hostname: '**.bfl.ai' },
+      { protocol: 'https', hostname: 'bfl.ai' },
+      { protocol: 'https', hostname: '**.blackforestlabs.ai' },
+      // General CDN wildcard for any provider-specific delivery URLs
+      { protocol: 'https', hostname: '**.cdn.openai.com' },
     ],
   },
   async headers() {
