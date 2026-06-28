@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     // ──────────────────────────────────────────────────────────────
     // OPENROUTER PROVIDER
     // ──────────────────────────────────────────────────────────────
-    const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux-1-schnell';
+    const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-klein-4b';
 
     try {
       const response = await fetch('https://openrouter.ai/api/v1/images', {
