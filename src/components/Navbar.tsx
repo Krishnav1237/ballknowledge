@@ -43,7 +43,6 @@ export default function Navbar() {
     { name: 'World Cup 2026', href: '/world-cup-hub', icon: Trophy },
     { name: 'Leaderboard',    href: '/leaderboard',   icon: BarChart2 },
     { name: 'My Card',        href: '/football-iq',   icon: Award },
-    { name: 'Pricing',        href: '/pricing',        icon: Tag },
     { name: 'Profile',        href: '/profile',        icon: User },
   ];
 

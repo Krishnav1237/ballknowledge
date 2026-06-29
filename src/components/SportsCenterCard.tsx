@@ -138,15 +138,26 @@ export default function SportsCenterCard({
           <line x1="236" y1="372" x2="236" y2="408" stroke="white" strokeWidth="0.8" opacity="0.1" />
         </svg>
 
-        {/* ── Background fill (clipped to shield) ── */}
         <div
           className={`absolute inset-0 overflow-hidden ${!isPredicted ? 'saturate-[0.65] opacity-75' : ''}`}
-          style={{ clipPath: 'url(#vcard-shield-clip)' }}
+          style={{ clipPath: 'url(#vcard-shield-clip)', background: data.aiImageUrl ? '#050A12' : 'transparent' }}
         >
           {data.aiImageUrl ? (
             <div className="relative w-full h-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={data.aiImageUrl} alt="AI FIFA Card" className="w-full h-full object-cover" />
+              <img
+                src={data.aiImageUrl}
+                alt="AI FIFA Card"
+                style={{
+                  position: 'absolute',
+                  top: '72px',
+                  left: 0,
+                  width: '100%',
+                  height: 'calc(100% - 72px)',
+                  objectFit: 'cover',
+                  objectPosition: 'center top',
+                }}
+              />
               {/* Readability shadow gradients */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none z-10" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none z-10" />

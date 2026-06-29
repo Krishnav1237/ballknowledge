@@ -59,6 +59,9 @@ export default function ProfileSettingsPage() {
     setRole(prof.role);
     setAvatarSeed(prof.avatarSeed);
     setAvatarStyle(prof.avatarStyle);
+    if (prof.inputImage) {
+      setPendingPhoto(prof.inputImage);
+    }
 
     // Sync with database on load
     syncProfileWithDb(prof).then(synced => {
@@ -69,6 +72,9 @@ export default function ProfileSettingsPage() {
       setRole(synced.role);
       setAvatarSeed(synced.avatarSeed);
       setAvatarStyle(synced.avatarStyle);
+      if (synced.inputImage) {
+        setPendingPhoto(synced.inputImage);
+      }
     }).catch(err => console.warn('Failed to sync profile with database on mount:', err));
   }, []);
 
@@ -185,6 +191,7 @@ export default function ProfileSettingsPage() {
         username: username.trim().replace(/\s+/g, '_'),
         favoriteNation,
         avatarSeed: finalAvatar,
+        inputImage: pendingPhoto
       };
       setProfile(updated);
       saveStoredProfile(updated);

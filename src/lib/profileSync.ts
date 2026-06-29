@@ -25,6 +25,7 @@ export interface FootballIQProfile {
   authProvider?: 'google' | 'facebook' | 'discord' | null;
   xp?: number;
   points?: number;
+  inputImage?: string | null; // Saved original uploaded photo base64
 }
 
 const DEFAULT_PROFILE: FootballIQProfile = {
@@ -44,7 +45,8 @@ const DEFAULT_PROFILE: FootballIQProfile = {
   isAuthenticated: false,
   authProvider: null,
   xp: 1200,
-  points: 150
+  points: 150,
+  inputImage: null
 };
 
 /**
@@ -132,6 +134,7 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
           role: data.profile.role,
           avatarStyle: data.profile.avatarStyle,
           avatarSeed: data.profile.avatarSeed,
+          inputImage: data.profile.inputImage || profile.inputImage,
           favoriteClub: data.profile.favoriteClub || profile.favoriteClub,
           favoriteNation: data.profile.favoriteNation || profile.favoriteNation,
           collectedCards: data.cards ? data.cards.map((c: any) => c.id) : profile.collectedCards

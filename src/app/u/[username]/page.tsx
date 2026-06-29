@@ -643,7 +643,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                           playerPosition: activeVerdictCard.rating >= 75 ? 'CF' : 'DM',
                           avatarStyle: profile.avatarStyle,
                           avatarSeed: profile.avatarSeed,
-                          aiImageUrl: activeVerdictCard.aiImageUrl || undefined,
+                          aiImageUrl: activeVerdictCard.aiImageUrl || ((profile.avatarSeed.startsWith('http') || profile.avatarSeed.startsWith('data:image')) ? profile.avatarSeed : undefined),
                           matchTitle: activeVerdictCard.matchTitle,
                           matchScore: activeVerdictCard.matchScore,
                           homeFlag: activeVerdictCard.homeFlag,

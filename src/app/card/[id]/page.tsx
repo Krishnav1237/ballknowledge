@@ -97,9 +97,11 @@ export default async function SharedCardPage({ params }: Props) {
   }
 
   const clientProfile = card?.profile ? {
+    id: card.profile.id,
     username: card.profile.username,
     avatarStyle: card.profile.avatarStyle,
     avatarSeed: card.profile.avatarSeed,
+    inputImage: card.profile.inputImage,
     favoriteClub: card.profile.favoriteClub,
     favoriteNation: card.profile.favoriteNation,
     overallRating: card.profile.overallRating || 88
@@ -107,6 +109,7 @@ export default async function SharedCardPage({ params }: Props) {
     username: 'Tactical Manager',
     avatarStyle: 'fun-emoji',
     avatarSeed: 'Manager',
+    inputImage: null,
     favoriteClub: 'VAR FC',
     favoriteNation: 'Argentina',
     overallRating: 88

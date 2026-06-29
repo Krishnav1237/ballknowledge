@@ -27,6 +27,7 @@ model FootballIQProfile {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   passwordHash     String?
+  inputImage       String?           // Save the user's original uploaded face photo base64
   predictions      MatchPrediction[]
   matchCards       MatchCard[]
   chatMessages     ChatMessage[]

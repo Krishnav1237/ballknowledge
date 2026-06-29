@@ -39,7 +39,8 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         managerRating: localProf.managerRating,
         hotTakeRating: localProf.hotTakeRating,
         roastScore: localProf.roastScore,
-        avatarSeed: localProf.avatarSeed
+        avatarSeed: localProf.avatarSeed,
+        inputImage: localProf.inputImage
       }));
     }
 
@@ -117,7 +118,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         body: JSON.stringify({
           cardId: card.id,
           username: profileState.username,
-          faceImage: profileState.avatarSeed,
+          faceImage: profileState.inputImage || profileState.avatarSeed,
           favoriteNation: profileState.favoriteNation,
           overallRating: card.rating,
           predictionRating: (card.statsJson as any)?.prd,
@@ -287,7 +288,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                     homeFifaCode: card.homeFifaCode,
                     awayFifaCode: card.awayFifaCode,
                     cardTheme: card.cardTheme || 'gold',
-                    aiImageUrl: card.aiImageUrl,
+                    aiImageUrl: card.aiImageUrl || ((profileState.avatarSeed.startsWith('http') || profileState.avatarSeed.startsWith('data:image')) ? profileState.avatarSeed : undefined),
                     countryFlag: profileState.favoriteNation ? getFlagEmoji(profileState.favoriteNation) : '🌍',
                     playerName: profileState.username,
                     playerPosition: card.rating >= 75 ? 'CF' : 'DM',
