@@ -461,7 +461,6 @@ export function getPlayerMatchRatings(
 
   const homeScorersList = getGoalscorersList(homeScore, homeRoster, actualHomeScorers);
   const awayScorersList = getGoalscorersList(awayScore, awayRoster, actualAwayScorers);
-  const allScorersList = [...homeScorersList, ...awayScorersList];
 
   const ratingsMap: Record<string, number> = {};
 

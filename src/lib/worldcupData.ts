@@ -13,10 +13,6 @@
 import fs from 'fs';
 import path from 'path';
 
-// Module-level singletons — populated once per process.
-let matchesData: any[] | null = null;
-let teamsData: any[] | null = null;
-
 function getDataPath(filename: string): string {
   return path.join(process.cwd(), 'src/lib/worldcup2026', filename);
 }

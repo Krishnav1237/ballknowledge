@@ -68,7 +68,7 @@ export async function GET(
     }
 
     // 1. Fetch chat messages from the database
-    let messages = await prisma.chatMessage.findMany({
+    const messages = await prisma.chatMessage.findMany({
       where: { matchId },
       orderBy: { createdAt: 'asc' },
       take: 100,
