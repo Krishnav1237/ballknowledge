@@ -513,8 +513,8 @@ export function getPlayerMatchRatings(
       const playerRandomVal = Math.sin(playerSeed) * 5; // +/- 5 OVR variation
       scoreRating += Math.round(playerRandomVal);
 
-      // Clamp rating
-      ratingsMap[pName] = Math.max(45, Math.min(99, scoreRating));
+      // Clamp rating to official 10-scale performance score (e.g. 8.4)
+      ratingsMap[pName] = Math.max(4.5, Math.min(9.9, Number((scoreRating / 10).toFixed(1))));
     });
   };
 

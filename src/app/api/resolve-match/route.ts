@@ -461,12 +461,12 @@ function calculateMGR(lineup: Record<string, any>, playerMatchRatings: Record<st
     const pName = p.name.toLowerCase().trim();
     const matchRating = playerMatchRatings[pName] || 
                         Object.entries(playerMatchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
-                        (getPlayerRatingFromRoster(p.name) * 10);
+                        getPlayerRatingFromRoster(p.name);
     return sum + matchRating;
   }, 0);
 
   const avgRating = sumRatings / players.length;
-  return Math.max(10, Math.min(99, Math.round(avgRating)));
+  return Math.max(10, Math.min(99, Math.round(avgRating * 10)));
 }
 
 /**

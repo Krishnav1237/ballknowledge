@@ -226,14 +226,14 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       const pName = player.name.toLowerCase().trim();
       const matchRating = matchRatings[pName] || 
                           Object.entries(matchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
-                          player.rating;
+                          (player.rating / 10);
       acc[slotId] = {
         ...player,
-        rating: matchRating
+        rating: typeof matchRating === 'number' ? matchRating.toFixed(1) : matchRating
       };
     }
     return acc;
-  }, {} as Record<string, Player>) : lineup;
+  }, {} as Record<string, any>) : lineup;
 
   const handleAddTake = () => {
     if (takes.length < maxTakes) {

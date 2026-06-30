@@ -13,6 +13,8 @@ generator client {
 model FootballIQProfile {
   id               String            @id @default(uuid())
   username         String            @unique
+  email            String?           @unique           // Save user's email from Google Auth
+  name             String?                             // Save user's full name from Google Auth
   avatarStyle      String            @default("fun-emoji")
   avatarSeed       String
   favoriteClub     String?

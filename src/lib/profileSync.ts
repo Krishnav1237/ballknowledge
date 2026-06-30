@@ -9,6 +9,8 @@
 export interface FootballIQProfile {
   id?: string;
   username: string;
+  email?: string | null;
+  name?: string | null;
   avatarStyle: string;
   avatarSeed: string;
   favoriteClub?: string;
@@ -134,6 +136,8 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
           role: data.profile.role,
           avatarStyle: data.profile.avatarStyle,
           avatarSeed: data.profile.avatarSeed,
+          email: data.profile.email || profile.email,
+          name: data.profile.name || profile.name,
           inputImage: data.profile.inputImage || profile.inputImage,
           favoriteClub: data.profile.favoriteClub || profile.favoriteClub,
           favoriteNation: data.profile.favoriteNation || profile.favoriteNation,

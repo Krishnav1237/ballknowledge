@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Script from 'next/script';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { VerdictData } from '@/lib/tribunalDB';
@@ -77,6 +78,81 @@ export default function ProfileSettingsPage() {
       }
     }).catch(err => console.warn('Failed to sync profile with database on mount:', err));
   }, []);
+
+  const initGoogleGIS = () => {
+    try {
+      const google = (window as any).google;
+      if (!google) return;
+
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
+      
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredentialResponse,
+        cancel_on_tap_outside: false
+      });
+
+      const btnParent = document.getElementById('google-signin-btn-container');
+      if (btnParent) {
+        google.accounts.id.renderButton(btnParent, {
+          theme: 'dark',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'pill',
+          width: '280'
+        });
+      }
+    } catch (err) {
+      console.error('Error initializing Google GIS:', err);
+    }
+  };
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    try {
+      setAuthStage('Authenticating with Google...');
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Google login failed');
+      }
+
+      setAuthStage('');
+      setProfile(data.profile);
+      saveStoredProfile(data.profile);
+      
+      // Update form values
+      setUsername(data.profile.username);
+      setFavoriteClub(data.profile.favoriteClub || '');
+      setFavoriteNation(data.profile.favoriteNation || '');
+      setRole(data.profile.role);
+      setAvatarSeed(data.profile.avatarSeed);
+      setAvatarStyle(data.profile.avatarStyle);
+      if (data.profile.inputImage) {
+        setPendingPhoto(data.profile.inputImage);
+      }
+
+      window.dispatchEvent(new Event('storage'));
+      showToast('Successfully signed in with Google! 🚀', 'success');
+    } catch (err: any) {
+      console.error(err);
+      setAuthStage('');
+      showToast(err.message || 'Google Auth failed', 'error');
+    }
+  };
+
+  useEffect(() => {
+    if (mounted && !profile) {
+      const timer = setTimeout(() => {
+        initGoogleGIS();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted, profile, authMode]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -525,6 +601,17 @@ export default function ProfileSettingsPage() {
                   >
                     {authMode === 'signin' ? 'ENTER LOCKER ROOM' : 'CREATE MANAGER PROFILE'}
                   </button>
+
+                  <div className="relative flex items-center justify-center my-3.5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-rose-950/20"></div>
+                    </div>
+                    <span className="relative px-3 bg-[#0B0305] text-[9px] font-black tracking-widest text-zinc-500 uppercase">OR</span>
+                  </div>
+
+                  <div className="flex justify-center w-full min-h-[44px]">
+                    <div id="google-signin-btn-container" className="g_id_signin"></div>
+                  </div>
                 </form>
               )}
             </div>
@@ -794,6 +881,11 @@ export default function ProfileSettingsPage() {
         </div>
       )}
       {Toast}
+      <Script 
+        src="https://accounts.google.com/gsi/client" 
+        strategy="lazyOnload" 
+        onLoad={initGoogleGIS}
+      />
     </div>
   );
 }
