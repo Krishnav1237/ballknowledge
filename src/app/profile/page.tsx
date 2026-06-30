@@ -580,18 +580,6 @@ export default function ProfileSettingsPage() {
                           className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner"
                         />
                       </div>
-                      <div className="space-y-1.5 text-left">
-                        <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
-                          Supporting Club
-                        </label>
-                        <input
-                          type="text"
-                          value={favoriteClub}
-                          onChange={e => setFavoriteClub(e.target.value)}
-                          placeholder="e.g. Real Madrid, Arsenal"
-                          className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner"
-                        />
-                      </div>
                     </>
                   )}
 

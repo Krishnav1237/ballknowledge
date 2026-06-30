@@ -439,7 +439,7 @@ export default function LeaderboardPage() {
                   Manager Status
                 </p>
                 
-                <div className="grid grid-cols-2 gap-2.5 w-full mt-3.5 border-t border-white/5 pt-3 text-left">
+                <div className="grid grid-cols-3 gap-2 w-full mt-3.5 border-t border-white/5 pt-3 text-left">
                   <div>
                     <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Rank</span>
                     <span className="font-display font-black text-xs md:text-sm text-[#E11D48] leading-none mt-1 block">
@@ -454,14 +454,8 @@ export default function LeaderboardPage() {
                   </div>
                   <div>
                     <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Nation</span>
-                    <span className="text-[10px] font-black uppercase text-gray-400 mt-1 block leading-none">
+                    <span className="text-[10px] font-black uppercase text-gray-400 mt-1 block leading-none truncate max-w-[56px]" title={myProfile.favoriteNation || 'N/A'}>
                       {myProfile.favoriteNation ? getCountryAbbreviation(myProfile.favoriteNation) : 'N/A'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Club</span>
-                    <span className="text-[10px] font-black uppercase text-gray-400 truncate mt-1 block leading-none max-w-[80px]" title={myProfile.favoriteClub}>
-                      {myProfile.favoriteClub || 'N/A'}
                     </span>
                   </div>
                 </div>
