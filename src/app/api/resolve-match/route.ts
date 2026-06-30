@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
-import { getDeterministicMatchResult } from '@/lib/matchUtils';
+import { getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { TEAM_ROSTERS } from '@/lib/roster';
 
 export const dynamic = 'force-dynamic';
@@ -453,12 +453,20 @@ function getPlayerRating(playerName: string): number {
  * @param {Record<string, any>} lineup - Chosen lineup mapped by pitch slot ID.
  * @returns {number} Manager rating between 10 and 99 (default: 50 if empty).
  */
-function calculateMGR(lineup: Record<string, any>): number {
+function calculateMGR(lineup: Record<string, any>, playerMatchRatings: Record<string, number>): number {
   const players = Object.values(lineup).filter(p => p && p.name);
   if (!players.length) return 50; // default if no lineup submitted
 
-  const avgRating = players.reduce((sum, p) => sum + getPlayerRatingFromRoster(p.name), 0) / players.length;
-  return Math.max(10, Math.min(99, Math.round(avgRating * 10)));
+  const sumRatings = players.reduce((sum, p) => {
+    const pName = p.name.toLowerCase().trim();
+    const matchRating = playerMatchRatings[pName] || 
+                        Object.entries(playerMatchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
+                        (getPlayerRatingFromRoster(p.name) * 10);
+    return sum + matchRating;
+  }, 0);
+
+  const avgRating = sumRatings / players.length;
+  return Math.max(10, Math.min(99, Math.round(avgRating)));
 }
 
 /**
@@ -646,7 +654,8 @@ export async function POST(request: Request) {
     });
 
     // ── 2. MGR — Manager Score ────────────────────────────────────────────────
-    const mgr = calculateMGR(lineup || {});
+    const playerMatchRatings = getPlayerMatchRatings(matchId, homeTeamName, awayTeamName, match);
+    const mgr = calculateMGR(lineup || {}, playerMatchRatings);
 
     // ── 3. HOT — Hot Take Score ───────────────────────────────────────────────
     const statements = hotTakes && hotTakes.length > 0

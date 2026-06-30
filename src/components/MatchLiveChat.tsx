@@ -280,14 +280,14 @@ export default function MatchLiveChat({
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') sendMessage(input); }}
-              placeholder={isLive ? 'Drop your hot take...' : isCompleted ? 'Match ended — chat is read-only' : 'Chat opens at kick-off'}
-              disabled={!isLive}
+              placeholder={isReadOnly ? 'Match ended — chat is read-only' : 'Drop your hot take...'}
+              disabled={isReadOnly}
               maxLength={280}
               className="flex-1 bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-[#E11D48] disabled:opacity-40 disabled:cursor-not-allowed"
             />
             <button
               onClick={() => sendMessage(input)}
-              disabled={!input.trim() || !isLive}
+              disabled={!input.trim() || isReadOnly}
               className="shrink-0 w-9 h-9 rounded-xl bg-[#E11D48] hover:bg-rose-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer active:scale-95"
             >
               <Send className="w-4 h-4 text-white" />

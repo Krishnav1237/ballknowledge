@@ -399,3 +399,128 @@ export function getFlagEmoji(countryName: string): string {
   if (n.includes('congo') || n.includes('cod')) return '🇨🇩';
   return '🏳️';
 }
+
+/**
+ * Generates deterministic, match-specific performance ratings for all players on the rosters
+ * of both teams involved in a completed or simulated match.
+ * Ratings range between 45 and 99. They are derived from player baseline rating, match outcome,
+ * individual goals, MOTM selection, clean sheets, and a deterministic variance seed.
+ */
+export function getPlayerMatchRatings(
+  matchId: string,
+  homeTeamName: string,
+  awayTeamName: string,
+  match?: any
+): Record<string, number> {
+  const result = getDeterministicMatchResult(matchId, homeTeamName, awayTeamName, match);
+  const homeScore = result.homeScore;
+  const awayScore = result.awayScore;
+  const motm = result.motm.toLowerCase().trim();
+  const firstScorer = result.firstGoalscorer.toLowerCase().trim();
+
+  // Find rosters
+  const homeNorm = homeTeamName.toLowerCase().trim();
+  const awayNorm = awayTeamName.toLowerCase().trim();
+  
+  const homeKey = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === homeNorm || homeNorm.includes(k.toLowerCase()) || k.toLowerCase().includes(homeNorm)) || 'Argentina';
+  const awayKey = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === awayNorm || awayNorm.includes(k.toLowerCase()) || k.toLowerCase().includes(awayNorm)) || 'France';
+  
+  const homeRoster = TEAM_ROSTERS[homeKey] || [];
+  const awayRoster = TEAM_ROSTERS[awayKey] || [];
+
+  // Parse actual goalscorers
+  const parseScorers = (raw: string): string[] => {
+    if (!raw) return [];
+    return raw.replace(/[{}]/g, '').split(',').map(s => s.trim().replace(/"/g, '').replace(/\d+['+]*$/, '').trim().toLowerCase()).filter(Boolean);
+  };
+  
+  const actualHomeScorers = match ? parseScorers(match.home_scorers || '') : [];
+  const actualAwayScorers = match ? parseScorers(match.away_scorers || '') : [];
+
+  // Seed by the matchId to select deterministically on no actual list
+  let seed = 0;
+  for (let i = 0; i < matchId.length; i++) {
+    seed = matchId.charCodeAt(i) + ((seed << 5) - seed);
+  }
+  const random = () => {
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const getGoalscorersList = (score: number, roster: any[], actualList: string[]) => {
+    if (actualList.length > 0) return actualList;
+    const scorers: string[] = [];
+    const outfield = roster.filter(p => p.position !== 'GK');
+    if (outfield.length === 0) return [];
+    for (let g = 0; g < score; g++) {
+      const idx = Math.floor(random() * outfield.length);
+      scorers.push(outfield[idx].name.toLowerCase().trim());
+    }
+    return scorers;
+  };
+
+  const homeScorersList = getGoalscorersList(homeScore, homeRoster, actualHomeScorers);
+  const awayScorersList = getGoalscorersList(awayScore, awayRoster, actualAwayScorers);
+  const allScorersList = [...homeScorersList, ...awayScorersList];
+
+  const ratingsMap: Record<string, number> = {};
+
+  const processRoster = (roster: any[], isHome: boolean) => {
+    const teamScore = isHome ? homeScore : awayScore;
+    const opponentScore = isHome ? awayScore : homeScore;
+    const scorers = isHome ? homeScorersList : awayScorersList;
+
+    roster.forEach(player => {
+      const pName = player.name.toLowerCase().trim();
+      let scoreRating = player.rating; // e.g. 85
+
+      // Winning/Losing adjustment
+      if (teamScore > opponentScore) {
+        scoreRating += 4;
+      } else if (teamScore < opponentScore) {
+        scoreRating -= 3;
+      }
+
+      // Defense clean sheet adjustments
+      if (player.position === 'GK' || player.position === 'DEF') {
+        if (opponentScore === 0) {
+          scoreRating += 6;
+        } else if (opponentScore >= 3) {
+          scoreRating -= 5;
+        }
+      }
+
+      // Goal scoring bonuses
+      const goalsScored = scorers.filter(s => s === pName || s.includes(pName) || pName.includes(s)).length;
+      scoreRating += goalsScored * 5;
+
+      // First goalscorer bonus
+      if (pName === firstScorer || firstScorer.includes(pName) || pName.includes(firstScorer)) {
+        scoreRating += 3;
+      }
+
+      // Man of the Match bonus
+      if (pName === motm || motm.includes(pName) || pName.includes(motm)) {
+        scoreRating += 8;
+      }
+
+      // Stable deterministic variance per player in this match
+      let playerSeed = 0;
+      const combinedKey = matchId + pName;
+      for (let i = 0; i < combinedKey.length; i++) {
+        playerSeed = combinedKey.charCodeAt(i) + ((playerSeed << 5) - playerSeed);
+      }
+      const playerRandomVal = Math.sin(playerSeed) * 5; // +/- 5 OVR variation
+      scoreRating += Math.round(playerRandomVal);
+
+      // Clamp rating
+      ratingsMap[pName] = Math.max(45, Math.min(99, scoreRating));
+    });
+  };
+
+  processRoster(homeRoster, true);
+  processRoster(awayRoster, false);
+
+  return ratingsMap;
+}
+

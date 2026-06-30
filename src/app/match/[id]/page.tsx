@@ -11,7 +11,7 @@ import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
-import { parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import { parseLocalDate, getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -217,6 +217,23 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
   // Max hot takes based on user role (FREE = 3, PREMIUM/ADMIN = 5)
   const maxTakes = profile?.role === 'FREE' ? 3 : 5;
+
+  // Compute resolved lineup if match is completed to show live player performance ratings
+  const resolvedLineup = status === 'COMPLETED' ? Object.keys(lineup).reduce((acc, slotId) => {
+    const player = lineup[slotId];
+    if (player) {
+      const matchRatings = getPlayerMatchRatings(matchId, homeTeam?.name_en || '', awayTeam?.name_en || '', match);
+      const pName = player.name.toLowerCase().trim();
+      const matchRating = matchRatings[pName] || 
+                          Object.entries(matchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
+                          player.rating;
+      acc[slotId] = {
+        ...player,
+        rating: matchRating
+      };
+    }
+    return acc;
+  }, {} as Record<string, Player>) : lineup;
 
   const handleAddTake = () => {
     if (takes.length < maxTakes) {
@@ -726,7 +743,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
               </div>
               <div className="w-full max-w-[480px] sm:max-w-[520px] mx-auto" style={{aspectRatio: '3/4'}}>
                 <TacticalPitch
-                  lineup={lineup}
+                  lineup={resolvedLineup}
                   isReadOnly={true}
                   isSubmissionLocked={isSubmissionLocked}
                   homeTeamName={homeTeam.name_en}
@@ -809,7 +826,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
               <div className="shrink-0 overflow-hidden rounded-2xl" style={{ width: '63%' }}>
 
                 <TacticalPitch
-                  lineup={lineup}
+                  lineup={resolvedLineup}
                   isReadOnly={false}
                   isSubmissionLocked={isSubmissionLocked}
                   homeTeamName={homeTeam.name_en}
