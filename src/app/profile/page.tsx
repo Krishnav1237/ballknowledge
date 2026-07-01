@@ -123,8 +123,16 @@ export default function ProfileSettingsPage() {
       }
 
       setAuthStage('');
-      setProfile(data.profile);
-      saveStoredProfile(data.profile);
+      const loggedInProfile: FootballIQProfile = {
+        ...data.profile,
+        isAuthenticated: true,
+        collectedCards: data.profile.collectedCards || []
+      };
+      setProfile(loggedInProfile);
+      saveStoredProfile(loggedInProfile);
+      
+      // Fetch user-specific predictions and match cards to prevent data overlap
+      await syncProfileWithDb(loggedInProfile);
       
       // Update form values
       setUsername(data.profile.username);
@@ -418,6 +426,9 @@ export default function ProfileSettingsPage() {
 
       setProfile(loggedInProfile);
       saveStoredProfile(loggedInProfile);
+      
+      // Fetch user-specific predictions and match cards to prevent data overlap
+      await syncProfileWithDb(loggedInProfile);
       
       // Update settings inputs with db profile values
       setUsername(data.profile.username);

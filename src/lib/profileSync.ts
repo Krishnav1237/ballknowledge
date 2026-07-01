@@ -143,6 +143,33 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
           favoriteNation: data.profile.favoriteNation || profile.favoriteNation,
           collectedCards: data.cards ? data.cards.map((c: any) => c.id) : profile.collectedCards
         };
+        
+        // Sync database predictions map back to local storage predictions to avoid data overlap
+        if (data.predictions) {
+          const localPreds: Record<string, any> = {};
+          data.predictions.forEach((p: any) => {
+            const matchCard = data.cards?.find((c: any) => c.matchId === p.matchId);
+            localPreds[p.matchId] = {
+              matchId: p.matchId,
+              homeScore: p.homeScore,
+              awayScore: p.awayScore,
+              firstGoalscorer: p.firstGoalscorer,
+              motm: p.motm,
+              possessionWinner: p.possessionWinner,
+              hotTakes: p.hotTakes?.map((ht: any) => ({
+                statement: ht.statement,
+                confidence: ht.confidence
+              })) || [],
+              locked: true,
+              resolved: !!matchCard,
+              card: matchCard || null
+            };
+          });
+          
+          // Overwrite local predictions map
+          localStorage.setItem('var_cards_predictions', JSON.stringify(localPreds));
+        }
+
         saveStoredProfile(synced);
         window.dispatchEvent(new Event('storage'));
         return synced;

@@ -74,18 +74,28 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
       const el = cardNodeRef.current;
       const prevTransform = el.style.transform;
       const prevBackground = el.style.background;
+
+      const rarity = card?.rarity || (profileState?.overallRating >= 85 ? 'LEGENDARY' : profileState?.overallRating >= 70 ? 'EPIC' : profileState?.overallRating >= 45 ? 'RARE' : 'COMMON');
+      let captureBg = '#07090E';
+      if (rarity === 'LEGENDARY') {
+        captureBg = 'radial-gradient(circle at center, rgba(251,191,36,0.12) 0%, #07090E 80%)';
+      } else if (rarity === 'EPIC') {
+        captureBg = 'radial-gradient(circle at center, rgba(168,85,247,0.12) 0%, #07090E 80%)';
+      } else if (rarity === 'RARE') {
+        captureBg = 'radial-gradient(circle at center, rgba(59,130,246,0.12) 0%, #07090E 80%)';
+      } else {
+        captureBg = 'radial-gradient(circle at center, rgba(225,29,72,0.08) 0%, #07090E 80%)';
+      }
+
       el.style.transform = 'none';
-      el.style.background = 'transparent';
+      el.style.background = captureBg;
 
       const dataUrl = await toPng(el, {
         cacheBust: true,
-        // Exact card intrinsic dimensions — prevents clipping from CSS scale wrappers
         width: 340,
         height: 480,
-        // Retina 3× export for premium print/share quality
         pixelRatio: 3,
-        // Transparent canvas — only the shield-shaped area is opaque
-        backgroundColor: 'transparent',
+        backgroundColor: '#07090E',
         // Prevents cross-origin Google Fonts CSS fetch error in production
         skipFonts: true,
       });

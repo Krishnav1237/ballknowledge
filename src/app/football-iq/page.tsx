@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
+import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
@@ -88,7 +90,47 @@ export default function FootballIQPage() {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  if (!profile) return null;
+  if (!profile || !profile.isAuthenticated) {
+    return (
+      <div className="relative min-h-screen bg-[#07090E] text-zinc-100 flex flex-col font-sans select-none justify-center items-center px-4">
+        <Navbar />
+        
+        {/* Immersive Stadium Background */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <Image
+            src="/images/world_cup_stadium.webp"
+            alt="World Cup Stadium"
+            fill
+            className="object-cover opacity-[0.15] object-center"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/80 to-[#07090E]" />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center max-w-md w-full text-center bg-[#0F111A]/95 border border-rose-900/40 rounded-3xl p-8 shadow-[0_0_60px_rgba(225,29,72,0.1)] backdrop-blur-2xl">
+          <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-6 shadow-lg shadow-rose-500/5 animate-pulse">
+            <svg className="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+          
+          <h2 className="font-display font-black text-2xl text-white uppercase tracking-wider leading-none mb-3">
+            Locker Room Locked
+          </h2>
+          <p className="text-zinc-400 text-xs font-semibold leading-relaxed mb-8">
+            Access to your Football IQ cards, predictions, and reputation cockpit is restricted. Please sign in or authorize your manager profile to proceed.
+          </p>
+
+          <Link
+            href="/profile"
+            className="w-full h-11 rounded-xl bg-gradient-to-r from-[#E11D48] to-[#881337] hover:from-rose-500 hover:to-[#a21a3a] text-white font-display font-black text-[10px] uppercase tracking-widest cursor-pointer shadow-[0_4px_12px_rgba(225,29,72,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
+          >
+            ENTER LOCKER ROOM
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const predArray = Object.values(userPreds);
   const totalMatches = predArray.length;
@@ -166,19 +208,31 @@ export default function FootballIQPage() {
     if (!captureTarget) return;
     setDownloading(true);
     try {
-      // Temporarily zero out transform AND background so only the
-      // shield-clipped card shape exports — corners are fully transparent
       const prevTransform = captureTarget.style.transform;
       const prevBackground = captureTarget.style.background;
+
+      // Get background glow color based on the selected card rarity to prevent white backgrounds when sharing
+      const rarity = selectedCard?.rarity || (profile?.overallRating >= 85 ? 'LEGENDARY' : profile?.overallRating >= 70 ? 'EPIC' : profile?.overallRating >= 45 ? 'RARE' : 'COMMON');
+      let captureBg = '#07090E';
+      if (rarity === 'LEGENDARY') {
+        captureBg = 'radial-gradient(circle at center, rgba(251,191,36,0.12) 0%, #07090E 80%)';
+      } else if (rarity === 'EPIC') {
+        captureBg = 'radial-gradient(circle at center, rgba(168,85,247,0.12) 0%, #07090E 80%)';
+      } else if (rarity === 'RARE') {
+        captureBg = 'radial-gradient(circle at center, rgba(59,130,246,0.12) 0%, #07090E 80%)';
+      } else {
+        captureBg = 'radial-gradient(circle at center, rgba(225,29,72,0.08) 0%, #07090E 80%)';
+      }
+
       captureTarget.style.transform = 'none';
-      captureTarget.style.background = 'transparent';
+      captureTarget.style.background = captureBg;
 
       const dataUrl = await toPng(captureTarget, {
         cacheBust: true,
         width: 340,
         height: 480,
         pixelRatio: 3,
-        backgroundColor: 'transparent',
+        backgroundColor: '#07090E',
         // Prevents cross-origin CSS fetch error for Google Fonts in production
         skipFonts: true,
       });

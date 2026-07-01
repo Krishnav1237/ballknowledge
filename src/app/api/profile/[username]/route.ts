@@ -22,7 +22,12 @@ export async function GET(
       profile = await prisma.footballIQProfile.findUnique({
         where: { username },
         include: {
-          matchCards: true
+          matchCards: true,
+          predictions: {
+            include: {
+              hotTakes: true
+            }
+          }
         }
       });
       
@@ -63,7 +68,8 @@ export async function GET(
         season: profile.season,
         createdAt: profile.createdAt
       },
-      cards
+      cards,
+      predictions: profile ? profile.predictions : []
     });
 
   } catch (error) {
