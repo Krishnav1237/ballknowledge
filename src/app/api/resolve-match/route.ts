@@ -458,15 +458,34 @@ function calculateMGR(lineup: Record<string, any>, playerMatchRatings: Record<st
   const players = Object.values(lineup).filter(p => p && p.name);
   if (!players.length) return 50; // default if no lineup submitted
 
-  const sumRatings = players.reduce((sum, p) => {
-    const pName = p.name.toLowerCase().trim();
-    const matchRating = playerMatchRatings[pName] || 
-                        Object.entries(playerMatchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
-                        getPlayerRatingFromRoster(p.name);
-    return sum + matchRating;
-  }, 0);
+  // Lowercase keys of playerMatchRatings for robust lookups
+  const normalizedRatings: Record<string, number> = {};
+  Object.entries(playerMatchRatings).forEach(([key, val]) => {
+    normalizedRatings[key.toLowerCase().trim()] = val;
+  });
 
-  const avgRating = sumRatings / players.length;
+  let sumRatings = 0;
+  let totalWeights = 0;
+
+  players.forEach((p: any) => {
+    const pName = p.name.toLowerCase().trim();
+    const matchRating = normalizedRatings[pName] || 
+                        Object.entries(normalizedRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
+                        getPlayerRatingFromRoster(p.name);
+    
+    // Apply captain (2.0x) or vice-captain (1.5x) multipliers
+    let weight = 1.0;
+    if (p.isCaptain) {
+      weight = 2.0;
+    } else if (p.isViceCaptain) {
+      weight = 1.5;
+    }
+
+    sumRatings += matchRating * weight;
+    totalWeights += weight;
+  });
+
+  const avgRating = sumRatings / totalWeights;
   return Math.max(10, Math.min(99, Math.round(avgRating * 10)));
 }
 
@@ -571,7 +590,8 @@ export async function POST(request: Request) {
       motm: predMotm,
       hotTakes,  // Array of { statement: string, confidence: number }
       lineup,    // Record<string, Player>
-      profile    // Current user profile object, display-only; identity comes from session
+      profile,    // Current user profile object, display-only; identity comes from session
+      playerMatchRatings: adminPlayerMatchRatings // Record<string, number>
     } = body;
 
     // ── Sync-only mode (profile upsert) ──────────────────────────────────────
@@ -639,7 +659,7 @@ export async function POST(request: Request) {
     });
 
     // ── 2. MGR — Manager Score ────────────────────────────────────────────────
-    const playerMatchRatings = getPlayerMatchRatings(matchId, homeTeamName, awayTeamName, match);
+    const playerMatchRatings = adminPlayerMatchRatings || getPlayerMatchRatings(matchId, homeTeamName, awayTeamName, match);
     const mgr = calculateMGR(lineup || {}, playerMatchRatings);
 
     // ── 3. HOT — Hot Take Score ───────────────────────────────────────────────

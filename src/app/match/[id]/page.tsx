@@ -342,7 +342,14 @@ export default function MatchPage() {
       }
     });
 
-    newLineup[selectedSlot] = player;
+    const wasCaptain = lineup[selectedSlot]?.isCaptain || false;
+    const wasViceCaptain = lineup[selectedSlot]?.isViceCaptain || false;
+
+    newLineup[selectedSlot] = {
+      ...player,
+      isCaptain: wasCaptain,
+      isViceCaptain: wasViceCaptain
+    };
     setLineup(newLineup);
 
     // Save as draft in predictions local storage and database
@@ -370,6 +377,80 @@ export default function MatchPage() {
     if (nextEmpty) {
       setSelectedSlot(nextEmpty);
     }
+  };
+
+  const handleSetCaptain = (slotId: string) => {
+    if (isSubmissionLocked) return;
+    const player = lineup[slotId];
+    if (!player) return;
+
+    const newLineup = { ...lineup };
+    Object.keys(newLineup).forEach((key) => {
+      if (newLineup[key]) {
+        newLineup[key] = {
+          ...newLineup[key],
+          isCaptain: key === slotId ? !newLineup[key].isCaptain : false,
+          isViceCaptain: key === slotId ? false : newLineup[key].isViceCaptain
+        };
+      }
+    });
+
+    setLineup(newLineup);
+    
+    const currentPred = predictions[matchId] || {
+      matchId,
+      homeScore: predHomeScore,
+      awayScore: predAwayScore,
+      firstGoalscorer: predScorer,
+      motm: predMotm,
+      possessionWinner: predPossession,
+      hotTakes: takes,
+      locked: false,
+      resolved: false
+    };
+    const updatedPred = {
+      ...currentPred,
+      lineup: newLineup
+    };
+    persistPrediction(updatedPred);
+    showToast(`Set ${player.name} as Captain! 👑`, 'success');
+  };
+
+  const handleSetViceCaptain = (slotId: string) => {
+    if (isSubmissionLocked) return;
+    const player = lineup[slotId];
+    if (!player) return;
+
+    const newLineup = { ...lineup };
+    Object.keys(newLineup).forEach((key) => {
+      if (newLineup[key]) {
+        newLineup[key] = {
+          ...newLineup[key],
+          isViceCaptain: key === slotId ? !newLineup[key].isViceCaptain : false,
+          isCaptain: key === slotId ? false : newLineup[key].isCaptain
+        };
+      }
+    });
+
+    setLineup(newLineup);
+
+    const currentPred = predictions[matchId] || {
+      matchId,
+      homeScore: predHomeScore,
+      awayScore: predAwayScore,
+      firstGoalscorer: predScorer,
+      motm: predMotm,
+      possessionWinner: predPossession,
+      hotTakes: takes,
+      locked: false,
+      resolved: false
+    };
+    const updatedPred = {
+      ...currentPred,
+      lineup: newLineup
+    };
+    persistPrediction(updatedPred);
+    showToast(`Set ${player.name} as Vice-Captain! 🛡️`, 'success');
   };
 
   // Lock predictions
@@ -988,6 +1069,38 @@ export default function MatchPage() {
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
                                     {isChosenElsewhere && <span className="text-[9px] font-black uppercase bg-black/30 text-gray-400 px-2 py-1 rounded">Used</span>}
+                                    {isChosenHere && (
+                                      <div className="flex items-center gap-1 mr-1 shrink-0">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSetCaptain(selectedSlot);
+                                          }}
+                                          className={`text-[8px] sm:text-[9px] font-black uppercase px-2 py-1 rounded-xs cursor-pointer transition-all ${
+                                            lineup[selectedSlot]?.isCaptain 
+                                              ? 'bg-amber-500 text-black shadow-md' 
+                                              : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                          }`}
+                                          title="Set as Captain"
+                                        >
+                                          C
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSetViceCaptain(selectedSlot);
+                                          }}
+                                          className={`text-[8px] sm:text-[9px] font-black uppercase px-2 py-1 rounded-xs cursor-pointer transition-all ${
+                                            lineup[selectedSlot]?.isViceCaptain 
+                                              ? 'bg-blue-500 text-white shadow-md' 
+                                              : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                          }`}
+                                          title="Set as Vice-Captain"
+                                        >
+                                          VC
+                                        </button>
+                                      </div>
+                                    )}
                                     {isChosenHere && <span className="text-[9px] font-black uppercase bg-[#E11D48]/15 text-[#E11D48] px-2 py-1 rounded">✓</span>}
                                     <span className="font-mono font-black text-base text-[#E11D48]">{player.rating}</span>
                                   </div>

@@ -110,7 +110,15 @@ export default function TacticalPitch({
                  {/* Rating / Position */}
                 <div className="w-full flex items-center justify-between text-[7px] min-[370px]:text-[8px] sm:text-[10px] font-black text-gray-300 shrink-0">
                   <span className="font-mono text-[#E11D48]">{selectedPlayer.rating}</span>
-                  <span className="uppercase text-[6px] min-[370px]:text-[7px] sm:text-[9px] text-gray-400">{slot.label}</span>
+                  <div className="flex items-center gap-0.5">
+                    {selectedPlayer.isCaptain && (
+                      <span className="bg-amber-500 text-black text-[5px] min-[370px]:text-[6px] sm:text-[7px] px-0.5 rounded-sm font-black leading-none py-0.5">C</span>
+                    )}
+                    {selectedPlayer.isViceCaptain && (
+                      <span className="bg-blue-500 text-white text-[5px] min-[370px]:text-[6px] sm:text-[7px] px-0.5 rounded-sm font-black leading-none py-0.5">VC</span>
+                    )}
+                    <span className="uppercase text-[6px] min-[370px]:text-[7px] sm:text-[9px] text-gray-400">{slot.label}</span>
+                  </div>
                 </div>
 
                 {/* Player image container with flag overlay */}

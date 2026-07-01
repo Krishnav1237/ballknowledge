@@ -5,6 +5,8 @@ export interface Player {
   rating: number;
   team: string;
   flag: string;
+  isCaptain?: boolean;
+  isViceCaptain?: boolean;
 }
 
 export const PLAYER_SILHOUETTE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="%231F2937"/><circle cx="50" cy="38" r="16" fill="%239CA3AF"/><path d="M46 52h8v10h-8z" fill="%239CA3AF"/><path d="M25 76c0-12 10-16 25-16s25 4 25 16v8H25v-8z" fill="%239CA3AF"/></svg>`;
