@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * Builds an immersive prompt for the EA Sports FUT/TOTY trading card background.
@@ -66,6 +67,16 @@ export async function POST(request: Request) {
     const auth = requireSession(request);
     if (auth.response || !auth.session) return auth.response;
 
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: 'Invalid image generation request payload.', details: error?.message },
+        { status: 400 }
+      );
+    }
+
     const {
       cardId,           // optional database MatchCard ID to persist to
       username,
@@ -82,7 +93,7 @@ export async function POST(request: Request) {
       charge,
       sentence,
       playerPosition,
-    } = await request.json();
+    } = body;
 
     if (username && String(username) !== auth.session.username) {
       return NextResponse.json({ error: 'Cannot generate artwork for another manager.' }, { status: 403 });
@@ -109,24 +120,13 @@ export async function POST(request: Request) {
       playerPosition,
     });
 
-    // ─── Local template fallback if OpenRouter key is missing ───
+    // ─── Return error if OpenRouter key is missing ───
     if (!process.env.OPENROUTER_API_KEY) {
-      console.warn('OpenRouter API key is missing. Falling back to local template background.');
-      return NextResponse.json({
-        success: true,
-        aiImageUrl: '/images/toty_bg_premium.webp',
-        cardConfig: {
-          username: auth.session.username.toUpperCase(),
-          faceImage,
-          nation,
-          ovr,
-          stats: { prd, htk: hot, sel: mgr, cmy: rst },
-          statsJson: { prd, mgr, hot, rst },
-          verdict,
-          charge,
-          sentence,
-        },
-      });
+      console.error('OpenRouter API key is missing.');
+      return NextResponse.json(
+        { error: 'OpenRouter API key is missing. Please configure OPENROUTER_API_KEY in your environment.' },
+        { status: 500 }
+      );
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -140,10 +140,7 @@ export async function POST(request: Request) {
         ? (faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`)
         : null;
 
-      // Use /v1/images with input_references — confirmed by the BFL endpoint capability query:
-      // GET /api/v1/images/models/black-forest-labs/flux.2-pro/endpoints shows
-      // input_references is supported (min:0, max:8). The reference is used by
-      // Flux.2 Pro for visual identity/face preservation across the generation.
+      // Flux.2 Pro exposes input_references on OpenRouter's /v1/images endpoint.
       const response = await fetch('https://openrouter.ai/api/v1/images', {
         method: 'POST',
         headers: {
@@ -167,7 +164,7 @@ export async function POST(request: Request) {
             }],
           } : {}),
         }),
-        signal: AbortSignal.timeout(55_000),
+        signal: AbortSignal.timeout(50_000),
       });
 
       if (response.ok) {
@@ -178,17 +175,23 @@ export async function POST(request: Request) {
         }
       } else {
         const errText = await response.text();
-        console.warn(`OpenRouter image gen failed (${response.status}):`, errText);
+        console.error(`OpenRouter image gen failed (${response.status}):`, errText);
         return NextResponse.json(
-          { error: `OpenRouter AI Image Generation failed: ${response.statusText}`, details: errText },
-          { status: response.status }
+          {
+            error: `OpenRouter image generation failed with status ${response.status}.`,
+            details: errText,
+          },
+          { status: response.status || 500 }
         );
       }
     } catch (err: any) {
       console.error('OpenRouter image generation error:', err);
       return NextResponse.json(
-        { error: 'OpenRouter AI image generation timed out or failed to complete', details: err?.message },
-        { status: 504 }
+        {
+          error: 'OpenRouter image generation timed out or failed.',
+          details: err?.message || String(err),
+        },
+        { status: 500 }
       );
     }
 

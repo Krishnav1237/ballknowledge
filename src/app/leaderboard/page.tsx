@@ -391,7 +391,7 @@ export default function LeaderboardPage() {
           alt="Stadium background"
           fill
           className="object-cover opacity-[0.66] object-center scale-102 filter saturate-100 contrast-100"
-          priority
+          preload
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-background/35 to-background" />
         

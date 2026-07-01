@@ -97,8 +97,8 @@ POST /api/resolve-match
 ### Image Generation
 ```
 POST /api/generate-viral-card
-  → OpenRouter /api/v1/images/generations (flux-1-pro)  [if OPENROUTER_API_KEY set]
-  → Card renders without AI background otherwise
+  → OpenRouter /api/v1/images (flux.2-pro)  [if OPENROUTER_API_KEY set]
+  → Card renders without AI background otherwise (returns error on API failure)
 ```
 
 ---

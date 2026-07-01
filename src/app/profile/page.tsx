@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
+import { getStorageItem, removeStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
@@ -143,8 +144,8 @@ export default function ProfileSettingsPage() {
           }
 
           // Direct redirect flow execution
-          const expectedNonce = sessionStorage.getItem('bk_google_nonce') || undefined;
-          sessionStorage.removeItem('bk_google_nonce');
+          const expectedNonce = getStorageItem('sessionStorage', 'bk_google_nonce') || undefined;
+          removeStorageItem('sessionStorage', 'bk_google_nonce');
           await handleGoogleCredentialResponse({ credential: idToken, expectedNonce });
           window.location.hash = ''; // Clear Hash to prevent route replays
         }
@@ -178,8 +179,8 @@ export default function ProfileSettingsPage() {
 
       // 2. Custom Google popup implicit auth success
       if (event.data?.type === 'google-popup-success' && event.data.token) {
-        const expectedNonce = sessionStorage.getItem('bk_google_nonce') || undefined;
-        sessionStorage.removeItem('bk_google_nonce');
+        const expectedNonce = getStorageItem('sessionStorage', 'bk_google_nonce') || undefined;
+        removeStorageItem('sessionStorage', 'bk_google_nonce');
         await handleGoogleCredentialResponse({ credential: event.data.token, expectedNonce });
       }
     };
@@ -193,7 +194,7 @@ export default function ProfileSettingsPage() {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
     const redirectUri = encodeURIComponent(window.location.origin + '/profile');
     const nonce = `bk_${Math.random().toString(36).substring(2)}`;
-    sessionStorage.setItem('bk_google_nonce', nonce);
+    setStorageItem('sessionStorage', 'bk_google_nonce', nonce);
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=google`;
 
     // Open Google Sign-In in a premium window popup
@@ -309,10 +310,10 @@ export default function ProfileSettingsPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (!res.ok || !data.success) {
-        showToast(`AI Error: ${data.error || 'Server error'}`, 'error');
+      if (!res.ok || !data?.success) {
+        showToast(`AI Error: ${data?.error || 'Server error'}`, 'error');
         setIsSynthesizing(false);
         return;
       }
@@ -554,7 +555,7 @@ export default function ProfileSettingsPage() {
               alt="Locker Room Authentication Background" 
               fill 
               className="object-cover opacity-[0.52] object-center" 
-              priority 
+              preload
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-background/60 to-background" />
           </div>
@@ -706,7 +707,7 @@ export default function ProfileSettingsPage() {
               alt="World Cup Stadium Background"
               fill
               className="object-cover opacity-[0.52] object-center scale-102"
-              priority
+              preload
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/70 to-[#07090E]" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-rose-950/10 rounded-full blur-[120px] pointer-events-none" />

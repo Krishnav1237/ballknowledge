@@ -102,7 +102,7 @@ export default function FootballIQPage() {
             alt="World Cup Stadium"
             fill
             className="object-cover opacity-[0.15] object-center"
-            priority
+            preload
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/80 to-[#07090E]" />
         </div>
@@ -548,7 +548,7 @@ export default function FootballIQPage() {
           alt="World Cup Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.48]" 
-          priority 
+          preload
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/60 via-[#030712]/80 to-[#030712]" />
       </div>

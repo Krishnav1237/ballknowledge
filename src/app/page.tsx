@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Target, Users, Flame, MessageSquare, Award } from 'lucide-react';
+import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 
 
 import { BREAKING_NEWS, PLAYERS, COUNTRIES } from '@/lib/landingData';
@@ -38,18 +39,13 @@ export default function Home() {
 
     let timer: NodeJS.Timeout | undefined;
 
-    // Check if the preloader was already shown in this session to skip redundant loads
-    const hasPreloaded = typeof window !== 'undefined' && sessionStorage.getItem('bk_preloaded');
+    const hasPreloaded = getStorageItem('sessionStorage', 'bk_preloaded');
     if (hasPreloaded) {
       setLoading(false);
     } else {
       timer = setTimeout(() => {
         setLoading(false);
-        try {
-          sessionStorage.setItem('bk_preloaded', 'true');
-        } catch {
-          // ignore session storage exceptions
-        }
+        setStorageItem('sessionStorage', 'bk_preloaded', 'true');
       }, 400); // Fast initial splash
     }
 
@@ -132,7 +128,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#030712] text-white">
         <motion.div style={{ y: yBg }} className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" priority />
+          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" preload />
           {/* Dark vignette — lighter in the middle so the stadium is visible */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/20 to-[#030712]/90" />
           {/* Side vignettes for readability */}

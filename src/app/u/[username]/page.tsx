@@ -504,7 +504,7 @@ export default function PublicProfilePage() {
           alt="World Cup Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.48]" 
-          priority 
+          preload
         />
         <div className="absolute inset-0 bg-[#030712]/75" />
       </div>

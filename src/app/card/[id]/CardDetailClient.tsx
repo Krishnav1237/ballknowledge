@@ -145,13 +145,16 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         })
       });
       if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.aiImageUrl) {
+        const result = await response.json().catch(() => null);
+        if (result?.success && result.aiImageUrl) {
           setCard((prev: any) => ({
             ...prev,
             aiImageUrl: result.aiImageUrl
           }));
-          showStatus('Cosmic card background unlocked successfully!', 'success');
+          showStatus(
+            'Cosmic card background unlocked successfully!',
+            'success'
+          );
         } else {
           showStatus('OpenRouter image generation failed. Key may be missing/unfunded.', 'error');
         }
@@ -216,7 +219,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
           alt="World Cup Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.25]" 
-          priority 
+          preload
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#030712]/70 to-[#030712]" />
       </div>

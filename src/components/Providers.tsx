@@ -20,15 +20,24 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     if (process.env.NODE_ENV === 'development') {
       const originalError = console.error;
       console.error = (...args: any[]) => {
-        const errorMsg = String(args[0] || '');
-        // Silence hydration errors caused by browser extensions like Apollo.io, Grammarly, etc.
+        const errorMsg = args.map((arg) => String(arg || '')).join(' ');
+        const normalized = errorMsg.toLowerCase();
+        const isExtensionNoise =
+          normalized.includes('__gcruniqueid') ||
+          normalized.includes('apolloio') ||
+          normalized.includes('zp-open-popup-button') ||
+          normalized.includes('grammarly');
+        const isHydrationNoise =
+          normalized.includes('hydration failed') ||
+          normalized.includes('there was an error while hydrating') ||
+          normalized.includes('a tree hydrated but some attributes') ||
+          normalized.includes("didn't match the client properties") ||
+          normalized.includes('does not match the server');
+
+        // Silence known browser-extension hydration noise without hiding app-owned mismatches.
         if (
-          errorMsg.includes('Hydration failed') ||
-          errorMsg.includes('There was an error while hydrating') ||
-          errorMsg.includes('does not match the server') ||
-          errorMsg.includes('zp-open-popup-button') ||
-          errorMsg.includes('apolloio-css-vars-reset') ||
-          errorMsg.includes('apolloio')
+          isExtensionNoise &&
+          isHydrationNoise
         ) {
           return;
         }

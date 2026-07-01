@@ -14,6 +14,7 @@ import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
 import { parseLocalDate, getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
+import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -136,14 +137,14 @@ export default function MatchPage() {
 
   const dismissPredictionModal = () => {
     predictionModalDismissedRef.current = true;
-    sessionStorage.setItem(`bk_prediction_modal_dismissed_${matchId}`, 'true');
+    setStorageItem('sessionStorage', `bk_prediction_modal_dismissed_${matchId}`, 'true');
     setShowPredictionModal(false);
   };
 
   useEffect(() => {
     setMounted(true);
     const dismissedKey = `bk_prediction_modal_dismissed_${matchId}`;
-    predictionModalDismissedRef.current = sessionStorage.getItem(dismissedKey) === 'true';
+    predictionModalDismissedRef.current = getStorageItem('sessionStorage', dismissedKey) === 'true';
 
     // Load user profile & predictions
     const userProfile = getStoredProfile();
@@ -643,7 +644,7 @@ export default function MatchPage() {
           alt="Match Dugout Background" 
           fill 
           className="object-cover opacity-[0.52] object-center scale-102" 
-          priority 
+          preload
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-background/20 to-background" />
       </div>

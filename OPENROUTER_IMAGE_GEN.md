@@ -13,7 +13,7 @@ to produce photorealistic, premium shareable football cards.
 | Use Case | Endpoint |
 |----------|----------|
 | Text / hot take grading | `POST /api/v1/chat/completions` |
-| **Image generation** | `POST /api/v1/images/generations` ← correct |
+| **Image generation** | `POST /api/v1/images` ← correct |
 
 ---
 
@@ -21,20 +21,20 @@ to produce photorealistic, premium shareable football cards.
 
 | Model ID | Quality | Speed | Cost | Notes |
 |----------|---------|-------|------|-------|
-| `black-forest-labs/flux-1-pro` | ⭐⭐⭐⭐⭐ Photorealistic | ~10–20s | $$$ | **Default — best face/jersey detail** |
+| `black-forest-labs/flux.2-pro` | ⭐⭐⭐⭐⭐ Photorealistic | ~15–30s | $$$ | **Default — best face/jersey detail** |
+| `black-forest-labs/flux-1-pro` | ⭐⭐⭐⭐⭐ Photorealistic | ~10–20s | $$$ | High quality legacy |
 | `black-forest-labs/flux-1-dev` | ⭐⭐⭐⭐ High | ~8–15s | $$ | Great alternative |
 | `black-forest-labs/flux-1-schnell` | ⭐⭐⭐ Good | ~2–5s | $ | Use for high traffic / cost savings |
-| `stabilityai/stable-diffusion-3-5` | ⭐⭐⭐ Good | ~6–12s | $$ | Good for stylised art cards |
 
-The active model is configured via `IMAGE_MODEL` constant in `src/app/api/generate-viral-card/route.ts`.
+The active model is configured via `OPENROUTER_IMAGE_MODEL` env variable or fallback in `src/app/api/generate-viral-card/route.ts`.
 
 ---
 
 ## 🛠️ Correct Request Format
 
 ```typescript
-// POST https://openrouter.ai/api/v1/images/generations
-const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
+// POST https://openrouter.ai/api/v1/images
+const response = await fetch('https://openrouter.ai/api/v1/images', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -43,21 +43,23 @@ const response = await fetch('https://openrouter.ai/api/v1/images/generations', 
     'X-Title': 'BallKnowledge World Cup 2026',
   },
   body: JSON.stringify({
-    model: 'black-forest-labs/flux-1-pro',
+    model: 'black-forest-labs/flux.2-pro',
     prompt: 'Hyper-realistic FIFA Ultimate Team card illustration...',
     n: 1,
-    size: '768x1024',   // Portrait card format
-    quality: 'standard',
+    aspect_ratio: '3:4', // Portrait card format
+    input_references: [{
+      type: 'image_url',
+      image_url: { url: faceDataUrl },
+    }],
   }),
-  signal: AbortSignal.timeout(25_000),
+  signal: AbortSignal.timeout(50_000),
 });
 
 const data = await response.json();
-// Standard OpenAI-compatible image response:
+// OpenRouter Image response b64_json or url:
 const imageUrl = data?.data?.[0]?.url ?? '';
-// Some models return base64 instead:
 const base64 = data?.data?.[0]?.b64_json;
-const src = base64 ? `data:image/png;base64,${base64}` : imageUrl;
+const src = base64 ? `data:image/jpeg;base64,${base64}` : imageUrl;
 ```
 
 ---
@@ -97,8 +99,7 @@ professional sports photography style. 4K quality. Sharp focus.
 3. **Cache Generated Images** — Store AI image URLs in the `MatchCard` database record. Re-use across
    share links rather than re-generating on every view.
 
-4. **Graceful Degradation** — If `OPENROUTER_API_KEY` is not set, `aiImageUrl` returns `''` and the card
-   renders its built-in SVG background (`/images/card_bg.webp`). This is the default for local dev.
+4. **Strict Production Failure** — In production, all fallbacks to a local template have been removed. If the OpenRouter request fails, the key is missing/unfunded, or the request times out, the backend endpoint will return an explicit `500` or corresponding status code with error details. The client handles this by showing an error toast and retaining the uploaded face as the avatar seed.
 
 ---
 
