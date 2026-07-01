@@ -251,6 +251,55 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
 }
 
 /**
+ * Fetches the profile from the database for the given username.
+ * Updates local storage with the returned database profile.
+ * 
+ * @param {string} username - The username profile to fetch.
+ * @returns {Promise<FootballIQProfile | null>} The fetched profile, or null on failure.
+ */
+export async function fetchProfileFromDb(username: string): Promise<FootballIQProfile | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const res = await fetch(`/api/profile/${encodeURIComponent(username)}`, {
+      method: 'GET',
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.profile) {
+        const profile = getStoredProfile();
+        const synced = {
+          ...profile,
+          id: data.profile.id,
+          username: data.profile.username,
+          overallRating: data.profile.overallRating,
+          predictionRating: data.profile.predictionRating,
+          hotTakeRating: data.profile.hotTakeRating,
+          managerRating: data.profile.managerRating,
+          roastScore: data.profile.roastScore,
+          role: data.profile.role,
+          avatarStyle: data.profile.avatarStyle,
+          avatarSeed: data.profile.avatarSeed,
+          email: data.profile.email || profile.email,
+          name: data.profile.name || profile.name,
+          inputImage: data.profile.inputImage || profile.inputImage,
+          favoriteClub: data.profile.favoriteClub || profile.favoriteClub,
+          favoriteNation: data.profile.favoriteNation || profile.favoriteNation,
+          collectedCards: data.cards ? data.cards.map((c: any) => c.id) : profile.collectedCards
+        };
+        
+        saveStoredProfile(synced);
+        window.dispatchEvent(new Event('storage'));
+        return synced;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch profile from DB:', err);
+  }
+  return null;
+}
+
+/**
  * Deletes the profile from the database.
  * Used during campaign wipes for authenticated users.
  * 

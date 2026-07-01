@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
+import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, fetchProfileFromDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { getStorageItem, removeStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
@@ -65,19 +65,21 @@ export default function ProfileSettingsPage() {
       setPendingPhoto(prof.inputImage);
     }
 
-    // Sync with database on load
-    syncProfileWithDb(prof).then(synced => {
-      setProfile(synced);
-      setUsername(synced.username);
-      setFavoriteClub(synced.favoriteClub || '');
-      setFavoriteNation(synced.favoriteNation || '');
-      setRole(synced.role);
-      setAvatarSeed(synced.avatarSeed);
-      setAvatarStyle(synced.avatarStyle);
-      if (synced.inputImage) {
-        setPendingPhoto(synced.inputImage);
+    // Sync with database on load via GET to prevent local defaults overwriting custom data
+    fetchProfileFromDb(prof.username).then(synced => {
+      if (synced) {
+        setProfile(synced);
+        setUsername(synced.username);
+        setFavoriteClub(synced.favoriteClub || '');
+        setFavoriteNation(synced.favoriteNation || '');
+        setRole(synced.role);
+        setAvatarSeed(synced.avatarSeed);
+        setAvatarStyle(synced.avatarStyle);
+        if (synced.inputImage) {
+          setPendingPhoto(synced.inputImage);
+        }
       }
-    }).catch(err => console.warn('Failed to sync profile with database on mount:', err));
+    }).catch(err => console.warn('Failed to fetch profile from database on mount:', err));
   }, []);
 
   // Reused to verify credential tokens from both SDK prompt and custom redirect flows
