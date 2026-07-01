@@ -8,7 +8,7 @@ import Link from 'next/link';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
 import { Sparkles, Trophy, Flame, AlertCircle, Share2, CheckCircle } from 'lucide-react';
-import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot } from '@/lib/roster';
+import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot, PLAYER_SILHOUETTE } from '@/lib/roster';
 import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
@@ -259,7 +259,7 @@ export default function MatchPage() {
   const isAdmin = profile?.role === 'ADMIN';
 
   // Submissions locked state
-  const isSubmissionLocked = status !== 'UPCOMING' && !isAdmin;
+  const isSubmissionLocked = (status !== 'UPCOMING' && !isAdmin) || (predictions[matchId]?.locked && !isAdmin);
 
   // Max hot takes based on user role (FREE = 3, PREMIUM/ADMIN = 5)
   const maxTakes = profile?.role === 'FREE' ? 3 : 5;
@@ -908,8 +908,8 @@ export default function MatchPage() {
               {/* Right: Status-aware panel — chat when LIVE/COMPLETED, selector when UPCOMING */}
 	              <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0 min-h-[520px] lg:min-h-0">
 
-                {/* ── LIVE / COMPLETED → Chat Panel ── */}
-                {(status === 'LIVE' || status === 'COMPLETED') ? (
+                {/* ── LIVE / COMPLETED / LOCKED → Chat Panel ── */}
+                {(status === 'LIVE' || status === 'COMPLETED' || predictions[matchId]?.locked) ? (
                   <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-0 backdrop-blur-md">
                     <MatchLiveChat
                       matchId={matchId}
@@ -921,7 +921,7 @@ export default function MatchPage() {
                     />
                   </div>
                 ) : (
-                  /* ── UPCOMING → Player Selector ── */
+                  /* ── UPCOMING & NOT LOCKED → Player Selector ── */
                   <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-0 backdrop-blur-md">
                     {selectedSlot ? (
                       <>
@@ -974,7 +974,7 @@ export default function MatchPage() {
                                         onError={(e) => {
                                           const target = e.target as HTMLImageElement;
                                           target.onerror = null; // Prevent infinite loop recursion
-                                          target.src = "https://media.api-sports.io/football/players/154.png";
+                                          target.src = PLAYER_SILHOUETTE;
                                         }}
                                       />
                                       <div className="absolute -bottom-1 -right-1 shadow-sm">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
-import { Player, getPlayerImageUrl } from '@/lib/roster';
+import { Player, getPlayerImageUrl, PLAYER_SILHOUETTE } from '@/lib/roster';
 
 /**
  * Coordinates and category classification of the 11 player slots
@@ -123,7 +123,7 @@ export default function TacticalPitch({
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null; // Prevent infinite loop recursion
-                      target.src = "https://media.api-sports.io/football/players/154.png";
+                      target.src = PLAYER_SILHOUETTE;
                     }}
                   />
                   <div className="absolute -bottom-0.5 -right-0.5 text-[7px] min-[370px]:text-[9px] sm:text-[11px] bg-black/60 rounded-full px-0.5 shadow-sm leading-none">
