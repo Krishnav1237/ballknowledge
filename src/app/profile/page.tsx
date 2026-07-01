@@ -79,35 +79,7 @@ export default function ProfileSettingsPage() {
     }).catch(err => console.warn('Failed to sync profile with database on mount:', err));
   }, []);
 
-  const initGoogleGIS = () => {
-    try {
-      const google = (window as any).google;
-      if (!google || !google.accounts || !google.accounts.id) return;
-
-      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
-      
-      google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleCredentialResponse,
-        cancel_on_tap_outside: false
-      });
-
-      const btnParent = document.getElementById('google-signin-btn-container');
-      if (btnParent) {
-        btnParent.innerHTML = ''; // Prevent duplicate rendering conflicts
-        google.accounts.id.renderButton(btnParent, {
-          theme: 'filled_blue',
-          size: 'large',
-          text: 'signin_with',
-          shape: 'pill',
-          width: 280
-        });
-      }
-    } catch (err) {
-      console.error('Error initializing Google GIS:', err);
-    }
-  };
-
+  // Reused to verify credential tokens from both SDK prompt and custom redirect flows
   const handleGoogleCredentialResponse = async (response: any) => {
     try {
       setAuthStage('Authenticating with Google...');
@@ -155,13 +127,15 @@ export default function ProfileSettingsPage() {
   };
 
   useEffect(() => {
-    const handleOAuthMessage = (event: MessageEvent) => {
+    const handleOAuthMessage = async (event: MessageEvent) => {
+      // 1. Existing OAuth callback routes (e.g. Discord, Facebook)
       if (event.data?.type === 'oauth-success') {
         const profileData = event.data.profile;
-        setProfile(profileData);
-        saveStoredProfile(profileData);
+        const loggedIn = { ...profileData, isAuthenticated: true };
+        setProfile(loggedIn);
+        saveStoredProfile(loggedIn);
+        await syncProfileWithDb(loggedIn);
 
-        // Update form values
         setUsername(profileData.username);
         setFavoriteClub(profileData.favoriteClub || '');
         setFavoriteNation(profileData.favoriteNation || '');
@@ -175,47 +149,64 @@ export default function ProfileSettingsPage() {
         window.dispatchEvent(new Event('storage'));
         showToast('Successfully authenticated! 🚀', 'success');
       }
+
+      // 2. Custom Google popup implicit auth success
+      if (event.data?.type === 'google-popup-success' && event.data.token) {
+        await handleGoogleCredentialResponse({ credential: event.data.token });
+      }
     };
     window.addEventListener('message', handleOAuthMessage);
     return () => window.removeEventListener('message', handleOAuthMessage);
   }, [mounted]);
 
-  useEffect(() => {
-    if (!mounted || profile) return;
+  const handleCustomGoogleLogin = () => {
+    const clientId = '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
+    const redirectUri = encodeURIComponent(window.location.origin + '/profile');
+    const nonce = `bk_${Math.random().toString(36).substring(2)}`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=google`;
 
-    const scriptId = 'google-gsi-script';
-    let script = document.getElementById(scriptId) as HTMLScriptElement;
-    
-    const tryInit = () => {
-      const google = (window as any).google;
-      const btn = document.getElementById('google-signin-btn-container');
-      if (google?.accounts?.id && btn) {
-        initGoogleGIS();
-        return true;
+    // Open Google Sign-In in a premium window popup
+    const width = 500;
+    const height = 650;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    try {
+      const popup = window.open(url, 'GoogleSignIn', `width=${width},height=${height},left=${left},top=${top}`);
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        // Fallback to direct redirect if popups are blocked by browser settings
+        window.location.href = url;
       }
-      return false;
+    } catch (e) {
+      window.location.href = url;
+    }
+  };
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+
+    const parseGoogleHash = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('id_token=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const idToken = params.get('id_token');
+        if (idToken) {
+          // If this window is the popup, post the token back to the main window and close
+          if (window.opener) {
+            window.opener.postMessage({ type: 'google-popup-success', token: idToken }, '*');
+            window.close();
+            return;
+          }
+
+          // Direct redirect flow execution
+          await handleGoogleCredentialResponse({ credential: idToken });
+          window.location.hash = ''; // Clear Hash to prevent route replays
+        }
+      }
     };
 
-    if (!script) {
-      script = document.createElement('script');
-      script.id = scriptId;
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        const interval = setInterval(() => {
-          if (tryInit()) clearInterval(interval);
-        }, 100);
-        setTimeout(() => clearInterval(interval), 3000);
-      };
-      document.body.appendChild(script);
-    } else {
-      const interval = setInterval(() => {
-        if (tryInit()) clearInterval(interval);
-      }, 100);
-      setTimeout(() => clearInterval(interval), 3000);
-    }
-  }, [mounted, profile, authMode]);
+    parseGoogleHash();
+  }, [mounted]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -679,7 +670,19 @@ export default function ProfileSettingsPage() {
                   </div>
 
                   <div className="flex flex-col gap-2.5 items-center w-full mt-3">
-                    <div id="google-signin-btn-container" className="min-h-[44px]"></div>
+                    <button
+                      type="button"
+                      onClick={handleCustomGoogleLogin}
+                      className="w-full max-w-[280px] h-11 rounded-xl bg-white hover:bg-zinc-100 text-black font-sans font-black text-xs uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-md active:scale-95"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.61 14.99 1 12 1 7.24 1 3.21 3.73 1.25 7.69l3.87 3C6.04 7.63 8.78 5.04 12 5.04z" />
+                        <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.87 3c2.26-2.09 3.54-5.17 3.54-8.79z" />
+                        <path fill="#FBBC05" d="M5.12 10.69c-.25-.76-.39-1.57-.39-2.42s.14-1.66.39-2.42L1.25 4.85C.45 6.45 0 8.23 0 10.12s.45 3.67 1.25 5.27l3.87-3z" />
+                        <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.87-3c-1.1.74-2.5 1.18-4.09 1.18-3.22 0-5.96-2.59-6.93-5.65l-3.87 3C3.21 20.27 7.24 23 12 23z" />
+                      </svg>
+                      <span>Continue with Google</span>
+                    </button>
                   </div>
                 </form>
               )}
