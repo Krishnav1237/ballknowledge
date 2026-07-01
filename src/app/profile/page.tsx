@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Script from 'next/script';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { VerdictData } from '@/lib/tribunalDB';
@@ -83,7 +82,7 @@ export default function ProfileSettingsPage() {
   const initGoogleGIS = () => {
     try {
       const google = (window as any).google;
-      if (!google) return;
+      if (!google || !google.accounts || !google.accounts.id) return;
 
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
       
@@ -95,12 +94,13 @@ export default function ProfileSettingsPage() {
 
       const btnParent = document.getElementById('google-signin-btn-container');
       if (btnParent) {
+        btnParent.innerHTML = ''; // Prevent duplicate rendering conflicts
         google.accounts.id.renderButton(btnParent, {
-          theme: 'dark',
+          theme: 'filled_blue',
           size: 'large',
           text: 'signin_with',
           shape: 'pill',
-          width: '280'
+          width: 280
         });
       }
     } catch (err) {
@@ -183,19 +183,38 @@ export default function ProfileSettingsPage() {
   useEffect(() => {
     if (!mounted || profile) return;
 
-    let checkCount = 0;
-    const interval = setInterval(() => {
-      checkCount++;
+    const scriptId = 'google-gsi-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+    
+    const tryInit = () => {
       const google = (window as any).google;
-      if (google?.accounts?.id && document.getElementById('google-signin-btn-container')) {
+      const btn = document.getElementById('google-signin-btn-container');
+      if (google?.accounts?.id && btn) {
         initGoogleGIS();
-        clearInterval(interval);
-      } else if (checkCount > 20) {
-        clearInterval(interval);
+        return true;
       }
-    }, 200);
+      return false;
+    };
 
-    return () => clearInterval(interval);
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        const interval = setInterval(() => {
+          if (tryInit()) clearInterval(interval);
+        }, 100);
+        setTimeout(() => clearInterval(interval), 3000);
+      };
+      document.body.appendChild(script);
+    } else {
+      const interval = setInterval(() => {
+        if (tryInit()) clearInterval(interval);
+      }, 100);
+      setTimeout(() => clearInterval(interval), 3000);
+    }
   }, [mounted, profile, authMode]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -660,7 +679,7 @@ export default function ProfileSettingsPage() {
                   </div>
 
                   <div className="flex flex-col gap-2.5 items-center w-full mt-3">
-                    <div id="google-signin-btn-container" className="g_id_signin"></div>
+                    <div id="google-signin-btn-container" className="min-h-[44px]"></div>
                   </div>
                 </form>
               )}
@@ -938,11 +957,6 @@ export default function ProfileSettingsPage() {
         </div>
       )}
       {Toast}
-      <Script 
-        src="https://accounts.google.com/gsi/client" 
-        strategy="afterInteractive" 
-        onLoad={initGoogleGIS}
-      />
     </div>
   );
 }
