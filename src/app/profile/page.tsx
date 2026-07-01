@@ -146,6 +146,68 @@ export default function ProfileSettingsPage() {
   };
 
   useEffect(() => {
+    const handleOAuthMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'oauth-success') {
+        const profileData = event.data.profile;
+        setProfile(profileData);
+        saveStoredProfile(profileData);
+
+        // Update form values
+        setUsername(profileData.username);
+        setFavoriteClub(profileData.favoriteClub || '');
+        setFavoriteNation(profileData.favoriteNation || '');
+        setRole(profileData.role);
+        setAvatarSeed(profileData.avatarSeed);
+        setAvatarStyle(profileData.avatarStyle);
+        if (profileData.inputImage) {
+          setPendingPhoto(profileData.inputImage);
+        }
+
+        window.dispatchEvent(new Event('storage'));
+        showToast('Successfully authenticated! 🚀', 'success');
+      }
+    };
+    window.addEventListener('message', handleOAuthMessage);
+    return () => window.removeEventListener('message', handleOAuthMessage);
+  }, [mounted]);
+
+  const handleDiscordLogin = () => {
+    try {
+      const clientId = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '123456789012345678';
+      const host = window.location.host;
+      const protocol = window.location.protocol;
+      const redirectUri = encodeURIComponent(`${protocol}//${host}/api/auth/callback?provider=discord`);
+      const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify%20email`;
+      
+      const width = 500, height = 650;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      window.open(authUrl, 'oauth-popup', `width=${width},height=${height},left=${left},top=${top}`);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to initialize Discord auth', 'error');
+    }
+  };
+
+  const handleFacebookLogin = () => {
+    try {
+      const appId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '1234567890123456';
+      const host = window.location.host;
+      const protocol = window.location.protocol;
+      const redirectUri = encodeURIComponent(`${protocol}//${host}/api/auth/callback?provider=facebook`);
+      const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=email,public_profile`;
+      
+      const width = 500, height = 650;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      window.open(authUrl, 'oauth-popup', `width=${width},height=${height},left=${left},top=${top}`);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to initialize Facebook auth', 'error');
+    }
+  };
+
+  useEffect(() => {
     if (mounted && !profile) {
       const timer = setTimeout(() => {
         initGoogleGIS();
@@ -597,8 +659,27 @@ export default function ProfileSettingsPage() {
                     <span className="relative px-3 bg-[#0B0305] text-[9px] font-black tracking-widest text-zinc-500 uppercase">OR</span>
                   </div>
 
-                  <div className="flex justify-center w-full min-h-[44px]">
+                  <div className="flex flex-col gap-2.5 items-center w-full mt-3">
                     <div id="google-signin-btn-container" className="g_id_signin"></div>
+                    
+                    <div className="flex gap-3 w-full max-w-[280px]">
+                      <button
+                        type="button"
+                        onClick={handleDiscordLogin}
+                        className="flex-1 h-9 rounded-full bg-[#5865F2] hover:bg-[#4752C4] text-white flex items-center justify-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-md"
+                      >
+                        <svg className="w-4 h-4 fill-white" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.4-5c.88-.65,1.72-1.33,2.53-2a75.76,75.76,0,0,0,72.59,0c.81.71,1.65,1.39,2.53,2a68.68,68.68,0,0,1-10.4,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129,54.65,123.48,31.58,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/></svg>
+                        Discord
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleFacebookLogin}
+                        className="flex-1 h-9 rounded-full bg-[#1877F2] hover:bg-[#166FE5] text-white flex items-center justify-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-md"
+                      >
+                        <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        Facebook
+                      </button>
+                    </div>
                   </div>
                 </form>
               )}

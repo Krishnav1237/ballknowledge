@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const title = `${card.profile.username}'s VAR Verdict${fixtureString} — OVR ${card.rating}`;
     const description = `Verdict: ${card.verdict} | ${card.charge}. Check out this Football IQ card!`;
-    const imageUrl = card.aiImageUrl || 'https://ballknowledge.vercel.app/images/card_bg.webp';
+    const imageUrl = card.aiImageUrl || `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app'}/images/card_bg.webp`;
 
     return {
       title,

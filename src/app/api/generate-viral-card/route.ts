@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         headers: {
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://ballknowledge.vercel.app',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app',
           'X-Title': 'BallKnowledge World Cup 2026',
         },
         body: JSON.stringify({
