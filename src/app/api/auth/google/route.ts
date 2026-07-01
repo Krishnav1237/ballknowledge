@@ -1,34 +1,53 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { attachSessionCookie, cleanUsername } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
-function decodeGoogleJwt(token: string) {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padLen = (4 - (payloadBase64.length % 4)) % 4;
-    const padded = payloadBase64 + '='.repeat(padLen);
-    const decodedStr = Buffer.from(padded, 'base64').toString('utf8');
-    return JSON.parse(decodedStr);
-  } catch (err) {
-    console.error('[Google Auth API] JWT decode failed:', err);
+const GOOGLE_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
+
+type GoogleTokenInfo = {
+  aud?: string;
+  email?: string;
+  email_verified?: string | boolean;
+  name?: string;
+  picture?: string;
+  exp?: string;
+  nonce?: string;
+};
+
+async function verifyGoogleJwt(token: string): Promise<GoogleTokenInfo | null> {
+  const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(8_000),
+  });
+  if (!res.ok) return null;
+  const payload = await res.json() as GoogleTokenInfo;
+  const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
+  const exp = Number(payload.exp || 0);
+  if (payload.aud !== GOOGLE_CLIENT_ID || !payload.email || !emailVerified || exp * 1000 < Date.now()) {
     return null;
   }
+  return payload;
 }
 
 export async function POST(request: Request) {
   try {
-    const { credential } = await request.json();
+    const { credential, expectedNonce } = await request.json();
 
     if (!credential) {
       return NextResponse.json({ error: 'Credential token is required' }, { status: 400 });
     }
 
-    const payload = decodeGoogleJwt(credential);
+    const payload = await verifyGoogleJwt(credential);
     if (!payload || !payload.email) {
       return NextResponse.json({ error: 'Invalid Google credential token' }, { status: 400 });
+    }
+
+    if (expectedNonce && payload.nonce !== expectedNonce) {
+      return NextResponse.json({ error: 'Invalid Google login nonce' }, { status: 400 });
     }
 
     const { email, name, picture } = payload;
@@ -40,8 +59,8 @@ export async function POST(request: Request) {
 
     if (!profile) {
       // 2. If no profile exists, create a unique username (alias) from their email or name
-      const baseAlias = name ? name.trim().replace(/\s+/g, '_') : email.split('@')[0];
-      let uniqueAlias = baseAlias.replace(/[^a-zA-Z0-9_]/g, '');
+      const baseAlias = cleanUsername(name || email.split('@')[0]) || 'Manager';
+      let uniqueAlias = baseAlias;
       
       // Ensure unique constraint in DB
       let existingAlias = await prisma.footballIQProfile.findUnique({
@@ -49,7 +68,7 @@ export async function POST(request: Request) {
       });
       let attempts = 0;
       while (existingAlias && attempts < 10) {
-        uniqueAlias = `${baseAlias}_${Math.floor(Math.random() * 1000)}`;
+        uniqueAlias = cleanUsername(`${baseAlias}_${Math.floor(Math.random() * 1000)}`);
         existingAlias = await prisma.footballIQProfile.findUnique({
           where: { username: uniqueAlias }
         });
@@ -88,7 +107,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Successfully authenticated with Google!',
       profile: {
@@ -109,6 +128,7 @@ export async function POST(request: Request) {
         season: profile.season
       }
     });
+    return attachSessionCookie(response, { profileId: profile.id, username: profile.username, role: profile.role });
 
   } catch (error) {
     console.error('[Google Auth API] POST error:', error);

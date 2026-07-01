@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
 import { getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { TEAM_ROSTERS } from '@/lib/roster';
+import { requireSession } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -557,6 +558,9 @@ interface GradedTake {
 
 export async function POST(request: Request) {
   try {
+    const auth = requireSession(request);
+    if (auth.response || !auth.session) return auth.response;
+
     const body = await request.json();
     const {
       syncOnly,
@@ -567,44 +571,25 @@ export async function POST(request: Request) {
       motm: predMotm,
       hotTakes,  // Array of { statement: string, confidence: number }
       lineup,    // Record<string, Player>
-      profile    // Current user profile object
+      profile    // Current user profile object, display-only; identity comes from session
     } = body;
 
     // ── Sync-only mode (profile upsert) ──────────────────────────────────────
-    if (syncOnly && profile && profile.username) {
+    if (syncOnly) {
       try {
         let dbProfile = await prisma.footballIQProfile.findUnique({
-          where: { username: profile.username }
+          where: { id: auth.session.profileId }
         });
-        if (!dbProfile) {
-          dbProfile = await prisma.footballIQProfile.create({
-            data: {
-              username: profile.username,
-              avatarStyle: profile.avatarStyle || 'fun-emoji',
-              avatarSeed: profile.avatarSeed || 'Reputation',
-              overallRating: profile.overallRating || 50,
-              predictionRating: profile.predictionRating || 50,
-              hotTakeRating: profile.hotTakeRating || 50,
-              managerRating: profile.managerRating || 50,
-              roastScore: profile.roastScore || 50,
-              role: profile.role || 'FREE',
-              season: 'World Cup 2026'
-            }
-          });
-        } else {
+        if (dbProfile) {
           dbProfile = await prisma.footballIQProfile.update({
             where: { id: dbProfile.id },
             data: {
-              overallRating: Math.max(dbProfile.overallRating, profile.overallRating || 50),
-              predictionRating: Math.max(dbProfile.predictionRating, profile.predictionRating || 50),
-              hotTakeRating: Math.max(dbProfile.hotTakeRating, profile.hotTakeRating || 50),
-              managerRating: Math.max(dbProfile.managerRating, profile.managerRating || 50),
-              roastScore: Math.max(dbProfile.roastScore, profile.roastScore || 50),
-              role: profile.role || dbProfile.role
+              avatarStyle: profile?.avatarStyle || undefined,
+              avatarSeed: profile?.avatarSeed || undefined,
             }
           });
         }
-        return NextResponse.json({ success: true, profile: dbProfile });
+        return NextResponse.json({ success: true, profile: dbProfile || profile });
       } catch (dbError) {
         console.warn('Prisma Database Offline. SyncOnly failed:', dbError);
         return NextResponse.json({ success: true, profile });
@@ -663,7 +648,7 @@ export async function POST(request: Request) {
       : [];
 
     // Free users: cap at 2 takes. Premium/Admin: up to 5.
-    const role = profile?.role || 'FREE';
+    const role = auth.session.role || 'FREE';
     const maxTakes = role === 'FREE' ? 2 : 5;
     const takesToGrade = statements.slice(0, maxTakes);
 
@@ -682,14 +667,12 @@ export async function POST(request: Request) {
 
     // Resolve profile ONCE at the beginning of DB section
     let dbProfile: any = null;
-    if (profile && profile.username) {
-      try {
-        dbProfile = await prisma.footballIQProfile.findUnique({
-          where: { username: profile.username }
-        });
-      } catch (dbError) {
-        console.warn('DB offline during profile resolve:', dbError);
-      }
+    try {
+      dbProfile = await prisma.footballIQProfile.findUnique({
+        where: { id: auth.session.profileId }
+      });
+    } catch (dbError) {
+      console.warn('DB offline during profile resolve:', dbError);
     }
 
     // ── 4. RST — Roast Score ──────────────────────────────────────────────────
@@ -698,7 +681,7 @@ export async function POST(request: Request) {
       try {
         rst = await calculateRST(dbProfile.id, matchId);
       } catch {
-        rst = profile.roastScore ?? 50;
+        rst = profile?.roastScore ?? 50;
       }
     } else if (profile) {
       rst = profile.roastScore ?? 50;
@@ -736,24 +719,9 @@ export async function POST(request: Request) {
     };
 
     // ── 7. Persist to DB ──────────────────────────────────────────────────────
+    let persistedCard: any = null;
     try {
-      if (profile && profile.username) {
-        if (!dbProfile) {
-          dbProfile = await prisma.footballIQProfile.create({
-            data: {
-              username: profile.username,
-              avatarStyle: profile.avatarStyle || 'fun-emoji',
-              avatarSeed: profile.avatarSeed || 'Reputation',
-              overallRating: ovr,
-              predictionRating: prd,
-              hotTakeRating: hot,
-              managerRating: mgr,
-              roastScore: rst,
-              role: role,
-              season: 'World Cup 2026'
-            }
-          });
-        } else {
+      if (dbProfile) {
           // Update: take best-ever score per metric (never decrease)
           dbProfile = await prisma.footballIQProfile.update({
             where: { id: dbProfile.id },
@@ -765,7 +733,6 @@ export async function POST(request: Request) {
               roastScore: Math.max(dbProfile.roastScore, rst),
             }
           });
-        }
 
         // Upsert Match Prediction
         const dbPrediction = await prisma.matchPrediction.upsert({
@@ -777,13 +744,14 @@ export async function POST(request: Request) {
             awayScore: predAwayScore ?? 0,
             firstGoalscorer: predScorer || '',
             motm: predMotm || '',
-            possessionWinner: '',
+            possessionWinner: String(body.possessionWinner || ''),
           },
           update: {
             homeScore: predHomeScore ?? 0,
             awayScore: predAwayScore ?? 0,
             firstGoalscorer: predScorer || '',
             motm: predMotm || '',
+            possessionWinner: String(body.possessionWinner || ''),
           },
         });
 
@@ -800,7 +768,7 @@ export async function POST(request: Request) {
         }
 
         // Upsert Match Card
-        await prisma.matchCard.upsert({
+        persistedCard = await prisma.matchCard.upsert({
           where: { profileId_matchId: { profileId: dbProfile.id, matchId } },
           create: {
             id: cardId,
@@ -830,15 +798,29 @@ export async function POST(request: Request) {
       console.warn('DB offline — returning in-memory response:', dbError);
     }
 
+    const finalCard = persistedCard
+      ? {
+          ...cardPayload,
+          id: persistedCard.id,
+          aiImageUrl: persistedCard.aiImageUrl,
+          createdAt: persistedCard.createdAt,
+        }
+      : cardPayload;
+
     return NextResponse.json({
       success: true,
-      card: cardPayload,
+      card: finalCard,
       profileUpdates: {
         predictionRating: prd,
         hotTakeRating: hot,
         managerRating: mgr,
         roastScore: rst,
         overallRating: ovr,
+        predictionDelta: profile?.predictionRating !== undefined ? prd - profile.predictionRating : 0,
+        hotTakeDelta: profile?.hotTakeRating !== undefined ? hot - profile.hotTakeRating : 0,
+        managerDelta: profile?.managerRating !== undefined ? mgr - profile.managerRating : 0,
+        roastDelta: profile?.roastScore !== undefined ? rst - profile.roastScore : 0,
+        overallDelta: profile?.overallRating !== undefined ? ovr - profile.overallRating : 0,
       },
       gradedTakes,
       actualResult: result,

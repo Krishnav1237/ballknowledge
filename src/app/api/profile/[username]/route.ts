@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { cleanShortText, expiredSessionCookieHeader, getSessionFromRequest, requireSession } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,8 @@ export async function GET(
     let profile = null;
     let cards: any[] = [];
     let isDbOffline = false;
+
+    const session = getSessionFromRequest(request);
 
     try {
       profile = await prisma.footballIQProfile.findUnique({
@@ -40,12 +43,21 @@ export async function GET(
     }
 
     if (isDbOffline) {
-      return NextResponse.json({ error: 'Database is offline. Service temporarily degraded.' }, { status: 503 });
+      return NextResponse.json({
+        success: false,
+        degraded: true,
+        error: 'Database is offline. Service temporarily degraded.',
+        profile: null,
+        cards: [],
+        predictions: [],
+      });
     }
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
+
+    const isOwner = session?.profileId === profile.id;
 
     return NextResponse.json({
       success: true,
@@ -54,9 +66,9 @@ export async function GET(
         username: profile.username,
         avatarStyle: profile.avatarStyle,
         avatarSeed: profile.avatarSeed,
-        inputImage: profile.inputImage,
-        email: profile.email,
-        name: profile.name,
+        inputImage: isOwner ? profile.inputImage : null,
+        email: isOwner ? profile.email : null,
+        name: isOwner ? profile.name : null,
         favoriteClub: profile.favoriteClub,
         favoriteNation: profile.favoriteNation,
         overallRating: profile.overallRating,
@@ -69,7 +81,7 @@ export async function GET(
         createdAt: profile.createdAt
       },
       cards,
-      predictions: profile ? profile.predictions : []
+      predictions: isOwner ? profile.predictions : []
     });
 
   } catch (error) {
@@ -90,7 +102,9 @@ export async function POST(
   { params }: { params: Promise<{ username: string }> }
 ) {
   try {
-    const { username: routeUsername } = await params;
+    const auth = requireSession(request);
+    if (auth.response || !auth.session) return auth.response;
+
     const body = await request.json();
     const { profile } = body;
 
@@ -98,17 +112,21 @@ export async function POST(
       return NextResponse.json({ error: 'Profile data is required' }, { status: 400 });
     }
 
-    // Resolve the canonical username: prefer body → URL param → fallback
-    const canonicalUsername =
-      profile.username ||
-      (routeUsername ? decodeURIComponent(routeUsername) : null) ||
-      'Rookie_Tactician';
+    const { username: routeUsername } = await params;
+    const requestedUsername = routeUsername ? decodeURIComponent(routeUsername) : '';
+    if (requestedUsername && requestedUsername !== auth.session.username) {
+      return NextResponse.json({ error: 'Cannot sync another manager profile.' }, { status: 403 });
+    }
 
     let dbProfile = null;
 
     try {
       const existing = await prisma.footballIQProfile.findUnique({
-        where: { username: canonicalUsername }
+        where: { id: auth.session.profileId },
+        include: {
+          matchCards: true,
+          predictions: { include: { hotTakes: true } },
+        },
       });
 
       if (existing) {
@@ -118,41 +136,17 @@ export async function POST(
             avatarStyle: profile.avatarStyle || undefined,
             avatarSeed: profile.avatarSeed || undefined,
             inputImage: profile.inputImage !== undefined ? profile.inputImage : undefined,
-            email: profile.email !== undefined ? profile.email : undefined,
-            name: profile.name !== undefined ? profile.name : undefined,
-            favoriteClub: profile.favoriteClub !== undefined ? profile.favoriteClub : undefined,
-            favoriteNation: profile.favoriteNation !== undefined ? profile.favoriteNation : undefined,
-            role: profile.role || undefined,
-            season: profile.season || undefined,
-            overallRating: Math.max(existing.overallRating, profile.overallRating || 0),
-            predictionRating: Math.max(existing.predictionRating, profile.predictionRating || 0),
-            hotTakeRating: Math.max(existing.hotTakeRating, profile.hotTakeRating || 0),
-            managerRating: Math.max(existing.managerRating, profile.managerRating || 0),
-            roastScore: Math.max(existing.roastScore, profile.roastScore || 0),
+            name: profile.name !== undefined ? cleanShortText(profile.name, 120) : undefined,
+            favoriteClub: profile.favoriteClub !== undefined ? cleanShortText(profile.favoriteClub, 80) : undefined,
+            favoriteNation: profile.favoriteNation !== undefined ? cleanShortText(profile.favoriteNation, 80) : undefined,
           },
-          include: { matchCards: true }
+          include: {
+            matchCards: true,
+            predictions: { include: { hotTakes: true } },
+          }
         });
       } else {
-        dbProfile = await prisma.footballIQProfile.create({
-          data: {
-            username: canonicalUsername,
-            avatarStyle: profile.avatarStyle || 'fun-emoji',
-            avatarSeed: profile.avatarSeed || 'Reputation',
-            inputImage: profile.inputImage || null,
-            email: profile.email || null,
-            name: profile.name || null,
-            favoriteClub: profile.favoriteClub || null,
-            favoriteNation: profile.favoriteNation || null,
-            overallRating: profile.overallRating || 50,
-            predictionRating: profile.predictionRating || 50,
-            hotTakeRating: profile.hotTakeRating || 50,
-            managerRating: profile.managerRating || 50,
-            roastScore: profile.roastScore || 50,
-            role: profile.role || 'FREE',
-            season: profile.season || 'World Cup 2026',
-          },
-          include: { matchCards: true }
-        });
+        return NextResponse.json({ error: 'Authenticated profile not found.' }, { status: 404 });
       }
     } catch (dbError) {
       console.warn('Prisma Database Offline. POST /api/profile/[username] failed:', dbError);
@@ -160,6 +154,7 @@ export async function POST(
 
     const finalProfile = dbProfile || profile;
     const cards = dbProfile ? dbProfile.matchCards : [];
+    const predictions = dbProfile ? dbProfile.predictions : [];
 
     return NextResponse.json({
       success: true,
@@ -183,6 +178,7 @@ export async function POST(
         createdAt: finalProfile.createdAt,
       },
       cards,
+      predictions,
     });
 
   } catch (error) {
@@ -196,20 +192,27 @@ export async function DELETE(
   { params }: { params: Promise<{ username: string }> }
 ) {
   try {
+    const auth = requireSession(request);
+    if (auth.response || !auth.session) return auth.response;
+
     const { username } = await params;
 
     if (!username) {
       return NextResponse.json({ error: 'Username is required' }, { status: 400 });
     }
 
+    if (decodeURIComponent(username) !== auth.session.username) {
+      return NextResponse.json({ error: 'Cannot delete another manager profile.' }, { status: 403 });
+    }
+
     try {
       const profile = await prisma.footballIQProfile.findUnique({
-        where: { username }
+        where: { id: auth.session.profileId }
       });
 
       if (profile) {
         await prisma.footballIQProfile.delete({
-          where: { username }
+          where: { id: auth.session.profileId }
         });
       }
     } catch (dbError) {
@@ -217,7 +220,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Database offline' }, { status: 503 });
     }
 
-    return NextResponse.json({ success: true, message: 'Profile deleted successfully' });
+    const response = NextResponse.json({ success: true, message: 'Profile deleted successfully' });
+    response.headers.append('Set-Cookie', expiredSessionCookieHeader());
+    return response;
   } catch (error) {
     console.error('Error in DELETE /api/profile/[username]:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

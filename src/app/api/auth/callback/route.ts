@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { cleanUsername, createSessionToken, sessionCookieHeader } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +14,11 @@ export async function GET(request: Request) {
       return htmlErrorResponse('Code and provider parameters are required for authentication.');
     }
 
+    const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
     const host = request.headers.get('host') || 'localhost:3000';
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
-    const redirectUri = `${protocol}://${host}/api/auth/callback?provider=${provider}`;
+    const appOrigin = configuredOrigin || `${protocol}://${host}`;
+    const redirectUri = `${appOrigin}/api/auth/callback?provider=${provider}`;
 
     let email = '';
     let name = '';
@@ -111,15 +113,15 @@ export async function GET(request: Request) {
     });
 
     if (!profile) {
-      const baseAlias = name ? name.trim().replace(/\s+/g, '_') : email.split('@')[0];
-      let uniqueAlias = baseAlias.replace(/[^a-zA-Z0-9_]/g, '');
+      const baseAlias = cleanUsername(name || email.split('@')[0]) || 'Manager';
+      let uniqueAlias = baseAlias;
 
       let existingAlias = await prisma.footballIQProfile.findUnique({
         where: { username: uniqueAlias }
       });
       let attempts = 0;
       while (existingAlias && attempts < 10) {
-        uniqueAlias = `${baseAlias}_${Math.floor(Math.random() * 1000)}`;
+        uniqueAlias = cleanUsername(`${baseAlias}_${Math.floor(Math.random() * 1000)}`);
         existingAlias = await prisma.footballIQProfile.findUnique({
           where: { username: uniqueAlias }
         });
@@ -215,7 +217,7 @@ export async function GET(request: Request) {
                     role: profile.role,
                     season: profile.season
                   })}
-                }, '*');
+                }, ${JSON.stringify(appOrigin)});
               }
             } catch (e) {
               console.error("Failed to postMessage back to parent window:", e);
@@ -228,8 +230,12 @@ export async function GET(request: Request) {
       </html>
     `;
 
+    const sessionToken = createSessionToken({ profileId: profile.id, username: profile.username, role: profile.role });
     return new Response(successHtml, {
-      headers: { 'Content-Type': 'text/html' }
+      headers: {
+        'Content-Type': 'text/html',
+        'Set-Cookie': sessionCookieHeader(sessionToken),
+      }
     });
 
   } catch (error: any) {
@@ -239,6 +245,16 @@ export async function GET(request: Request) {
 }
 
 function htmlErrorResponse(msg: string) {
+  const safeMsg = msg.replace(/[&<>"']/g, (char) => {
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    return entities[char] || char;
+  });
   const errorHtml = `
     <!DOCTYPE html>
     <html>
@@ -276,7 +292,7 @@ function htmlErrorResponse(msg: string) {
       <body>
         <div class="icon">⚠️</div>
         <h3>Authentication Failed</h3>
-        <p>${msg}</p>
+        <p>${safeMsg}</p>
         <button onclick="window.close()">Close Window</button>
       </body>
     </html>

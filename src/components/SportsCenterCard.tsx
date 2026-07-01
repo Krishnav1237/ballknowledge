@@ -383,10 +383,10 @@ export default function SportsCenterCard({
       >
         {data.aiImageUrl ? (
           <div className="relative w-full h-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             {/* Image starts at y=72px — below the BallKnowledge badge (~46px top + 26px height)
                 and the shield top notch, so the face is centered in the usable card area.
                 The dark card bg (#050A12) fills the 72px gap behind the badge overlay. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={data.aiImageUrl}
               alt="AI FIFA Card"

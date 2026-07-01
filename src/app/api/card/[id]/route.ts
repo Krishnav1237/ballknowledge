@@ -30,7 +30,13 @@ export async function GET(
     }
 
     if (isDbOffline) {
-      return NextResponse.json({ error: 'Database is offline. Service temporarily degraded.' }, { status: 503 });
+      return NextResponse.json({
+        success: false,
+        degraded: true,
+        error: 'Database is offline. Service temporarily degraded.',
+        card: null,
+        profile: null,
+      });
     }
 
     if (!card) {

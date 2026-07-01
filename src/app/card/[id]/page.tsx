@@ -55,9 +55,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? ` [${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}]`
       : '';
 
-    const title = `${card.profile.username}'s VAR Verdict${fixtureString} — OVR ${card.rating}`;
-    const description = `Verdict: ${card.verdict} | ${card.charge}. Check out this Football IQ card!`;
-    const imageUrl = card.aiImageUrl || `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app'}/images/card_bg.webp`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app';
+    const title = `${card.profile.username || 'Manager'}'s VAR Verdict${fixtureString} — OVR ${card.rating || 50}`;
+    const description = `Verdict: ${card.verdict || 'VAR VERDICT'} | ${card.charge || 'Football IQ audited.'}. Check out this Football IQ card!`;
+    const ogParams = new URLSearchParams({
+      user: card.profile.username || 'Tactical Manager',
+      verdict: card.verdict || 'VAR VERDICT CARD',
+      fixture: matchDetails.homeFifaCode && matchDetails.awayFifaCode ? `${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}` : 'World Cup 2026',
+      rarity: card.rarity || 'COMMON',
+      rating: String(card.rating || 50),
+    });
+    const imageUrl = `${siteUrl}/api/og/card?${ogParams.toString()}`;
 
     return {
       title,

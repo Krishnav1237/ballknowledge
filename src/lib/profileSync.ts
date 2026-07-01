@@ -51,6 +51,25 @@ const DEFAULT_PROFILE: FootballIQProfile = {
   inputImage: null
 };
 
+const PROFILE_KEY = 'var_cards_profile';
+const LEGACY_PREDICTIONS_KEY = 'var_cards_predictions';
+
+function getPredictionStorageKey(profile?: FootballIQProfile | null) {
+  const profileRef = profile?.id || profile?.username;
+  if (!profileRef || profileRef === DEFAULT_PROFILE.username) return LEGACY_PREDICTIONS_KEY;
+  return `var_cards_predictions_${encodeURIComponent(profileRef)}`;
+}
+
+function getCurrentProfileForStorage(): FootballIQProfile | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Retrieves the user profile from local storage.
  * Performs migrations for older V0 storage keys (`tacticalRating` and `communityRating`)
@@ -61,7 +80,7 @@ const DEFAULT_PROFILE: FootballIQProfile = {
 export function getStoredProfile(): FootballIQProfile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE;
   try {
-    const raw = localStorage.getItem('var_cards_profile');
+    const raw = localStorage.getItem(PROFILE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       // Migration pattern: map V0 fields to V1
@@ -96,10 +115,31 @@ export function getStoredProfile(): FootballIQProfile {
 export function saveStoredProfile(profile: FootballIQProfile) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem('var_cards_profile', JSON.stringify(profile));
+    if (profile.isAuthenticated && (profile.id || profile.username)) {
+      const profilePredKey = getPredictionStorageKey(profile);
+      const legacyPreds = localStorage.getItem(LEGACY_PREDICTIONS_KEY);
+      if (legacyPreds && !localStorage.getItem(profilePredKey)) {
+        localStorage.setItem(profilePredKey, legacyPreds);
+      }
+      localStorage.removeItem(LEGACY_PREDICTIONS_KEY);
+    }
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   } catch (e) {
     console.error('Failed to save profile to localStorage:', e);
   }
+}
+
+export function clearStoredProfile() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(PROFILE_KEY);
+  localStorage.removeItem(LEGACY_PREDICTIONS_KEY);
+}
+
+export function clearStoredPredictionsForCurrentProfile() {
+  if (typeof window === 'undefined') return;
+  const profile = getCurrentProfileForStorage();
+  localStorage.removeItem(getPredictionStorageKey(profile));
+  localStorage.removeItem(LEGACY_PREDICTIONS_KEY);
 }
 
 /**
@@ -146,10 +186,18 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
         
         // Sync database predictions map back to local storage predictions to avoid data overlap
         if (data.predictions) {
-          const localPreds: Record<string, any> = {};
+          const storageKey = getPredictionStorageKey(synced);
+          let existingPreds: Record<string, any> = {};
+          try {
+            existingPreds = JSON.parse(localStorage.getItem(storageKey) || '{}');
+          } catch {
+            existingPreds = {};
+          }
+          const localPreds: Record<string, any> = { ...existingPreds };
           data.predictions.forEach((p: any) => {
             const matchCard = data.cards?.find((c: any) => c.matchId === p.matchId);
             localPreds[p.matchId] = {
+              ...(existingPreds[p.matchId] || {}),
               matchId: p.matchId,
               homeScore: p.homeScore,
               awayScore: p.awayScore,
@@ -166,8 +214,7 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
             };
           });
           
-          // Overwrite local predictions map
-          localStorage.setItem('var_cards_predictions', JSON.stringify(localPreds));
+          localStorage.setItem(storageKey, JSON.stringify(localPreds));
         }
 
         saveStoredProfile(synced);
@@ -223,7 +270,8 @@ export interface LocalPrediction {
 export function getStoredPredictions(): Record<string, LocalPrediction> {
   if (typeof window === 'undefined') return {};
   try {
-    const raw = localStorage.getItem('var_cards_predictions');
+    const profile = getCurrentProfileForStorage();
+    const raw = localStorage.getItem(getPredictionStorageKey(profile));
     if (raw) return JSON.parse(raw);
   } catch (e) {
     console.warn('Failed to parse predictions:', e);
@@ -239,9 +287,9 @@ export function getStoredPredictions(): Record<string, LocalPrediction> {
 export function saveStoredPredictions(preds: Record<string, LocalPrediction>) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem('var_cards_predictions', JSON.stringify(preds));
+    const profile = getCurrentProfileForStorage();
+    localStorage.setItem(getPredictionStorageKey(profile), JSON.stringify(preds));
   } catch (e) {
     console.error('Failed to save predictions:', e);
   }
 }
-

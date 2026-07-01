@@ -35,54 +35,16 @@ const BANTER_BUTTONS = [
 
 const REACTIONS = ['🔥', '🤣', '😤', '👀', '💀', '🐐'];
 
-const SIMULATED_MANAGERS = [
-  'TacticalMaster',
-  'VARTribunal',
-  'PepFanatic',
-  'ElSocio',
-  'Capitano',
-  'Gegenpresser',
-  'FalseNine',
-  'JoseParkedBus',
-  'SpecialOne',
-  'AncelottiEyebrow',
-  'KloppHugging',
-  'ParkTheDoubleBus'
-];
-
-const SIMULATED_BANTER = [
-  'Ref is absolute garbage today 🤬',
-  'What a goal! World class finish 🚀⚽',
-  'VAR checking... please don\'t ruin this 🙏',
-  'Offside by a millimeter, game is gone 😤',
-  'PARK THE BUS TACTICS IS REAL FOOTBALL 🚌',
-  'Absolute dive, give him a yellow card 🎭',
-  'How did he miss that open goal?! 💀',
-  'Tactical masterclass from the home side today.',
-  'We need substitutions immediately, the midfield is ghosting 👻',
-  'What a pass! Absolute vision 👁️',
-  'Is it just me or is this match of the tournament? 🔥',
-  'This is why we love the World Cup 🏆🐐',
-  'Defending is non-existent, love to see it 😂',
-  'VAR is saving them again, unbelievable 🙄'
-];
-
 // Format time
 function formatTime(ts: number): string {
   const d = new Date(ts);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function generateId(): string {
-  return Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
-}
-
 export default function MatchLiveChat({
   matchId,
   isLive,
   isCompleted,
-  homeTeam,
-  awayTeam,
   managerAlias,
 }: MatchLiveChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -128,7 +90,6 @@ export default function MatchLiveChat({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: alias,
           text: text.trim()
         })
       });
@@ -145,7 +106,7 @@ export default function MatchLiveChat({
       setSending(false);
       inputRef.current?.focus();
     }
-  }, [matchId, alias, sending]);
+  }, [matchId, sending]);
 
   const addReaction = useCallback((messageId: string, emoji: string) => {
     setMessages(prev => {

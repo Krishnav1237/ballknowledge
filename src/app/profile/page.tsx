@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
+import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
@@ -39,11 +39,11 @@ export default function ProfileSettingsPage() {
   const [saveLoading, setSaveLoading] = useState(false);
   // Toast notification (replaces all alert() calls)
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'warn' } | null>(null);
-  const showToast = (text: string, type: 'success' | 'error' | 'warn' = 'success') => {
+  const showToast = useCallback((text: string, type: 'success' | 'error' | 'warn' = 'success') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 4000);
-  };
-  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  }, []);
+  const [resetMessage] = useState<string | null>(null);
   
   
   // Custom Credentials Auth Inputs
@@ -80,13 +80,13 @@ export default function ProfileSettingsPage() {
   }, []);
 
   // Reused to verify credential tokens from both SDK prompt and custom redirect flows
-  const handleGoogleCredentialResponse = async (response: any) => {
+  const handleGoogleCredentialResponse = useCallback(async (response: any) => {
     try {
       setAuthStage('Authenticating with Google...');
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response.credential })
+        body: JSON.stringify({ credential: response.credential, expectedNonce: response.expectedNonce })
       });
 
       const data = await res.json();
@@ -124,7 +124,7 @@ export default function ProfileSettingsPage() {
       setAuthStage('');
       showToast(err.message || 'Google Auth failed', 'error');
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     if (!mounted || typeof window === 'undefined') return;
@@ -137,19 +137,23 @@ export default function ProfileSettingsPage() {
         if (idToken) {
           // If this window is the popup, post the token back to the main window and close
           if (window.opener) {
-            window.opener.postMessage({ type: 'google-popup-success', token: idToken }, '*');
+            window.opener.postMessage({ type: 'google-popup-success', token: idToken }, window.location.origin);
             window.close();
             return;
           }
 
           // Direct redirect flow execution
-          await handleGoogleCredentialResponse({ credential: idToken });
+          const expectedNonce = sessionStorage.getItem('bk_google_nonce') || undefined;
+          sessionStorage.removeItem('bk_google_nonce');
+          await handleGoogleCredentialResponse({ credential: idToken, expectedNonce });
           window.location.hash = ''; // Clear Hash to prevent route replays
         }
       }
     };
 
     const handleOAuthMessage = async (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+
       // 1. Existing OAuth callback routes (e.g. Discord, Facebook)
       if (event.data?.type === 'oauth-success') {
         const profileData = event.data.profile;
@@ -174,19 +178,22 @@ export default function ProfileSettingsPage() {
 
       // 2. Custom Google popup implicit auth success
       if (event.data?.type === 'google-popup-success' && event.data.token) {
-        await handleGoogleCredentialResponse({ credential: event.data.token });
+        const expectedNonce = sessionStorage.getItem('bk_google_nonce') || undefined;
+        sessionStorage.removeItem('bk_google_nonce');
+        await handleGoogleCredentialResponse({ credential: event.data.token, expectedNonce });
       }
     };
 
     parseGoogleHash();
     window.addEventListener('message', handleOAuthMessage);
     return () => window.removeEventListener('message', handleOAuthMessage);
-  }, [mounted]);
+  }, [mounted, handleGoogleCredentialResponse, showToast]);
 
   const handleCustomGoogleLogin = () => {
-    const clientId = '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
     const redirectUri = encodeURIComponent(window.location.origin + '/profile');
     const nonce = `bk_${Math.random().toString(36).substring(2)}`;
+    sessionStorage.setItem('bk_google_nonce', nonce);
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=google`;
 
     // Open Google Sign-In in a premium window popup
@@ -201,7 +208,7 @@ export default function ProfileSettingsPage() {
         // Fallback to direct redirect if popups are blocked by browser settings
         window.location.href = url;
       }
-    } catch (e) {
+    } catch {
       window.location.href = url;
     }
   };
@@ -290,7 +297,7 @@ export default function ProfileSettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: username.trim().replace(/\s+/g, '_'),
+          username: profile.username,
           faceImage: pendingPhoto,
           favoriteNation,
           overallRating: profile.overallRating,
@@ -349,7 +356,7 @@ export default function ProfileSettingsPage() {
     setSaveLoading(true);
     const updated: FootballIQProfile = {
       ...profile,
-      username: username.trim().replace(/\s+/g, '_'),
+      username: profile.username,
       favoriteClub,
       favoriteNation,
       role
@@ -462,9 +469,10 @@ export default function ProfileSettingsPage() {
 
 
   const handleSignOut = () => {
-    localStorage.removeItem('var_cards_profile');
-    localStorage.removeItem('var_cards_predictions');
-    setProfile(null);
+    void fetch('/api/auth', { method: 'DELETE' }).catch(() => {});
+    clearStoredProfile();
+    const signedOut = getStoredProfile();
+    setProfile(signedOut);
     setUsername('');
     setPassword('');
     setFavoriteClub('');
@@ -485,8 +493,8 @@ export default function ProfileSettingsPage() {
           console.warn('Failed to wipe profile from database:', e);
         }
       }
-      localStorage.removeItem('var_cards_profile');
-      localStorage.removeItem('var_cards_predictions');
+      clearStoredPredictionsForCurrentProfile();
+      clearStoredProfile();
       window.dispatchEvent(new Event('storage'));
       showToast('Contract terminated. Profile reset.', 'warn');
       setTimeout(() => { window.location.href = '/world-cup-hub'; }, 1500);
@@ -788,22 +796,13 @@ export default function ProfileSettingsPage() {
                           <label className="block text-[10px] font-black text-rose-400 uppercase tracking-widest transition-all duration-200 group-focus-within:text-rose-300">
                             Manager Alias (Username)
                           </label>
-                          <input
-                            type="text"
-                            value={username}
-                            onChange={e => {
-                              const val = e.target.value;
-                              setUsername(val);
-                              if (profile) {
-                                const updated = { ...profile, username: val };
-                                setProfile(updated);
-                                saveStoredProfile(updated);
-                                window.dispatchEvent(new Event('storage'));
-                              }
-                            }}
-                            className="w-full h-10 bg-[#13070A] border border-rose-900/50 hover:border-rose-500/60 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/40 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/30 shadow-inner transition-all font-mono"
-                            placeholder="tactical_titan"
-                          />
+	                          <input
+	                            type="text"
+	                            value={username}
+	                            readOnly
+	                            className="w-full h-10 bg-[#13070A] border border-rose-900/50 rounded-xl px-3.5 text-xs font-bold text-zinc-300 placeholder-rose-500/30 shadow-inner transition-all font-mono cursor-not-allowed"
+	                            placeholder="tactical_titan"
+	                          />
                         </div>
 
                         <div className="space-y-1.5 group">

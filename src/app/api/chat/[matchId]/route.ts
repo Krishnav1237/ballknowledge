@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireSession } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,7 +134,11 @@ export async function GET(
 
   } catch (error) {
     console.error('[Chat GET API] Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      degraded: true,
+      messages: [],
+    });
   }
 }
 
@@ -142,31 +147,24 @@ export async function POST(
   { params }: { params: Promise<{ matchId: string }> }
 ) {
   try {
+    const auth = requireSession(request);
+    if (auth.response || !auth.session) return auth.response;
+
     const { matchId } = await params;
     const body = await request.json();
-    const { username, text } = body;
+    const { text } = body;
 
-    if (!matchId || !username || !text) {
-      return NextResponse.json({ error: 'MatchId, username, and text are required.' }, { status: 400 });
+    if (!matchId || !text) {
+      return NextResponse.json({ error: 'MatchId and text are required.' }, { status: 400 });
     }
 
     // 1. Resolve author profile
-    const cleanUsername = username.trim().replace(/\s+/g, '_');
-    let profile = await prisma.footballIQProfile.findUnique({
-      where: { username: cleanUsername }
+    const profile = await prisma.footballIQProfile.findUnique({
+      where: { id: auth.session.profileId }
     });
 
     if (!profile) {
-      profile = await prisma.footballIQProfile.create({
-        data: {
-          username: cleanUsername,
-          avatarStyle: 'fun-emoji',
-          avatarSeed: 'Reputation',
-          overallRating: 50,
-          role: 'FREE',
-          season: 'World Cup 2026'
-        }
-      });
+      return NextResponse.json({ error: 'Authenticated profile not found.' }, { status: 404 });
     }
 
     // 2. Create the message in database
@@ -174,7 +172,7 @@ export async function POST(
       data: {
         matchId,
         profileId: profile.id,
-        text: text.trim()
+        text: String(text).trim().slice(0, 280)
       },
       include: {
         profile: {

@@ -758,13 +758,10 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           </div>
         ) : (
           /* Submission Screen – full-width scoreboard + pitch/list no-scroll layout */
-          <div
-            className="flex flex-col overflow-hidden"
-            style={{ height: 'calc(100vh - 88px)' }}
-          >
+	          <div className="flex flex-col lg:overflow-hidden lg:h-[calc(100vh-88px)]">
             {/* ══ Row 1: Full-width Match Scoreboard with BIG score ══ */}
             <div className="shrink-0 bg-[#0B0F19]/80 border border-white/10 rounded-2xl px-5 py-3 mb-3 shadow-md backdrop-blur-md">
-              <div className="flex items-center gap-4">
+	              <div className="flex flex-wrap lg:flex-nowrap items-center gap-4">
                 {/* Home Team */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <FlagImage countryName={homeTeam.name_en} size="lg" />
@@ -810,9 +807,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                   <FlagImage countryName={awayTeam.name_en} size="lg" />
                 </div>
                 {/* Edit Predictions button */}
-                <button
-                  onClick={() => setShowPredictionModal(true)}
-                  className="shrink-0 py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-[#E11D48]/5 text-gray-300 font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer"
+	                <button
+	                  onClick={() => setShowPredictionModal(true)}
+	                  className="w-full sm:w-auto shrink-0 py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-[#E11D48]/5 text-gray-300 font-semibold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Flame className="w-3.5 h-3.5 text-[#E11D48]" />
                   Edit Picks
@@ -821,9 +818,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
             </div>
 
             {/* ══ Row 2: Pitch (63%) + Player Selector (37%) ══ */}
-            <div className="flex flex-1 gap-3 overflow-hidden min-h-0">
+	            <div className="flex flex-col lg:flex-row flex-1 gap-3 lg:overflow-hidden min-h-0">
               {/* Left: Tactical Pitch — 63% width, full row height */}
-              <div className="shrink-0 overflow-hidden rounded-2xl" style={{ width: '63%' }}>
+	              <div className="shrink-0 overflow-hidden rounded-2xl w-full lg:w-[63%] h-[68svh] min-h-[520px] lg:h-auto lg:min-h-0">
 
                 <TacticalPitch
                   lineup={resolvedLineup}
@@ -836,7 +833,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
               </div>
 
               {/* Right: Status-aware panel — chat when LIVE/COMPLETED, selector when UPCOMING */}
-              <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0">
+	              <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0 min-h-[520px] lg:min-h-0">
 
                 {/* ── LIVE / COMPLETED → Chat Panel ── */}
                 {(status === 'LIVE' || status === 'COMPLETED') ? (
@@ -1033,4 +1030,3 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     </div>
   );
 }
-

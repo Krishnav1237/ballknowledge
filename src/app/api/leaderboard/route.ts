@@ -128,6 +128,6 @@ export async function GET(request: Request) {
       const mockEntries = sortedMocks.slice(0, limit).map((e, i) => ({ ...e, rank: i + 1 }));
       return NextResponse.json({ entries: mockEntries, total: mockEntries.length, sortBy, isMock: true });
     }
-    return NextResponse.json({ error: 'Database is temporarily unavailable.' }, { status: 500 });
+    return NextResponse.json({ entries: [], total: 0, sortBy, degraded: true, error: 'Database is temporarily unavailable.' });
   }
 }

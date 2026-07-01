@@ -194,19 +194,30 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     if (!captureTarget) return;
     setDownloading(true);
     try {
-      // Temporarily zero out transform AND background so only the
-      // shield-clipped card shape exports — corners are fully transparent
       const prevTransform = captureTarget.style.transform;
       const prevBackground = captureTarget.style.background;
+
+      const rarity = selectedCard?.rarity || (profile?.overallRating >= 85 ? 'LEGENDARY' : profile?.overallRating >= 70 ? 'EPIC' : profile?.overallRating >= 45 ? 'RARE' : 'COMMON');
+      let captureBg = '#07090E';
+      if (rarity === 'LEGENDARY') {
+        captureBg = 'radial-gradient(circle at center, rgba(251,191,36,0.12) 0%, #07090E 80%)';
+      } else if (rarity === 'EPIC') {
+        captureBg = 'radial-gradient(circle at center, rgba(168,85,247,0.12) 0%, #07090E 80%)';
+      } else if (rarity === 'RARE') {
+        captureBg = 'radial-gradient(circle at center, rgba(59,130,246,0.12) 0%, #07090E 80%)';
+      } else {
+        captureBg = 'radial-gradient(circle at center, rgba(225,29,72,0.08) 0%, #07090E 80%)';
+      }
+
       captureTarget.style.transform = 'none';
-      captureTarget.style.background = 'transparent';
+      captureTarget.style.background = captureBg;
 
       const dataUrl = await toPng(captureTarget, {
         cacheBust: true,
         width: 340,
         height: 480,
         pixelRatio: 3,
-        backgroundColor: 'transparent',
+        backgroundColor: '#07090E',
         // Prevents cross-origin CSS fetch error for Google Fonts in production
         skipFonts: true,
       });

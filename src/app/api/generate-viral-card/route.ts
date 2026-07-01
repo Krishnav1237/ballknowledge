@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireSession } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,9 @@ function buildCompleteFifacardPrompt(params: {
 
 export async function POST(request: Request) {
   try {
+    const auth = requireSession(request);
+    if (auth.response || !auth.session) return auth.response;
+
     const {
       cardId,           // optional database MatchCard ID to persist to
       username,
@@ -80,8 +84,8 @@ export async function POST(request: Request) {
       playerPosition,
     } = await request.json();
 
-    if (!username) {
-      return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+    if (username && String(username) !== auth.session.username) {
+      return NextResponse.json({ error: 'Cannot generate artwork for another manager.' }, { status: 403 });
     }
 
     const nation = favoriteNation || 'Argentina';
@@ -94,7 +98,7 @@ export async function POST(request: Request) {
     let aiImageUrl = '';
 
     const prompt = buildCompleteFifacardPrompt({
-      username: username.toUpperCase(),
+      username: auth.session.username.toUpperCase(),
       nation,
       ovr,
       prd,
@@ -112,7 +116,7 @@ export async function POST(request: Request) {
         success: true,
         aiImageUrl: '/images/toty_bg_premium.webp',
         cardConfig: {
-          username: username.toUpperCase(),
+          username: auth.session.username.toUpperCase(),
           faceImage,
           nation,
           ovr,
@@ -191,10 +195,13 @@ export async function POST(request: Request) {
     // Persist card URL to DB if matching card found
     if (aiImageUrl && cardId) {
       try {
-        await prisma.matchCard.update({
-          where: { id: cardId },
+        const update = await prisma.matchCard.updateMany({
+          where: { id: cardId, profileId: auth.session.profileId },
           data: { aiImageUrl }
         });
+        if (update.count === 0) {
+          return NextResponse.json({ error: 'Card not found for authenticated manager.' }, { status: 404 });
+        }
       } catch (dbError) {
         console.warn('Failed to update MatchCard with aiImageUrl:', dbError);
       }
@@ -204,7 +211,7 @@ export async function POST(request: Request) {
       success: true,
       aiImageUrl,
       cardConfig: {
-        username: username.toUpperCase(),
+        username: auth.session.username.toUpperCase(),
         // NOTE: faceImage is NOT returned to the client to keep response payload small.
         // The client should use its own locally-stored avatarSeed for card display.
         nation,

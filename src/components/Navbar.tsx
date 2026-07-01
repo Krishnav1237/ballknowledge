@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Trophy, Award, User, Menu, X, LogOut, LogIn, Tag, BarChart2 } from 'lucide-react';
+import { Trophy, Award, User, Menu, X, LogOut, LogIn, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getStoredProfile, saveStoredProfile, FootballIQProfile } from '@/lib/profileSync';
+import { clearStoredProfile, getStoredProfile, FootballIQProfile } from '@/lib/profileSync';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,13 +27,9 @@ export default function Navbar() {
 
   const handleSignOut = () => {
     if (!profile) return;
-    const signedOutProfile = {
-      ...profile,
-      isAuthenticated: false,
-      authProvider: null
-    };
-    setProfile(signedOutProfile);
-    saveStoredProfile(signedOutProfile);
+    void fetch('/api/auth', { method: 'DELETE' }).catch(() => {});
+    clearStoredProfile();
+    setProfile(getStoredProfile());
     // Dispatch event to sync state across other pages/components instantly
     window.dispatchEvent(new Event('storage'));
     window.location.href = '/';

@@ -29,7 +29,11 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
   useEffect(() => {
     // Hydrate from localStorage if available
     const localProf = getStoredProfile();
-    if (localProf && localProf.username) {
+    const isOwnProfile =
+      !!localProf?.username &&
+      (localProf.id === initialProfile?.id || localProf.username === initialProfile?.username);
+
+    if (isOwnProfile) {
       setProfileState((prev: any) => ({
         ...prev,
         username: localProf.username || prev.username,
@@ -46,7 +50,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
 
     const localPreds = getStoredPredictions();
     const matchIdKey = initialCard?.matchId || initialCard?.id;
-    if (localPreds && matchIdKey && localPreds[matchIdKey]) {
+    if (isOwnProfile && localPreds && matchIdKey && localPreds[matchIdKey]) {
       const pred = localPreds[matchIdKey] as any;
       setCard((prev: any) => ({
         ...prev,
@@ -57,7 +61,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         evidence: pred.hotTakes?.[0]?.statement ? `Hot Take statement: "${pred.hotTakes[0].statement}"` : prev.evidence
       }));
     }
-  }, [initialCard]);
+  }, [initialCard, initialProfile?.id, initialProfile?.username]);
 
   const showStatus = (text: string, type: 'success' | 'error' | 'info') => {
     setStatusMsg({ text, type });
