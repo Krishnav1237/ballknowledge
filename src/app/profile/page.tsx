@@ -127,6 +127,28 @@ export default function ProfileSettingsPage() {
   };
 
   useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+
+    const parseGoogleHash = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('id_token=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const idToken = params.get('id_token');
+        if (idToken) {
+          // If this window is the popup, post the token back to the main window and close
+          if (window.opener) {
+            window.opener.postMessage({ type: 'google-popup-success', token: idToken }, '*');
+            window.close();
+            return;
+          }
+
+          // Direct redirect flow execution
+          await handleGoogleCredentialResponse({ credential: idToken });
+          window.location.hash = ''; // Clear Hash to prevent route replays
+        }
+      }
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // 1. Existing OAuth callback routes (e.g. Discord, Facebook)
       if (event.data?.type === 'oauth-success') {
@@ -155,6 +177,8 @@ export default function ProfileSettingsPage() {
         await handleGoogleCredentialResponse({ credential: event.data.token });
       }
     };
+
+    parseGoogleHash();
     window.addEventListener('message', handleOAuthMessage);
     return () => window.removeEventListener('message', handleOAuthMessage);
   }, [mounted]);
@@ -181,32 +205,6 @@ export default function ProfileSettingsPage() {
       window.location.href = url;
     }
   };
-
-  useEffect(() => {
-    if (!mounted || typeof window === 'undefined') return;
-
-    const parseGoogleHash = async () => {
-      const hash = window.location.hash;
-      if (hash && hash.includes('id_token=')) {
-        const params = new URLSearchParams(hash.substring(1));
-        const idToken = params.get('id_token');
-        if (idToken) {
-          // If this window is the popup, post the token back to the main window and close
-          if (window.opener) {
-            window.opener.postMessage({ type: 'google-popup-success', token: idToken }, '*');
-            window.close();
-            return;
-          }
-
-          // Direct redirect flow execution
-          await handleGoogleCredentialResponse({ credential: idToken });
-          window.location.hash = ''; // Clear Hash to prevent route replays
-        }
-      }
-    };
-
-    parseGoogleHash();
-  }, [mounted]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
