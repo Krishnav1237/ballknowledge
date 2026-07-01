@@ -126,6 +126,7 @@ POST /api/generate-viral-card
 | `src/components/Footer.tsx` | Site footer |
 | `src/components/Providers.tsx` | React Query + client provider wrapper |
 | `src/app/api/resolve-match/route.ts` | Core grading engine — AI + DB write. Has `force-dynamic` |
+| `src/proxy.ts` | Next.js 16 Proxy (formerly middleware) for security blocking and routing |
 | `src/app/globals.css` | Design tokens, glassmorphism, keyframe animations |
 
 ---
@@ -220,6 +221,7 @@ This is a **premium dark/black theme** with World Cup-themed accents. **Do not u
 7. **Tailwind v4** — Custom colors/fonts defined in `globals.css` under `@theme`. ALWAYS use valid standard color tokens (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950). NEVER use unvalidated integers like `zinc-450` or `gray-350`.
 8. **force-dynamic** — Add `export const dynamic = 'force-dynamic'` to any route using Prisma
 9. **Widescreen Cockpit Layouts** — Profile settings dashboard uses `max-w-8xl` with a 3-column layout (`grid-cols-12`) to align perfectly with the Leaderboard and Collectibles Binder console aesthetics.
+10. **Next.js 16 Proxy** — Next.js 16 deprecated `middleware.ts` and replaced it with `src/proxy.ts` exporting a named or default `proxy` function (e.g., `export function proxy(request)`). Never export `middleware`.
 
 ---
 
