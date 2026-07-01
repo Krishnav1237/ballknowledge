@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot } from '@/lib/roster';
+import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot, PLAYER_SILHOUETTE } from '@/lib/roster';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -125,7 +125,7 @@ export default function PlayerSelectorModal({
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.onerror = null; // Prevent infinite loop recursion
-                        target.src = "https://media.api-sports.io/football/players/154.png";
+                        target.src = PLAYER_SILHOUETTE;
                       }}
                     />
                     <div className="absolute -bottom-1 -right-1 text-sm bg-black/60 rounded-full px-1 shadow-sm leading-none text-white">
