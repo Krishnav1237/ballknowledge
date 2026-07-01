@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, fetchProfileFromDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
+import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { getStorageItem, removeStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
@@ -65,21 +65,49 @@ export default function ProfileSettingsPage() {
       setPendingPhoto(prof.inputImage);
     }
 
-    // Sync with database on load via GET to prevent local defaults overwriting custom data
-    fetchProfileFromDb(prof.username).then(synced => {
-      if (synced) {
-        setProfile(synced);
-        setUsername(synced.username);
-        setFavoriteClub(synced.favoriteClub || '');
-        setFavoriteNation(synced.favoriteNation || '');
-        setRole(synced.role);
-        setAvatarSeed(synced.avatarSeed);
-        setAvatarStyle(synced.avatarStyle);
-        if (synced.inputImage) {
-          setPendingPhoto(synced.inputImage);
+    // Fetch profile from DB via GET on mount to restore persisted image without overwriting DB
+    (async () => {
+      try {
+        const res = await fetch(`/api/profile/${encodeURIComponent(prof.username)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profile) {
+            const synced: FootballIQProfile = {
+              ...prof,
+              id: data.profile.id,
+              username: data.profile.username,
+              overallRating: data.profile.overallRating,
+              predictionRating: data.profile.predictionRating,
+              hotTakeRating: data.profile.hotTakeRating,
+              managerRating: data.profile.managerRating,
+              roastScore: data.profile.roastScore,
+              role: data.profile.role,
+              avatarStyle: data.profile.avatarStyle,
+              avatarSeed: data.profile.avatarSeed,
+              email: data.profile.email || prof.email,
+              name: data.profile.name || prof.name,
+              inputImage: data.profile.inputImage || prof.inputImage,
+              favoriteClub: data.profile.favoriteClub || prof.favoriteClub,
+              favoriteNation: data.profile.favoriteNation || prof.favoriteNation,
+              collectedCards: data.cards ? data.cards.map((c: { id: string }) => c.id) : prof.collectedCards
+            };
+            saveStoredProfile(synced);
+            setProfile(synced);
+            setUsername(synced.username);
+            setFavoriteClub(synced.favoriteClub || '');
+            setFavoriteNation(synced.favoriteNation || '');
+            setRole(synced.role);
+            setAvatarSeed(synced.avatarSeed);
+            setAvatarStyle(synced.avatarStyle);
+            if (synced.inputImage) {
+              setPendingPhoto(synced.inputImage);
+            }
+          }
         }
+      } catch (err) {
+        console.warn('Failed to fetch profile from database on mount:', err);
       }
-    }).catch(err => console.warn('Failed to fetch profile from database on mount:', err));
+    })();
   }, []);
 
   // Reused to verify credential tokens from both SDK prompt and custom redirect flows
