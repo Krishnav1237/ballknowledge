@@ -38,54 +38,6 @@ export const metadata: Metadata = {
   },
 };
 
-const devHydrationNoiseFilter = `
-(function () {
-  if (window.__bkHydrationNoiseFilterInstalled) return;
-  window.__bkHydrationNoiseFilterInstalled = true;
-
-  var originalError = console.error.bind(console);
-  var extensionMarkers = ['__gcruniqueid', 'apolloio', 'zp-open-popup-button', 'grammarly'];
-  var hydrationMarkers = ['hydration failed', 'a tree hydrated but some attributes', "didn't match the client properties", "didn't match the server", 'does not match the server'];
-
-  function textFrom(args) {
-    return args.map(function (arg) {
-      if (!arg) return '';
-      if (typeof arg === 'string') return arg;
-      if (arg.message || arg.stack) return [arg.message, arg.stack].filter(Boolean).join(' ');
-      try {
-        return JSON.stringify(arg);
-      } catch {
-        return String(arg);
-      }
-    }).join(' ').toLowerCase();
-  }
-
-  function isKnownExtensionHydrationNoise(args) {
-    var text = textFrom(args);
-    return hydrationMarkers.some(function (marker) { return text.indexOf(marker) !== -1; }) &&
-      extensionMarkers.some(function (marker) { return text.indexOf(marker) !== -1; });
-  }
-
-  console.error = function () {
-    var args = Array.prototype.slice.call(arguments);
-    if (isKnownExtensionHydrationNoise(args)) return;
-    originalError.apply(console, args);
-  };
-
-  window.addEventListener('error', function (event) {
-    if (isKnownExtensionHydrationNoise([event.message, event.error])) {
-      event.preventDefault();
-    }
-  });
-
-  window.addEventListener('unhandledrejection', function (event) {
-    if (isKnownExtensionHydrationNoise([event.reason])) {
-      event.preventDefault();
-    }
-  });
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -93,14 +45,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased dark" suppressHydrationWarning>
-      <head>
-        {process.env.NODE_ENV === 'development' && (
-          <script
-            id="bk-dev-hydration-noise-filter"
-            dangerouslySetInnerHTML={{ __html: devHydrationNoiseFilter }}
-          />
-        )}
-      </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
         <Providers>
           <SmoothScroll />
