@@ -34,7 +34,7 @@ GROQ_API_KEY="gsk_..."          # Fallback
 NVIDIA_API_KEY="nvapi-..."       # Second fallback
 
 # Required for production
-NEXT_PUBLIC_SITE_URL="https://ballknowledge.vercel.app"
+NEXT_PUBLIC_SITE_URL="https://ballknowledge.live"
 ```
 
 ---
@@ -225,14 +225,14 @@ This is a **premium dark/black theme** with World Cup-themed accents. **Do not u
 
 ## Production Checklist (Before Deploy)
 
-- [ ] `DATABASE_URL` set in Vercel environment
-- [ ] `OPENROUTER_API_KEY` set in Vercel environment (for AI grading + image gen)
-- [ ] `GROQ_API_KEY` set in Vercel environment (fallback)
-- [ ] `NEXT_PUBLIC_SITE_URL` set to `https://ballknowledge.vercel.app`
+- [ ] `DATABASE_URL` set in Cloudflare environment
+- [ ] `OPENROUTER_API_KEY` set in Cloudflare environment (for AI grading + image gen)
+- [ ] `GROQ_API_KEY` set in Cloudflare environment (fallback)
+- [ ] `NEXT_PUBLIC_SITE_URL` set to `https://ballknowledge.live`
 - [ ] `npx prisma db push` run against production DB
 - [ ] `npm run build` passes with 0 errors
 - [ ] `/sitemap.xml` accessible after deploy
-- [ ] Social share OG image renders at `opengraph.dev/url/ballknowledge.vercel.app`
+- [ ] Social share OG image renders at `opengraph.dev/url/ballknowledge.live`
 
 ---
 

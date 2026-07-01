@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? ` [${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}]`
       : '';
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live';
     const title = `${card.profile.username || 'Manager'}'s VAR Verdict${fixtureString} — OVR ${card.rating || 50}`;
     const description = `Verdict: ${card.verdict || 'VAR VERDICT'} | ${card.charge || 'Football IQ audited.'}. Check out this Football IQ card!`;
     const ogParams = new URLSearchParams({

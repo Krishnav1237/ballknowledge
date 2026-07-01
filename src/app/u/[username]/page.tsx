@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, use, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toPng } from 'html-to-image';
@@ -35,8 +36,9 @@ interface Match {
 
 const getSystemDate = () => new Date();
 
-export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
-  const { username: rawUsername } = use(params);
+export default function PublicProfilePage() {
+  const params = useParams();
+  const rawUsername = params.username as string;
   const username = decodeURIComponent(rawUsername);
 
   const [profile, setProfile] = useState<any | null>(null);

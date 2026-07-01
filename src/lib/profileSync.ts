@@ -210,7 +210,8 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
               })) || [],
               locked: true,
               resolved: !!matchCard,
-              card: matchCard || null
+              card: matchCard || null,
+              lineup: p.lineup || (existingPreds[p.matchId]?.lineup) || null
             };
           });
           

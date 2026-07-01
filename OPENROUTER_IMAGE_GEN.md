@@ -39,7 +39,7 @@ const response = await fetch('https://openrouter.ai/api/v1/images/generations', 
   headers: {
     'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
     'Content-Type': 'application/json',
-    'HTTP-Referer': 'https://ballknowledge.vercel.app',
+    'HTTP-Referer': 'https://ballknowledge.live',
     'X-Title': 'BallKnowledge World Cup 2026',
   },
   body: JSON.stringify({

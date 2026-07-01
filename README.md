@@ -1,15 +1,15 @@
 # BallKnowledge ⚽ — World Cup 2026 Reputation Arena
 
-[![Build](https://img.shields.io/badge/Build-Passing-22c55e?style=for-the-badge&logo=checkmarx&logoColor=white)](https://ballknowledge.vercel.app)
+[![Build](https://img.shields.io/badge/Build-Passing-22c55e?style=for-the-badge&logo=checkmarx&logoColor=white)](https://ballknowledge.live)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Live](https://img.shields.io/badge/Live-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://ballknowledge.vercel.app)
+[![Live](https://img.shields.io/badge/Live-Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://ballknowledge.live)
 
 > **"Build your football reputation, one match at a time."**
 
 BallKnowledge is a premium World Cup 2026 prediction and debate platform. Fans lock in match predictions, submit bold hot takes, and earn collectible FIFA-style Verdict Cards — all tracked against a persistent Football IQ reputation score.
 
-🔗 **Live**: [ballknowledge.vercel.app](https://ballknowledge.vercel.app)
+🔗 **Live**: [ballknowledge.live](https://ballknowledge.live)
 
 ---
 
@@ -42,7 +42,7 @@ Locker Room → World Cup Hub → Match Room → VAR Tribunal → Verdict Card �
 | Animation | Framer Motion, GSAP + ScrollTrigger, Lenis |
 | Icons | Lucide React |
 | Fonts | Space Grotesk (display), Outfit (body), Oswald (cards) |
-| Deployment | Vercel (serverless) |
+| Deployment | Cloudflare Pages (Serverless) |
 
 ---
 
@@ -118,7 +118,7 @@ GROQ_API_KEY="gsk_..."            # Fallback
 NVIDIA_API_KEY="nvapi-..."        # Second fallback
 
 # Required for production (OG image, sitemap)
-NEXT_PUBLIC_SITE_URL="https://ballknowledge.vercel.app"
+NEXT_PUBLIC_SITE_URL="https://ballknowledge.live"
 
 # Optional: Google SSO Auth
 NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_client_id.apps.googleusercontent.com"
@@ -257,17 +257,17 @@ Roles are stored in localStorage and synced to PostgreSQL on upgrade. Change tie
 
 ---
 
-## Deployment (Vercel)
+## Deployment (Cloudflare Pages)
 
 1. Push to GitHub
-2. Connect repo on [vercel.com](https://vercel.com)
-3. Add environment variables in Vercel dashboard:
+2. Connect repo on [dash.cloudflare.com](https://dash.cloudflare.com)
+3. Add environment variables in Cloudflare Pages dashboard settings:
    - `DATABASE_URL`
    - `OPENROUTER_API_KEY` *(recommended primary)*
    - `GROQ_API_KEY`
    - `NVIDIA_API_KEY` *(optional)*
-   - `NEXT_PUBLIC_SITE_URL` *(e.g. `https://ballknowledge.vercel.app`)*
-4. Deploy → all routes compile statically or as serverless functions
+   - `NEXT_PUBLIC_SITE_URL` *(e.g. `https://ballknowledge.live`)*
+4. Deploy. Cloudflare will automatically build and deploy your app.
 
 ---
 

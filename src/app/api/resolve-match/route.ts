@@ -84,7 +84,7 @@ async function callOpenRouter(userPrompt: string) {
     headers: {
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live',
       'X-Title': 'BallKnowledge World Cup 2026',
     },
     body: JSON.stringify({
@@ -745,6 +745,7 @@ export async function POST(request: Request) {
             firstGoalscorer: predScorer || '',
             motm: predMotm || '',
             possessionWinner: String(body.possessionWinner || ''),
+            lineup: lineup !== undefined ? lineup : undefined,
           },
           update: {
             homeScore: predHomeScore ?? 0,
@@ -752,6 +753,7 @@ export async function POST(request: Request) {
             firstGoalscorer: predScorer || '',
             motm: predMotm || '',
             possessionWinner: String(body.possessionWinner || ''),
+            lineup: lineup !== undefined ? lineup : undefined,
           },
         });
 

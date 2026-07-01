@@ -9,9 +9,11 @@ import PageTransition from '@/components/PageTransition';
 export const metadata: Metadata = {
   title: 'BallKnowledge | World Cup 2026 Reputation Arena',
   description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based BallKnowledge Profile.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'),
   icons: {
-    icon: '/favicon.ico',
+    icon: '/images/ball_knowledge_logo.png',
+    shortcut: '/images/ball_knowledge_logo.png',
+    apple: '/images/ball_knowledge_logo.png',
   },
   openGraph: {
     title: 'BallKnowledge | World Cup 2026 Reputation Arena',
@@ -42,8 +44,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased dark">
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background">
+    <html lang="en" className="h-full antialiased dark" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
         <Providers>
           <SmoothScroll />
           <Navbar />

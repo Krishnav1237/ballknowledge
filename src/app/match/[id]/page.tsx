@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import SportsCenterCard from '@/components/SportsCenterCard';
@@ -52,9 +54,36 @@ interface Match {
   away_team_label?: string;
 }
 
+interface FixtureData {
+  matches: Match[];
+  teams: Team[];
+}
 
-export default function MatchPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: matchId } = use(params);
+async function fetchFixtureData(): Promise<FixtureData> {
+  const [matchesRes, teamsRes] = await Promise.all([
+    fetch('/api/matches'),
+    fetch('/api/teams')
+  ]);
+
+  if (!matchesRes.ok || !teamsRes.ok) {
+    throw new Error('Failed to load match fixtures');
+  }
+
+  const [matchesData, teamsData] = await Promise.all([
+    matchesRes.json(),
+    teamsRes.json()
+  ]);
+
+  return {
+    matches: Array.isArray(matchesData) ? matchesData : matchesData.matches || [],
+    teams: Array.isArray(teamsData) ? teamsData : teamsData.teams || []
+  };
+}
+
+
+export default function MatchPage() {
+  const params = useParams();
+  const matchId = params.id as string;
 
   const [match, setMatch] = useState<Match | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -76,6 +105,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const [lineup, setLineup] = useState<Record<string, Player>>({});
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
+  const predictionModalDismissedRef = useRef(false);
 
   // Grading states
   const [resolving, setResolving] = useState(false);
@@ -94,35 +124,26 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     setTimeout(() => setToast(null), 3500);
   };
 
+  const fixtureQuery = useQuery({
+    queryKey: ['world-cup-fixture-data'],
+    queryFn: fetchFixtureData,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false
+  });
+
+  const dismissPredictionModal = () => {
+    predictionModalDismissedRef.current = true;
+    sessionStorage.setItem(`bk_prediction_modal_dismissed_${matchId}`, 'true');
+    setShowPredictionModal(false);
+  };
+
   useEffect(() => {
     setMounted(true);
-    const fetchMatch = async () => {
-      try {
-        const [matchesRes, teamsRes] = await Promise.all([
-          fetch('/api/matches'),
-          fetch('/api/teams')
-        ]);
-
-        if (matchesRes.ok && teamsRes.ok) {
-          const [matchesData, teamsData] = await Promise.all([
-            matchesRes.json(),
-            teamsRes.json()
-          ]);
-          const foundMatch = matchesData.find((m: any) => m.id === matchId);
-          setMatch(foundMatch);
-          setTeams(teamsData);
-        } else {
-          throw new Error('Fetch failed');
-        }
-      } catch (err) {
-        console.error('Failed to load remote match data:', err);
-        setError('Failed to fetch real-time match details. Please verify your internet connection.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatch();
+    const dismissedKey = `bk_prediction_modal_dismissed_${matchId}`;
+    predictionModalDismissedRef.current = sessionStorage.getItem(dismissedKey) === 'true';
 
     // Load user profile & predictions
     const userProfile = getStoredProfile();
@@ -149,6 +170,15 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       if (matchPred.lineup) {
         setLineup(matchPred.lineup as Record<string, Player>);
       }
+    } else {
+      setPredHomeScore(0);
+      setPredAwayScore(0);
+      setPredScorer('');
+      setPredMotm('');
+      setPredPossession('3');
+      setTakes([{ statement: '', confidence: 50 }]);
+      setGradingResult(null);
+      setLineup({});
     }
 
     const getFirstActiveSlot = (currentLineup: Record<string, Player>) => {
@@ -162,19 +192,35 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     // Initialize selectedSlot to first empty position
     const initialSlot = getFirstActiveSlot((matchPred?.lineup || {}) as Record<string, Player>);
     setSelectedSlot(initialSlot);
+  }, [matchId]);
 
-    // Auto-open predictions/hot takes modal on page load if predictions are not locked and the match is upcoming
-    const isLocked = matchPred && matchPred.locked;
-    let isUpcoming = true;
-    if (match) {
-      const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-      const timeDiff = new Date().getTime() - kickoff.getTime();
-      isUpcoming = timeDiff < 0;
-    }
-    if (!isLocked && !(matchPred?.resolved) && isUpcoming) {
+  useEffect(() => {
+    if (!fixtureQuery.error) return;
+
+    console.error('Failed to load remote match data:', fixtureQuery.error);
+    setError('Failed to fetch real-time match details. Please verify your internet connection.');
+    setLoading(false);
+  }, [fixtureQuery.error]);
+
+  useEffect(() => {
+    if (!fixtureQuery.data) return;
+
+    const foundMatch = fixtureQuery.data.matches.find((m) => m.id === matchId) || null;
+    setMatch(foundMatch);
+    setTeams(fixtureQuery.data.teams);
+    setLoading(false);
+
+    if (!foundMatch) return;
+
+    const userPreds = getStoredPredictions();
+    const matchPred = userPreds[matchId];
+    const kickoff = parseLocalDate(foundMatch.local_date, foundMatch.stadium_id);
+    const isUpcoming = Date.now() < kickoff.getTime();
+
+    if (!matchPred && isUpcoming && !predictionModalDismissedRef.current) {
       setShowPredictionModal(true);
     }
-  }, [matchId, match]);
+  }, [fixtureQuery.data, matchId]);
 
   if (error) {
     return (
@@ -253,6 +299,38 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
+  const persistPrediction = async (updatedPred: LocalPrediction) => {
+    // 1. Save to state and localStorage (offline-first response)
+    const newPreds = { ...predictions, [matchId]: updatedPred };
+    setPredictions(newPreds);
+    saveStoredPredictions(newPreds);
+
+    // 2. If authenticated, also save to DB
+    if (profile?.isAuthenticated) {
+      try {
+        const res = await fetch('/api/predictions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            matchId,
+            homeScore: updatedPred.homeScore,
+            awayScore: updatedPred.awayScore,
+            firstGoalscorer: updatedPred.firstGoalscorer,
+            motm: updatedPred.motm,
+            possessionWinner: updatedPred.possessionWinner,
+            hotTakes: updatedPred.hotTakes,
+            lineup: updatedPred.lineup
+          })
+        });
+        if (!res.ok) {
+          console.error('Failed to sync prediction to database:', await res.text());
+        }
+      } catch (err) {
+        console.error('Network error during prediction database sync:', err);
+      }
+    }
+  };
+
   const handleSelectPlayer = (player: Player) => {
     if (!selectedSlot) return;
     
@@ -267,7 +345,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     newLineup[selectedSlot] = player;
     setLineup(newLineup);
 
-    // Save as draft in predictions local storage
+    // Save as draft in predictions local storage and database
     const currentPred = predictions[matchId] || {
       matchId,
       homeScore: predHomeScore,
@@ -284,9 +362,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       ...currentPred,
       lineup: newLineup
     };
-    const newPreds = { ...predictions, [matchId]: updatedPred };
-    setPredictions(newPreds);
-    saveStoredPredictions(newPreds);
+    persistPrediction(updatedPred);
 
     // Auto-advance to the next empty position slot
     const slots = ['ST', 'LW', 'RW', 'LCM', 'CDM', 'RCM', 'LB', 'LCB', 'RCB', 'RB', 'GK'];
@@ -297,7 +373,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   };
 
   // Lock predictions
-  const handleSavePredictions = () => {
+  const handleSavePredictions = async () => {
     const filledPositions = Object.keys(lineup);
     if (filledPositions.length < 11) {
       showToast(`Select all 11 players first — ${filledPositions.length}/11 chosen.`, 'error');
@@ -323,10 +399,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       lineup
     };
 
-    const newPreds = { ...predictions, [matchId]: updatedPred };
-    setPredictions(newPreds);
-    saveStoredPredictions(newPreds);
-    showToast('Predictions, hot takes & Best XI locked in! 🔒', 'success');
+    await persistPrediction(updatedPred);
+    dismissPredictionModal();
+    showToast(profile?.isAuthenticated ? 'Predictions, hot takes & Best XI locked in & synced! 🔒' : 'Predictions, hot takes & Best XI locked in locally! 🔒', 'success');
   };
 
   // Resolve match and trigger Football IQ progression
@@ -445,9 +520,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       resolved: false
     };
     const updatedPred = { ...currentPred, lineup: newLineup };
-    const newPreds = { ...predictions, [matchId]: updatedPred };
-    setPredictions(newPreds);
-    saveStoredPredictions(newPreds);
+    persistPrediction(updatedPred);
   };
 
   const hasSubmitted = !!predictions[matchId];
@@ -994,9 +1067,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
             handleRemoveTake={handleRemoveTake}
             handleTakeChange={handleTakeChange}
             isSubmissionLocked={isSubmissionLocked}
-            status={status}
-            onClose={() => setShowPredictionModal(false)}
-            onSaveDraft={() => {
+	            status={status}
+	            onClose={dismissPredictionModal}
+            onSaveDraft={async () => {
               const updatedTakes = takes.filter(t => t.statement.trim() !== '');
               const currentPred = predictions[matchId] || {
                 matchId,
@@ -1018,10 +1091,9 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
                 possessionWinner: predPossession,
                 hotTakes: updatedTakes
               };
-              const newPreds = { ...predictions, [matchId]: updatedPred };
-              setPredictions(newPreds);
-              saveStoredPredictions(newPreds);
-              setShowPredictionModal(false);
+              await persistPrediction(updatedPred);
+              showToast(profile?.isAuthenticated ? 'Predictions & hot takes saved to DB! 💾' : 'Prediction draft saved locally! 💾', 'success');
+              dismissPredictionModal();
             }}
           />
         )}

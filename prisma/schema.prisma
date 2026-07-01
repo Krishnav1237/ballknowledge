@@ -51,6 +51,7 @@ model MatchPrediction {
   possessionWinner  String
   createdAt         DateTime          @default(now())
   hotTakes          HotTake[]
+  lineup            Json?             // Stores the chosen Best XI lineup
 
   @@unique([profileId, matchId])
 }

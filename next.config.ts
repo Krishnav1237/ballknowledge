@@ -15,17 +15,19 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
+      "font-src 'self' data: https://fonts.gstatic.com https://frontend-cdn.perplexity.ai",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://openrouter.ai https://api.dicebear.com https://flagcdn.com",
+      "connect-src 'self' https://openrouter.ai https://api.dicebear.com https://flagcdn.com https://*.cloudflareinsights.com https://cloudflareinsights.com",
       "frame-ancestors 'none'",
     ].join('; '),
   },
 ];
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ['ballknowledge.live'],
+  devIndicators: false,
   images: {
     remotePatterns: [
       // Flag CDN for team flags
