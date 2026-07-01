@@ -10,7 +10,8 @@ import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
   User, 
   Sparkles, 
-  RotateCcw
+  RotateCcw,
+  LogOut
 } from 'lucide-react';
 
 export default function ProfileSettingsPage() {
@@ -171,14 +172,22 @@ export default function ProfileSettingsPage() {
     return () => window.removeEventListener('message', handleOAuthMessage);
   }, [mounted]);
 
-
   useEffect(() => {
-    if (mounted && !profile) {
-      const timer = setTimeout(() => {
+    if (!mounted || profile) return;
+
+    let checkCount = 0;
+    const interval = setInterval(() => {
+      checkCount++;
+      const google = (window as any).google;
+      if (google?.accounts?.id && document.getElementById('google-signin-btn-container')) {
         initGoogleGIS();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+        clearInterval(interval);
+      } else if (checkCount > 20) {
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
   }, [mounted, profile, authMode]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -433,9 +442,24 @@ export default function ProfileSettingsPage() {
 
 
 
+  const handleSignOut = () => {
+    localStorage.removeItem('var_cards_profile');
+    localStorage.removeItem('var_cards_predictions');
+    setProfile(null);
+    setUsername('');
+    setPassword('');
+    setFavoriteClub('');
+    setFavoriteNation('');
+    setAvatarSeed('Reputation');
+    setAvatarStyle('fun-emoji');
+    setPendingPhoto(null);
+    window.dispatchEvent(new Event('storage'));
+    showToast('Successfully signed out of Locker Room. 🚪', 'success');
+  };
+
   const handleResetCampaign = async () => {
     if (confirm('🚨 RED CARD DECISION: This will permanently terminate your manager contract, delete all predictions, wipe your collected verdict cards, and reset your rating to 50 OVR. This action cannot be undone. Are you sure you want to proceed?')) {
-      if (profile && profile.isAuthenticated && profile.username) {
+      if (profile && profile.username) {
         try {
           await wipeProfileFromDb(profile.username);
         } catch (e) {
@@ -777,14 +801,21 @@ export default function ProfileSettingsPage() {
                     </div>
                   </div>
 
-                  {/* Reset button at the bottom */}
-                  <div className="pt-4 border-t border-rose-900/30 shrink-0 mt-auto">
+                  {/* Reset & Sign Out actions at the bottom */}
+                  <div className="pt-4 border-t border-rose-900/30 shrink-0 mt-auto flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="flex-1 h-10 rounded-xl bg-rose-950/20 hover:bg-rose-900/25 border border-rose-900/40 hover:border-rose-500/50 text-zinc-300 hover:text-white font-sans font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                    >
+                      <LogOut className="w-3.5 h-3.5" /> Sign Out
+                    </button>
                     <button
                       type="button"
                       onClick={handleResetCampaign}
-                      className="w-full h-10 rounded-xl bg-rose-900/15 hover:bg-rose-900/30 border border-rose-900/40 hover:border-rose-600/60 text-rose-400 hover:text-rose-200 font-sans font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                      className="flex-1 h-10 rounded-xl bg-rose-900/10 hover:bg-rose-900/20 border border-rose-900/30 hover:border-rose-600/40 text-rose-400 hover:text-rose-200 font-sans font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" /> Wipe Campaign &amp; Reset Profile
+                      <RotateCcw className="w-3.5 h-3.5" /> Reset Profile
                     </button>
                     {resetMessage && (
                       <p className="text-xs text-amber-400 font-bold mt-2 text-center">{resetMessage}</p>
@@ -898,7 +929,7 @@ export default function ProfileSettingsPage() {
       {Toast}
       <Script 
         src="https://accounts.google.com/gsi/client" 
-        strategy="lazyOnload" 
+        strategy="afterInteractive" 
         onLoad={initGoogleGIS}
       />
     </div>
