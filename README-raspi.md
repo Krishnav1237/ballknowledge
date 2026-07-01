@@ -91,13 +91,26 @@ Add the following environment variables (make sure to replace placeholders with 
 # Node Environment
 NODE_ENV=production
 PORT=3000
+NEXT_PUBLIC_SITE_URL="https://yourdomain.com"
 
 # PostgreSQL Connection String
 DATABASE_URL="postgresql://court_admin:your_secure_password@localhost:5432/football_court?schema=public"
 
 # AI API Keys
+OPENROUTER_API_KEY="sk-or-..."
 GROQ_API_KEY="gsk_your_groq_api_key_here"
 NVIDIA_API_KEY="nvapi-your_nvidia_api_key_here"
+
+# Optional: Google SSO Auth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_client_id.apps.googleusercontent.com"
+
+# Optional: Discord OAuth2 Authentication
+NEXT_PUBLIC_DISCORD_CLIENT_ID="your_discord_client_id"
+DISCORD_CLIENT_SECRET="your_discord_client_secret"
+
+# Optional: Facebook OAuth2 Authentication
+NEXT_PUBLIC_FACEBOOK_APP_ID="your_facebook_app_id"
+FACEBOOK_CLIENT_SECRET="your_facebook_client_secret"
 ```
 
 Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
@@ -194,7 +207,29 @@ Your web application is now hosted securely on your Raspberry Pi 5 and will surv
 
 ---
 
-## 8. Client-Side Image Optimization
+## 8. Alternative: Expose Securely via Cloudflare Tunnels (Zero Trust)
+
+If you do not want to configure Nginx, handle Certbot renewals, or open any ports on your home router, you can route all traffic using a secure outbound Cloudflare Tunnel:
+
+1. **Install Cloudflare Tunnel Daemon (`cloudflared`) on the Pi**:
+   ```bash
+   curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+   sudo dpkg -i cloudflared.deb
+   ```
+2. **Setup from the Cloudflare Dashboard**:
+   - Log into [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/).
+   - Navigate to **Networks > Tunnels** and click **Create a Tunnel**. Name it (e.g. `football-court`).
+   - Under **Install connector**, copy the Linux ARM64 curl install command and run it on your Raspberry Pi.
+   - Click **Next** to route traffic:
+     - **Domain**: Choose your registered domain/subdomain (e.g. `ballknowledge.com` or `play.ballknowledge.com`).
+     - **Service Type**: `HTTP`
+     - **URL**: `localhost:3000`
+   - Save the tunnel. Cloudflare will automatically handle SSL, DNS, and route all web requests directly to your Pi!
+
+---
+
+## 9. Client-Side Image Optimization
 
 Portrait uploads for personalized FUT cards utilize client-side offscreen HTML canvas downscaling (max `256px`, `0.8` JPEG quality). This compresses photo strings down to ~20KB before synchronizing with the database or caching in local storage. This optimization ensures minimal memory usage, negligible server-side processing overhead, and very light database payloads, making the platform ideal for low-power host nodes like a Raspberry Pi 5.
+
 

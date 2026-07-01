@@ -68,14 +68,14 @@ Points are earned across Match Outcome, Scoreline Accuracy, Man of the Match, an
 * **First Goalscorer (15 Points)**: Correct first goalscorer (15 pts), Scored later in the match (10 pts), Wrong/no contribution (3 pts)
 
 #### 2. Manager Score (MGR) — 10-99 Points
-* **Formula**: $\text{Round}(\text{Average Match Rating of Selected XI} \times 10)$
-* Player ratings are based on their international reputation.
+* **Formula**: $\text{Round}(\text{Average Match Performance Rating of Selected XI} \times 10)$
+* Player ratings are based on official FIFA match-specific performance scores (ranging from 4.5 to 9.9) for completed/resolved matches, rather than static card OVRs.
 
 #### 3. Hot Take Score (HOT) — 0-100 Points
 * **Formula**: Average of graded take base scores multiplied by confidence level.
 * **Base Scores**: `CORRECT` (100 pts), `PARTIALLY_CORRECT` (75 pts), `INCORRECT` (50 pts)
 * **Confidence Multiplier**: 1 (0.8x), 2 (0.9x), 3 (1.0x), 4 (1.1x), 5 (1.2x)
-* * **Free users**: 2 takes graded per match; Ball Knower (PREMIUM): 5 takes
+* * **Free users**: 3 takes graded per match; Premium/Admin users: up to 5.
 
 #### 4. Roast Score (RST) — 50-100 Points
 * **Formula**: $50 + \text{messages sent} + \text{positive reactions (upvotes)}$, capped at 100.
@@ -87,18 +87,6 @@ Points are earned across Match Outcome, Scoreline Accuracy, Man of the Match, an
 | 75–89 | 🟣 EPIC |
 | 60–74 | 🔵 RARE |
 | 1–59  | ⚪ COMMON |
-
----
-
-## Pricing Tiers
-
-| Tier | Price | Hot Takes | Role |
-|------|-------|-----------|------|
-| Casual Fan | Free | 2/match | `FREE` |
-| Ball Knower | $2.99 / €2.99 (auto-detected by locale) | 5/match | `PREMIUM` |
-| Football God | $24.99 / €24.99 | 5/match + bypass lock | `ADMIN` |
-
-Currency is automatically detected from timezone, locale, and country preference.
 
 ---
 
@@ -131,6 +119,17 @@ NVIDIA_API_KEY="nvapi-..."        # Second fallback
 
 # Required for production (OG image, sitemap)
 NEXT_PUBLIC_SITE_URL="https://ballknowledge.vercel.app"
+
+# Optional: Google SSO Auth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_client_id.apps.googleusercontent.com"
+
+# Optional: Discord OAuth2 Authentication
+NEXT_PUBLIC_DISCORD_CLIENT_ID="your_discord_client_id"
+DISCORD_CLIENT_SECRET="your_discord_client_secret"
+
+# Optional: Facebook OAuth2 Authentication
+NEXT_PUBLIC_FACEBOOK_APP_ID="your_facebook_app_id"
+FACEBOOK_CLIENT_SECRET="your_facebook_client_secret"
 ```
 
 ### 3. Database Setup
@@ -174,7 +173,6 @@ src/
 │   ├── match/[id]/               # Match prediction cockpit (dark theme)
 │   ├── football-iq/              # My Card + collected cards album (dark theme)
 │   ├── profile/                  # Profile settings + avatar (dark theme)
-│   ├── pricing/                  # Tier contracts — $2.99/$24.99 (dark theme)
 │   ├── card/[id]/                # Viral card share page (dark theme)
 │   ├── u/[username]/             # Public profile share page
 │   ├── leaderboard/              # Global manager leaderboard (dark theme)
