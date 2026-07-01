@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import './globals.css';
 import Providers from '@/components/Providers';
 import SmoothScroll from '@/components/SmoothScroll';
@@ -94,14 +93,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased dark" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
+      <head>
         {process.env.NODE_ENV === 'development' && (
-          <Script
+          <script
             id="bk-dev-hydration-noise-filter"
-            strategy="beforeInteractive"
             dangerouslySetInnerHTML={{ __html: devHydrationNoiseFilter }}
           />
         )}
+      </head>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
         <Providers>
           <SmoothScroll />
           <Navbar />
