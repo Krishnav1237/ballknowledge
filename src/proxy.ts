@@ -20,7 +20,7 @@ const SENSITIVE_KEYWORDS = [
   'db', 'mysql', 'postgres', 'auth', 'pass', 'sasl'
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname.toLowerCase();
 
   // 1. Block dangerous directory access
