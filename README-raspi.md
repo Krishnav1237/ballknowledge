@@ -228,7 +228,38 @@ If you do not want to configure Nginx, handle Certbot renewals, or open any port
 
 ---
 
-## 9. Client-Side Image Optimization
+## 9. Database Migration (Ensuring No Data Loss) 💾
+
+To migrate your database from your current environment to the Raspberry Pi without losing any user profiles, predictions, or match cards:
+
+### Step A: Export the Database from the Source Server
+On your current database host machine (e.g. your local Mac or production server), export the data using `pg_dump`:
+
+```bash
+# Dump the database to a SQL script file
+pg_dump -U postgres -d ballknowledge --clean --no-owner --no-privileges -f ballknowledge_backup.sql
+```
+*Note: Adjust `postgres` and `ballknowledge` with your source database username and database name.*
+
+### Step B: Transfer the Backup File to the Raspberry Pi
+Use `scp` to copy the `.sql` backup file to the Pi:
+
+```bash
+scp ballknowledge_backup.sql pi@<raspberry-pi-ip>:/home/pi/
+```
+
+### Step C: Restore the Database on the Raspberry Pi
+1. SSH into the Raspberry Pi.
+2. Ensure you have created the target database and user role as described in **Section 3** of this guide.
+3. Import the backup file using the standard Postgres client:
+   ```bash
+   psql -U court_admin -d football_court -f /home/pi/ballknowledge_backup.sql
+   ```
+4. Enter the password for the `court_admin` role when prompted. All profiles, predictions, match cards, and chat messages will be successfully restored.
+
+---
+
+## 10. Client-Side Image Optimization
 
 Portrait uploads for personalized FUT cards utilize client-side offscreen HTML canvas downscaling (max `256px`, `0.8` JPEG quality). This compresses photo strings down to ~20KB before synchronizing with the database or caching in local storage. This optimization ensures minimal memory usage, negligible server-side processing overhead, and very light database payloads, making the platform ideal for low-power host nodes like a Raspberry Pi 5.
 
