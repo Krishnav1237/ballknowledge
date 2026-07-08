@@ -74,6 +74,7 @@ model ChatMessage {
   isRoast     Boolean           @default(false)
   upvotes     Int               @default(0)
   downvotes   Int               @default(0)
+  reactions   Json              @default("{}")
   createdAt   DateTime          @default(now())
 
   @@index([profileId, matchId])

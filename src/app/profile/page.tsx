@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
-import { getStorageItem, removeStorageItem, setStorageItem } from '@/lib/browserStorage';
+import { getStorageItem, removeStorageItem } from '@/lib/browserStorage';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
@@ -20,6 +20,7 @@ export default function ProfileSettingsPage() {
   
   // Settings inputs
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [favoriteClub, setFavoriteClub] = useState('');
   const [favoriteNation, setFavoriteNation] = useState('');
   const [role, setRole] = useState<'FREE' | 'PREMIUM' | 'ADMIN'>('FREE');
@@ -220,29 +221,6 @@ export default function ProfileSettingsPage() {
     return () => window.removeEventListener('message', handleOAuthMessage);
   }, [mounted, handleGoogleCredentialResponse, showToast]);
 
-  const handleCustomGoogleLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1047514336049-7gr11k2iirfphv7242m8u8v83q89k6e8.apps.googleusercontent.com';
-    const redirectUri = encodeURIComponent(window.location.origin + '/profile');
-    const nonce = `bk_${Math.random().toString(36).substring(2)}`;
-    setStorageItem('sessionStorage', 'bk_google_nonce', nonce);
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=google`;
-
-    // Open Google Sign-In in a premium window popup
-    const width = 500;
-    const height = 650;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-
-    try {
-      const popup = window.open(url, 'GoogleSignIn', `width=${width},height=${height},left=${left},top=${top}`);
-      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-        // Fallback to direct redirect if popups are blocked by browser settings
-        window.location.href = url;
-      }
-    } catch {
-      window.location.href = url;
-    }
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -447,6 +425,7 @@ export default function ProfileSettingsPage() {
           action: authMode,
           username: username.trim(),
           password: password.trim(),
+          email: authMode === 'signup' ? email.trim() : undefined,
           favoriteClub: favoriteClub || 'VAR FC',
           favoriteNation: favoriteNation || 'Argentina'
         })
@@ -505,6 +484,7 @@ export default function ProfileSettingsPage() {
     const signedOut = getStoredProfile();
     setProfile(signedOut);
     setUsername('');
+    setEmail('');
     setPassword('');
     setFavoriteClub('');
     setFavoriteNation('');
@@ -649,17 +629,33 @@ export default function ProfileSettingsPage() {
 
                   <div className="space-y-1.5 text-left">
                     <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
-                      Manager Alias
+                      {authMode === 'signin' ? 'Manager Alias or Email' : 'Manager Alias'}
                     </label>
                     <input
                       type="text"
                       required
                       value={username}
                       onChange={e => setUsername(e.target.value)}
-                      placeholder="tactical_titan"
+                      placeholder={authMode === 'signin' ? "tactical_titan or titan@gmail.com" : "tactical_titan"}
                       className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner font-mono"
                     />
                   </div>
+
+                  {authMode === 'signup' && (
+                    <div className="space-y-1.5 text-left">
+                      <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="manager@ballknowledge.live"
+                        className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner font-mono"
+                      />
+                    </div>
+                  )}
 
                   <div className="space-y-1.5 text-left">
                     <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
@@ -699,28 +695,7 @@ export default function ProfileSettingsPage() {
                     {authMode === 'signin' ? 'ENTER LOCKER ROOM' : 'CREATE MANAGER PROFILE'}
                   </button>
 
-                  <div className="relative flex items-center justify-center my-3.5">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-rose-950/20"></div>
-                    </div>
-                    <span className="relative px-3 bg-[#0B0305] text-[9px] font-black tracking-widest text-zinc-500 uppercase">OR</span>
-                  </div>
 
-                  <div className="flex flex-col gap-2.5 items-center w-full mt-3">
-                    <button
-                      type="button"
-                      onClick={handleCustomGoogleLogin}
-                      className="w-full max-w-[280px] h-11 rounded-xl bg-white hover:bg-zinc-100 text-black font-sans font-black text-xs uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-md active:scale-95"
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.61 14.99 1 12 1 7.24 1 3.21 3.73 1.25 7.69l3.87 3C6.04 7.63 8.78 5.04 12 5.04z" />
-                        <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.87 3c2.26-2.09 3.54-5.17 3.54-8.79z" />
-                        <path fill="#FBBC05" d="M5.12 10.69c-.25-.76-.39-1.57-.39-2.42s.14-1.66.39-2.42L1.25 4.85C.45 6.45 0 8.23 0 10.12s.45 3.67 1.25 5.27l3.87-3z" />
-                        <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.87-3c-1.1.74-2.5 1.18-4.09 1.18-3.22 0-5.96-2.59-6.93-5.65l-3.87 3C3.21 20.27 7.24 23 12 23z" />
-                      </svg>
-                      <span>Continue with Google</span>
-                    </button>
-                  </div>
                 </form>
               )}
             </div>
@@ -794,7 +769,7 @@ export default function ProfileSettingsPage() {
                             {pendingPhoto ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={pendingPhoto} alt="Upload preview" className="w-full h-full object-cover" />
-                            ) : avatarSeed.startsWith('data:image/') ? (
+                            ) : (avatarSeed.startsWith('data:image/') || avatarSeed.startsWith('http')) ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={avatarSeed} alt="Active face" className="w-full h-full object-cover" />
                             ) : (
@@ -804,7 +779,7 @@ export default function ProfileSettingsPage() {
                               </div>
                             )}
                           </label>
-                          {(pendingPhoto || avatarSeed.startsWith('data:image/')) && (
+                          {(pendingPhoto || avatarSeed.startsWith('data:image/') || avatarSeed.startsWith('http')) && (
                             <button
                               type="button"
                               onClick={() => { setPendingPhoto(null); handleRemoveCustomPhoto(); }}

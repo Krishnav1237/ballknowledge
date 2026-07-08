@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export const SESSION_COOKIE = 'bk_session';
 
-export type SessionPayload = {
+type SessionPayload = {
   profileId: string;
   username: string;
   role: string;
@@ -44,7 +44,7 @@ export function createSessionToken(input: Omit<SessionPayload, 'exp'>, maxAgeSec
   return `${payloadB64}.${signPayload(payloadB64)}`;
 }
 
-export function verifySessionToken(token?: string | null): SessionPayload | null {
+function verifySessionToken(token?: string | null): SessionPayload | null {
   if (!token) return null;
   const [payloadB64, sig] = token.split('.');
   if (!payloadB64 || !sig) return null;

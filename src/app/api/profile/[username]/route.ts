@@ -112,6 +112,10 @@ export async function POST(
       return NextResponse.json({ error: 'Profile data is required' }, { status: 400 });
     }
 
+    if (profile.inputImage && profile.inputImage.length > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: 'Uploaded photo size exceeds the limit of 5MB.' }, { status: 400 });
+    }
+
     const { username: routeUsername } = await params;
     const requestedUsername = routeUsername ? decodeURIComponent(routeUsername) : '';
     if (requestedUsername && requestedUsername !== auth.session.username) {

@@ -8,7 +8,7 @@ import SportsCenterCard from '@/components/SportsCenterCard';
 import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download, Send } from 'lucide-react';
-import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
+import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 
 interface Team {
   id: string;
@@ -47,6 +47,7 @@ export default function FootballIQPage() {
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'COMPLETED' | 'UPCOMING' | 'PREDICTED'>('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
+  const [activeMobileView, setActiveMobileView] = useState<'album' | 'showcase'>('album');
   
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
@@ -134,10 +135,16 @@ export default function FootballIQPage() {
 
   const predArray = Object.values(userPreds);
   const totalMatches = predArray.length;
-  const exactCount = predArray.filter(p => p.exactScore).length;
+  // Count matches where the resolved card exists and prediction was correct
+  const exactCount = predArray.filter(p => {
+    if (!p.resolved || !p.card) return false;
+    const charge = (p.card as any)?.charge || '';
+    // charge format: "Predicted: 2-1 | Actual: 2-1" — exact if both sides match
+    return charge.includes('Predicted:') && charge.split('|')[0].replace('Predicted:', '').trim() === charge.split('|')[1]?.replace('Actual:', '').trim();
+  }).length;
   const accuracy = totalMatches > 0 ? Math.round((exactCount / totalMatches) * 100) : 0;
 
-  const totalAlbumSlots = 16;
+  const totalAlbumSlots = 48; // Group stage + knockouts
   const albumProgressPercent = Math.min(100, Math.round((totalMatches / totalAlbumSlots) * 100));
 
   let playstyle = 'Rookie Fan';
@@ -160,7 +167,8 @@ export default function FootballIQPage() {
     const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     const now = getSystemDate();
     const timeDiff = now.getTime() - kickoff.getTime();
-    if (match.finished === 'TRUE' || timeDiff >= 2 * 60 * 60 * 1000) {
+    // Use 3h threshold to match the match page (accounts for extra time + stoppages)
+    if (match.finished === 'TRUE' || timeDiff >= 3 * 60 * 60 * 1000) {
       return 'COMPLETED';
     } else if (timeDiff >= 0) {
       return 'LIVE';
@@ -262,6 +270,19 @@ export default function FootballIQPage() {
     const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: '', fifa_code: '' };
     const userPred = userPreds[match.id];
 
+    const isCompleted = getMatchStatus(match) === 'COMPLETED' || match.finished === 'TRUE';
+    let resolvedScore: string | undefined = undefined;
+    if (isCompleted) {
+      const rawHome = match.home_score;
+      const rawAway = match.away_score;
+      if (match.time_elapsed !== 'notstarted' && rawHome !== 'null' && rawAway !== 'null' && rawHome !== undefined && rawAway !== undefined) {
+        resolvedScore = `${parseInt(String(rawHome), 10) || 0} - ${parseInt(String(rawAway), 10) || 0}`;
+      } else {
+        const result = getDeterministicMatchResult(match.id, homeTeam.name_en, awayTeam.name_en, match);
+        resolvedScore = `${result.homeScore} - ${result.awayScore}`;
+      }
+    }
+
     if (!userPred) {
       return {
         id: `unpredicted-${match.id}`,
@@ -273,7 +294,7 @@ export default function FootballIQPage() {
         evidence: 'No prediction data found.',
         rarity: 'COMMON',
         matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-        matchScore: (match.finished === 'TRUE' || getMatchStatus(match) === 'COMPLETED') ? `${match.home_score} - ${match.away_score}` : undefined,
+        matchScore: resolvedScore,
         homeFlag: homeTeam.flag,
         awayFlag: awayTeam.flag,
         homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
@@ -295,7 +316,7 @@ export default function FootballIQPage() {
         evidence: card.evidence,
         rarity: card.rarity,
         matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-        matchScore: (match.finished === 'TRUE' || getMatchStatus(match) === 'COMPLETED') ? `${match.home_score} - ${match.away_score}` : undefined,
+        matchScore: resolvedScore,
         homeFlag: homeTeam.flag,
         awayFlag: awayTeam.flag,
         homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
@@ -307,7 +328,6 @@ export default function FootballIQPage() {
 
     const tempOvr = profile.overallRating;
     const tempRarity = tempOvr >= 85 ? 'LEGENDARY' : tempOvr >= 70 ? 'EPIC' : tempOvr >= 45 ? 'RARE' : 'COMMON';
-    const isCompleted = getMatchStatus(match) === 'COMPLETED';
 
     return {
       id: `pending-${match.id}`,
@@ -319,7 +339,7 @@ export default function FootballIQPage() {
       evidence: userPred.hotTakes?.[0]?.statement ? `Hot Take: "${userPred.hotTakes[0].statement}"` : 'No hot take submitted.',
       rarity: tempRarity,
       matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-      matchScore: isCompleted ? (match.home_score !== '' ? `${match.home_score} - ${match.away_score}` : undefined) : undefined,
+      matchScore: resolvedScore,
       homeFlag: homeTeam.flag,
       awayFlag: awayTeam.flag,
       homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
@@ -334,9 +354,9 @@ export default function FootballIQPage() {
     };
   };
 
-  // ── Round of 32 only ──────────────────────────────────────────────────────
-  const r32Matches = matches.filter(m => m.type === 'r32');
-  const predictedMatches = r32Matches.filter(m => userPreds[m.id]);
+  // ── All tournament matches ───────────────────────────────────────────────
+  const activeMatches = matches;
+  const predictedMatches = activeMatches.filter(m => userPreds[m.id]);
   const earnedCards = predictedMatches.map(m => constructMatchCardObj(m));
 
   const lockedCards = [
@@ -347,7 +367,7 @@ export default function FootballIQPage() {
       rarity: 'COMMON',
       verdict: 'LOCKED COMMON',
       charge: 'LOCKED STICKER SLOT',
-      sentence: 'Predict R32 matches to unlock Common cards',
+      sentence: 'Predict matches to unlock Common cards',
       evidence: 'No prediction data found.',
       matchTitle: 'LOCKED SLOT',
       isPredicted: false,
@@ -361,7 +381,7 @@ export default function FootballIQPage() {
       rarity: 'RARE',
       verdict: 'LOCKED RARE',
       charge: 'LOCKED STICKER SLOT',
-      sentence: 'Predict R32 matches to unlock Rare cards',
+      sentence: 'Predict matches to unlock Rare cards',
       evidence: 'No prediction data found.',
       matchTitle: 'LOCKED SLOT',
       isPredicted: false,
@@ -375,7 +395,7 @@ export default function FootballIQPage() {
       rarity: 'EPIC',
       verdict: 'LOCKED EPIC',
       charge: 'LOCKED STICKER SLOT',
-      sentence: 'Predict R32 matches to unlock Epic cards',
+      sentence: 'Predict matches to unlock Epic cards',
       evidence: 'No prediction data found.',
       matchTitle: 'LOCKED SLOT',
       isPredicted: false,
@@ -389,7 +409,7 @@ export default function FootballIQPage() {
       rarity: 'LEGENDARY',
       verdict: 'LOCKED LEGENDARY',
       charge: 'LOCKED STICKER SLOT',
-      sentence: 'Predict R32 matches to unlock Legendary cards',
+      sentence: 'Predict matches to unlock Legendary cards',
       evidence: 'No prediction data found.',
       matchTitle: 'LOCKED SLOT',
       isPredicted: false,
@@ -400,16 +420,16 @@ export default function FootballIQPage() {
 
   const allDisplayCards = [...earnedCards, ...lockedCards];
 
-  // ── Filter + slice logic (R32 only) ──────────────────────────────────────
+  // ── Filter + slice logic ──────────────────────────────────────────────────
   const getFilteredCards = () => {
     if (filterStatus === 'ALL') {
-      // ALL: R32 predicted cards + locked showcase slots
+      // ALL: predicted cards + locked showcase slots
       return allDisplayCards;
     }
 
     if (filterStatus === 'COMPLETED') {
-      // Last 5 completed R32 matches (predicted or not), newest first
-      return r32Matches
+      // Last 5 completed matches (predicted or not), newest first
+      return activeMatches
         .filter(m => getMatchStatus(m) === 'COMPLETED')
         .sort((a, b) =>
           parseLocalDate(b.local_date, b.stadium_id).getTime() -
@@ -420,8 +440,8 @@ export default function FootballIQPage() {
     }
 
     if (filterStatus === 'UPCOMING') {
-      // Next 5 upcoming R32 matches (predicted or not), soonest first
-      return r32Matches
+      // Next 5 upcoming matches (predicted or not), soonest first
+      return activeMatches
         .filter(m => getMatchStatus(m) === 'UPCOMING' || getMatchStatus(m) === 'LIVE')
         .sort((a, b) =>
           parseLocalDate(a.local_date, a.stadium_id).getTime() -
@@ -432,7 +452,7 @@ export default function FootballIQPage() {
     }
 
     if (filterStatus === 'PREDICTED') {
-      // Only R32 matches the user has submitted a prediction for
+      // Only matches the user has submitted a prediction for
       return earnedCards;
     }
 
@@ -468,6 +488,7 @@ export default function FootballIQPage() {
         onClick={() => {
           setSelectedCard(cardObj);
           setActiveRightTab('verdict');
+          setActiveMobileView('showcase');
         }}
         className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
           isSelected ? `ring-2 ${ringColor} ring-offset-2 ring-offset-black scale-[1.02]` : ''
@@ -561,7 +582,7 @@ export default function FootballIQPage() {
             COLLECTIBLES <span className="text-[#E11D48]">BINDER</span>
           </h1>
           <p className="text-zinc-400 text-[10px] sm:text-xs mt-2.5 font-black uppercase tracking-widest leading-none">
-            ROUND OF 32 <span className="text-[#E11D48] mx-1.5">★ KNOCKOUT STAGE</span> <span className="text-zinc-600 mx-1.5">•</span> EARNED VERDICT CARDS
+            TOURNAMENT <span className="text-[#E11D48] mx-1.5">★ KNOCKOUT STAGES</span> <span className="text-zinc-600 mx-1.5">•</span> EARNED VERDICT CARDS
           </p>
         </div>
 
@@ -573,7 +594,7 @@ export default function FootballIQPage() {
             <div className="lg:col-span-7 flex flex-wrap items-center gap-5">
               <div className="bg-black/40 border border-white/5 p-1 rounded-xl flex gap-0.5 w-fit shadow-inner">
                 {[
-                  { id: 'ALL',       label: 'R32',        sub: 'all 16'       },
+                  { id: 'ALL',       label: 'All Cards',  sub: 'collection'   },
                   { id: 'COMPLETED', label: 'Completed',  sub: 'last 5'       },
                   { id: 'UPCOMING',  label: 'Upcoming',   sub: 'next 5'       },
                   { id: 'PREDICTED', label: 'My Picks',   sub: 'predicted'    },
@@ -636,11 +657,37 @@ export default function FootballIQPage() {
             </div>
           </div>
 
+          {/* Mobile Tab Switcher */}
+          <div className="flex lg:hidden bg-[#0B0F19]/80 border border-white/10 rounded-xl p-1 mb-4 shadow-md relative z-25">
+            <button
+              onClick={() => setActiveMobileView('album')}
+              className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                activeMobileView === 'album'
+                  ? 'bg-[#E11D48] text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Sticker Album
+            </button>
+            <button
+              onClick={() => setActiveMobileView('showcase')}
+              className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                activeMobileView === 'showcase'
+                  ? 'bg-[#E11D48] text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Card Showcase
+            </button>
+          </div>
+
           {/* MAIN CONTENT GRID: card slots (left) + divider + card preview (right) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 flex-grow items-stretch">
             
             {/* LEFT PAGE: ALBUM SLOTS GRID WITH SMOOTH TRACKPAD SCROLL CONTAINER */}
-            <div className="lg:col-span-7 flex flex-col gap-4">
+            <div className={`lg:col-span-7 flex flex-col gap-4 ${
+              activeMobileView === 'album' ? 'block' : 'hidden lg:block'
+            }`}>
               
                 {/* Trackpad & Touch Native Scroll Container */}
                 <div 
@@ -670,7 +717,9 @@ export default function FootballIQPage() {
                 <div className="w-[1px] h-full bg-gradient-to-b from-white/0 via-white/10 to-white/0" />
               </div>
 
-              <div className="lg:col-span-4 lg:sticky lg:top-4 h-fit flex flex-col items-center justify-start gap-2 relative overflow-hidden self-start bg-[#090D16]/98 border border-white/10 rounded-2xl pb-4 px-4 pt-3 shadow-[0_12px_40px_rgba(0,0,0,0.85)] w-full">
+              <div className={`lg:col-span-4 lg:sticky lg:top-4 h-fit flex-col items-center justify-start gap-2 relative overflow-hidden self-start bg-[#090D16]/98 border border-white/10 rounded-2xl pb-4 px-4 pt-3 shadow-[0_12px_40px_rgba(0,0,0,0.85)] w-full ${
+                activeMobileView === 'showcase' ? 'flex' : 'hidden lg:flex'
+              }`}>
               
                 <div className="flex flex-col items-center justify-center w-full relative z-20">
                   <div ref={cardPedestalRef} className="relative flex justify-center items-center h-full w-full">

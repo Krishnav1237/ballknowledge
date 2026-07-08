@@ -43,10 +43,16 @@ Be direct, cynical, and funny. One sentence max for charge and sentence.`;
  */
 function cleanAndParseJSON(rawContent: string) {
   let cleaned = rawContent.trim();
-  if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/, '').trim();
+  // Strip various code fence formats LLMs use
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  // Extract JSON object if buried in prose
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (jsonMatch) cleaned = jsonMatch[0];
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    throw new Error(`Invalid JSON from LLM: ${cleaned.slice(0, 200)}`);
   }
-  return JSON.parse(cleaned);
 }
 
 function parseAndNormalizeGrading(rawContent: string): { grade: string; ovr: number; verdict: string; charge: string; sentence: string } {
@@ -213,8 +219,6 @@ async function gradeHotTake(statement: string): Promise<{ grade: string; ovr: nu
   };
 }
 
-
-// ─── V1 Scoring Formulas ─────────────────────────────────────────────────────
 
 // ─── V1 Scoring Formulas ─────────────────────────────────────────────────────
 
@@ -667,9 +671,9 @@ export async function POST(request: Request) {
       ? hotTakes
       : [];
 
-    // Free users: cap at 2 takes. Premium/Admin: up to 5.
+    // Free users: cap at 3 takes. Premium/Admin: up to 5.
     const role = auth.session.role || 'FREE';
-    const maxTakes = role === 'FREE' ? 2 : 5;
+    const maxTakes = role === 'FREE' ? 3 : 5;
     const takesToGrade = statements.slice(0, maxTakes);
 
     const gradedTakes: GradedTake[] = await Promise.all(
@@ -720,8 +724,8 @@ export async function POST(request: Request) {
     else if (ovr >= 40) { rarity = 'COMMON'; verdictText = 'DELUSION MERCHANT'; }
     else { rarity = 'COMMON'; verdictText = 'FOOTBALL TERRORIST'; }
 
-    // Use the best-graded take's verdict for charm
-    const bestTake = gradedTakes.sort((a, b) => b.ovr - a.ovr)[0];
+    // Use the best-graded take's verdict for charm (sort a copy to avoid mutating gradedTakes order)
+    const bestTake = [...gradedTakes].sort((a, b) => b.ovr - a.ovr)[0];
     if (bestTake && bestTake.verdict) verdictText = bestTake.verdict;
 
     const cardId = crypto.randomUUID();
@@ -740,20 +744,14 @@ export async function POST(request: Request) {
 
     // ── 7. Persist to DB ──────────────────────────────────────────────────────
     let persistedCard: any = null;
+    let finalPrd = prd;
+    let finalHot = hot;
+    let finalMgr = mgr;
+    let finalRst = rst;
+    let finalOvr = ovr;
+
     try {
       if (dbProfile) {
-          // Update: take best-ever score per metric (never decrease)
-          dbProfile = await prisma.footballIQProfile.update({
-            where: { id: dbProfile.id },
-            data: {
-              overallRating: Math.max(dbProfile.overallRating, ovr),
-              predictionRating: Math.max(dbProfile.predictionRating, prd),
-              hotTakeRating: Math.max(dbProfile.hotTakeRating, hot),
-              managerRating: Math.max(dbProfile.managerRating, mgr),
-              roastScore: Math.max(dbProfile.roastScore, rst),
-            }
-          });
-
         // Upsert Match Prediction
         const dbPrediction = await prisma.matchPrediction.upsert({
           where: { profileId_matchId: { profileId: dbProfile.id, matchId } },
@@ -815,6 +813,47 @@ export async function POST(request: Request) {
             statsJson: cardPayload.statsJson,
           }
         });
+
+        // Retrieve all match cards to calculate dynamic averages
+        const allCards = await prisma.matchCard.findMany({
+          where: { profileId: dbProfile.id }
+        });
+
+        let totalPrd = 0;
+        let totalMgr = 0;
+        let totalHot = 0;
+        let totalRst = 0;
+        let totalOvr = 0;
+        const count = allCards.length;
+
+        allCards.forEach(c => {
+          const stats = (c.statsJson as any) || {};
+          totalPrd += Number(stats.prd ?? c.rating ?? 50);
+          totalMgr += Number(stats.mgr ?? 50);
+          totalHot += Number(stats.hot ?? 50);
+          totalRst += Number(stats.rst ?? 50);
+          totalOvr += Number(stats.ovr ?? c.rating ?? 50);
+        });
+
+        if (count > 0) {
+          finalPrd = Math.round(totalPrd / count);
+          finalMgr = Math.round(totalMgr / count);
+          finalHot = Math.round(totalHot / count);
+          finalRst = Math.round(totalRst / count);
+          finalOvr = Math.round(totalOvr / count);
+        }
+
+        // Update profile with average rating stats
+        dbProfile = await prisma.footballIQProfile.update({
+          where: { id: dbProfile.id },
+          data: {
+            overallRating: finalOvr,
+            predictionRating: finalPrd,
+            hotTakeRating: finalHot,
+            managerRating: finalMgr,
+            roastScore: finalRst,
+          }
+        });
       }
     } catch (dbError) {
       console.warn('DB offline — returning in-memory response:', dbError);
@@ -833,16 +872,16 @@ export async function POST(request: Request) {
       success: true,
       card: finalCard,
       profileUpdates: {
-        predictionRating: prd,
-        hotTakeRating: hot,
-        managerRating: mgr,
-        roastScore: rst,
-        overallRating: ovr,
-        predictionDelta: profile?.predictionRating !== undefined ? prd - profile.predictionRating : 0,
-        hotTakeDelta: profile?.hotTakeRating !== undefined ? hot - profile.hotTakeRating : 0,
-        managerDelta: profile?.managerRating !== undefined ? mgr - profile.managerRating : 0,
-        roastDelta: profile?.roastScore !== undefined ? rst - profile.roastScore : 0,
-        overallDelta: profile?.overallRating !== undefined ? ovr - profile.overallRating : 0,
+        predictionRating: finalPrd,
+        hotTakeRating: finalHot,
+        managerRating: finalMgr,
+        roastScore: finalRst,
+        overallRating: finalOvr,
+        predictionDelta: profile?.predictionRating !== undefined ? finalPrd - profile.predictionRating : 0,
+        hotTakeDelta: profile?.hotTakeRating !== undefined ? finalHot - profile.hotTakeRating : 0,
+        managerDelta: profile?.managerRating !== undefined ? finalMgr - profile.managerRating : 0,
+        roastDelta: profile?.roastScore !== undefined ? finalRst - profile.roastScore : 0,
+        overallDelta: profile?.overallRating !== undefined ? finalOvr - profile.overallRating : 0,
       },
       gradedTakes,
       actualResult: result,

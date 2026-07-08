@@ -100,11 +100,16 @@ export async function POST(request: Request) {
     }
 
     const nation = favoriteNation || 'Argentina';
-    const ovr    = overallRating   ?? 50;
-    const prd    = predictionRating ?? 50;
-    const hot    = hotTakeRating    ?? 50;
-    const mgr    = managerRating    ?? tacticalRating ?? 50;
-    const rst    = roastScore       ?? communityRating ?? Math.max(50, Math.min(99, ovr + 1));
+    const clampRating = (val: any) => {
+      const num = parseInt(val, 10);
+      return isNaN(num) ? 50 : Math.max(0, Math.min(100, num));
+    };
+
+    const ovr    = clampRating(overallRating);
+    const prd    = clampRating(predictionRating);
+    const hot    = clampRating(hotTakeRating);
+    const mgr    = clampRating(managerRating ?? tacticalRating);
+    const rst    = clampRating(roastScore ?? communityRating ?? Math.max(50, Math.min(99, ovr + 1)));
 
     let aiImageUrl = '';
 
@@ -203,7 +208,7 @@ export async function POST(request: Request) {
           data: { aiImageUrl }
         });
         if (update.count === 0) {
-          return NextResponse.json({ error: 'Card not found for authenticated manager.' }, { status: 404 });
+          console.warn(`Card ${cardId} not found to save image, returning URL to client without DB persistence.`);
         }
       } catch (dbError) {
         console.warn('Failed to update MatchCard with aiImageUrl:', dbError);

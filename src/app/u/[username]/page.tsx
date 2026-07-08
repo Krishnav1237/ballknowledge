@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download, Send } from 'lucide-react';
-import { getFlagEmoji, parseLocalDate } from '@/lib/matchUtils';
+import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 
 interface Team {
   id: string;
@@ -51,6 +51,7 @@ export default function PublicProfilePage() {
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'COMPLETED' | 'UPCOMING' | 'PREDICTED'>('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
+  const [activeMobileView, setActiveMobileView] = useState<'album' | 'showcase'>('album');
 
   const [pedestalTiltStyle, setPedestalTiltStyle] = useState({});
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
@@ -148,7 +149,8 @@ export default function PublicProfilePage() {
     const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     const now = getSystemDate();
     const timeDiff = now.getTime() - kickoff.getTime();
-    if (match.finished === 'TRUE' || timeDiff >= 2 * 60 * 60 * 1000) {
+    // 3h threshold accounts for extra time + stoppages (matches match/[id]/page.tsx)
+    if (match.finished === 'TRUE' || timeDiff >= 3 * 60 * 60 * 1000) {
       return 'COMPLETED';
     } else if (timeDiff >= 0) {
       return 'LIVE';
@@ -254,6 +256,17 @@ export default function PublicProfilePage() {
     const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || (match as any).away_team_name_en || 'Away', flag: '', fifa_code: '' };
     const claimedCard = getPublicCardForMatch(match.id);
 
+    const isCompleted = getMatchStatus(match) === 'COMPLETED' || match.finished === 'TRUE';
+    let resolvedScore: string | undefined = undefined;
+    if (isCompleted) {
+      if (match.time_elapsed !== 'notstarted') {
+        resolvedScore = `${match.home_score} - ${match.away_score}`;
+      } else {
+        const result = getDeterministicMatchResult(match.id, homeTeam.name_en, awayTeam.name_en, match);
+        resolvedScore = `${result.homeScore} - ${result.awayScore}`;
+      }
+    }
+
     if (!claimedCard) {
       // Unpredicted match slot: LOCKED state with actual match info, no mock ratings/verdicts
       return {
@@ -266,7 +279,7 @@ export default function PublicProfilePage() {
         evidence: 'No prediction data found.',
         rarity: 'COMMON',
         matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-        matchScore: (match.finished === 'TRUE' || getMatchStatus(match) === 'COMPLETED') ? `${match.home_score} - ${match.away_score}` : undefined,
+        matchScore: resolvedScore,
         homeFlag: homeTeam.flag,
         awayFlag: awayTeam.flag,
         homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
@@ -287,7 +300,7 @@ export default function PublicProfilePage() {
       evidence: claimedCard.evidence,
       rarity: claimedCard.rarity,
       matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-      matchScore: (match.finished === 'TRUE' || getMatchStatus(match) === 'COMPLETED') ? `${match.home_score} - ${match.away_score}` : undefined,
+      matchScore: resolvedScore,
       homeFlag: homeTeam.flag,
       awayFlag: awayTeam.flag,
       homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase(),
@@ -297,9 +310,9 @@ export default function PublicProfilePage() {
     };
   };
 
-  // ── Round of 32 only ──────────────────────────────────────────────────────
-  const r32Matches = matches.filter(m => m.type === 'r32');
-  const predictedMatches = r32Matches.filter(m => getPublicCardForMatch(m.id));
+  // ── All tournament matches ───────────────────────────────────────────────
+  const activeMatches = matches;
+  const predictedMatches = activeMatches.filter(m => getPublicCardForMatch(m.id));
   const earnedCards = predictedMatches.map(m => constructPublicMatchCardObj(m));
 
   // 2. Exactly one locked card for each rarity to showcase tiers
@@ -364,14 +377,14 @@ export default function PublicProfilePage() {
 
   const allDisplayCards = [...earnedCards, ...lockedCards];
 
-  // ── Filter + slice logic (R32 only) ──────────────────────────────────────
+  // ── Filter + slice logic ──────────────────────────────────────────────────
   const getFilteredCards = () => {
     if (filterStatus === 'ALL') {
       return allDisplayCards;
     }
 
     if (filterStatus === 'COMPLETED') {
-      return r32Matches
+      return activeMatches
         .filter(m => getMatchStatus(m) === 'COMPLETED')
         .sort((a, b) =>
           parseLocalDate(b.local_date, b.stadium_id).getTime() -
@@ -382,7 +395,7 @@ export default function PublicProfilePage() {
     }
 
     if (filterStatus === 'UPCOMING') {
-      return r32Matches
+      return activeMatches
         .filter(m => getMatchStatus(m) === 'UPCOMING' || getMatchStatus(m) === 'LIVE')
         .sort((a, b) =>
           parseLocalDate(a.local_date, a.stadium_id).getTime() -
@@ -430,6 +443,7 @@ export default function PublicProfilePage() {
         onClick={() => {
           setSelectedCard(cardObj);
           setActiveRightTab('verdict');
+          setActiveMobileView('showcase');
         }}
         className={`cursor-pointer relative z-10 group filter drop-shadow-md transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] ${
           isSelected ? `ring-2 ${ringColor} ring-offset-2 ring-offset-black scale-[1.02]` : ''
@@ -529,7 +543,7 @@ export default function PublicProfilePage() {
             <div className="lg:col-span-7 flex flex-wrap items-center gap-5">
               <div className="bg-black/40 border border-white/5 p-1 rounded-xl flex gap-0.5 w-fit shadow-inner">
                 {[
-                  { id: 'ALL',       label: 'R32',        sub: 'all 16'    },
+                  { id: 'ALL',       label: 'All Cards',  sub: 'collection' },
                   { id: 'COMPLETED', label: 'Completed',  sub: 'last 5'    },
                   { id: 'UPCOMING',  label: 'Upcoming',   sub: 'next 5'    },
                   { id: 'PREDICTED', label: 'My Picks',   sub: 'predicted' },
@@ -592,11 +606,37 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
+          {/* Mobile Tab Switcher */}
+          <div className="flex lg:hidden bg-[#0B0F19]/80 border border-white/10 rounded-xl p-1 mb-4 shadow-md relative z-25">
+            <button
+              onClick={() => setActiveMobileView('album')}
+              className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                activeMobileView === 'album'
+                  ? 'bg-[#E11D48] text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Sticker Album
+            </button>
+            <button
+              onClick={() => setActiveMobileView('showcase')}
+              className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                activeMobileView === 'showcase'
+                  ? 'bg-[#E11D48] text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Card Showcase
+            </button>
+          </div>
+
           {/* MAIN CONTENT GRID: card slots (left) + divider + card preview (right) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 flex-grow items-stretch">
             
             {/* LEFT PAGE: ALBUM SLOTS GRID WITH SMOOTH TRACKPAD SCROLL CONTAINER */}
-            <div className="lg:col-span-7 flex flex-col gap-4">
+            <div className={`lg:col-span-7 flex flex-col gap-4 ${
+              activeMobileView === 'album' ? 'block' : 'hidden lg:block'
+            }`}>
               
                 {/* Trackpad & Touch Native Scroll Container */}
                 <div 
@@ -621,7 +661,9 @@ export default function PublicProfilePage() {
                 <div className="w-[1px] h-full bg-gradient-to-b from-white/0 via-white/10 to-white/0" />
               </div>
 
-              <div className="lg:col-span-4 lg:sticky lg:top-4 h-fit flex flex-col items-center justify-start gap-2 relative overflow-hidden self-start bg-[#090D16]/98 border border-white/10 rounded-2xl pt-3 pb-4 px-4 shadow-[0_12px_40px_rgba(0,0,0,0.85)] w-full">
+              <div className={`lg:col-span-4 lg:sticky lg:top-4 h-fit flex-col items-center justify-start gap-2 relative overflow-hidden self-start bg-[#090D16]/98 border border-white/10 rounded-2xl pt-3 pb-4 px-4 shadow-[0_12px_40px_rgba(0,0,0,0.85)] w-full ${
+                activeMobileView === 'showcase' ? 'flex' : 'hidden lg:flex'
+              }`}>
 
                 <div className="flex flex-col items-center justify-center w-full relative z-20">
                   <div ref={cardPedestalRef} className="relative flex justify-center items-center h-full w-full">

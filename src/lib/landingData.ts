@@ -1,10 +1,10 @@
 export const BREAKING_NEWS = [
-  'ROUND OF 32 IS LIVE: 16 knockout fixtures. Submit predictions before kickoff.',
+  'ROUND OF 16 IS LIVE: Submit predictions before kickoff.',
   'FOOTBALL IQ: Build your reputation, one knockout prediction at a time.',
-  'COLLECT VERDICTS: Every R32 fixture graded yields a custom VAR Match Card.',
-  'LOCK IN NOW: Round of 32 runs June 28 – July 3. Predictions close at kickoff.',
-  'VIRAL CARD ALBUM: Predict R32 matches, claim cards, and share your binder.',
-  'KNOCKOUT STAGE: Group standings are final. The Round of 32 begins today.',
+  'COLLECT VERDICTS: Every fixture graded yields a custom VAR Match Card.',
+  'LOCK IN NOW: Predictions close at kickoff.',
+  'VIRAL CARD ALBUM: Predict matches, claim cards, and share your binder.',
+  'KNOCKOUT STAGES: The bracket is heating up. Lock in your predictions today.',
 ];
 
 export const PLAYERS = [

@@ -14,9 +14,9 @@ import { TEAM_ROSTERS } from './roster';
  * @param {string} [stadiumId] - The ID of the stadium.
  * @returns {number} The UTC offset in hours (e.g., -4 for EDT, -7 for PDT).
  */
-function getStadiumUTCOffset(stadiumId?: string): number {
+function getStadiumUTCOffset(stadiumId?: string | number): number {
   if (!stadiumId) return -4; // Default to EDT (New York)
-  switch (stadiumId.trim()) {
+  switch (String(stadiumId).trim()) {
     // Eastern Daylight Time (EDT / UTC-4)
     case '7':  // Atlanta (Mercedes-Benz Stadium)
     case '8':  // Miami (Hard Rock Stadium)
@@ -133,7 +133,7 @@ export function getDeterministicMatchResult(
   let motm = 'None';
 
   const kickoff = match?.local_date ? parseLocalDate(match.local_date, match.stadium_id) : null;
-  const hasEndedByTime = kickoff && (new Date().getTime() - kickoff.getTime() >= 2 * 60 * 60 * 1000);
+  const hasEndedByTime = kickoff && (new Date().getTime() - kickoff.getTime() >= 3 * 60 * 60 * 1000);
 
   const hasRealScores = match && 
                         match.home_score !== 'null' && 
@@ -149,14 +149,17 @@ export function getDeterministicMatchResult(
 
     const parseScorersWithMinutes = (scorersStr: string) => {
       if (!scorersStr || scorersStr === 'null' || scorersStr === 'undefined') return [];
-      const clean = scorersStr.replace(/[{}"“”]/g, '').trim();
+      const clean = scorersStr.replace(/[\"{}“”]/g, '').trim();
       if (!clean) return [];
       return clean.split(',').map(s => {
-        const matchGroup = s.trim().match(/^([^0-9]+)\s+(\d+)'/);
+        const trimmed = s.trim();
+        // Handle: "Player Name 90+5' (P)", "Player Name 74'", "Player Name 120+1'"
+        const matchGroup = trimmed.match(/^(.+?)\s+(\d+(?:[+]\d+)?)['\u2019]?(?:\s*\(P\))?$/);
         if (matchGroup) {
           return { player: matchGroup[1].trim(), minute: parseInt(matchGroup[2], 10) };
         }
-        return { player: s.trim().replace(/\s+\d+'.*$/, ''), minute: 90 };
+        // Fallback: strip any minute-like suffix from the end
+        return { player: trimmed.replace(/\s+\d+(?:[+]\d+)?['\u2019]?(?:\s*\(P\))?$/, '').trim(), minute: 90 };
       });
     };
 
@@ -212,111 +215,11 @@ export function getDeterministicMatchResult(
       }
     }
   } else if (hasEndedByTime) {
-    // Case B: Match duration elapsed but no real result registered yet. Run deterministic simulation.
-    // Determine simulated results deterministically using matchId as a seed.
-    let seed = 0;
-    for (let i = 0; i < matchId.length; i++) {
-      seed = matchId.charCodeAt(i) + ((seed << 5) - seed);
-    }
-    // LCG-style deterministic random generator bound to the match ID seed
-    const random = () => {
-      const x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
-    };
-
-    const homeKey = findTeamRosterKey(homeTeamName);
-    const awayKey = findTeamRosterKey(awayTeamName);
-    const homeRoster = homeKey ? TEAM_ROSTERS[homeKey] : [];
-    const awayRoster = awayKey ? TEAM_ROSTERS[awayKey] : [];
-
-    // Calculate overall team squad ratings from rosters (fallback: 75)
-    const homeRating = homeRoster.length > 0 ? (homeRoster.reduce((sum, p) => sum + p.rating, 0) / homeRoster.length) : 75;
-    const awayRating = awayRoster.length > 0 ? (awayRoster.reduce((sum, p) => sum + p.rating, 0) / awayRoster.length) : 75;
-
-    // Expected goals based on rating differential + home advantage modifier
-    const homeExpected = 1.3 + (homeRating - awayRating) * 0.1 + 0.2;
-    const awayExpected = 1.1 + (awayRating - homeRating) * 0.1;
-
-    // Poisson-like distribution algorithm for goal tally
-    const getGoalsCount = (expected: number) => {
-      const r = random();
-      if (r < Math.exp(-expected)) return 0;
-      if (r < Math.exp(-expected) * (1 + expected)) return 1;
-      if (r < Math.exp(-expected) * (1 + expected + expected * expected / 2)) return 2;
-      if (r < Math.exp(-expected) * (1 + expected + expected * expected / 2 + expected * expected * expected / 6)) return 3;
-      return 4;
-    };
-
-    homeScore = getGoalsCount(homeExpected);
-    awayScore = getGoalsCount(awayExpected);
-
-    // Pick scorers from roster weighted by position (Forwards have 1.5x rating multiplier)
-    const getScorers = (roster: any[], count: number, team: 'home' | 'away') => {
-      if (roster.length === 0) return [];
-      const pool = roster.filter(p => p.position === 'FWD' || p.position === 'MID');
-      const activePool = pool.length > 0 ? pool : roster;
-      
-      const goalsList: { player: string; minute: number; team: 'home' | 'away' }[] = [];
-      for (let i = 0; i < count; i++) {
-        const totalWeight = activePool.reduce((sum, p) => sum + (p.position === 'FWD' ? p.rating * 1.5 : p.rating), 0);
-        let r = random() * totalWeight;
-        let selectedPlayer = activePool[0];
-        for (const p of activePool) {
-          const weight = p.position === 'FWD' ? p.rating * 1.5 : p.rating;
-          if (r <= weight) {
-            selectedPlayer = p;
-            break;
-          }
-          r -= weight;
-        }
-        
-        const minute = Math.floor(random() * 90) + 1;
-        goalsList.push({ player: selectedPlayer.name, minute, team });
-      }
-      return goalsList;
-    };
-
-    const homeGoals = getScorers(homeRoster, homeScore, 'home');
-    const awayGoals = getScorers(awayRoster, awayScore, 'away');
-    const allGoals = [...homeGoals, ...awayGoals].sort((a, b) => a.minute - b.minute);
-
-    if (allGoals.length > 0) {
-      firstGoalscorer = allGoals[0].player;
-      
-      // Determine simulated MOTM based on goal count
-      const goalCounts: Record<string, number> = {};
-      const firstGoalTime: Record<string, number> = {};
-      allGoals.forEach((g) => {
-        goalCounts[g.player] = (goalCounts[g.player] || 0) + 1;
-        if (firstGoalTime[g.player] === undefined) {
-          firstGoalTime[g.player] = g.minute;
-        }
-      });
-      
-      let bestPlayer = allGoals[0].player;
-      let maxGoals = 0;
-      Object.keys(goalCounts).forEach((player) => {
-        const goals = goalCounts[player];
-        if (goals > maxGoals) {
-          maxGoals = goals;
-          bestPlayer = player;
-        } else if (goals === maxGoals) {
-          if (firstGoalTime[player] < firstGoalTime[bestPlayer]) {
-            bestPlayer = player;
-          }
-        }
-      });
-      motm = bestPlayer;
-    } else {
-      firstGoalscorer = 'None';
-      const homeGk = homeRoster.find(p => p.position === 'GK');
-      const awayGk = awayRoster.find(p => p.position === 'GK');
-      if (homeGk && awayGk) {
-        motm = homeGk.rating >= awayGk.rating ? homeGk.name : awayGk.name;
-      } else {
-        motm = homeGk?.name || awayGk?.name || 'Goalkeeper';
-      }
-    }
+    // Case B: Match duration elapsed but no real result registered yet. Avoid fabricating fake results.
+    homeScore = 0;
+    awayScore = 0;
+    firstGoalscorer = 'None';
+    motm = 'None';
   }
 
   const possessionWinner =
@@ -431,7 +334,10 @@ export function getPlayerMatchRatings(
   // Parse actual goalscorers
   const parseScorers = (raw: string): string[] => {
     if (!raw) return [];
-    return raw.replace(/[{}]/g, '').split(',').map(s => s.trim().replace(/"/g, '').replace(/\d+['+]*$/, '').trim().toLowerCase()).filter(Boolean);
+    return raw.replace(/[{}]/g, '').split(',').map(s =>
+      // Strip minute suffix including extra-time (90+5') and penalty (P) notation
+      s.trim().replace(/"/g, '').replace(/\s+\d+(?:[+]\d+)?['\u2019]?(?:\s*\(P\))?$/, '').trim().toLowerCase()
+    ).filter(Boolean);
   };
   
   const actualHomeScorers = match ? parseScorers(match.home_scorers || '') : [];

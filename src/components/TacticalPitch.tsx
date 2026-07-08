@@ -1,4 +1,3 @@
-import React from 'react';
 import { Plus, X } from 'lucide-react';
 import { Player, getPlayerImageUrl, PLAYER_SILHOUETTE } from '@/lib/roster';
 

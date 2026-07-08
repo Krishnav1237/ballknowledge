@@ -684,7 +684,7 @@ export default function Home() {
               <input
                 id="nation-search"
                 type="text"
-                placeholder="Search R32 nation..."
+                placeholder="Search tournament nation..."
                 value={nationSearch}
                 onChange={e => setNationSearch(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#E11D48]/50 focus:ring-1 focus:ring-[#E11D48]/20 transition-all shadow-inner"

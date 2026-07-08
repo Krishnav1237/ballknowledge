@@ -7,13 +7,13 @@ import NextImage from 'next/image';
 import Link from 'next/link';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
-import { Sparkles, Trophy, Flame, AlertCircle, Share2, CheckCircle } from 'lucide-react';
+import { Sparkles, Trophy, Flame, AlertCircle, AlertTriangle, Share2, CheckCircle } from 'lucide-react';
 import { Player, getRosterForTeam, getPlayerImageUrl, isPlayerAllowedForSlot, PLAYER_SILHOUETTE } from '@/lib/roster';
 import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
-import { parseLocalDate, getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
+import { parseLocalDate, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 
 const PITCH_SLOTS = [
@@ -53,6 +53,10 @@ interface Match {
   stadium_id: string;
   home_team_label?: string;
   away_team_label?: string;
+  home_team_name_en?: string;
+  away_team_name_en?: string;
+  home_scorers?: string;
+  away_scorers?: string;
 }
 
 interface FixtureData {
@@ -99,7 +103,7 @@ export default function MatchPage() {
   const [predMotm, setPredMotm] = useState<string>('');
   const [predPossession, setPredPossession] = useState<string>('3');
   const [takes, setTakes] = useState<{ statement: string; confidence: number }[]>([
-    { statement: '', confidence: 50 }
+    { statement: '', confidence: 3 }
   ]);
 
   // Squad Builder & Modal states
@@ -117,10 +121,10 @@ export default function MatchPage() {
   
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<'pitch' | 'sidebar'>('pitch');
   const [error, setError] = useState<string | null>(null);
-  // Inline toast state replaces all browser alert() calls
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warn' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'error' | 'warn' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
@@ -128,11 +132,11 @@ export default function MatchPage() {
   const fixtureQuery = useQuery({
     queryKey: ['world-cup-fixture-data'],
     queryFn: fetchFixtureData,
-    staleTime: Infinity,
-    gcTime: 1000 * 60 * 60,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false
+    staleTime: 1000 * 30, // 30 seconds
+    gcTime: 1000 * 60 * 10, // 10 minutes
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true
   });
 
   const dismissPredictionModal = () => {
@@ -149,7 +153,8 @@ export default function MatchPage() {
     // Load user profile & predictions
     const userProfile = getStoredProfile();
     setProfile(userProfile);
-    setOverallRatingAnimate(userProfile.overallRating);
+    // Coerce to safe integer to prevent NaN animation loop if profile is fresh
+    setOverallRatingAnimate(Math.max(50, parseInt(String(userProfile.overallRating), 10) || 50));
 
     const userPreds = getStoredPredictions();
     setPredictions(userPreds);
@@ -166,7 +171,7 @@ export default function MatchPage() {
         setTakes(matchPred.hotTakes);
       }
       if (matchPred.resolved && matchPred.card) {
-        setGradingResult({ card: matchPred.card });
+        setGradingResult({ card: matchPred.card, gradedTakes: matchPred.gradedTakes });
       }
       if (matchPred.lineup) {
         setLineup(matchPred.lineup as Record<string, Player>);
@@ -177,7 +182,7 @@ export default function MatchPage() {
       setPredScorer('');
       setPredMotm('');
       setPredPossession('3');
-      setTakes([{ statement: '', confidence: 50 }]);
+      setTakes([{ statement: '', confidence: 3 }]);
       setGradingResult(null);
       setLineup({});
     }
@@ -193,6 +198,46 @@ export default function MatchPage() {
     // Initialize selectedSlot to first empty position
     const initialSlot = getFirstActiveSlot((matchPred?.lineup || {}) as Record<string, Player>);
     setSelectedSlot(initialSlot);
+
+    const handleStorage = () => {
+      const prof = getStoredProfile();
+      setProfile(prof);
+      setOverallRatingAnimate(Math.max(50, parseInt(String(prof.overallRating), 10) || 50));
+
+      const preds = getStoredPredictions();
+      setPredictions(preds);
+      const mPred = preds[matchId];
+      if (mPred) {
+        setPredHomeScore(mPred.homeScore);
+        setPredAwayScore(mPred.awayScore);
+        setPredScorer(mPred.firstGoalscorer);
+        setPredMotm(mPred.motm);
+        setPredPossession(mPred.possessionWinner || '3');
+        if (mPred.hotTakes && mPred.hotTakes.length > 0) {
+          setTakes(mPred.hotTakes);
+        }
+        if (mPred.resolved && mPred.card) {
+          setGradingResult({ card: mPred.card, gradedTakes: mPred.gradedTakes });
+        }
+        if (mPred.lineup) {
+          setLineup(mPred.lineup as Record<string, Player>);
+        }
+      } else {
+        setPredHomeScore(0);
+        setPredAwayScore(0);
+        setPredScorer('');
+        setPredMotm('');
+        setPredPossession('3');
+        setTakes([{ statement: '', confidence: 3 }]);
+        setGradingResult(null);
+        setLineup({});
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+    };
   }, [matchId]);
 
   useEffect(() => {
@@ -243,15 +288,18 @@ export default function MatchPage() {
     );
   }
 
-  const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_label || 'Home', flag: '', groups: 'A' };
-  const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_label || 'Away', flag: '', groups: 'A' };
+  const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_name_en || match.home_team_label || 'TBD', flag: '', groups: 'A' };
+  const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_name_en || match.away_team_label || 'TBD', flag: '', groups: 'A' };
 
   // Determine Match Status using real current time + finished flag
+  // Knockout matches can go to ET + penalties (~3h total), so use 3h threshold
   const kickoff = parseLocalDate(match.local_date, match.stadium_id);
   const timeDiff = new Date().getTime() - kickoff.getTime();
   let status: 'UPCOMING' | 'LIVE' | 'COMPLETED' = 'UPCOMING';
-  if (match.finished === 'TRUE' || timeDiff >= 2 * 60 * 60 * 1000) {
+  if (match.finished === 'TRUE') {
     status = 'COMPLETED';
+  } else if (timeDiff >= 3 * 60 * 60 * 1000) {
+    status = 'COMPLETED'; // 3h+ past kickoff, treat as completed
   } else if (timeDiff >= 0) {
     status = 'LIVE';
   }
@@ -266,35 +314,41 @@ export default function MatchPage() {
   const maxTakes = profile?.role === 'FREE' ? 3 : 5;
 
   // Compute resolved lineup if match is completed to show live player performance ratings
-  const resolvedLineup = status === 'COMPLETED' ? Object.keys(lineup).reduce((acc, slotId) => {
-    const player = lineup[slotId];
-    if (player) {
-      const matchRatings = getPlayerMatchRatings(matchId, homeTeam?.name_en || '', awayTeam?.name_en || '', match);
-      const pName = player.name.toLowerCase().trim();
-      const matchRating = matchRatings[pName] || 
-                          Object.entries(matchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
-                          (player.rating / 10);
-      acc[slotId] = {
-        ...player,
-        rating: typeof matchRating === 'number' ? matchRating.toFixed(1) : matchRating
-      };
-    }
-    return acc;
-  }, {} as Record<string, any>) : lineup;
+  // PERF: Extract matchRatings outside the reduce so it's computed once, not once-per-slot (11x)
+  const resolvedLineup = status === 'COMPLETED' ? (() => {
+    const matchRatings = getPlayerMatchRatings(matchId, homeTeam?.name_en || '', awayTeam?.name_en || '', match);
+    return Object.keys(lineup).reduce((acc, slotId) => {
+      const player = lineup[slotId];
+      if (player) {
+        const pName = player.name.toLowerCase().trim();
+        const matchRating = matchRatings[pName] || 
+                            Object.entries(matchRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
+                            (player.rating / 10);
+        acc[slotId] = {
+          ...player,
+          rating: typeof matchRating === 'number' ? matchRating.toFixed(1) : matchRating
+        };
+      }
+      return acc;
+    }, {} as Record<string, any>);
+  })() : lineup;
 
   const handleAddTake = () => {
+    if (isSubmissionLocked) return;
     if (takes.length < maxTakes) {
-      setTakes([...takes, { statement: '', confidence: 50 }]);
+      setTakes([...takes, { statement: '', confidence: 3 }]);
     }
   };
 
   const handleTakeChange = (index: number, key: 'statement' | 'confidence', value: any) => {
+    if (isSubmissionLocked) return;
     const newTakes = [...takes];
     newTakes[index] = { ...newTakes[index], [key]: value };
     setTakes(newTakes);
   };
 
   const handleRemoveTake = (index: number) => {
+    if (isSubmissionLocked) return;
     if (takes.length > 1) {
       setTakes(takes.filter((_, i) => i !== index));
     }
@@ -333,6 +387,7 @@ export default function MatchPage() {
   };
 
   const handleSelectPlayer = (player: Player) => {
+    if (isSubmissionLocked) return;
     if (!selectedSlot) return;
     
     // Remove the player from any other slots they might be in
@@ -378,6 +433,8 @@ export default function MatchPage() {
     if (nextEmpty) {
       setSelectedSlot(nextEmpty);
     }
+    // Auto-toggle back to pitch view on mobile so they can see the player placed
+    setActiveMobileTab('pitch');
   };
 
   const handleSetCaptain = (slotId: string) => {
@@ -483,13 +540,23 @@ export default function MatchPage() {
 
     await persistPrediction(updatedPred);
     dismissPredictionModal();
-    showToast(profile?.isAuthenticated ? 'Predictions, hot takes & Best XI locked in & synced! 🔒' : 'Predictions, hot takes & Best XI locked in locally! 🔒', 'success');
+    if (profile?.isAuthenticated) {
+      showToast('Predictions, hot takes & Best XI locked in & synced! 🔒', 'success');
+    } else {
+      showToast('Predictions, hot takes & Best XI locked in session! Sign in to persist. 🔒', 'warn');
+    }
   };
 
   // Resolve match and trigger Football IQ progression
   const handleResolveMatch = async () => {
     if (!predictions[matchId]) {
-      showToast('Submit your predictions before resolving this match!', 'error');
+      // Allow quick grade even without prior predictions
+      showToast('No prior predictions found — grading with defaults.', 'warn');
+    }
+
+    // Guard against double-resolution
+    if (predictions[matchId]?.resolved && gradingResult) {
+      showToast('This match was already graded! View your card below. 🏆', 'warn');
       return;
     }
 
@@ -511,18 +578,29 @@ export default function MatchPage() {
     await sleep(1500);
 
     try {
+      // Always use the saved (locked) prediction values to ensure accuracy
+      const lockedPred = predictions[matchId];
+      const resolveHomeScore = lockedPred?.homeScore ?? predHomeScore;
+      const resolveAwayScore = lockedPred?.awayScore ?? predAwayScore;
+      const resolveScorer = lockedPred?.firstGoalscorer ?? predScorer;
+      const resolveMotm = lockedPred?.motm ?? predMotm;
+      const resolvePossession = lockedPred?.possessionWinner ?? predPossession;
+      const resolveHotTakes = (lockedPred?.hotTakes ?? takes).filter((t: any) => t.statement.trim() !== '');
+      const resolveLineup = lockedPred?.lineup ?? lineup;
+
       // POST to backend api
       const response = await fetch('/api/resolve-match', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           matchId,
-          homeScore: predHomeScore,
-          awayScore: predAwayScore,
-          firstGoalscorer: predScorer,
-          motm: predMotm,
-          possessionWinner: predPossession,
-          hotTakes: takes.filter(t => t.statement.trim() !== ''),
+          homeScore: resolveHomeScore,
+          awayScore: resolveAwayScore,
+          firstGoalscorer: resolveScorer,
+          motm: resolveMotm,
+          possessionWinner: resolvePossession,
+          hotTakes: resolveHotTakes,
+          lineup: resolveLineup,
           profile: {
             username: profile.username,
             overallRating: profile.overallRating,
@@ -540,7 +618,8 @@ export default function MatchPage() {
         const updatedPred: LocalPrediction = {
           ...predictions[matchId],
           resolved: true,
-          card: result.card
+          card: result.card,
+          gradedTakes: result.gradedTakes
         };
         const newPreds = { ...predictions, [matchId]: updatedPred };
         setPredictions(newPreds);
@@ -552,6 +631,8 @@ export default function MatchPage() {
           overallRating: result.profileUpdates.overallRating,
           predictionRating: result.profileUpdates.predictionRating,
           hotTakeRating: result.profileUpdates.hotTakeRating,
+          managerRating: result.profileUpdates.managerRating,
+          roastScore: result.profileUpdates.roastScore,
           collectedCards: [...(profile.collectedCards || []), result.card.id]
         };
         setProfile(updatedProfile);
@@ -562,8 +643,9 @@ export default function MatchPage() {
         setShowProgression(true);
 
         // Animate rating count
-        let count = profile.overallRating;
-        const target = result.profileUpdates.overallRating;
+        const prevOvr = Math.max(50, parseInt(String(profile.overallRating), 10) || 50);
+        let count = prevOvr;
+        const target = Math.max(1, Math.min(99, result.profileUpdates.overallRating || prevOvr));
         const speed = Math.abs(target - count) > 10 ? 40 : 80;
         const timer = setInterval(() => {
           if (count === target) {
@@ -585,6 +667,7 @@ export default function MatchPage() {
   };
 
   const handleClearSlot = (slotId: string) => {
+    if (isSubmissionLocked) return;
     const newLineup = { ...lineup };
     delete newLineup[slotId];
     setLineup(newLineup);
@@ -608,7 +691,23 @@ export default function MatchPage() {
   const hasSubmitted = !!predictions[matchId];
   const isResolved = hasSubmitted && predictions[matchId].resolved && gradingResult;
 
-  const actualResult = getDeterministicMatchResult(matchId, homeTeam.name_en, awayTeam.name_en, match);
+  // Use REAL scores from match JSON data, not deterministic fallback
+  const realHomeScore = match.finished === 'TRUE' ? (parseInt(match.home_score, 10) || 0) : 0;
+  const realAwayScore = match.finished === 'TRUE' ? (parseInt(match.away_score, 10) || 0) : 0;
+  const actualResult = { homeScore: realHomeScore, awayScore: realAwayScore };
+
+  // Parse real goalscorers from JSON format
+  const parseRealScorers = (raw: string): Array<{name: string; minute: string}> => {
+    if (!raw || raw === 'null' || raw === 'undefined') return [];
+    return raw.replace(/[{}""]/g, '').split(',').map(s => {
+      const trimmed = s.trim();
+      const m = trimmed.match(/^(.+?)\s+(\d+['+]?)$/);
+      if (m) return { name: m[1].trim(), minute: m[2] };
+      return { name: trimmed, minute: '' };
+    }).filter(e => e.name);
+  };
+  const homeGoalscorers = parseRealScorers((match as any).home_scorers || '');
+  const awayGoalscorers = parseRealScorers((match as any).away_scorers || '');
 
   const handleCopyLink = () => {
     if (isResolved && gradingResult?.card?.id) {
@@ -627,10 +726,14 @@ export default function MatchPage() {
         <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold shadow-xl backdrop-blur-md transition-all animate-fade-in-down ${
           toast.type === 'success'
             ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+            : toast.type === 'warn'
+            ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
             : 'bg-red-500/15 border-red-500/30 text-red-300'
         }`}>
           {toast.type === 'success'
             ? <CheckCircle className="w-4 h-4 shrink-0" />
+            : toast.type === 'warn'
+            ? <AlertTriangle className="w-4 h-4 shrink-0" />
             : <AlertCircle className="w-4 h-4 shrink-0" />
           }
           {toast.message}
@@ -644,7 +747,7 @@ export default function MatchPage() {
           alt="Match Dugout Background" 
           fill 
           className="object-cover opacity-[0.52] object-center scale-102" 
-          preload
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-background/20 to-background" />
       </div>
@@ -754,29 +857,29 @@ export default function MatchPage() {
               
               <div className="scale-90 min-[370px]:scale-95 sm:scale-100 origin-top my-1">
                 <SportsCenterCard data={{
-                  text: gradingResult.card.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', ''),
+                  text: gradingResult?.card?.evidence?.replace('Hot Take statement: "', '').replace('" (VAR grading:', '') ?? 'No evidence resolved.',
                   mode: 'take',
                   caseId: 2026,
                   fanbase: null,
                   isRivalry: false,
-                  rarity: gradingResult.card.rarity,
-                  ovr: gradingResult.card.rating,
-                  rulingText: gradingResult.card.verdict,
-                  verdict: gradingResult.card.verdict,
-                  charge: gradingResult.card.charge,
-                  sentence: gradingResult.card.sentence,
+                  rarity: gradingResult?.card?.rarity || 'COMMON',
+                  ovr: gradingResult?.card?.rating || 50,
+                  rulingText: gradingResult?.card?.verdict || 'PENDING',
+                  verdict: gradingResult?.card?.verdict || 'PENDING',
+                  charge: gradingResult?.card?.charge || '',
+                  sentence: gradingResult?.card?.sentence || '',
                   ach: { title: 'Reputation', desc: 'Graded', badge: '🔥' },
                   stats: [
-                    { label: 'PRD', name: 'Prediction', val: (gradingResult.card.statsJson as any)?.prd ?? (gradingResult.card.statsJson as any)?.predictionPerfScore ?? gradingResult.card.rating },
-                    { label: 'MGR', name: 'Manager Score', val: (gradingResult.card.statsJson as any)?.mgr ?? (gradingResult.card.statsJson as any)?.tacticalRating ?? Math.max(30, Math.min(99, gradingResult.card.rating - 3)) },
-                    { label: 'HOT', name: 'Hot Take', val: (gradingResult.card.statsJson as any)?.hot ?? (gradingResult.card.statsJson as any)?.avgTakeOvr ?? Math.max(30, Math.min(99, gradingResult.card.rating + 2)) },
-                    { label: 'RST', name: 'Roast Score', val: (gradingResult.card.statsJson as any)?.rst ?? (gradingResult.card.statsJson as any)?.communityRating ?? Math.max(50, Math.min(99, gradingResult.card.rating + 1)) }
+                    { label: 'PRD', name: 'Prediction', val: (gradingResult?.card?.statsJson as any)?.prd ?? 50 },
+                    { label: 'MGR', name: 'Manager Score', val: (gradingResult?.card?.statsJson as any)?.mgr ?? 50 },
+                    { label: 'HOT', name: 'Hot Take', val: (gradingResult?.card?.statsJson as any)?.hot ?? 50 },
+                    { label: 'RST', name: 'Roast Score', val: (gradingResult?.card?.statsJson as any)?.rst ?? 50 }
                   ],
-                  cardTheme: gradingResult.card.cardTheme || 'gold',
-                  aiImageUrl: gradingResult.card.aiImageUrl,
+                  cardTheme: gradingResult?.card?.cardTheme || 'gold',
+                  aiImageUrl: gradingResult?.card?.aiImageUrl,
                   countryFlag: profile?.favoriteNation ? profile.favoriteNation : '🌍',
                   playerName: profile?.username || 'MANAGER',
-                  playerPosition: gradingResult.card.rating >= 75 ? 'CF' : 'DM',
+                  playerPosition: (gradingResult?.card?.rating ?? 50) >= 75 ? 'CF' : 'DM',
                   avatarStyle: profile?.avatarStyle || 'fun-emoji',
                   avatarSeed: profile?.avatarSeed || 'Reputation',
                   matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
@@ -922,73 +1025,130 @@ export default function MatchPage() {
                   <FlagImage countryName={homeTeam.name_en} size="lg" />
                   <span className="font-display font-black text-xl lg:text-2xl uppercase tracking-tight text-white truncate">{homeTeam.name_en}</span>
                 </div>
-                {/* Centre: Big Score */}
-                <div className="shrink-0 flex flex-col items-center">
+                {/* Centre: Big Score + Stage */}
+                <div className="shrink-0 flex flex-col items-center gap-1">
+                  {/* Stage badge */}
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                    {match.type === 'r32' ? 'Round of 32' : match.type === 'r16' ? 'Round of 16' : match.type === 'qf' ? 'Quarter-Final' : match.type === 'sf' ? 'Semi-Final' : match.type === 'final' ? 'FINAL' : match.type === 'third' ? '3rd Place' : `Group ${match.group}`}
+                  </span>
+                  {/* Score */}
                   <div className="font-display font-black text-4xl lg:text-5xl leading-none tracking-wider">
                     {status === 'UPCOMING'
-                      ? <span className="text-gray-500">- : -</span>
+                      ? <span className="text-gray-500">VS</span>
                       : <span className="text-white">
-                          {match.home_score !== '' && match.home_score !== null && match.home_score !== undefined
-                            ? `${match.home_score} : ${match.away_score}`
-                            : '- : -'
-                          }
+                          {`${realHomeScore} : ${realAwayScore}`}
                         </span>}
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-                      {match.type === 'r32' ? 'Round of 32' : match.type === 'r16' ? 'Round of 16' : match.type === 'qf' ? 'Quarter Final' : match.type === 'sf' ? 'Semi Final' : match.type === 'final' ? 'FINAL' : `Group ${match.group}`}
-                    </span>
+                  {/* Status + time */}
+                  <div className="flex items-center gap-2">
                     <span className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${
                       status === 'LIVE' ? 'text-red-400 bg-red-950/20 border-red-900/30'
-                      : status === 'COMPLETED' ? 'text-gray-400 bg-black/30 border-white/10'
+                      : status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-950/20 border-emerald-900/30'
                       : 'text-[#E11D48] bg-[#E11D48]/10 border-[#E11D48]/20'
                     }`}>
-                      {status === 'LIVE' ? '● LIVE' : status === 'COMPLETED' ? 'FULL TIME' : 'PREDICTIONS OPEN'}
+                      {status === 'LIVE' ? '● LIVE' : status === 'COMPLETED' ? '✓ FULL TIME' : 'UPCOMING'}
                     </span>
                     <span className="text-[9px] font-mono text-zinc-500">
-                      {mounted ? kickoff.toLocaleString(undefined, {
-                        month: 'numeric',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      }) : match.local_date}
+                      {mounted ? kickoff.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' + kickoff.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true }) : match.local_date}
                     </span>
                   </div>
                 </div>
+
                 {/* Away Team */}
                 <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
                   <span className="font-display font-black text-xl lg:text-2xl uppercase tracking-tight text-white truncate text-right">{awayTeam.name_en}</span>
                   <FlagImage countryName={awayTeam.name_en} size="lg" />
                 </div>
-                {/* Edit Predictions button */}
-	                <button
-	                  onClick={() => setShowPredictionModal(true)}
-	                  className="w-full sm:w-auto shrink-0 py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-[#E11D48]/5 text-gray-300 font-semibold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <Flame className="w-3.5 h-3.5 text-[#E11D48]" />
-                  Edit Picks
-                </button>
+
+                {/* Edit Predictions button — only visible when match is upcoming */}
+                {status === 'UPCOMING' && (
+                  <button
+                    onClick={() => setShowPredictionModal(true)}
+                    className="w-full sm:w-auto shrink-0 py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-[#E11D48]/40 hover:bg-[#E11D48]/5 text-gray-300 font-semibold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Flame className="w-3.5 h-3.5 text-[#E11D48]" />
+                    Edit Picks
+                  </button>
+                )}
               </div>
+
+              {/* ── Goalscorers Strip (only for completed matches) ── */}
+              {status === 'COMPLETED' && (homeGoalscorers.length > 0 || awayGoalscorers.length > 0) && (
+                <div className="mt-3 border-t border-white/10 pt-3 grid grid-cols-2 gap-4">
+                  {/* Home scorers */}
+                  <div className="space-y-1">
+                    {homeGoalscorers.map((g, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-[11px] text-zinc-300 font-medium">
+                        <span className="text-[10px]">⚽</span>
+                        <span className="font-semibold">{g.name}</span>
+                        {g.minute && <span className="text-zinc-500 font-mono text-[9px]">{g.minute}&apos;</span>}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Away scorers */}
+                  <div className="space-y-1 text-right">
+                    {awayGoalscorers.map((g, i) => (
+                  <div key={i} className="flex items-center justify-end gap-1.5 text-[11px] text-zinc-300 font-medium">
+                        {g.minute && <span className="text-zinc-500 font-mono text-[9px]">{g.minute}&apos;</span>}
+                        <span className="font-semibold">{g.name}</span>
+                        <span className="text-[10px]">⚽</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Tab Switcher */}
+            <div className="flex lg:hidden bg-[#0B0F19]/80 border border-white/10 rounded-xl p-1 mb-2.5 shadow-md">
+              <button
+                onClick={() => setActiveMobileTab('pitch')}
+                className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                  activeMobileTab === 'pitch'
+                    ? 'bg-[#E11D48] text-white shadow-md'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Lineup Pitch
+              </button>
+              <button
+                onClick={() => setActiveMobileTab('sidebar')}
+                className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                  activeMobileTab === 'sidebar'
+                    ? 'bg-[#E11D48] text-white shadow-md'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {status === 'LIVE' || status === 'COMPLETED' || predictions[matchId]?.locked
+                  ? 'Banter Chat'
+                  : 'Select Players'}
+              </button>
             </div>
 
             {/* ══ Row 2: Pitch (63%) + Player Selector (37%) ══ */}
-	            <div className="flex flex-col lg:flex-row flex-1 gap-3 lg:overflow-hidden min-h-0">
+            <div className="flex flex-col lg:flex-row flex-1 gap-3 lg:overflow-hidden min-h-0">
               {/* Left: Tactical Pitch — 63% width, full row height */}
-	              <div className="shrink-0 overflow-hidden rounded-2xl w-full lg:w-[63%] h-[68svh] min-h-[520px] lg:h-auto lg:min-h-0">
+              <div className={`shrink-0 overflow-hidden rounded-2xl w-full lg:w-[63%] h-[68svh] min-h-[520px] lg:h-auto lg:min-h-0 ${
+                activeMobileTab === 'pitch' ? 'block' : 'hidden lg:block'
+              }`}>
 
                 <TacticalPitch
                   lineup={resolvedLineup}
                   isReadOnly={false}
                   isSubmissionLocked={isSubmissionLocked}
                   homeTeamName={homeTeam.name_en}
-                  onSlotClick={(slotId) => { setSelectedSlot(slotId); }}
+                  onSlotClick={(slotId) => {
+                    setSelectedSlot(slotId);
+                    setActiveMobileTab('sidebar');
+                  }}
                   onClearSlot={handleClearSlot}
                 />
               </div>
 
               {/* Right: Status-aware panel — chat when LIVE/COMPLETED, selector when UPCOMING */}
-	              <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0 min-h-[520px] lg:min-h-0">
+              <div className={`flex-1 flex flex-col gap-2 overflow-hidden min-w-0 min-h-[520px] lg:min-h-0 ${
+                activeMobileTab === 'sidebar' ? 'flex' : 'hidden lg:flex'
+              }`}>
 
                 {/* ── LIVE / COMPLETED / LOCKED → Chat Panel ── */}
                 {(status === 'LIVE' || status === 'COMPLETED' || predictions[matchId]?.locked) ? (
@@ -1121,17 +1281,12 @@ export default function MatchPage() {
                   </div>
                 )}
 
-                {/* Action Buttons — always visible at bottom */}
+                {/* Action Buttons — always visible, adapts to match status */}
                 <div className="shrink-0 space-y-1.5">
                   {status === 'LIVE' && (
                     <div className="bg-red-950/20 border border-red-900/30 text-red-400 px-3 py-2 rounded-xl flex items-center gap-2 text-[9px] font-semibold">
                       <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
-                      Match is LIVE — predictions locked. Join the chat! 💬
-                    </div>
-                  )}
-                  {status === 'COMPLETED' && !hasSubmitted && (
-                    <div className="bg-black/30 border border-white/10 text-gray-400 px-3 py-2 rounded-xl flex items-center gap-2 text-[9px] font-semibold">
-                      <AlertCircle className="w-3 h-3 shrink-0" /> Match ended — no submission made.
+                      Match is LIVE — predictions locked. Join the banter! 🔥
                     </div>
                   )}
                   {!isSubmissionLocked && (
@@ -1139,16 +1294,16 @@ export default function MatchPage() {
                       onClick={handleSavePredictions}
                       className="w-full py-3 rounded-xl bg-[#881337] hover:bg-[#881337]/80 text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer"
                     >
-                      Lock Predictions & Squad
+                      Lock Predictions &amp; Squad
                     </button>
                   )}
-                  {status === 'COMPLETED' && hasSubmitted && (
+                  {status === 'COMPLETED' && (
                     <button
                       onClick={handleResolveMatch}
                       disabled={resolving}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
+                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                     >
-                      {resolving ? 'VAR In Progress...' : 'VAR Tribunal: Grade Match'}
+                      {resolving ? 'VAR In Progress...' : hasSubmitted ? 'VAR Tribunal: Grade Match 🏆' : 'VAR Tribunal: Quick Grade ⚡'}
                     </button>
                   )}
                 </div>
@@ -1206,7 +1361,11 @@ export default function MatchPage() {
                 hotTakes: updatedTakes
               };
               await persistPrediction(updatedPred);
-              showToast(profile?.isAuthenticated ? 'Predictions & hot takes saved to DB! 💾' : 'Prediction draft saved locally! 💾', 'success');
+              if (profile?.isAuthenticated) {
+                showToast('Predictions & hot takes saved to DB! 💾', 'success');
+              } else {
+                showToast('Prediction draft saved to session memory! Sign in to persist. 💾', 'warn');
+              }
               dismissPredictionModal();
             }}
           />

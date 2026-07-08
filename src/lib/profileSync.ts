@@ -1,12 +1,9 @@
 /**
  * @file profileSync.ts
  * @description Client-side synchronization helper for managing the user profile and prediction history.
- * Implements an offline-first hybrid pattern: reads and updates are performed instantly via
- * localStorage (`var_cards_profile` and `var_cards_predictions`) and then queued or synced opportunistically
- * with the PostgreSQL database. If database writes fail due to connection issues, the app runs 100% locally.
+ * Implements a database-authoritative pattern: reads and updates are held in memory (client cache)
+ * and synced with the PostgreSQL database. No localStorage is used.
  */
-
-import { getLocalStorage } from './browserStorage';
 
 export interface FootballIQProfile {
   id?: string;
@@ -53,122 +50,151 @@ const DEFAULT_PROFILE: FootballIQProfile = {
   inputImage: null
 };
 
-const PROFILE_KEY = 'var_cards_profile';
-const LEGACY_PREDICTIONS_KEY = 'var_cards_predictions';
-
-function getPredictionStorageKey(profile?: FootballIQProfile | null) {
-  const profileRef = profile?.id || profile?.username;
-  if (!profileRef || profileRef === DEFAULT_PROFILE.username) return LEGACY_PREDICTIONS_KEY;
-  return `var_cards_predictions_${encodeURIComponent(profileRef)}`;
+export interface LocalPrediction {
+  matchId: string;
+  homeScore: number;
+  awayScore: number;
+  firstGoalscorer: string;
+  motm: string;
+  possessionWinner: string;
+  hotTakes: { statement: string; confidence: number }[];
+  locked: boolean;
+  resolved: boolean;
+  card?: any;                  // Custom graded collectible match card (VerdictCard)
+  lineup?: Record<string, any>; // Chosen Best XI lineup (maps position ID to player data)
+  gradedTakes?: any[];         // Array containing individual hot take grades
 }
 
-function getCurrentProfileForStorage(): FootballIQProfile | null {
-  const storage = getLocalStorage();
-  if (!storage) return null;
+// In-memory client-side cache
+let inMemoryProfile: FootballIQProfile | null = null;
+let inMemoryPredictions: Record<string, LocalPrediction> = {};
+let isAuthLoading = false;
+let isLoaded = false;
 
+// Trigger loading of session profile on browser initialization
+if (typeof window !== 'undefined') {
+  loadSessionProfile();
+}
+
+export async function loadSessionProfile() {
+  if (isAuthLoading || isLoaded) return;
+  isAuthLoading = true;
   try {
-    const raw = storage.getItem(PROFILE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
+    const res = await fetch('/api/auth');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.profile) {
+        inMemoryProfile = {
+          ...DEFAULT_PROFILE,
+          ...data.profile,
+          isAuthenticated: true
+        };
+        
+        // Map database predictions
+        const preds: Record<string, LocalPrediction> = {};
+        if (data.predictions) {
+          data.predictions.forEach((p: any) => {
+            const matchCard = p.card || (data.profile.matchCards?.find((c: any) => c.matchId === p.matchId));
+            preds[p.matchId] = {
+              matchId: p.matchId,
+              homeScore: p.homeScore,
+              awayScore: p.awayScore,
+              firstGoalscorer: p.firstGoalscorer,
+              motm: p.motm,
+              possessionWinner: p.possessionWinner,
+              hotTakes: p.hotTakes?.map((ht: any) => ({
+                statement: ht.statement,
+                confidence: ht.confidence
+              })) || [],
+              locked: true,
+              resolved: !!matchCard,
+              card: matchCard || null,
+              lineup: p.lineup || null
+            };
+          });
+        }
+        inMemoryPredictions = preds;
+        isLoaded = true;
+        
+        try {
+          localStorage.setItem('football_iq_profile', JSON.stringify(inMemoryProfile));
+        } catch (e) {
+          console.warn('Failed to write profile to localStorage:', e);
+        }
+
+        // Dispatch 'storage' event so all listening pages update their profile state
+        window.dispatchEvent(new Event('storage'));
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load session profile:', err);
+  } finally {
+    isAuthLoading = false;
   }
 }
 
 /**
- * Retrieves the user profile from local storage.
- * Performs migrations for older V0 storage keys (`tacticalRating` and `communityRating`)
- * to maintain backward compatibility for existing users.
- * 
- * @returns {FootballIQProfile} The stored user profile, or DEFAULT_PROFILE if empty or parsing fails.
+ * Retrieves the user profile from in-memory cache.
  */
 export function getStoredProfile(): FootballIQProfile {
-  const storage = getLocalStorage();
-  if (!storage) return DEFAULT_PROFILE;
-
-  try {
-    const raw = storage.getItem(PROFILE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      // Migration pattern: map V0 fields to V1
-      if (parsed.tacticalRating !== undefined && parsed.managerRating === undefined) {
-        parsed.managerRating = parsed.tacticalRating;
-        delete parsed.tacticalRating;
-      }
-      if (parsed.communityRating !== undefined && parsed.roastScore === undefined) {
-        parsed.roastScore = parsed.communityRating;
-        delete parsed.communityRating;
-      }
-      // Ensure defaults for any missing fields
-      return {
-        ...DEFAULT_PROFILE,
-        ...parsed,
-      };
-    }
-  } catch (e) {
-    console.warn('Failed to parse localStorage profile:', e);
-  }
-  
-  // Set default if not exists
-  saveStoredProfile(DEFAULT_PROFILE);
-  return DEFAULT_PROFILE;
+  return inMemoryProfile || DEFAULT_PROFILE;
 }
 
 /**
- * Writes the profile to local storage.
- * 
- * @param {FootballIQProfile} profile - The user profile object to write.
+ * Writes the profile to in-memory cache.
  */
 export function saveStoredProfile(profile: FootballIQProfile) {
-  const storage = getLocalStorage();
-  if (!storage) return;
-
-  try {
-    if (profile.isAuthenticated && (profile.id || profile.username)) {
-      const profilePredKey = getPredictionStorageKey(profile);
-      const legacyPreds = storage.getItem(LEGACY_PREDICTIONS_KEY);
-      if (legacyPreds && !storage.getItem(profilePredKey)) {
-        storage.setItem(profilePredKey, legacyPreds);
-      }
-      storage.removeItem(LEGACY_PREDICTIONS_KEY);
+  inMemoryProfile = profile;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('football_iq_profile', JSON.stringify(profile));
+    } catch (e) {
+      console.warn('Failed to write profile to localStorage:', e);
     }
-    storage.setItem(PROFILE_KEY, JSON.stringify(profile));
-  } catch (e) {
-    console.error('Failed to save profile to localStorage:', e);
+    window.dispatchEvent(new Event('storage'));
   }
 }
 
 export function clearStoredProfile() {
-  const storage = getLocalStorage();
-  if (!storage) return;
-
-  try {
-    storage.removeItem(PROFILE_KEY);
-    storage.removeItem(LEGACY_PREDICTIONS_KEY);
-  } catch {
-    // Storage may be revoked between reads in privacy-restricted browser contexts.
+  inMemoryProfile = null;
+  inMemoryPredictions = {};
+  isLoaded = false;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem('football_iq_profile');
+    } catch (e) {
+      console.warn('Failed to remove profile from localStorage:', e);
+    }
+    window.dispatchEvent(new Event('storage'));
   }
 }
 
 export function clearStoredPredictionsForCurrentProfile() {
-  const storage = getLocalStorage();
-  if (!storage) return;
+  inMemoryPredictions = {};
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('storage'));
+  }
+}
 
-  const profile = getCurrentProfileForStorage();
-  try {
-    storage.removeItem(getPredictionStorageKey(profile));
-    storage.removeItem(LEGACY_PREDICTIONS_KEY);
-  } catch {
-    // Storage may be revoked between reads in privacy-restricted browser contexts.
+/**
+ * Retrieves the prediction map from in-memory cache.
+ */
+export function getStoredPredictions(): Record<string, LocalPrediction> {
+  return inMemoryPredictions;
+}
+
+/**
+ * Persists the prediction map to in-memory cache.
+ */
+export function saveStoredPredictions(preds: Record<string, LocalPrediction>) {
+  inMemoryPredictions = preds;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('storage'));
   }
 }
 
 /**
  * Synchronizes the local profile with the server.
- * Invokes the `/api/resolve-match` endpoint with a `syncOnly: true` flag to upsert
- * the profile info without initiating any match resolution or AI grading logic.
- * 
- * @param {FootballIQProfile} profile - The local profile to sync.
- * @returns {Promise<FootballIQProfile>} The synchronized profile with database IDs or updated fields, or the original profile on network/DB failure.
  */
 export async function syncProfileWithDb(profile: FootballIQProfile): Promise<FootballIQProfile> {
   if (typeof window === 'undefined') return profile;
@@ -204,21 +230,13 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
           collectedCards: data.cards ? data.cards.map((c: any) => c.id) : profile.collectedCards
         };
         
-        // Sync database predictions map back to local storage predictions to avoid data overlap
-        const storage = getLocalStorage();
-        if (data.predictions && storage) {
-          const storageKey = getPredictionStorageKey(synced);
-          let existingPreds: Record<string, any> = {};
-          try {
-            existingPreds = JSON.parse(storage.getItem(storageKey) || '{}');
-          } catch {
-            existingPreds = {};
-          }
-          const localPreds: Record<string, any> = { ...existingPreds };
+        // Sync database predictions map back to in-memory predictions
+        if (data.predictions) {
+          const preds: Record<string, LocalPrediction> = { ...inMemoryPredictions };
           data.predictions.forEach((p: any) => {
             const matchCard = data.cards?.find((c: any) => c.matchId === p.matchId);
-            localPreds[p.matchId] = {
-              ...(existingPreds[p.matchId] || {}),
+            preds[p.matchId] = {
+              ...(inMemoryPredictions[p.matchId] || {}),
               matchId: p.matchId,
               homeScore: p.homeScore,
               awayScore: p.awayScore,
@@ -232,11 +250,10 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
               locked: true,
               resolved: !!matchCard,
               card: matchCard || null,
-              lineup: p.lineup || (existingPreds[p.matchId]?.lineup) || null
+              lineup: p.lineup || (inMemoryPredictions[p.matchId]?.lineup) || null
             };
           });
-          
-          storage.setItem(storageKey, JSON.stringify(localPreds));
+          inMemoryPredictions = preds;
         }
 
         saveStoredProfile(synced);
@@ -245,16 +262,13 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
       }
     }
   } catch (err) {
-    console.warn('Db sync offline, continuing with local storage:', err);
+    console.warn('Db sync offline, continuing with local cache:', err);
   }
   return profile;
 }
 
 /**
  * Deletes the profile from the database.
- * Used during campaign wipes for authenticated users.
- * 
- * @param {string} username - The username profile to delete.
  */
 export async function wipeProfileFromDb(username: string): Promise<boolean> {
   if (typeof window === 'undefined') return false;
@@ -269,53 +283,15 @@ export async function wipeProfileFromDb(username: string): Promise<boolean> {
   }
 }
 
-
-export interface LocalPrediction {
-  matchId: string;
-  homeScore: number;
-  awayScore: number;
-  firstGoalscorer: string;
-  motm: string;
-  possessionWinner: string;
-  hotTakes: { statement: string; confidence: number }[];
-  locked: boolean;
-  resolved: boolean;
-  card?: any;                  // Custom graded collectible match card (VerdictCard)
-  lineup?: Record<string, any>; // Chosen Best XI lineup (maps position ID to player data)
-}
-
 /**
- * Retrieves the prediction map from local storage.
- * 
- * @returns {Record<string, LocalPrediction>} Map of matchId -> prediction data.
+ * Centrally resolves a clean, premium avatar URL supporting both custom face uploads (Google/Discord, data:image URLs)
+ * and Dicebear custom-seeded avatars.
  */
-export function getStoredPredictions(): Record<string, LocalPrediction> {
-  const storage = getLocalStorage();
-  if (!storage) return {};
-
-  try {
-    const profile = getCurrentProfileForStorage();
-    const raw = storage.getItem(getPredictionStorageKey(profile));
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    console.warn('Failed to parse predictions:', e);
+export function getAvatarUrl(avatarStyle: string, avatarSeed: string): string {
+  const seed = avatarSeed || 'Reputation';
+  const style = avatarStyle || 'fun-emoji';
+  if (seed.startsWith('data:image/') || seed.startsWith('http') || seed.startsWith('/images') || seed.startsWith('/')) {
+    return seed;
   }
-  return {};
-}
-
-/**
- * Persists the prediction map to local storage.
- * 
- * @param {Record<string, LocalPrediction>} preds - The map of match predictions.
- */
-export function saveStoredPredictions(preds: Record<string, LocalPrediction>) {
-  const storage = getLocalStorage();
-  if (!storage) return;
-
-  try {
-    const profile = getCurrentProfileForStorage();
-    storage.setItem(getPredictionStorageKey(profile), JSON.stringify(preds));
-  } catch (e) {
-    console.error('Failed to save predictions:', e);
-  }
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
 }

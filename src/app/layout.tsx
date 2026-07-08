@@ -5,6 +5,7 @@ import SmoothScroll from '@/components/SmoothScroll';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
+import ServiceWorkerKiller from '@/components/ServiceWorkerKiller';
 
 export const metadata: Metadata = {
   title: 'BallKnowledge | World Cup 2026 Reputation Arena',
@@ -47,6 +48,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased dark" suppressHydrationWarning>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
         <Providers>
+          <ServiceWorkerKiller />
           <SmoothScroll />
           <Navbar />
           <main className="flex-grow flex flex-col">

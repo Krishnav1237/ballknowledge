@@ -53,14 +53,18 @@ export default function MatchLiveChat({
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const alias = managerAlias || 'Anonymous';
+  // Chat is ONLY read-only when the match hasn't started yet (upcoming)
+  // Completed and Live matches should allow full banter/roasting
+  const isReadOnly = !isLive && !isCompleted;
 
   // Fetch messages from database endpoint
   const fetchChatMessages = useCallback(async () => {
+    if (!matchId || matchId === 'undefined' || matchId === 'null') return;
     try {
       const res = await fetch(`/api/chat/${matchId}`);
       if (res.ok) {
         const data = await res.json();
-        if (data.success && data.messages) {
+        if (data && data.success && Array.isArray(data.messages)) {
           setMessages(data.messages);
         }
       }
@@ -69,12 +73,13 @@ export default function MatchLiveChat({
     }
   }, [matchId]);
 
-  // Load and poll chat messages from DB every 3 seconds
+  // Poll chat messages: LIVE = every 3s, COMPLETED = every 15s, UPCOMING = every 60s
   useEffect(() => {
     fetchChatMessages();
-    const interval = setInterval(fetchChatMessages, 3000);
+    const intervalTime = isLive ? 3000 : isCompleted ? 15000 : 60000;
+    const interval = setInterval(fetchChatMessages, intervalTime);
     return () => clearInterval(interval);
-  }, [fetchChatMessages]);
+  }, [fetchChatMessages, isLive, isCompleted]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -83,43 +88,74 @@ export default function MatchLiveChat({
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || sending) return;
+    if (!matchId || matchId === 'undefined' || matchId === 'null') return;
     setSending(true);
+
+    const trimmedText = text.trim();
+    const tempId = `local_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    const newLocalMsg: ChatMessage = {
+      id: tempId,
+      matchId,
+      author: alias,
+      text: trimmedText,
+      timestamp: Date.now(),
+      reactions: {},
+      type: 'message'
+    };
+
+    // Update UI state immediately (optimistic UI pattern)
+    setMessages(prev => [...prev, newLocalMsg]);
+    setInput('');
 
     try {
       const res = await fetch(`/api/chat/${matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.trim()
+          text: trimmedText
         })
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.success && data.message) {
-          setMessages(prev => [...prev, data.message]);
+        if (data && data.success && data.message) {
+          // Replace temporary message with official database record
+          setMessages(prev => prev.map(m => m.id === tempId ? data.message : m));
         }
+      } else {
+        console.warn('Failed to post message to chat DB, keeping local copy.');
       }
     } catch (err) {
-      console.error('Failed to post message to chat DB:', err);
+      console.warn('Failed to post message to chat DB (offline), keeping local copy:', err);
     } finally {
-      setInput('');
       setSending(false);
       inputRef.current?.focus();
     }
-  }, [matchId, sending]);
+  }, [matchId, alias, sending]);
 
-  const addReaction = useCallback((messageId: string, emoji: string) => {
-    setMessages(prev => {
-      return prev.map(m => {
-        if (m.id !== messageId) return m;
-        const reactions = { ...m.reactions };
-        reactions[emoji] = (reactions[emoji] || 0) + 1;
-        return { ...m, reactions };
+  const addReaction = useCallback(async (messageId: string, emoji: string) => {
+    if (!matchId || matchId === 'undefined' || matchId === 'null') return;
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+      const reactions = { ...m.reactions };
+      reactions[emoji] = (reactions[emoji] || 0) + 1;
+      return { ...m, reactions };
+    }));
+
+    try {
+      await fetch(`/api/chat/${matchId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'react',
+          messageId,
+          emoji
+        })
       });
-    });
-  }, []);
+    } catch (err) {
+      console.warn('Failed to post reaction to chat DB:', err);
+    }
+  }, [matchId]);
 
-  const isReadOnly = isCompleted && !isLive;
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[#0B0F19] text-white">
@@ -128,7 +164,7 @@ export default function MatchLiveChat({
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-[#E11D48] animate-pulse' : 'bg-zinc-500'}`} />
           <span className="text-[9px] font-black uppercase tracking-widest text-white">
-            {isLive ? 'LIVE BANTER ZONE' : isCompleted ? 'MATCH CHAT LOG' : 'BANTER ZONE'}
+            {isLive ? 'LIVE BANTER & ROAST ZONE 🔥' : isCompleted ? 'POST-MATCH ROAST ZONE 🗣️' : 'ROAST & BANTER ZONE 💬'}
           </span>
         </div>
         <div className="flex items-center gap-1.5 text-zinc-400">
@@ -143,7 +179,7 @@ export default function MatchLiveChat({
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
             <Flame className="w-8 h-8 text-[#E11D48]/30 mb-2" />
             <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-              {isLive ? 'Be the first to drop a hot take!' : 'Chat opens when match goes LIVE'}
+              {isReadOnly ? 'Chat available once match is confirmed live.' : 'Be the first to drop a hot take! 🔥'}
             </p>
           </div>
         )}
@@ -199,13 +235,13 @@ export default function MatchLiveChat({
                     <span className="text-gray-400 font-mono">{count}</span>
                   </button>
                 ))}
-                {/* Quick reaction row */}
-                <div className="flex gap-0.5 opacity-0 hover:opacity-100 transition-opacity">
+                {/* Quick reaction row — always visible, compact tap targets */}
+                <div className="flex gap-0.5 overflow-x-auto scrollbar-none mt-0.5">
                   {REACTIONS.map(emoji => (
                     <button
                       key={emoji}
                       onClick={() => addReaction(msg.id, emoji)}
-                      className="w-4 h-4 rounded-full hover:bg-white/10 flex items-center justify-center text-[8px] transition-colors cursor-pointer"
+                      className="shrink-0 w-5 h-5 rounded-full hover:bg-white/15 active:bg-white/20 flex items-center justify-center text-[9px] transition-colors cursor-pointer"
                     >
                       {emoji}
                     </button>
@@ -241,7 +277,7 @@ export default function MatchLiveChat({
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') sendMessage(input); }}
-              placeholder={isReadOnly ? 'Match ended — chat is read-only' : 'Drop your hot take...'}
+              placeholder={isReadOnly ? 'Chat unlocks when match is LIVE' : 'Roast opponent or drop a hot take... 🔥'}
               disabled={isReadOnly}
               maxLength={280}
               className="flex-1 bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-[#E11D48] disabled:opacity-40 disabled:cursor-not-allowed"
@@ -262,7 +298,7 @@ export default function MatchLiveChat({
         <div className="shrink-0 border-t border-white/5 p-3 bg-[#111827]/70">
           <div className="flex items-center gap-2 text-[9px] text-gray-400 font-semibold">
             <AlertCircle className="w-3 h-3" />
-            Match ended — chat is now read-only.
+            Chat unlocks when this match goes LIVE.
           </div>
         </div>
       )}

@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, AlertCircle } from 'lucide-react';
 
 interface PredictionModalProps {
@@ -195,13 +194,13 @@ export default function PredictionModal({
                     <div className="sm:col-span-4 flex flex-col justify-center gap-1">
                       <div className="flex justify-between text-[9px] font-black text-gray-400 uppercase tracking-widest">
                         <span>Confidence</span>
-                        <span className="text-[#E11D48] font-bold">{take.confidence}%</span>
+                        <span className="text-[#E11D48] font-bold">{take.confidence || 3}/5</span>
                       </div>
                       <input
                         type="range"
                         min="1"
-                        max="99"
-                        value={take.confidence}
+                        max="5"
+                        value={take.confidence || 3}
                         disabled={isSubmissionLocked}
                         onChange={e => handleTakeChange(idx, 'confidence', parseInt(e.target.value))}
                         className="w-full h-1 bg-[#1F2937] rounded-lg appearance-none cursor-pointer accent-[#E11D48] disabled:opacity-50"

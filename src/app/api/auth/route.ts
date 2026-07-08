@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
-import { attachSessionCookie, cleanShortText, cleanUsername, expiredSessionCookieHeader } from '@/lib/authSession';
+import { attachSessionCookie, cleanShortText, cleanUsername, expiredSessionCookieHeader, getSessionFromRequest } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,37 +35,67 @@ function validateCredentials(username: string, password: string) {
   return null;
 }
 
+function validateEmail(email: string) {
+  if (!email || email.length < 5 || email.length > 254) {
+    return 'Email must be 5-254 characters.';
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return 'Invalid email address format.';
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { action, username, password, favoriteClub, favoriteNation } = body;
+    const { action, username, password, email, favoriteClub, favoriteNation } = body;
 
     if (!username || !password) {
-      return NextResponse.json({ error: 'Username and password are required.' }, { status: 400 });
+      return NextResponse.json({ error: 'Username/Email and password are required.' }, { status: 400 });
     }
 
-    const normalizedUsername = cleanUsername(username);
     const normalizedPassword = String(password);
-    const validationError = validateCredentials(normalizedUsername, normalizedPassword);
-    if (validationError) {
-      return NextResponse.json({ error: validationError }, { status: 400 });
-    }
 
     if (action === 'signup') {
-      // 1. Check if profile already exists
-      const existing = await prisma.footballIQProfile.findUnique({
+      const normalizedUsername = cleanUsername(username);
+      const validationError = validateCredentials(normalizedUsername, normalizedPassword);
+      if (validationError) {
+        return NextResponse.json({ error: validationError }, { status: 400 });
+      }
+
+      if (!email) {
+        return NextResponse.json({ error: 'Email is required for signup.' }, { status: 400 });
+      }
+
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const emailError = validateEmail(normalizedEmail);
+      if (emailError) {
+        return NextResponse.json({ error: emailError }, { status: 400 });
+      }
+
+      // Check if username already exists
+      const existingUser = await prisma.footballIQProfile.findUnique({
         where: { username: normalizedUsername }
       });
-
-      if (existing) {
+      if (existingUser) {
         return NextResponse.json({ error: 'Username is already taken.' }, { status: 409 });
       }
 
-      // 2. Hash password and create new profile in database
+      // Check if email already registered
+      const existingEmail = await prisma.footballIQProfile.findUnique({
+        where: { email: normalizedEmail }
+      });
+      if (existingEmail) {
+        return NextResponse.json({ error: 'Email is already registered.' }, { status: 409 });
+      }
+
+      // Hash password and create new profile in database
       const passwordHash = hashPassword(normalizedPassword, normalizedUsername);
       const profile = await prisma.footballIQProfile.create({
         data: {
           username: normalizedUsername,
+          email: normalizedEmail,
           passwordHash,
           avatarStyle: 'fun-emoji',
           avatarSeed: 'Reputation',
@@ -87,6 +117,7 @@ export async function POST(request: Request) {
         profile: {
           id: profile.id,
           username: profile.username,
+          email: profile.email,
           avatarStyle: profile.avatarStyle,
           avatarSeed: profile.avatarSeed,
           favoriteClub: profile.favoriteClub,
@@ -103,23 +134,33 @@ export async function POST(request: Request) {
       return attachSessionCookie(response, { profileId: profile.id, username: profile.username, role: profile.role });
 
     } else if (action === 'signin') {
-      // 1. Find profile by username
-      const profile = await prisma.footballIQProfile.findUnique({
-        where: { username: normalizedUsername }
-      });
+      const identifier = String(username).trim();
+      const isEmail = identifier.includes('@');
+      let profile = null;
 
-      if (!profile) {
-        return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 });
+      if (isEmail) {
+        profile = await prisma.footballIQProfile.findUnique({
+          where: { email: identifier.toLowerCase() }
+        });
+      } else {
+        const normalizedUsername = cleanUsername(identifier);
+        profile = await prisma.footballIQProfile.findUnique({
+          where: { username: normalizedUsername }
+        });
       }
 
-      // 2. Validate password hash
+      if (!profile) {
+        return NextResponse.json({ error: 'Invalid username/email or password.' }, { status: 401 });
+      }
+
+      // Validate password hash
       if (!profile.passwordHash) {
         return NextResponse.json({ error: 'This account does not have password sign-in enabled. Use the original sign-in provider.' }, { status: 401 });
       }
 
-      const passwordHash = hashPassword(normalizedPassword, normalizedUsername);
+      const passwordHash = hashPassword(normalizedPassword, profile.username);
       if (!safeCompareHash(profile.passwordHash, passwordHash)) {
-        return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 });
+        return NextResponse.json({ error: 'Invalid username/email or password.' }, { status: 401 });
       }
 
       const response = NextResponse.json({
@@ -128,6 +169,7 @@ export async function POST(request: Request) {
         profile: {
           id: profile.id,
           username: profile.username,
+          email: profile.email,
           avatarStyle: profile.avatarStyle,
           avatarSeed: profile.avatarSeed,
           favoriteClub: profile.favoriteClub,
@@ -156,4 +198,57 @@ export async function DELETE() {
   const response = NextResponse.json({ success: true });
   response.headers.append('Set-Cookie', expiredSessionCookieHeader());
   return response;
+}
+
+export async function GET(request: Request) {
+  try {
+    const session = getSessionFromRequest(request);
+    if (!session) {
+      return NextResponse.json({ success: true, authenticated: false, profile: null });
+    }
+
+    const profile = await prisma.footballIQProfile.findUnique({
+      where: { id: session.profileId },
+      include: {
+        matchCards: true,
+        predictions: {
+          include: {
+            hotTakes: true
+          }
+        }
+      }
+    });
+
+    if (!profile) {
+      return NextResponse.json({ success: true, authenticated: false, profile: null });
+    }
+
+    return NextResponse.json({
+      success: true,
+      authenticated: true,
+      profile: {
+        id: profile.id,
+        username: profile.username,
+        avatarStyle: profile.avatarStyle,
+        avatarSeed: profile.avatarSeed,
+        favoriteClub: profile.favoriteClub,
+        favoriteNation: profile.favoriteNation,
+        overallRating: profile.overallRating,
+        predictionRating: profile.predictionRating,
+        hotTakeRating: profile.hotTakeRating,
+        managerRating: profile.managerRating,
+        roastScore: profile.roastScore,
+        role: profile.role,
+        season: profile.season,
+        email: profile.email,
+        name: profile.name,
+        inputImage: profile.inputImage,
+        collectedCards: profile.matchCards.map(c => c.id)
+      },
+      predictions: profile.predictions
+    });
+  } catch (error) {
+    console.error('Error in GET /api/auth:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }

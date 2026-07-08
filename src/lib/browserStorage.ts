@@ -1,4 +1,4 @@
-export function getBrowserStorage(type: 'localStorage' | 'sessionStorage'): Storage | null {
+function getBrowserStorage(type: 'localStorage' | 'sessionStorage'): Storage | null {
   if (typeof window === 'undefined') return null;
 
   try {
@@ -12,9 +12,6 @@ export function getLocalStorage(): Storage | null {
   return getBrowserStorage('localStorage');
 }
 
-export function getSessionStorage(): Storage | null {
-  return getBrowserStorage('sessionStorage');
-}
 
 export function getStorageItem(type: 'localStorage' | 'sessionStorage', key: string): string | null {
   const storage = getBrowserStorage(type);

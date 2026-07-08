@@ -8,7 +8,7 @@ import {
   Trophy, Flame, Star, Crown, Shield,
   BarChart2, Search, Sparkles,
 } from 'lucide-react';
-import { getStoredProfile, FootballIQProfile } from '@/lib/profileSync';
+import { getStoredProfile, FootballIQProfile, getAvatarUrl } from '@/lib/profileSync';
 import type { LeaderboardEntry } from '@/app/api/leaderboard/route';
 
 // ── Constants & Helpers ─────────────────────────────────────────────────────────
@@ -125,11 +125,11 @@ function Avatar({ style, seed, size = 36 }: { style: string; seed: string; size?
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}`}
+      src={getAvatarUrl(style, seed)}
       alt="avatar"
       width={size}
       height={size}
-      className="object-contain rounded-full"
+      className="object-cover rounded-full"
     />
   );
 }
@@ -192,13 +192,17 @@ export default function LeaderboardPage() {
   const [error, setError]               = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load current user from localStorage
   useEffect(() => {
-    const profile = getStoredProfile();
-    if (profile?.username) {
-      setMyUsername(profile.username);
-      setMyProfile(profile);
-    }
+    const updateProfile = () => {
+      const profile = getStoredProfile();
+      if (profile?.username) {
+        setMyUsername(profile.username);
+        setMyProfile(profile);
+      }
+    };
+    updateProfile();
+    window.addEventListener('storage', updateProfile);
+    return () => window.removeEventListener('storage', updateProfile);
   }, []);
 
   const fetchLeaderboard = useCallback(async (sort: SortMode, quiet = false) => {

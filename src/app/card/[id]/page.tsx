@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
+import { getDeterministicMatchResult } from '@/lib/matchUtils';
 import CardDetailClient from './CardDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -21,9 +22,17 @@ async function resolveMatchDetails(matchId: string) {
     const homeTeam = teams.find(t => String(t.id) === String(match.home_team_id)) || { name_en: match.home_team_label || 'Home', flag: '', fifa_code: '' };
     const awayTeam = teams.find(t => String(t.id) === String(match.away_team_id)) || { name_en: match.away_team_label || 'Away', flag: '', fifa_code: '' };
 
+    const hasRealScore = match.home_score !== '' && match.home_score !== undefined && match.time_elapsed !== 'notstarted';
+    const resolvedScore = hasRealScore 
+      ? `${match.home_score} - ${match.away_score}` 
+      : (() => {
+          const res = getDeterministicMatchResult(match.id, homeTeam.name_en || '', awayTeam.name_en || '', match);
+          return `${res.homeScore} - ${res.awayScore}`;
+        })();
+
     return {
       matchTitle: `${homeTeam.name_en} vs ${awayTeam.name_en}`,
-      matchScore: match.home_score !== '' && match.home_score !== undefined ? `${match.home_score} - ${match.away_score}` : undefined,
+      matchScore: resolvedScore,
       homeFlag: homeTeam.flag,
       awayFlag: awayTeam.flag,
       homeFifaCode: (homeTeam as any).fifa_code || homeTeam.name_en?.slice(0, 3).toUpperCase() || 'HOM',

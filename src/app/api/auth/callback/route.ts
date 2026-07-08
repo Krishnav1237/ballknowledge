@@ -15,6 +15,9 @@ export async function GET(request: Request) {
     }
 
     const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+    if (process.env.NODE_ENV === 'production' && !configuredOrigin) {
+      return htmlErrorResponse('Production NEXT_PUBLIC_SITE_URL is not configured on the server.');
+    }
     const host = request.headers.get('host') || 'localhost:3000';
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
     const appOrigin = configuredOrigin || `${protocol}://${host}`;

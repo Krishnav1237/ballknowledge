@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Trophy, Award, User, Menu, X, LogOut, LogIn, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { clearStoredProfile, getStoredProfile, FootballIQProfile } from '@/lib/profileSync';
+import { clearStoredProfile, getStoredProfile, FootballIQProfile, getAvatarUrl } from '@/lib/profileSync';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -94,8 +94,8 @@ export default function Navbar() {
               <div className="flex items-center space-x-3 bg-white/5 border border-white/10 rounded-full px-3 py-1 shadow-inner relative z-10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src={`https://api.dicebear.com/7.x/${profile.avatarStyle}/svg?seed=${encodeURIComponent(profile.avatarSeed)}`} 
-                  className="w-5 h-5 object-contain" 
+                  src={getAvatarUrl(profile.avatarStyle, profile.avatarSeed)} 
+                  className="w-5 h-5 object-cover rounded-full" 
                   alt="Avatar" 
                 />
                 <span className="font-sans font-bold text-xs text-white uppercase tracking-wider max-w-[85px] truncate">
@@ -169,8 +169,8 @@ export default function Navbar() {
                   <div className="flex items-center space-x-4 p-4 bg-white/5 border border-white/10 rounded-xl">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
-                      src={`https://api.dicebear.com/7.x/${profile.avatarStyle}/svg?seed=${encodeURIComponent(profile.avatarSeed)}`} 
-                      className="w-10 h-10 object-contain" 
+                      src={getAvatarUrl(profile.avatarStyle, profile.avatarSeed)} 
+                      className="w-10 h-10 object-cover rounded-full" 
                       alt="Avatar" 
                     />
                     <div>

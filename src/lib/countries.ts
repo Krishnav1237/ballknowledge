@@ -2,7 +2,7 @@
  * Maps country names (as they appear in match/team data) to ISO 3166-1 alpha-2 codes.
  * Used with flagcdn.com: https://flagcdn.com/w40/{code}.png
  */
-export const COUNTRY_CODES: Record<string, string> = {
+const COUNTRY_CODES: Record<string, string> = {
   // Americas – CONCACAF
   'usa': 'us', 'united states': 'us', 'america': 'us',
   'mexico': 'mx',
