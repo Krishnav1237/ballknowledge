@@ -30,6 +30,7 @@ Create `.env` (copy from `.env.example`):
 ```env
 # Required
 DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<db>?schema=public"
+DIRECT_URL="postgresql://<user>:<password>@<host>:<port>/<db>?schema=public"  # For migrations/db push
 
 # AI grading — at least one key required
 OPENROUTER_API_KEY="sk-or-..."  # Primary (also powers image generation)
