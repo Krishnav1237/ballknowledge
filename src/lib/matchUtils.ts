@@ -222,6 +222,14 @@ export function getDeterministicMatchResult(
     motm = 'None';
   }
 
+  // If SofaScore has already resolved the first goalscorer and MOTM, use them directly.
+  if (hasRealScores && match.sofascore_firstGoalscorer) {
+    firstGoalscorer = match.sofascore_firstGoalscorer;
+  }
+  if (hasRealScores && match.sofascore_motm) {
+    motm = match.sofascore_motm;
+  }
+
   const possessionWinner =
     homeScore > awayScore
       ? homeTeamName
@@ -325,11 +333,15 @@ export function getPlayerMatchRatings(
   const homeNorm = homeTeamName.toLowerCase().trim();
   const awayNorm = awayTeamName.toLowerCase().trim();
   
-  const homeKey = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === homeNorm || homeNorm.includes(k.toLowerCase()) || k.toLowerCase().includes(homeNorm)) || 'Argentina';
-  const awayKey = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === awayNorm || awayNorm.includes(k.toLowerCase()) || k.toLowerCase().includes(awayNorm)) || 'France';
-  
-  const homeRoster = TEAM_ROSTERS[homeKey] || [];
-  const awayRoster = TEAM_ROSTERS[awayKey] || [];
+  const homeKey = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === homeNorm || homeNorm.includes(k.toLowerCase()) || k.toLowerCase().includes(homeNorm));
+  const awayKey = Object.keys(TEAM_ROSTERS).find(k => k.toLowerCase() === awayNorm || awayNorm.includes(k.toLowerCase()) || k.toLowerCase().includes(awayNorm));
+
+  if (!homeKey && !awayKey) {
+    console.warn(`[getPlayerMatchRatings] Could not resolve roster keys for "${homeTeamName}" / "${awayTeamName}"`);
+  }
+
+  const homeRoster = homeKey ? TEAM_ROSTERS[homeKey] : [];
+  const awayRoster = awayKey ? TEAM_ROSTERS[awayKey] : [];
 
   // Parse actual goalscorers
   const parseScorers = (raw: string): string[] => {
@@ -426,6 +438,32 @@ export function getPlayerMatchRatings(
   processRoster(homeRoster, true);
   processRoster(awayRoster, false);
 
+  // ── SofaScore real ratings override ────────────────────────────────────────
+  // If the match object carries real SofaScore player ratings (injected by worldcupData.ts),
+  // overwrite the formula-based values with the actual match performance scores.
+  const sofaRatings: Record<string, number> = match?.sofascore_ratings || {};
+  if (Object.keys(sofaRatings).length > 0) {
+    for (const [playerName, rating] of Object.entries(sofaRatings)) {
+      const norm = playerName.toLowerCase().trim();
+      if (norm && typeof rating === 'number') {
+        // Direct key match
+        if (ratingsMap[norm] !== undefined) {
+          ratingsMap[norm] = rating;
+        } else {
+          // Fuzzy match: find an existing key that is a substring of the SofaScore name or vice-versa
+          const fuzzyKey = Object.keys(ratingsMap).find(
+            k => k.includes(norm) || norm.includes(k)
+          );
+          if (fuzzyKey) {
+            ratingsMap[fuzzyKey] = rating;
+          } else {
+            // Store under the SofaScore name directly (new player not in our roster)
+            ratingsMap[norm] = rating;
+          }
+        }
+      }
+    }
+  }
+
   return ratingsMap;
 }
-

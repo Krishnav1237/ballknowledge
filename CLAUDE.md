@@ -17,6 +17,9 @@
 | DB migration | `npx prisma migrate dev` |
 | Regenerate Prisma client | `npx prisma generate` |
 | View DB (Prisma Studio) | `npx prisma studio` |
+| SofaScore Map Gen | `python3 scripts/generate_sofascore_map.py > src/lib/worldcup2026/sofascore_map.json` |
+| SofaScore Single Scrape | `python3 src/lib/sofascore_scraper.py fetch <eventId>` |
+| SofaScore Live Scrape | `python3 src/lib/sofascore_scraper.py live` |
 
 ---
 
@@ -35,6 +38,13 @@ NVIDIA_API_KEY="nvapi-..."       # Second fallback
 
 # Required for production
 NEXT_PUBLIC_SITE_URL="https://ballknowledge.live"
+
+# Optional OAuth authentication client IDs & secrets
+NEXT_PUBLIC_GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+DISCORD_CLIENT_ID="your-discord-client-id"
+DISCORD_CLIENT_SECRET="your-discord-client-secret"
+FACEBOOK_CLIENT_ID="your-facebook-app-id"
+FACEBOOK_CLIENT_SECRET="your-facebook-app-secret"
 ```
 
 ---
@@ -54,15 +64,19 @@ User Action → localStorage (instant) → DB sync via /api/resolve-match or /ap
 - **DB**: PostgreSQL via Prisma. All DB calls MUST be wrapped in `try/catch` with a localStorage fallback.
 - **Offline mode**: If DB is unreachable, the app still works 100%. DB writes fail silently.
 
-### Match Data — Local JSON (Primary Source)
+### Match Data — Hybrid Pipeline & SofaScore Sync
 ```
-Request → fetchWorldCupMatches() → module-level cache → football.matches.json (disk)
+worldcup26.ir API (Base fixtures)
+  └── football.matches.json (Local disk backup cache)
+        └── sofascore_cache.json (SofaScore live / player rating overlay)
 ```
-- **Source files**: `src/lib/worldcup2026/football.matches.json` and `football.teams.json`
-- **These are the authoritative source** — they contain every real match result with actual goal scorers.
-- The remote `worldcup26.ir` API is permanently unreachable and has been removed.
-- Data is cached in-process (module-level singleton) — only one disk read per Node process restart.
-- When new match results come in, update the JSON files and restart the server.
+- **Authoritative source pipeline**:
+  1. Base fixture list is fetched from `worldcup26.ir` (or local backup `football.matches.json`).
+  2. SofaScore live events are mapped using `src/lib/worldcup2026/sofascore_map.json`.
+  3. Python scraper (`src/lib/sofascore_scraper.py`) fetches real-time/finished event scores, goalscorers, and player performance ratings.
+  4. Node sync endpoint (`/api/sofascore-sync?matchId=<id>`) writes to `sofascore_cache.json`.
+  5. The server overlays SofaScore data on top of the base matches in `src/lib/worldcupData.ts`.
+- When new match results or ratings come in, trigger sync or run the scraper. No server restart required.
 
 ### Shared Utilities — ALWAYS import from here, never duplicate
 | Export | File | Purpose |

@@ -35,9 +35,16 @@ async function verifyGoogleJwt(token: string): Promise<GoogleTokenInfo | null> {
 
 export async function POST(request: Request) {
   try {
-    const { credential, expectedNonce } = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid Google authentication payload' }, { status: 400 });
+    }
 
-    if (!credential) {
+    const { credential, expectedNonce } = body;
+
+    if (!credential || typeof credential !== 'string') {
       return NextResponse.json({ error: 'Credential token is required' }, { status: 400 });
     }
 
@@ -46,8 +53,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid Google credential token' }, { status: 400 });
     }
 
-    if (expectedNonce && payload.nonce !== expectedNonce) {
-      return NextResponse.json({ error: 'Invalid Google login nonce' }, { status: 400 });
+    // Nonce enforcement: if the Google JWT contains a nonce, the client MUST have sent
+    // the matching expectedNonce that was stored in sessionStorage before the GSI flow.
+    // This prevents token replay attacks where an old/stolen credential is submitted again.
+    if (payload.nonce) {
+      // JWT has a nonce claim — client must prove it holds the matching value
+      if (!expectedNonce || payload.nonce !== expectedNonce) {
+        return NextResponse.json({ error: 'Invalid or missing Google login nonce' }, { status: 400 });
+      }
     }
 
     const { email, name, picture } = payload;

@@ -1,15 +1,13 @@
 /**
  * World Cup 2026 data service.
  *
- * Primary source: local JSON files (football.matches.json, football.teams.json).
- * These files are the authoritative source — they contain every real match result
- * with actual goal scorers verified from FIFA.com, Al Jazeera, Sky Sports, and
- * Olympics.com.
+ * Data pipeline (highest priority wins):
+ * 1. SofaScore live cache (sofascore_cache.json) — real-time scores, goals, and player ratings
+ *    fetched by the Python scraper (src/lib/sofascore_scraper.py) on demand.
+ * 2. Authoritative local overrides (VERIFIED table below) — manually verified results.
+ * 3. worldcup26.ir remote API — base fixture data, falls back to local JSON cache.
  *
- * The worldcup26.ir remote API is attempted on every request; if it succeeds,
- * the authoritative local overrides are applied on top to correct any stale remote
- * data, and the merged result is written back to disk as the new cache.
- * On any network failure, the app falls back silently to the local JSON.
+ * The sofascore_map.json file maps worldcup26.ir match IDs to SofaScore event IDs.
  */
 
 import fs from 'fs';
@@ -31,6 +29,17 @@ function readJsonFile(filename: string): any[] {
   }
 }
 
+function readJsonObject(filename: string): Record<string, any> {
+  try {
+    const filePath = getDataPath(filename);
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const json = JSON.parse(raw);
+    return typeof json === 'object' && !Array.isArray(json) ? json : {};
+  } catch {
+    return {};
+  }
+}
+
 function saveJsonFile(filename: string, data: any) {
   try {
     const filePath = getDataPath(filename);
@@ -38,6 +47,86 @@ function saveJsonFile(filename: string, data: any) {
   } catch (err) {
     console.error(`[worldcupData] Failed to write back ${filename}:`, err);
   }
+}
+
+/**
+ * Returns the SofaScore event ID for a given worldcup26.ir match ID.
+ * Returns null if no mapping exists.
+ */
+export function getSofaScoreEventId(matchId: string): number | null {
+  const map = readJsonObject('sofascore_map.json');
+  return map[matchId]?.sofascoreEventId ?? null;
+}
+
+/**
+ * Formats a SofaScore goal list into worldcup26.ir scorer string format:
+ * e.g. '{"Lionel Messi 80\'","Lautaro Martínez 31\' (P)"}'
+ */
+function formatSofaScorers(goals: Array<{player: string; minute: number; isPenalty?: boolean; isOwnGoal?: boolean}>): string {
+  if (!goals || goals.length === 0) return 'null';
+  const entries = goals.map(g => {
+    const suffix = g.isPenalty ? ` (P)` : g.isOwnGoal ? ` (OG)` : '';
+    return `"${g.player} ${g.minute}'${suffix}"`;
+  });
+  return `{${entries.join(',')}}`;
+}
+
+/**
+ * Overlays SofaScore live/finished match data on top of the base match array.
+ * Reads from sofascore_cache.json (populated by the Python scraper via /api/sofascore-sync).
+ * Only overlays matches that have valid cached data.
+ */
+function applySofaScoreOverrides(matches: any[]): any[] {
+  const cache = readJsonObject('sofascore_cache.json');
+  if (!cache || Object.keys(cache).length === 0) return matches;
+
+  return matches.map(match => {
+    const entry = cache[String(match.id)];
+    if (!entry?.data) return match;
+
+    const d = entry.data;
+
+    // Only overlay if the SofaScore data is actually meaningful
+    if (!d.isFinished && !d.isLive) return match;
+
+    const patch: Record<string, any> = {};
+
+    // Scores
+    patch.home_score = String(d.homeScore ?? match.home_score);
+    patch.away_score = String(d.awayScore ?? match.away_score);
+
+    // Status
+    if (d.isFinished) {
+      patch.finished = 'TRUE';
+      patch.time_elapsed = 'finished';
+    } else if (d.isLive) {
+      patch.finished = 'FALSE';
+      patch.time_elapsed = d.timeElapsed || 'LIVE';
+    }
+
+    // Goal scorers — only overlay if SofaScore has goal data
+    if (d.homeGoals && Array.isArray(d.homeGoals)) {
+      patch.home_scorers = formatSofaScorers(d.homeGoals);
+    }
+    if (d.awayGoals && Array.isArray(d.awayGoals)) {
+      patch.away_scorers = formatSofaScorers(d.awayGoals);
+    }
+
+    // First goalscorer + MOTM (used by resolution engine)
+    if (d.firstGoalscorer && d.firstGoalscorer !== 'None') {
+      patch.sofascore_firstGoalscorer = d.firstGoalscorer;
+    }
+    if (d.motm && d.motm !== 'None') {
+      patch.sofascore_motm = d.motm;
+    }
+
+    // Player ratings map (used by getPlayerMatchRatings)
+    if (d.ratingsMap && Object.keys(d.ratingsMap).length > 0) {
+      patch.sofascore_ratings = d.ratingsMap;
+    }
+
+    return { ...match, ...patch };
+  });
 }
 
 // Keyless online live score fetch with timeout handling
@@ -83,6 +172,7 @@ function fetchFromApi(pathName: string): Promise<any> {
  */
 function applyMatchOverrides(matches: any[]): any[] {
   // Verified results — sources: FIFA.com, Al Jazeera, Sky Sports, Olympics.com
+  // Normalise any remote API casing inconsistencies (e.g. "Finished" vs "finished")
   const VERIFIED: Record<string, Partial<Record<string, string>>> = {
     // R32 matches — all completed
     '73': { // South Africa 0-1 Canada
@@ -210,12 +300,31 @@ function applyMatchOverrides(matches: any[]): any[] {
       home_penalty_misses: 'null', away_penalty_misses: 'null',
       home_penalty_scorers: 'null', away_penalty_scorers: 'null',
     },
+    // QF (matches 97-100) — sources verified
+    '97': { // France 1-0 Switzerland (QF1, Barcola 37')
+      home_score: '1', away_score: '0', finished: 'TRUE', time_elapsed: 'finished',
+      home_scorers: '{"Bradley Barcola 37\'"}',
+      away_scorers: 'null',
+      home_penalty_score: 'null', away_penalty_score: 'null',
+    },
+    '98': { // Morocco 0-1 Norway (QF2, Haaland 89')
+      home_score: '0', away_score: '1', finished: 'TRUE', time_elapsed: 'finished',
+      home_scorers: 'null',
+      away_scorers: '{\'Erling Haaland 89\'\'}'  ,
+      home_penalty_score: 'null', away_penalty_score: 'null',
+    },
+    // SF1 (match 102) and beyond: data comes from SofaScore live cache, no manual override needed
   };
 
   return matches.map(match => {
     const patch = VERIFIED[match.id];
-    if (!patch) return match;
-    return { ...match, ...patch };
+    // Normalise inconsistent time_elapsed casing from remote API
+    const normalised = { ...match };
+    if (typeof normalised.time_elapsed === 'string') {
+      normalised.time_elapsed = normalised.time_elapsed.toLowerCase() === 'finished' ? 'finished' : normalised.time_elapsed;
+    }
+    if (!patch || Object.keys(patch).length === 0) return normalised;
+    return { ...normalised, ...patch };
   });
 }
 
@@ -225,21 +334,25 @@ function applyMatchOverrides(matches: any[]): any[] {
  * then writes back to disk cache. Falls back silently to local JSON on timeout or errors.
  */
 export async function fetchWorldCupMatches(): Promise<any[]> {
+  let games: any[];
   try {
     const apiData = await fetchFromApi('/get/games');
     if (apiData && (Array.isArray(apiData.games) || Array.isArray(apiData))) {
       const rawGames = apiData.games || apiData;
-      const games = applyMatchOverrides(rawGames);
+      games = applyMatchOverrides(rawGames);
       // Write corrected data back to disk cache
       saveJsonFile('football.matches.json', games);
-      return games;
+    } else {
+      throw new Error('Unexpected API shape');
     }
   } catch (err) {
     console.warn('[worldcupData] Failed to fetch live matches, falling back to disk cache:', (err as Error).message);
+    const localGames = readJsonFile('football.matches.json');
+    games = applyMatchOverrides(localGames);
   }
-  // Serve from local cache — overrides still applied for consistency
-  const localGames = readJsonFile('football.matches.json');
-  return applyMatchOverrides(localGames);
+
+  // Layer SofaScore live/finished data on top for maximum accuracy
+  return applySofaScoreOverrides(games);
 }
 
 /**

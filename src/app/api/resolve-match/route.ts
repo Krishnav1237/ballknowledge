@@ -83,6 +83,16 @@ function parseAndNormalizeGrading(rawContent: string): { grade: string; ovr: num
  * @param {string} userPrompt - User hot take prompt.
  * @returns {Promise<Object>} JSON response containing the LLM grade.
  */
+/**
+ * Returns true if the key looks like an unset placeholder (e.g. 'gsk_your_groq_api_key_here').
+ * Placeholder keys contain the word 'your' or start with obvious template prefixes.
+ */
+function isPlaceholderKey(key: string | undefined): boolean {
+  if (!key) return true;
+  const lower = key.toLowerCase();
+  return lower.includes('your_') || lower.includes('_your_') || lower === 'undefined' || lower === 'null';
+}
+
 async function callOpenRouter(userPrompt: string) {
   if (!process.env.OPENROUTER_API_KEY) throw new Error('No OpenRouter key');
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -103,7 +113,7 @@ async function callOpenRouter(userPrompt: string) {
       temperature: 0.7,
       max_tokens: 256,
     }),
-    signal: AbortSignal.timeout(12_000),
+    signal: AbortSignal.timeout(4_000), // Shortened to 4s to prevent server hang on rate limits
   });
   if (!response.ok) throw new Error('OpenRouter failed');
   const data = await response.json();
@@ -118,7 +128,7 @@ async function callOpenRouter(userPrompt: string) {
  * @returns {Promise<Object>} JSON response containing the LLM grade.
  */
 async function callGroq(userPrompt: string) {
-  if (!process.env.GROQ_API_KEY) throw new Error('No Groq key');
+  if (isPlaceholderKey(process.env.GROQ_API_KEY)) throw new Error('No Groq key');
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -135,7 +145,7 @@ async function callGroq(userPrompt: string) {
       temperature: 0.7,
       max_tokens: 256,
     }),
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(4_000), // Shortened to 4s
   });
   if (!response.ok) throw new Error('Groq failed');
   const data = await response.json();
@@ -150,7 +160,7 @@ async function callGroq(userPrompt: string) {
  * @returns {Promise<Object>} JSON response containing the LLM grade.
  */
 async function callNvidia(userPrompt: string) {
-  if (!process.env.NVIDIA_API_KEY) throw new Error('No Nvidia key');
+  if (isPlaceholderKey(process.env.NVIDIA_API_KEY)) throw new Error('No Nvidia key');
   const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -167,7 +177,7 @@ async function callNvidia(userPrompt: string) {
       temperature: 0.7,
       max_tokens: 256,
     }),
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(4_000), // Shortened to 4s
   });
   if (!response.ok) throw new Error('Nvidia failed');
   const data = await response.json();
@@ -190,9 +200,9 @@ async function gradeHotTake(statement: string): Promise<{ grade: string; ovr: nu
 
   // Try each provider in order of priority
   const attempts = [
-    () => process.env.OPENROUTER_API_KEY ? callOpenRouter(prompt) : Promise.reject(new Error('No key')),
-    () => process.env.GROQ_API_KEY ? callGroq(prompt) : Promise.reject(new Error('No key')),
-    () => process.env.NVIDIA_API_KEY ? callNvidia(prompt) : Promise.reject(new Error('No key')),
+    () => !isPlaceholderKey(process.env.OPENROUTER_API_KEY) ? callOpenRouter(prompt) : Promise.reject(new Error('No key')),
+    () => !isPlaceholderKey(process.env.GROQ_API_KEY) ? callGroq(prompt) : Promise.reject(new Error('No key')),
+    () => !isPlaceholderKey(process.env.NVIDIA_API_KEY) ? callNvidia(prompt) : Promise.reject(new Error('No key')),
   ];
 
   for (const attempt of attempts) {
@@ -288,14 +298,26 @@ function getPlayerRatingFromRoster(playerName: string): number {
 
 /**
  * PRD — Predictor Score (0–100)
- * Calculates accuracy of user prediction metrics:
- * 1. Outcome (35 pts): Match outcome (Draw=35, Correct Winner=30, Wrong Outcome=15).
- * 2. Home Goals (15 pts): Home team goal accuracy (Exact=15, Off-by-1=10, Off-by-2=5, Off-by-3+=0).
- * 3. Away Goals (15 pts): Away team goal accuracy (Exact=15, Off-by-1=10, Off-by-2=5, Off-by-3+=0).
- * 4. Man of the Match (20 pts): Selected MOTM accuracy (Exact=20, Same Team/Strong performance=12, Same Team=8, Wrong=4).
- * 5. First Goalscorer (15 pts): Selected goalscorer accuracy (Correct First=15, Same/Strong=10, Same=6, Wrong=2).
- * 
- * Maximum score is capped at 100.
+ *
+ * Scoring breakdown:
+ *   1. Match Outcome (35 pts max)
+ *      - Correct winner: 30 pts
+ *      - Correct draw:   35 pts
+ *      - Wrong outcome:   0 pts   ← no free points for guessing wrong
+ *   2. Home Goals (15 pts max)  — Exact=15, Off-by-1=10, Off-by-2=5, Off-by-3+=0
+ *   3. Away Goals (15 pts max)  — Exact=15, Off-by-1=10, Off-by-2=5, Off-by-3+=0
+ *   4. MOTM (20 pts max)
+ *      - Exact match:      20 pts
+ *      - Same team, class: 12 pts
+ *      - Same team:         7 pts
+ *      - Wrong:             0 pts   ← no free points
+ *   5. First Goalscorer (15 pts max)
+ *      - Correct first:       15 pts
+ *      - Correct scorer later, right team, strong: 10 pts
+ *      - Right team scorer:    5 pts
+ *      - Wrong / no-goal:      0 pts   ← no free points
+ *
+ * Minimum possible: 0  |  Maximum: 100
  */
 function calculatePRD(params: {
   predHome: number; predAway: number;
@@ -308,98 +330,74 @@ function calculatePRD(params: {
 }): number {
   const { predHome, predAway, actualHome, actualAway, predMotm, actualMotm, predScorer, actualScorer, actualScorers, homeTeamName, awayTeamName } = params;
 
-  // 1. Outcome (35 pts)
-  const predOutcome = predHome > predAway ? 1 : predHome < predAway ? -1 : 0;
+  // ── 1. Outcome (0–35 pts) ────────────────────────────────
+  const predOutcome   = predHome   > predAway   ? 1 : predHome   < predAway   ? -1 : 0;
   const actualOutcome = actualHome > actualAway ? 1 : actualHome < actualAway ? -1 : 0;
   let outcomePoints: number;
   if (predOutcome === actualOutcome) {
-    outcomePoints = predOutcome === 0 ? 35 : 30; // Draw=35, Correct Winner=30
+    outcomePoints = predOutcome === 0 ? 35 : 30; // Correct draw = 35, correct winner = 30
   } else {
-    outcomePoints = 15; // Wrong
+    outcomePoints = 0; // Wrong — no consolation
   }
 
-  // 2. Home goals (15 pts)
-  const homeDiff = Math.abs(predHome - actualHome);
+  // ── 2. Home Goals (0–15 pts) ────────────────────────────
+  const homeDiff   = Math.abs(predHome - actualHome);
   const homePoints = homeDiff === 0 ? 15 : homeDiff === 1 ? 10 : homeDiff === 2 ? 5 : 0;
 
-  // 3. Away goals (15 pts)
-  const awayDiff = Math.abs(predAway - actualAway);
+  // ── 3. Away Goals (0–15 pts) ────────────────────────────
+  const awayDiff   = Math.abs(predAway - actualAway);
   const awayPoints = awayDiff === 0 ? 15 : awayDiff === 1 ? 10 : awayDiff === 2 ? 5 : 0;
 
-  // 4. MOTM (20 pts)
-  let motmPoints = 4; // default wrong
-  if (predMotm && predMotm.trim()) {
-    const pm = predMotm.toLowerCase().trim();
-    const am = actualMotm.toLowerCase().trim();
-    if (pm === 'none' || pm === '') {
-      if (am === 'none' || am === '') {
-        motmPoints = 20; // Correct
-      } else {
-        motmPoints = 4;
-      }
-    } else if (am === 'none' || am === '') {
-      motmPoints = 4;
+  // ── 4. MOTM (0–20 pts) ───────────────────────────────────
+  let motmPoints = 0; // default: 0 — wrong picks earn nothing
+  const pm = (predMotm || '').toLowerCase().trim();
+  const am = (actualMotm || '').toLowerCase().trim();
+  if (pm && pm !== 'none') {
+    if (am === 'none' || am === '') {
+      motmPoints = 0; // No motm but you picked one
     } else if (pm === am || am.includes(pm) || pm.includes(am)) {
-      motmPoints = 20;
+      motmPoints = 20; // Exact
     } else {
-      const predTeam = getPlayerTeamName(predMotm, homeTeamName, awayTeamName);
+      const predTeam   = getPlayerTeamName(predMotm, homeTeamName, awayTeamName);
       const actualTeam = getPlayerTeamName(actualMotm, homeTeamName, awayTeamName);
       if (predTeam && actualTeam && predTeam === actualTeam) {
-        motmPoints = isStrongPlayer(predMotm) ? 12 : 8;
+        motmPoints = isStrongPlayer(predMotm) ? 12 : 7; // Same team — partial credit
       } else {
-        motmPoints = 4;
+        motmPoints = 0;
       }
     }
-  } else {
-    const am = actualMotm.toLowerCase().trim();
-    if (am === 'none' || am === '') {
-      motmPoints = 20;
-    } else {
-      motmPoints = 4;
-    }
+  } else if (!pm || pm === 'none') {
+    // User skipped or predicted no-motm
+    motmPoints = (am === 'none' || am === '') ? 20 : 0;
   }
 
-  // 5. First Goalscorer (15 pts)
-  let scorerPoints = 2; // default wrong
-  if (predScorer && predScorer.trim()) {
-    const ps = predScorer.toLowerCase().trim();
-    const as = actualScorer.toLowerCase().trim();
-    const allScorersLower = actualScorers.map(s => s.toLowerCase());
+  // ── 5. First Goalscorer (0–15 pts) ─────────────────────────
+  let scorerPoints = 0; // default: 0 — wrong picks earn nothing
+  const ps = (predScorer || '').toLowerCase().trim();
+  const as = (actualScorer || '').toLowerCase().trim();
+  const allScorersLower = actualScorers.map(s => s.toLowerCase());
 
-    if (ps === 'none' || ps === '') {
-      if (as === 'none' || as === '') {
-        scorerPoints = 15; // Correct
-      } else {
-        scorerPoints = 2;
-      }
-    } else if (as === 'none' || as === '') {
-      scorerPoints = 2;
+  if (ps && ps !== 'none') {
+    if (as === 'none' || as === '') {
+      scorerPoints = 0; // You predicted someone but it was a 0-0
     } else if (ps === as || as.includes(ps) || ps.includes(as)) {
-      scorerPoints = 15; // correct first goalscorer
+      scorerPoints = 15; // Exact first goalscorer
     } else {
-      const predTeam = getPlayerTeamName(predScorer, homeTeamName, awayTeamName);
+      const predTeam   = getPlayerTeamName(predScorer, homeTeamName, awayTeamName);
       const actualTeam = getPlayerTeamName(actualScorer, homeTeamName, awayTeamName);
       if (predTeam && actualTeam && predTeam === actualTeam) {
+        // Same team but not the exact first scorer
         const scoredLater = allScorersLower.some(s => s.includes(ps) || ps.includes(s));
-        if (scoredLater || isStrongPlayer(predScorer)) {
-          scorerPoints = 10;
-        } else {
-          scorerPoints = 6;
-        }
+        scorerPoints = scoredLater ? 10 : isStrongPlayer(predScorer) ? 5 : 0;
       } else {
-        scorerPoints = 2;
+        scorerPoints = 0;
       }
     }
-  } else {
-    const as = actualScorer.toLowerCase().trim();
-    if (as === 'none' || as === '') {
-      scorerPoints = 15;
-    } else {
-      scorerPoints = 2;
-    }
+  } else if (!ps || ps === 'none') {
+    scorerPoints = (as === 'none' || as === '') ? 15 : 0;
   }
 
-  return Math.min(100, outcomePoints + homePoints + awayPoints + motmPoints + scorerPoints);
+  return Math.max(0, Math.min(100, outcomePoints + homePoints + awayPoints + motmPoints + scorerPoints));
 }
 
 /**
@@ -451,117 +449,158 @@ function getPlayerRating(playerName: string): number {
 }
 
 /**
- * MGR — Manager Score (10–99)
- * Calculates the quality of the selected tactical Best XI formation.
- * Formula: Round(Average Player Rating × 10)
- * 
- * @param {Record<string, any>} lineup - Chosen lineup mapped by pitch slot ID.
- * @returns {number} Manager rating between 10 and 99 (default: 50 if empty).
+ * MGR — Manager Score (0–99)
+ *
+ * When real SofaScore match ratings are available (sofascore_ratings on the match object,
+ * passed through playerMatchRatings), they are used directly:
+ *   - SofaScore rates on a 6.0–10.0 scale.
+ *   - Convert to 0–99: score = round((rating - 6.0) / 4.0 × 99)
+ *   - A 10.0 rated player = 99, 7.0 = ~74, 6.0 = 0.
+ *
+ * When only reputation ratings are available (no SofaScore data, match not finished):
+ *   - Compress to realistic range: score = round((repRating - 6.0) / 3.5 × 60) + 30
+ *   - This gives ~30 (unknown) to ~90 (Messi 9.5) rather than blowing out to 95.
+ *
+ * Captain (×2.0) and Vice-Captain (×1.5) multipliers are applied to weighted average.
+ * Default (empty lineup): 50
  */
-function calculateMGR(lineup: Record<string, any>, playerMatchRatings: Record<string, number>): number {
+function calculateMGR(
+  lineup: Record<string, any>,
+  playerMatchRatings: Record<string, number>,
+  hasRealSofaScoreData = false
+): number {
   const players = Object.values(lineup).filter(p => p && p.name);
-  if (!players.length) return 50; // default if no lineup submitted
+  if (!players.length) return 50;
 
-  // Lowercase keys of playerMatchRatings for robust lookups
-  const normalizedRatings: Record<string, number> = {};
-  Object.entries(playerMatchRatings).forEach(([key, val]) => {
-    normalizedRatings[key.toLowerCase().trim()] = val;
-  });
+  // Normalise rating keys for robust lookup
+  const normRatings: Record<string, number> = {};
+  for (const [k, v] of Object.entries(playerMatchRatings)) {
+    normRatings[k.toLowerCase().trim()] = v;
+  }
 
-  let sumRatings = 0;
-  let totalWeights = 0;
+  let sumScore   = 0;
+  let totalWeight = 0;
 
-  players.forEach((p: any) => {
-    const pName = p.name.toLowerCase().trim();
-    const matchRating = normalizedRatings[pName] || 
-                        Object.entries(normalizedRatings).find(([k]) => pName.includes(k) || k.includes(pName))?.[1] ||
-                        getPlayerRatingFromRoster(p.name);
-    
-    // Apply captain (2.0x) or vice-captain (1.5x) multipliers
-    let weight = 1.0;
-    if (p.isCaptain) {
-      weight = 2.0;
-    } else if (p.isViceCaptain) {
-      weight = 1.5;
+  for (const p of players) {
+    const pNorm = p.name.toLowerCase().trim();
+
+    // Try exact match, then fuzzy substring match
+    let rawRating: number | undefined =
+      normRatings[pNorm] ??
+      Object.entries(normRatings).find(([k]) => pNorm.includes(k) || k.includes(pNorm))?.[1];
+
+    // Fallback to roster reputation rating
+    if (rawRating === undefined) {
+      rawRating = getPlayerRatingFromRoster(p.name); // returns 6.0–10.0
     }
 
-    sumRatings += matchRating * weight;
-    totalWeights += weight;
-  });
+    let score: number;
+    if (hasRealSofaScoreData) {
+      // Real match rating: convert 6–10 → 0–99
+      score = Math.round(Math.max(0, Math.min(99, ((rawRating - 6.0) / 4.0) * 99)));
+    } else {
+      // Reputation rating: compress to 30–90 so it doesn't feel artificial
+      score = Math.round(Math.max(30, Math.min(90, ((rawRating - 6.0) / 3.5) * 60 + 30)));
+    }
 
-  const avgRating = sumRatings / totalWeights;
-  return Math.max(10, Math.min(99, Math.round(avgRating * 10)));
+    const weight = p.isCaptain ? 2.0 : p.isViceCaptain ? 1.5 : 1.0;
+    sumScore    += score * weight;
+    totalWeight += weight;
+  }
+
+  return Math.max(0, Math.min(99, Math.round(sumScore / totalWeight)));
 }
 
 /**
  * HOT — Hot Take Score (0–100)
- * Computes average hot take accuracy weighted by confidence levels.
- * Base values: CORRECT=100, PARTIALLY_CORRECT=75, INCORRECT=50.
- * Confidence multipliers: 1=0.8x, 2=0.9x, 3=1.0x, 4=1.1x, 5=1.2x.
+ *
+ * Base values (correct prediction of real outcome):
+ *   CORRECT:           100
+ *   PARTIALLY_CORRECT:  50
+ *   INCORRECT:           0   ← wrong takes earn nothing
+ *
+ * Confidence multiplier (1–5):
+ *   High confidence on a CORRECT take  =  bonus  (×1.20 at conf=5)
+ *   High confidence on a WRONG take    =  penalty (raw 0 stays 0, but
+ *   partially correct at conf=5 = 50×1.20 = 60, at conf=1 = 50×0.80 = 40)
+ *
+ * Tip: An INCORRECT take at confidence 5 = 0×1.20 = 0 still.
+ * An INCORRECT at confidence 1 = 0×0.80 = 0 still.
+ * Only PARTIALLY_CORRECT is affected by confidence multipliers.
  */
 const CONFIDENCE_MULTIPLIER: Record<number, number> = {
-  1: 0.8, 2: 0.9, 3: 1.0, 4: 1.1, 5: 1.2
+  1: 0.80, 2: 0.90, 3: 1.00, 4: 1.10, 5: 1.20,
 };
 
 function getTakeBaseScore(grade: string): number {
-  if (grade === 'CORRECT') return 100;
-  if (grade === 'PARTIALLY_CORRECT') return 75;
-  return 50; // INCORRECT
+  if (grade === 'CORRECT')           return 100;
+  if (grade === 'PARTIALLY_CORRECT') return  50;
+  return 0; // INCORRECT — no free points
 }
 
 /**
  * Aggregates hot take evaluations.
- * 
- * @param {Array<{grade: string, confidence: number}>} gradedTakes - List of hot takes with grades/confidence.
- * @returns {number} Graded score between 0 and 100.
+ * INCORRECT takes contribute 0, PARTIAL 50±20%, CORRECT 100±20%.
+ * Overall score is the weighted average clamped to [0, 100].
  */
 function calculateHOT(gradedTakes: Array<{ grade: string; confidence: number }>): number {
-  if (!gradedTakes.length) return 50;
+  if (!gradedTakes.length) return 50; // No takes → neutral midpoint
   const values = gradedTakes.map(t => {
     const base = getTakeBaseScore(t.grade);
-    const multiplier = CONFIDENCE_MULTIPLIER[Math.max(1, Math.min(5, t.confidence))] ?? 1.0;
+    const conf = Math.max(1, Math.min(5, t.confidence));
+    const multiplier = CONFIDENCE_MULTIPLIER[conf] ?? 1.0;
     return base * multiplier;
   });
-  return Math.max(0, Math.min(100, Math.round(values.reduce((a, b) => a + b, 0) / values.length)));
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  return Math.max(0, Math.min(100, Math.round(avg)));
 }
 
 /**
- * RST — Roast Score (50–100)
- * Tallies community interaction inside the Match Live Banter Chat.
- * Formula: 50 + count(messages sent) + sum(upvote reactions).
- * 
- * @param {string} profileId - Database profile ID.
- * @param {string} matchId - Database match ID.
- * @returns {Promise<number>} Score capped between 50 and 100.
+ * RST — Roast Score (0–100)
+ *
+ * Measures community engagement in the Match Live Banter Chat.
+ * Uses a square-root curve so the first few messages are worth a lot
+ * and diminishing returns kick in quickly:
+ *
+ *   RST = min(100, round(sqrt(messages × 8 + upvotes × 4) × 10))
+ *
+ * Examples:
+ *   0 messages, 0 upvotes  →  0
+ *   1 message,  0 upvotes  →  28
+ *   5 messages, 5 upvotes  →  71
+ *   10 messages, 15 upvotes → 100 (capped)
  */
 async function calculateRST(profileId: string, matchId: string): Promise<number> {
   try {
     const messages = await prisma.chatMessage.findMany({
       where: { profileId, matchId },
-      select: { upvotes: true }
+      select: { upvotes: true },
     });
-    const msgCount = messages.length;
+    const msgCount  = messages.length;
     const reactions = messages.reduce((sum, m) => sum + (m.upvotes ?? 0), 0);
-    return Math.max(50, Math.min(100, 50 + msgCount + reactions));
+    const raw = Math.sqrt(msgCount * 8 + reactions * 4) * 10;
+    return Math.max(0, Math.min(100, Math.round(raw)));
   } catch {
-    return 50; // default if DB offline
+    return 0; // DB offline — no engagement score
   }
 }
 
 /**
- * Final Overall Rating (OVR)
- * Combines the four primary metrics using weighted contributions:
- * - 35% Predictor Score (PRD)
- * - 25% Manager Score (MGR)
- * - 25% Hot Take Score (HOT)
- * - 15% Roast Score (RST)
- * 
- * @returns {number} Score rounded between 1 and 99.
+ * OVR — Final Overall Rating (1–99)
+ *
+ * Weighted combination:
+ *   35% PRD  (0–100) — prediction accuracy
+ *   25% MGR  (0–99)  — manager/lineup quality
+ *   25% HOT  (0–100) — hot take accuracy
+ *   15% RST  (0–100) — community engagement
+ *
+ * Because all components are now calibrated to start from 0 (not 50),
+ * a user who gets everything wrong can score as low as ~1 OVR.
+ * A user who gets everything right scores up to 99 OVR.
  */
 function calculateOVR(prd: number, mgr: number, hot: number, rst: number): number {
-  return Math.max(1, Math.min(99, Math.round(
-    (0.35 * prd) + (0.25 * mgr) + (0.25 * hot) + (0.15 * rst)
-  )));
+  const raw = (0.35 * prd) + (0.25 * mgr) + (0.25 * hot) + (0.15 * rst);
+  return Math.max(1, Math.min(99, Math.round(raw)));
 }
 
 
@@ -577,6 +616,31 @@ interface GradedTake {
   sentence: string;
 }
 
+function clampInteger(input: unknown, fallback: number, min: number, max: number) {
+  const value = typeof input === 'number' ? input : parseInt(String(input ?? ''), 10);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.max(min, Math.min(max, Math.round(value)));
+}
+
+function cleanText(input: unknown, maxLength: number) {
+  return String(input ?? '').trim().slice(0, maxLength);
+}
+
+function cleanMatchId(input: unknown) {
+  const matchId = cleanText(input, 64);
+  return /^[a-zA-Z0-9_-]+$/.test(matchId) ? matchId : '';
+}
+
+function cleanLineup(input: unknown) {
+  if (input === undefined || input === null) return {};
+  if (typeof input !== 'object' || Array.isArray(input)) return {};
+  if (JSON.stringify(input).length > 100_000) return {};
+  return input as Record<string, any>;
+}
+
+// Global in-memory locks to prevent concurrent duplicate resolution execution (double-clicks)
+const activeResolves = new Set<string>();
+
 // ─── Route Handler ────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
@@ -584,7 +648,13 @@ export async function POST(request: Request) {
     const auth = requireSession(request);
     if (auth.response || !auth.session) return auth.response;
 
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid match resolution payload.' }, { status: 400 });
+    }
+
     const {
       syncOnly,
       matchId,
@@ -597,6 +667,14 @@ export async function POST(request: Request) {
       profile,    // Current user profile object, display-only; identity comes from session
       playerMatchRatings: adminPlayerMatchRatings // Record<string, number>
     } = body;
+
+    const safeMatchId = cleanMatchId(matchId);
+    const safePredHomeScore = clampInteger(predHomeScore, 0, 0, 99);
+    const safePredAwayScore = clampInteger(predAwayScore, 0, 0, 99);
+    const safePredScorer = cleanText(predScorer, 120);
+    const safePredMotm = cleanText(predMotm, 120);
+    const safePossessionWinner = cleanText(body.possessionWinner, 20);
+    const safeLineup = cleanLineup(lineup);
 
     // ── Sync-only mode (profile upsert) ──────────────────────────────────────
     if (syncOnly) {
@@ -620,13 +698,28 @@ export async function POST(request: Request) {
       }
     }
 
+    if (!safeMatchId) {
+      return NextResponse.json({ error: 'A valid matchId is required.' }, { status: 400 });
+    }
+
+    // Check resolve lock to prevent parallel double-click execution (ignore for profile style updates)
+    const lockKey = `${auth.session.profileId}_${safeMatchId}`;
+    if (!syncOnly) {
+      if (activeResolves.has(lockKey)) {
+        return NextResponse.json({ error: 'A resolution request for this match is already processing.' }, { status: 409 });
+      }
+      activeResolves.add(lockKey);
+    }
+
+    try {
+
     // ── Load match data ───────────────────────────────────────────────────────
     const [matches, teams] = await Promise.all([
       fetchWorldCupMatches(),
       fetchWorldCupTeams()
     ]);
 
-    const match = matches.find((m: any) => m.id === matchId);
+    const match = matches.find((m: any) => String(m.id) === safeMatchId);
     if (!match) {
       return NextResponse.json({ error: 'Match not found.' }, { status: 404 });
     }
@@ -634,28 +727,46 @@ export async function POST(request: Request) {
     const homeTeamName = teams.find((t: any) => t.id === match.home_team_id)?.name_en || match.home_team_label || 'Home';
     const awayTeamName = teams.find((t: any) => t.id === match.away_team_id)?.name_en || match.away_team_label || 'Away';
 
-    // Get deterministic completed result
-    const result = getDeterministicMatchResult(matchId, homeTeamName, awayTeamName, match);
+    // ── Trigger SofaScore sync before resolving (non-blocking best-effort) ────
+    // This refreshes the sofascore_cache.json so the match object carries real
+    // player ratings (sofascore_ratings) and goalscorer data (sofascore_firstGoalscorer, sofascore_motm).
+    let enrichedMatch = match;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const syncRes = await fetch(`${baseUrl}/api/sofascore-sync?matchId=${safeMatchId}`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (syncRes.ok) {
+        // Re-fetch matches so the SofaScore overlay is applied
+        const freshMatches = await fetchWorldCupMatches();
+        enrichedMatch = freshMatches.find((m: any) => String(m.id) === safeMatchId) || match;
+      }
+    } catch (syncErr) {
+      console.warn(`[resolve-match] SofaScore sync failed for match ${safeMatchId}, using cached data:`, (syncErr as Error).message);
+    }
 
-    // Parse all scorers from the match data
+    // Get deterministic completed result — uses enrichedMatch which has SofaScore data overlaid
+    const result = getDeterministicMatchResult(safeMatchId, homeTeamName, awayTeamName, enrichedMatch);
+
+    // Parse all scorers from the enriched match data
     const parseScorers = (raw: string): string[] => {
       if (!raw) return [];
-      return raw.replace(/[{}]/g, '').split(',').map(s => s.trim().replace(/"/g, '').replace(/\d+['+]*$/, '').trim()).filter(Boolean);
+      return raw.replace(/[{}]/g, '').split(',').map(s => s.trim().replace(/"/g, '').replace(/\d+['\+]*(\s*\(P\)|\s*\(OG\))?$/, '').trim()).filter(Boolean);
     };
     const allScorers = [
-      ...parseScorers(match.home_scorers || ''),
-      ...parseScorers(match.away_scorers || '')
+      ...parseScorers(enrichedMatch.home_scorers || ''),
+      ...parseScorers(enrichedMatch.away_scorers || '')
     ];
 
     // ── 1. PRD — Predictor Score ──────────────────────────────────────────────
     const prd = calculatePRD({
-      predHome: predHomeScore ?? 0,
-      predAway: predAwayScore ?? 0,
+      predHome: safePredHomeScore,
+      predAway: safePredAwayScore,
       actualHome: result.homeScore,
       actualAway: result.awayScore,
-      predMotm: predMotm || '',
+      predMotm: safePredMotm,
       actualMotm: result.motm || '',
-      predScorer: predScorer || '',
+      predScorer: safePredScorer,
       actualScorer: result.firstGoalscorer || '',
       actualScorers: allScorers,
       homeTeamName,
@@ -663,18 +774,25 @@ export async function POST(request: Request) {
     });
 
     // ── 2. MGR — Manager Score ────────────────────────────────────────────────
-    const playerMatchRatings = adminPlayerMatchRatings || getPlayerMatchRatings(matchId, homeTeamName, awayTeamName, match);
-    const mgr = calculateMGR(lineup || {}, playerMatchRatings);
+    // Use enrichedMatch so SofaScore real ratings (sofascore_ratings) are applied
+    const playerMatchRatings = adminPlayerMatchRatings || getPlayerMatchRatings(safeMatchId, homeTeamName, awayTeamName, enrichedMatch);
+    // Pass hasRealSofaScoreData=true so MGR uses the 6–10 → 0–99 conversion instead of reputation compression
+    const hasRealRatings = Object.keys(enrichedMatch?.sofascore_ratings || {}).length > 0;
+    const mgr = calculateMGR(safeLineup, playerMatchRatings, hasRealRatings);
 
     // ── 3. HOT — Hot Take Score ───────────────────────────────────────────────
-    const statements = hotTakes && hotTakes.length > 0
-      ? hotTakes
-      : [];
+    const statements = Array.isArray(hotTakes) ? hotTakes : [];
 
     // Free users: cap at 3 takes. Premium/Admin: up to 5.
     const role = auth.session.role || 'FREE';
     const maxTakes = role === 'FREE' ? 3 : 5;
-    const takesToGrade = statements.slice(0, maxTakes);
+    const takesToGrade = statements
+      .slice(0, maxTakes)
+      .map((take: any) => ({
+        statement: cleanText(take?.statement, 280),
+        confidence: clampInteger(take?.confidence, 3, 1, 5),
+      }))
+      .filter((take) => take.statement);
 
     const gradedTakes: GradedTake[] = await Promise.all(
       takesToGrade.map(async (take: any) => {
@@ -699,16 +817,14 @@ export async function POST(request: Request) {
       console.warn('DB offline during profile resolve:', dbError);
     }
 
-    // ── 4. RST — Roast Score ──────────────────────────────────────────────────
-    let rst = 50;
+    // ── 4. RST — Roast Score ────────────────────────────────────────────────
+    let rst = 0; // 0 = no engagement — earned through participation, not given free
     if (dbProfile) {
       try {
-        rst = await calculateRST(dbProfile.id, matchId);
+        rst = await calculateRST(dbProfile.id, safeMatchId);
       } catch {
-        rst = profile?.roastScore ?? 50;
+        rst = 0;
       }
-    } else if (profile) {
-      rst = profile.roastScore ?? 50;
     }
 
     // ── 5. Final OVR ─────────────────────────────────────────────────────────
@@ -718,11 +834,12 @@ export async function POST(request: Request) {
     let rarity = 'COMMON';
     let verdictText = 'DELUSION MERCHANT';
 
-    if (ovr >= 90) { rarity = 'LEGENDARY'; verdictText = 'CERTIFIED GOAT DISCUSSION'; }
-    else if (ovr >= 75) { rarity = 'EPIC'; verdictText = 'BALL KNOWLEDGE SUPREME'; }
-    else if (ovr >= 60) { rarity = 'RARE'; verdictText = 'MID TAKE APPROVED'; }
-    else if (ovr >= 40) { rarity = 'COMMON'; verdictText = 'DELUSION MERCHANT'; }
-    else { rarity = 'COMMON'; verdictText = 'FOOTBALL TERRORIST'; }
+    // Rarity tiers recalibrated: OVR now ranges from ~1 to 99 with no free floor points
+    if (ovr >= 85)      { rarity = 'LEGENDARY'; verdictText = 'CERTIFIED GOAT DISCUSSION'; }
+    else if (ovr >= 70) { rarity = 'EPIC';      verdictText = 'BALL KNOWLEDGE SUPREME';   }
+    else if (ovr >= 55) { rarity = 'RARE';      verdictText = 'MID TAKE APPROVED';         }
+    else if (ovr >= 30) { rarity = 'COMMON';    verdictText = 'DELUSION MERCHANT';         }
+    else                { rarity = 'COMMON';    verdictText = 'FOOTBALL TERRORIST';         }
 
     // Use the best-graded take's verdict for charm (sort a copy to avoid mutating gradedTakes order)
     const bestTake = [...gradedTakes].sort((a, b) => b.ovr - a.ovr)[0];
@@ -731,10 +848,10 @@ export async function POST(request: Request) {
     const cardId = crypto.randomUUID();
     const cardPayload = {
       id: cardId,
-      matchId,
+      matchId: safeMatchId,
       rating: ovr,
       verdict: verdictText,
-      charge: `Predicted: ${predHomeScore ?? '?'}-${predAwayScore ?? '?'} | Actual: ${result.homeScore}-${result.awayScore}`,
+      charge: `Predicted: ${safePredHomeScore}-${safePredAwayScore} | Actual: ${result.homeScore}-${result.awayScore}`,
       evidence: bestTake ? `"${bestTake.statement}" — ${bestTake.charge}` : 'No evidence submitted.',
       sentence: bestTake?.sentence || 'Sentenced to watch highlight edits on repeat.',
       rarity,
@@ -752,111 +869,125 @@ export async function POST(request: Request) {
 
     try {
       if (dbProfile) {
-        // Upsert Match Prediction
-        const dbPrediction = await prisma.matchPrediction.upsert({
-          where: { profileId_matchId: { profileId: dbProfile.id, matchId } },
-          create: {
-            profileId: dbProfile.id,
-            matchId,
-            homeScore: predHomeScore ?? 0,
-            awayScore: predAwayScore ?? 0,
-            firstGoalscorer: predScorer || '',
-            motm: predMotm || '',
-            possessionWinner: String(body.possessionWinner || ''),
-            lineup: lineup !== undefined ? lineup : undefined,
-          },
-          update: {
-            homeScore: predHomeScore ?? 0,
-            awayScore: predAwayScore ?? 0,
-            firstGoalscorer: predScorer || '',
-            motm: predMotm || '',
-            possessionWinner: String(body.possessionWinner || ''),
-            lineup: lineup !== undefined ? lineup : undefined,
-          },
-        });
-
-        // Save Hot Takes (delete + recreate for clean state)
-        await prisma.hotTake.deleteMany({ where: { predictionId: dbPrediction.id } });
-        if (takesToGrade.length > 0) {
-          await prisma.hotTake.createMany({
-            data: takesToGrade.map((take: any) => ({
-              predictionId: dbPrediction.id,
-              statement: take.statement,
-              confidence: take.confidence
-            }))
+        // Wrap database writes in a secure atomic transaction to guarantee profile/card alignment
+        await prisma.$transaction(async (tx) => {
+          // Upsert Match Prediction
+          const dbPrediction = await tx.matchPrediction.upsert({
+            where: { profileId_matchId: { profileId: dbProfile.id, matchId: safeMatchId } },
+            create: {
+              profileId: dbProfile.id,
+              matchId: safeMatchId,
+              homeScore: safePredHomeScore,
+              awayScore: safePredAwayScore,
+              firstGoalscorer: safePredScorer,
+              motm: safePredMotm,
+              possessionWinner: safePossessionWinner,
+              lineup: safeLineup,
+            },
+            update: {
+              homeScore: safePredHomeScore,
+              awayScore: safePredAwayScore,
+              firstGoalscorer: safePredScorer,
+              motm: safePredMotm,
+              possessionWinner: safePossessionWinner,
+              lineup: safeLineup,
+            },
           });
-        }
 
-        // Upsert Match Card
-        persistedCard = await prisma.matchCard.upsert({
-          where: { profileId_matchId: { profileId: dbProfile.id, matchId } },
-          create: {
-            id: cardId,
-            profileId: dbProfile.id,
-            matchId,
-            rating: ovr,
-            verdict: verdictText,
-            charge: cardPayload.charge,
-            evidence: cardPayload.evidence,
-            sentence: cardPayload.sentence,
-            rarity,
-            statsJson: cardPayload.statsJson,
-            cardTheme: 'gold'
-          },
-          update: {
-            rating: ovr,
-            verdict: verdictText,
-            charge: cardPayload.charge,
-            evidence: cardPayload.evidence,
-            sentence: cardPayload.sentence,
-            rarity,
-            statsJson: cardPayload.statsJson,
+          // Save Hot Takes (delete + recreate for clean state)
+          await tx.hotTake.deleteMany({ where: { predictionId: dbPrediction.id } });
+          if (takesToGrade.length > 0) {
+            await tx.hotTake.createMany({
+              data: takesToGrade.map((take: any) => ({
+                predictionId: dbPrediction.id,
+                statement: take.statement,
+                confidence: take.confidence
+              }))
+            });
           }
-        });
 
-        // Retrieve all match cards to calculate dynamic averages
-        const allCards = await prisma.matchCard.findMany({
-          where: { profileId: dbProfile.id }
-        });
+          // Upsert Match Card
+          persistedCard = await tx.matchCard.upsert({
+            where: { profileId_matchId: { profileId: dbProfile.id, matchId: safeMatchId } },
+            create: {
+              id: cardId,
+              profileId: dbProfile.id,
+              matchId: safeMatchId,
+              rating: ovr,
+              verdict: verdictText,
+              charge: cardPayload.charge,
+              evidence: cardPayload.evidence,
+              sentence: cardPayload.sentence,
+              rarity,
+              statsJson: cardPayload.statsJson,
+              cardTheme: 'gold'
+            },
+            update: {
+              rating: ovr,
+              verdict: verdictText,
+              charge: cardPayload.charge,
+              evidence: cardPayload.evidence,
+              sentence: cardPayload.sentence,
+              rarity,
+              statsJson: cardPayload.statsJson,
+            }
+          });
 
-        let totalPrd = 0;
-        let totalMgr = 0;
-        let totalHot = 0;
-        let totalRst = 0;
-        let totalOvr = 0;
-        const count = allCards.length;
+          // ── Exponential Weighted Average for profile ratings ───────────────────────────
+          // α = 0.3: recent match weight = 30%, previous EMA weight = 70%.
+          const allCards = await tx.matchCard.findMany({
+            where: { profileId: dbProfile.id },
+            select: { createdAt: true, rating: true, statsJson: true },
+          });
+          const ALPHA = 0.3;
+          const count = allCards.length;
 
-        allCards.forEach(c => {
-          const stats = (c.statsJson as any) || {};
-          totalPrd += Number(stats.prd ?? c.rating ?? 50);
-          totalMgr += Number(stats.mgr ?? 50);
-          totalHot += Number(stats.hot ?? 50);
-          totalRst += Number(stats.rst ?? 50);
-          totalOvr += Number(stats.ovr ?? c.rating ?? 50);
-        });
+          if (count > 0) {
+            // Sort cards oldest-first to apply EWA in chronological order
+            const sortedCards = [...allCards].sort((a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            );
 
-        if (count > 0) {
-          finalPrd = Math.round(totalPrd / count);
-          finalMgr = Math.round(totalMgr / count);
-          finalHot = Math.round(totalHot / count);
-          finalRst = Math.round(totalRst / count);
-          finalOvr = Math.round(totalOvr / count);
-        }
+            // Seed EMA from the oldest card's scores
+            const first = (sortedCards[0].statsJson as any) || {};
+            let emaPrd = Number(first.prd ?? sortedCards[0].rating ?? prd);
+            let emaMgr = Number(first.mgr ?? 50);
+            let emaHot = Number(first.hot ?? 50);
+            let emaRst = Number(first.rst ?? 0);
+            let emaOvr = Number(first.ovr ?? sortedCards[0].rating ?? ovr);
 
-        // Update profile with average rating stats
-        dbProfile = await prisma.footballIQProfile.update({
-          where: { id: dbProfile.id },
-          data: {
-            overallRating: finalOvr,
-            predictionRating: finalPrd,
-            hotTakeRating: finalHot,
-            managerRating: finalMgr,
-            roastScore: finalRst,
+            // Iterate remaining cards (index 1+) and the current new card
+            for (let i = 1; i < sortedCards.length; i++) {
+              const stats = (sortedCards[i].statsJson as any) || {};
+              emaPrd = Math.round(ALPHA * Number(stats.prd ?? emaPrd) + (1 - ALPHA) * emaPrd);
+              emaMgr = Math.round(ALPHA * Number(stats.mgr ?? emaMgr) + (1 - ALPHA) * emaMgr);
+              emaHot = Math.round(ALPHA * Number(stats.hot ?? emaHot) + (1 - ALPHA) * emaHot);
+              emaRst = Math.round(ALPHA * Number(stats.rst ?? emaRst) + (1 - ALPHA) * emaRst);
+              emaOvr = Math.round(ALPHA * Number(stats.ovr ?? emaOvr) + (1 - ALPHA) * emaOvr);
+            }
+
+            finalPrd = Math.max(1, Math.min(99, emaPrd));
+            finalMgr = Math.max(1, Math.min(99, emaMgr));
+            finalHot = Math.max(1, Math.min(99, emaHot));
+            finalRst = Math.max(0, Math.min(99, emaRst));
+            finalOvr = Math.max(1, Math.min(99, emaOvr));
           }
+
+          // Update profile with EWA ratings
+          dbProfile = await tx.footballIQProfile.update({
+            where: { id: dbProfile.id },
+            data: {
+              overallRating: finalOvr,
+              predictionRating: finalPrd,
+              hotTakeRating: finalHot,
+              managerRating: finalMgr,
+              roastScore: finalRst,
+            }
+          });
         });
       }
     } catch (dbError) {
-      console.warn('DB offline — returning in-memory response:', dbError);
+      console.warn('DB persistence transaction failed, fallback to memory card:', dbError);
     }
 
     const finalCard = persistedCard
@@ -888,6 +1019,11 @@ export async function POST(request: Request) {
       scores: { prd, mgr, hot, rst, ovr },
     });
 
+    } finally {
+      if (!syncOnly) {
+        activeResolves.delete(lockKey);
+      }
+    }
   } catch (error) {
     console.error('Error in /api/resolve-match:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

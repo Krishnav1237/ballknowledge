@@ -1,0 +1,436 @@
+{
+  "1": {
+    "sofascoreEventId": 15186710,
+    "sofascoreTimestamp": 1781204400,
+    "sofascoreHome": "Mexico",
+    "sofascoreAway": "South Africa"
+  },
+  "2": {
+    "sofascoreEventId": 15186720,
+    "sofascoreTimestamp": 1781229600,
+    "sofascoreHome": "South Korea",
+    "sofascoreAway": "Czechia"
+  },
+  "3": {
+    "sofascoreEventId": 15186836,
+    "sofascoreTimestamp": 1781290800,
+    "sofascoreHome": "Canada",
+    "sofascoreAway": "Bosnia & Herzegovina"
+  },
+  "4": {
+    "sofascoreEventId": 15186873,
+    "sofascoreTimestamp": 1781312400,
+    "sofascoreHome": "USA",
+    "sofascoreAway": "Paraguay"
+  },
+  "5": {
+    "sofascoreEventId": 15186853,
+    "sofascoreTimestamp": 1781398800,
+    "sofascoreHome": "Haiti",
+    "sofascoreAway": "Scotland"
+  },
+  "6": {
+    "sofascoreEventId": 15186874,
+    "sofascoreTimestamp": 1781409600,
+    "sofascoreHome": "Australia",
+    "sofascoreAway": "T\u00fcrkiye"
+  },
+  "7": {
+    "sofascoreEventId": 15186850,
+    "sofascoreTimestamp": 1781388000,
+    "sofascoreHome": "Brazil",
+    "sofascoreAway": "Morocco"
+  },
+  "8": {
+    "sofascoreEventId": 15186526,
+    "sofascoreTimestamp": 1781377200,
+    "sofascoreHome": "Qatar",
+    "sofascoreAway": "Switzerland"
+  },
+  "9": {
+    "sofascoreEventId": 15186904,
+    "sofascoreTimestamp": 1781478000,
+    "sofascoreHome": "C\u00f4te d'Ivoire",
+    "sofascoreAway": "Ecuador"
+  },
+  "10": {
+    "sofascoreEventId": 15186899,
+    "sofascoreTimestamp": 1781456400,
+    "sofascoreHome": "Germany",
+    "sofascoreAway": "Cura\u00e7ao"
+  },
+  "11": {
+    "sofascoreEventId": 15186945,
+    "sofascoreTimestamp": 1781467200,
+    "sofascoreHome": "Netherlands",
+    "sofascoreAway": "Japan"
+  },
+  "12": {
+    "sofascoreEventId": 15186951,
+    "sofascoreTimestamp": 1781488800,
+    "sofascoreHome": "Sweden",
+    "sofascoreAway": "Tunisia"
+  },
+  "13": {
+    "sofascoreEventId": 15186832,
+    "sofascoreTimestamp": 1781571600,
+    "sofascoreHome": "Iran",
+    "sofascoreAway": "New Zealand"
+  },
+  "14": {
+    "sofascoreEventId": 15186783,
+    "sofascoreTimestamp": 1781539200,
+    "sofascoreHome": "Spain",
+    "sofascoreAway": "Cabo Verde"
+  },
+  "15": {
+    "sofascoreEventId": 15186837,
+    "sofascoreTimestamp": 1781550000,
+    "sofascoreHome": "Belgium",
+    "sofascoreAway": "Egypt"
+  },
+  "16": {
+    "sofascoreEventId": 15186811,
+    "sofascoreTimestamp": 1781560800,
+    "sofascoreHome": "Saudi Arabia",
+    "sofascoreAway": "Uruguay"
+  },
+  "17": {
+    "sofascoreEventId": 15186501,
+    "sofascoreTimestamp": 1781636400,
+    "sofascoreHome": "France",
+    "sofascoreAway": "Senegal"
+  },
+  "18": {
+    "sofascoreEventId": 15186773,
+    "sofascoreTimestamp": 1781647200,
+    "sofascoreHome": "Iraq",
+    "sofascoreAway": "Norway"
+  },
+  "19": {
+    "sofascoreEventId": 15186854,
+    "sofascoreTimestamp": 1781658000,
+    "sofascoreHome": "Argentina",
+    "sofascoreAway": "Algeria"
+  },
+  "20": {
+    "sofascoreEventId": 15186751,
+    "sofascoreTimestamp": 1781668800,
+    "sofascoreHome": "Austria",
+    "sofascoreAway": "Jordan"
+  },
+  "22": {
+    "sofascoreEventId": 15186504,
+    "sofascoreTimestamp": 1781726400,
+    "sofascoreHome": "England",
+    "sofascoreAway": "Croatia"
+  },
+  "23": {
+    "sofascoreEventId": 15186722,
+    "sofascoreTimestamp": 1781748000,
+    "sofascoreHome": "Uzbekistan",
+    "sofascoreAway": "Colombia"
+  },
+  "24": {
+    "sofascoreEventId": 15186687,
+    "sofascoreTimestamp": 1781737200,
+    "sofascoreHome": "Ghana",
+    "sofascoreAway": "Panama"
+  },
+  "25": {
+    "sofascoreEventId": 15186490,
+    "sofascoreTimestamp": 1781830800,
+    "sofascoreHome": "Mexico",
+    "sofascoreAway": "South Korea"
+  },
+  "26": {
+    "sofascoreEventId": 15186806,
+    "sofascoreTimestamp": 1781809200,
+    "sofascoreHome": "Switzerland",
+    "sofascoreAway": "Bosnia & Herzegovina"
+  },
+  "27": {
+    "sofascoreEventId": 15186798,
+    "sofascoreTimestamp": 1781820000,
+    "sofascoreHome": "Canada",
+    "sofascoreAway": "Qatar"
+  },
+  "28": {
+    "sofascoreEventId": 15186731,
+    "sofascoreTimestamp": 1781798400,
+    "sofascoreHome": "Czechia",
+    "sofascoreAway": "South Africa"
+  },
+  "29": {
+    "sofascoreEventId": 15186856,
+    "sofascoreTimestamp": 1781915400,
+    "sofascoreHome": "Brazil",
+    "sofascoreAway": "Haiti"
+  },
+  "30": {
+    "sofascoreEventId": 15186859,
+    "sofascoreTimestamp": 1781906400,
+    "sofascoreHome": "Scotland",
+    "sofascoreAway": "Morocco"
+  },
+  "31": {
+    "sofascoreEventId": 15186878,
+    "sofascoreTimestamp": 1781895600,
+    "sofascoreHome": "USA",
+    "sofascoreAway": "Australia"
+  },
+  "32": {
+    "sofascoreEventId": 15186879,
+    "sofascoreTimestamp": 1781924400,
+    "sofascoreHome": "T\u00fcrkiye",
+    "sofascoreAway": "Paraguay"
+  },
+  "33": {
+    "sofascoreEventId": 15186905,
+    "sofascoreTimestamp": 1781985600,
+    "sofascoreHome": "Germany",
+    "sofascoreAway": "C\u00f4te d'Ivoire"
+  },
+  "34": {
+    "sofascoreEventId": 15186906,
+    "sofascoreTimestamp": 1782000000,
+    "sofascoreHome": "Ecuador",
+    "sofascoreAway": "Cura\u00e7ao"
+  },
+  "35": {
+    "sofascoreEventId": 15186957,
+    "sofascoreTimestamp": 1781974800,
+    "sofascoreHome": "Netherlands",
+    "sofascoreAway": "Sweden"
+  },
+  "36": {
+    "sofascoreEventId": 15186963,
+    "sofascoreTimestamp": 1782014400,
+    "sofascoreHome": "Tunisia",
+    "sofascoreAway": "Japan"
+  },
+  "37": {
+    "sofascoreEventId": 15186499,
+    "sofascoreTimestamp": 1782068400,
+    "sofascoreHome": "Belgium",
+    "sofascoreAway": "Iran"
+  },
+  "38": {
+    "sofascoreEventId": 15186827,
+    "sofascoreTimestamp": 1782090000,
+    "sofascoreHome": "New Zealand",
+    "sofascoreAway": "Egypt"
+  },
+  "39": {
+    "sofascoreEventId": 15186840,
+    "sofascoreTimestamp": 1782057600,
+    "sofascoreHome": "Spain",
+    "sofascoreAway": "Saudi Arabia"
+  },
+  "40": {
+    "sofascoreEventId": 15186800,
+    "sofascoreTimestamp": 1782079200,
+    "sofascoreHome": "Uruguay",
+    "sofascoreAway": "Cabo Verde"
+  },
+  "41": {
+    "sofascoreEventId": 15186769,
+    "sofascoreTimestamp": 1782162000,
+    "sofascoreHome": "France",
+    "sofascoreAway": "Iraq"
+  },
+  "42": {
+    "sofascoreEventId": 15186770,
+    "sofascoreTimestamp": 1782172800,
+    "sofascoreHome": "Norway",
+    "sofascoreAway": "Senegal"
+  },
+  "43": {
+    "sofascoreEventId": 15186502,
+    "sofascoreTimestamp": 1782147600,
+    "sofascoreHome": "Argentina",
+    "sofascoreAway": "Austria"
+  },
+  "44": {
+    "sofascoreEventId": 15186740,
+    "sofascoreTimestamp": 1782183600,
+    "sofascoreHome": "Jordan",
+    "sofascoreAway": "Algeria"
+  },
+  "45": {
+    "sofascoreEventId": 15186858,
+    "sofascoreTimestamp": 1782234000,
+    "sofascoreHome": "Portugal",
+    "sofascoreAway": "Uzbekistan"
+  },
+  "46": {
+    "sofascoreEventId": 15186520,
+    "sofascoreTimestamp": 1782255600,
+    "sofascoreHome": "Panama",
+    "sofascoreAway": "Croatia"
+  },
+  "48": {
+    "sofascoreEventId": 15186672,
+    "sofascoreTimestamp": 1782244800,
+    "sofascoreHome": "England",
+    "sofascoreAway": "Ghana"
+  },
+  "49": {
+    "sofascoreEventId": 15186861,
+    "sofascoreTimestamp": 1782338400,
+    "sofascoreHome": "Scotland",
+    "sofascoreAway": "Brazil"
+  },
+  "50": {
+    "sofascoreEventId": 15186864,
+    "sofascoreTimestamp": 1782338400,
+    "sofascoreHome": "Morocco",
+    "sofascoreAway": "Haiti"
+  },
+  "51": {
+    "sofascoreEventId": 15186744,
+    "sofascoreTimestamp": 1782349200,
+    "sofascoreHome": "South Africa",
+    "sofascoreAway": "South Korea"
+  },
+  "52": {
+    "sofascoreEventId": 15186732,
+    "sofascoreTimestamp": 1782349200,
+    "sofascoreHome": "Czechia",
+    "sofascoreAway": "Mexico"
+  },
+  "53": {
+    "sofascoreEventId": 15186829,
+    "sofascoreTimestamp": 1782327600,
+    "sofascoreHome": "Bosnia & Herzegovina",
+    "sofascoreAway": "Qatar"
+  },
+  "54": {
+    "sofascoreEventId": 15186821,
+    "sofascoreTimestamp": 1782327600,
+    "sofascoreHome": "Switzerland",
+    "sofascoreAway": "Canada"
+  },
+  "55": {
+    "sofascoreEventId": 15186908,
+    "sofascoreTimestamp": 1782417600,
+    "sofascoreHome": "Cura\u00e7ao",
+    "sofascoreAway": "C\u00f4te d'Ivoire"
+  },
+  "56": {
+    "sofascoreEventId": 15186907,
+    "sofascoreTimestamp": 1782417600,
+    "sofascoreHome": "Ecuador",
+    "sofascoreAway": "Germany"
+  },
+  "57": {
+    "sofascoreEventId": 15186891,
+    "sofascoreTimestamp": 1782439200,
+    "sofascoreHome": "Paraguay",
+    "sofascoreAway": "Australia"
+  },
+  "58": {
+    "sofascoreEventId": 15186887,
+    "sofascoreTimestamp": 1782439200,
+    "sofascoreHome": "T\u00fcrkiye",
+    "sofascoreAway": "USA"
+  },
+  "59": {
+    "sofascoreEventId": 15186972,
+    "sofascoreTimestamp": 1782428400,
+    "sofascoreHome": "Japan",
+    "sofascoreAway": "Sweden"
+  },
+  "60": {
+    "sofascoreEventId": 15186973,
+    "sofascoreTimestamp": 1782428400,
+    "sofascoreHome": "Tunisia",
+    "sofascoreAway": "Netherlands"
+  },
+  "61": {
+    "sofascoreEventId": 15186771,
+    "sofascoreTimestamp": 1782500400,
+    "sofascoreHome": "Senegal",
+    "sofascoreAway": "Iraq"
+  },
+  "62": {
+    "sofascoreEventId": 15186537,
+    "sofascoreTimestamp": 1782500400,
+    "sofascoreHome": "Norway",
+    "sofascoreAway": "France"
+  },
+  "63": {
+    "sofascoreEventId": 15186828,
+    "sofascoreTimestamp": 1782529200,
+    "sofascoreHome": "Egypt",
+    "sofascoreAway": "Iran"
+  },
+  "64": {
+    "sofascoreEventId": 15186822,
+    "sofascoreTimestamp": 1782529200,
+    "sofascoreHome": "New Zealand",
+    "sofascoreAway": "Belgium"
+  },
+  "65": {
+    "sofascoreEventId": 15186803,
+    "sofascoreTimestamp": 1782518400,
+    "sofascoreHome": "Cabo Verde",
+    "sofascoreAway": "Saudi Arabia"
+  },
+  "66": {
+    "sofascoreEventId": 15186841,
+    "sofascoreTimestamp": 1782518400,
+    "sofascoreHome": "Uruguay",
+    "sofascoreAway": "Spain"
+  },
+  "67": {
+    "sofascoreEventId": 15186676,
+    "sofascoreTimestamp": 1782594000,
+    "sofascoreHome": "Panama",
+    "sofascoreAway": "England"
+  },
+  "68": {
+    "sofascoreEventId": 15186624,
+    "sofascoreTimestamp": 1782594000,
+    "sofascoreHome": "Croatia",
+    "sofascoreAway": "Ghana"
+  },
+  "69": {
+    "sofascoreEventId": 15186747,
+    "sofascoreTimestamp": 1782612000,
+    "sofascoreHome": "Algeria",
+    "sofascoreAway": "Austria"
+  },
+  "70": {
+    "sofascoreEventId": 15186734,
+    "sofascoreTimestamp": 1782612000,
+    "sofascoreHome": "Jordan",
+    "sofascoreAway": "Argentina"
+  },
+  "71": {
+    "sofascoreEventId": 15186696,
+    "sofascoreTimestamp": 1782603000,
+    "sofascoreHome": "Colombia",
+    "sofascoreAway": "Portugal"
+  },
+  "103": {
+    "sofascoreEventId": 12813003,
+    "sofascoreTimestamp": 1784408400,
+    "sofascoreHome": "France",
+    "sofascoreAway": "L102",
+    "pending": true
+  },
+  "104": {
+    "sofascoreEventId": 12813005,
+    "sofascoreTimestamp": 1784487600,
+    "sofascoreHome": "Spain",
+    "sofascoreAway": "W102",
+    "pending": true
+  },
+  "102": {
+    "sofascoreEventId": 12812996,
+    "sofascoreTimestamp": 1784142000,
+    "sofascoreHome": "England",
+    "sofascoreAway": "Argentina"
+  }
+}

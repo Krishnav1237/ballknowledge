@@ -50,6 +50,7 @@ export default function MatchLiveChat({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const alias = managerAlias || 'Anonymous';
@@ -106,6 +107,7 @@ export default function MatchLiveChat({
     // Update UI state immediately (optimistic UI pattern)
     setMessages(prev => [...prev, newLocalMsg]);
     setInput('');
+    setSendError(null);
 
     try {
       const res = await fetch(`/api/chat/${matchId}`, {
@@ -122,10 +124,13 @@ export default function MatchLiveChat({
           setMessages(prev => prev.map(m => m.id === tempId ? data.message : m));
         }
       } else {
-        console.warn('Failed to post message to chat DB, keeping local copy.');
+        setMessages(prev => prev.filter(m => m.id !== tempId));
+        setSendError(res.status === 401 ? 'Sign in to post in live chat.' : 'Message was not saved. Please try again.');
       }
     } catch (err) {
-      console.warn('Failed to post message to chat DB (offline), keeping local copy:', err);
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setSendError('Chat is temporarily unavailable. Please try again.');
+      console.warn('Failed to post message to chat DB:', err);
     } finally {
       setSending(false);
       inputRef.current?.focus();
@@ -134,15 +139,23 @@ export default function MatchLiveChat({
 
   const addReaction = useCallback(async (messageId: string, emoji: string) => {
     if (!matchId || matchId === 'undefined' || matchId === 'null') return;
-    setMessages(prev => prev.map(m => {
+    if (messageId.startsWith('local_')) {
+      setSendError('Wait for the message to save before reacting.');
+      return;
+    }
+    let previousMessages: ChatMessage[] = [];
+    setMessages(prev => {
+      previousMessages = prev;
+      return prev.map(m => {
       if (m.id !== messageId) return m;
       const reactions = { ...m.reactions };
       reactions[emoji] = (reactions[emoji] || 0) + 1;
       return { ...m, reactions };
-    }));
+      });
+    });
 
     try {
-      await fetch(`/api/chat/${matchId}`, {
+      const res = await fetch(`/api/chat/${matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -151,7 +164,13 @@ export default function MatchLiveChat({
           emoji
         })
       });
+      if (!res.ok) {
+        setMessages(previousMessages);
+        setSendError(res.status === 401 ? 'Sign in to react in live chat.' : 'Reaction was not saved.');
+      }
     } catch (err) {
+      setMessages(previousMessages);
+      setSendError('Reaction was not saved.');
       console.warn('Failed to post reaction to chat DB:', err);
     }
   }, [matchId]);
@@ -291,6 +310,9 @@ export default function MatchLiveChat({
             </button>
           </div>
           <p className="text-[7px] font-mono text-gray-500 mt-1">Chatting as <span className="text-[#E11D48] font-bold">{alias}</span> · {input.length}/280</p>
+          {sendError && (
+            <p className="text-[8px] font-semibold text-amber-300 mt-1">{sendError}</p>
+          )}
         </div>
       )}
 

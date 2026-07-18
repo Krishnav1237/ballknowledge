@@ -105,14 +105,20 @@ export async function POST(
     const auth = requireSession(request);
     if (auth.response || !auth.session) return auth.response;
 
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid profile payload.' }, { status: 400 });
+    }
+
     const { profile } = body;
 
-    if (!profile) {
+    if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
       return NextResponse.json({ error: 'Profile data is required' }, { status: 400 });
     }
 
-    if (profile.inputImage && profile.inputImage.length > 5 * 1024 * 1024) {
+    if (profile.inputImage && (typeof profile.inputImage !== 'string' || profile.inputImage.length > 5 * 1024 * 1024)) {
       return NextResponse.json({ error: 'Uploaded photo size exceeds the limit of 5MB.' }, { status: 400 });
     }
 

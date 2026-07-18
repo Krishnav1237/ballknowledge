@@ -68,8 +68,8 @@ export interface LocalPrediction {
 // In-memory client-side cache
 let inMemoryProfile: FootballIQProfile | null = null;
 let inMemoryPredictions: Record<string, LocalPrediction> = {};
-let isAuthLoading = false;
 let isLoaded = false;
+let authLoadPromise: Promise<void> | null = null;
 
 // Trigger loading of session profile on browser initialization
 if (typeof window !== 'undefined') {
@@ -77,60 +77,68 @@ if (typeof window !== 'undefined') {
 }
 
 export async function loadSessionProfile() {
-  if (isAuthLoading || isLoaded) return;
-  isAuthLoading = true;
-  try {
-    const res = await fetch('/api/auth');
-    if (res.ok) {
-      const data = await res.json();
-      if (data.authenticated && data.profile) {
-        inMemoryProfile = {
-          ...DEFAULT_PROFILE,
-          ...data.profile,
-          isAuthenticated: true
-        };
-        
-        // Map database predictions
-        const preds: Record<string, LocalPrediction> = {};
-        if (data.predictions) {
-          data.predictions.forEach((p: any) => {
-            const matchCard = p.card || (data.profile.matchCards?.find((c: any) => c.matchId === p.matchId));
-            preds[p.matchId] = {
-              matchId: p.matchId,
-              homeScore: p.homeScore,
-              awayScore: p.awayScore,
-              firstGoalscorer: p.firstGoalscorer,
-              motm: p.motm,
-              possessionWinner: p.possessionWinner,
-              hotTakes: p.hotTakes?.map((ht: any) => ({
-                statement: ht.statement,
-                confidence: ht.confidence
-              })) || [],
-              locked: true,
-              resolved: !!matchCard,
-              card: matchCard || null,
-              lineup: p.lineup || null
-            };
-          });
-        }
-        inMemoryPredictions = preds;
-        isLoaded = true;
-        
-        try {
-          localStorage.setItem('football_iq_profile', JSON.stringify(inMemoryProfile));
-        } catch (e) {
-          console.warn('Failed to write profile to localStorage:', e);
-        }
+  if (isLoaded) return;
+  if (authLoadPromise) return authLoadPromise;
 
-        // Dispatch 'storage' event so all listening pages update their profile state
-        window.dispatchEvent(new Event('storage'));
+  authLoadPromise = (async () => {
+    try {
+      const res = await fetch('/api/auth');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.profile) {
+          inMemoryProfile = {
+            ...DEFAULT_PROFILE,
+            ...data.profile,
+            isAuthenticated: true
+          };
+
+          // Map database predictions
+          const preds: Record<string, LocalPrediction> = {};
+          if (data.predictions) {
+            data.predictions.forEach((p: any) => {
+              const matchCard = p.card || (data.profile.matchCards?.find((c: any) => c.matchId === p.matchId));
+              preds[p.matchId] = {
+                matchId: p.matchId,
+                homeScore: p.homeScore,
+                awayScore: p.awayScore,
+                firstGoalscorer: p.firstGoalscorer,
+                motm: p.motm,
+                possessionWinner: p.possessionWinner,
+                hotTakes: p.hotTakes?.map((ht: any) => ({
+                  statement: ht.statement,
+                  confidence: ht.confidence
+                })) || [],
+                locked: true,
+                resolved: !!matchCard,
+                card: matchCard || null,
+                lineup: p.lineup || null
+              };
+            });
+          }
+          inMemoryPredictions = preds;
+
+          try {
+            localStorage.setItem('football_iq_profile', JSON.stringify(inMemoryProfile));
+          } catch (e) {
+            console.warn('Failed to write profile to localStorage:', e);
+          }
+
+          // Dispatch 'storage' event so all listening pages update their profile state
+          window.dispatchEvent(new Event('storage'));
+        } else {
+          inMemoryProfile = null;
+          inMemoryPredictions = {};
+        }
       }
+    } catch (err) {
+      console.error('Failed to load session profile:', err);
+    } finally {
+      isLoaded = true;
+      authLoadPromise = null;
     }
-  } catch (err) {
-    console.error('Failed to load session profile:', err);
-  } finally {
-    isAuthLoading = false;
-  }
+  })();
+
+  return authLoadPromise;
 }
 
 /**

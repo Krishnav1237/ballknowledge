@@ -62,6 +62,22 @@ function buildCompleteFifacardPrompt(params: {
   );
 }
 
+function cleanText(input: unknown, maxLength: number) {
+  return String(input ?? '').trim().slice(0, maxLength);
+}
+
+function normalizeFaceImage(input: unknown) {
+  if (!input) return null;
+  if (typeof input !== 'string') return '';
+  const trimmed = input.trim();
+  if (trimmed.length > 7_000_000) return '';
+  if (trimmed.startsWith('data:image/')) return trimmed;
+  if (/^[a-zA-Z0-9+/=\s]+$/.test(trimmed)) {
+    return `data:image/jpeg;base64,${trimmed.replace(/\s+/g, '')}`;
+  }
+  return '';
+}
+
 export async function POST(request: Request) {
   try {
     const auth = requireSession(request);
@@ -99,7 +115,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Cannot generate artwork for another manager.' }, { status: 403 });
     }
 
-    const nation = favoriteNation || 'Argentina';
+    const nation = cleanText(favoriteNation, 80) || 'Argentina';
+    const faceDataUrl = normalizeFaceImage(faceImage);
+    if (faceImage && !faceDataUrl) {
+      return NextResponse.json({ error: 'Invalid or oversized face image. Please upload an image under 5MB.' }, { status: 400 });
+    }
+
     const clampRating = (val: any) => {
       const num = parseInt(val, 10);
       return isNaN(num) ? 50 : Math.max(0, Math.min(100, num));
@@ -140,11 +161,6 @@ export async function POST(request: Request) {
     const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-pro';
 
     try {
-      // Build the full image data URL for the face reference
-      const faceDataUrl = faceImage
-        ? (faceImage.startsWith('data:') ? faceImage : `data:image/jpeg;base64,${faceImage}`)
-        : null;
-
       // Flux.2 Pro exposes input_references on OpenRouter's /v1/images endpoint.
       const response = await fetch('https://openrouter.ai/api/v1/images', {
         method: 'POST',

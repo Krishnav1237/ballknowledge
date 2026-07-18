@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import NextImage from 'next/image';
@@ -59,30 +59,19 @@ interface Match {
   away_scorers?: string;
 }
 
-interface FixtureData {
-  matches: Match[];
-  teams: Team[];
+
+async function fetchMatches(): Promise<Match[]> {
+  const res = await fetch('/api/matches');
+  if (!res.ok) throw new Error('Failed to load matches');
+  const data = await res.json();
+  return Array.isArray(data) ? data : data.matches || [];
 }
 
-async function fetchFixtureData(): Promise<FixtureData> {
-  const [matchesRes, teamsRes] = await Promise.all([
-    fetch('/api/matches'),
-    fetch('/api/teams')
-  ]);
-
-  if (!matchesRes.ok || !teamsRes.ok) {
-    throw new Error('Failed to load match fixtures');
-  }
-
-  const [matchesData, teamsData] = await Promise.all([
-    matchesRes.json(),
-    teamsRes.json()
-  ]);
-
-  return {
-    matches: Array.isArray(matchesData) ? matchesData : matchesData.matches || [],
-    teams: Array.isArray(teamsData) ? teamsData : teamsData.teams || []
-  };
+async function fetchTeams(): Promise<Team[]> {
+  const res = await fetch('/api/teams');
+  if (!res.ok) throw new Error('Failed to load teams');
+  const data = await res.json();
+  return Array.isArray(data) ? data : data.teams || [];
 }
 
 
@@ -119,24 +108,46 @@ export default function MatchPage() {
   const [showProgression, setShowProgression] = useState(false);
   const [overallRatingAnimate, setOverallRatingAnimate] = useState(50);
   
+  // Timeout & Interval tracking refs to prevent memory leaks
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const ratingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warn' } | null>(null);
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'warn' = 'success') => {
+    setToast({ message, type });
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 3500);
+  }, []);
+
+  // Determine if match is currently live for polling purposes
+  const [isMatchLive, setIsMatchLive] = useState(false);
+  const [sofaSyncedAt, setSofaSyncedAt] = useState<number | null>(null);
+  const [matchNotFound, setMatchNotFound] = useState(false);
+
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState<'pitch' | 'sidebar'>('pitch');
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warn' } | null>(null);
-  const showToast = (message: string, type: 'success' | 'error' | 'warn' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
-  };
 
-  const fixtureQuery = useQuery({
-    queryKey: ['world-cup-fixture-data'],
-    queryFn: fetchFixtureData,
-    staleTime: 1000 * 30, // 30 seconds
-    gcTime: 1000 * 60 * 10, // 10 minutes
+  // Split Query: Polling matches only, parameterising keys by matchId
+  const matchesQuery = useQuery({
+    queryKey: ['world-cup-matches-data', matchId],
+    queryFn: fetchMatches,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 10,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    refetchInterval: isMatchLive ? 15_000 : false,
+    refetchIntervalInBackground: false,
+  });
+
+  // Split Query: Cache teams list indefinitely (static data)
+  const teamsQuery = useQuery({
+    queryKey: ['world-cup-teams-data'],
+    queryFn: fetchTeams,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 2,
   });
 
   const dismissPredictionModal = () => {
@@ -241,32 +252,67 @@ export default function MatchPage() {
   }, [matchId]);
 
   useEffect(() => {
-    if (!fixtureQuery.error) return;
-
-    console.error('Failed to load remote match data:', fixtureQuery.error);
-    setError('Failed to fetch real-time match details. Please verify your internet connection.');
-    setLoading(false);
-  }, [fixtureQuery.error]);
+    // Cleanup timers on component unmount
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      if (ratingTimerRef.current) clearInterval(ratingTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
-    if (!fixtureQuery.data) return;
+    const queryError = matchesQuery.error || teamsQuery.error;
+    if (!queryError) return;
 
-    const foundMatch = fixtureQuery.data.matches.find((m) => m.id === matchId) || null;
+    console.error('Failed to load remote match data:', queryError);
+    if (!matchesQuery.data) {
+      setError('Failed to fetch real-time match details. Please verify your internet connection.');
+    } else {
+      showToast('Connection interrupted. Viewing offline match cache.', 'warn');
+    }
+    setLoading(false);
+  }, [matchesQuery.error, teamsQuery.error, matchesQuery.data, showToast]);
+
+  useEffect(() => {
+    if (!matchesQuery.data || !teamsQuery.data) return;
+
+    const foundMatch = matchesQuery.data.find((m) => m.id === matchId) || null;
     setMatch(foundMatch);
-    setTeams(fixtureQuery.data.teams);
+    setTeams(teamsQuery.data);
     setLoading(false);
 
-    if (!foundMatch) return;
+    if (!foundMatch) {
+      setMatchNotFound(true);
+      return;
+    }
+    setMatchNotFound(false);
+
+    const kickoff = parseLocalDate(foundMatch.local_date, foundMatch.stadium_id);
+    const timeDiff = Date.now() - kickoff.getTime();
+    const liveNow = foundMatch.finished !== 'TRUE' && timeDiff >= 0 && timeDiff < 3 * 60 * 60 * 1000;
+    setIsMatchLive(liveNow);
+
+    // Trigger SofaScore sync for live/recently finished matches
+    if (liveNow || (foundMatch.finished !== 'TRUE' && timeDiff >= -30 * 60 * 1000 && timeDiff < 4 * 60 * 60 * 1000)) {
+      fetch(`/api/sofascore-sync?matchId=${matchId}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.success) {
+            setSofaSyncedAt(data.cachedAt || Math.floor(Date.now() / 1000));
+            // Trigger a refetch to pick up the fresh SofaScore data overlaid on matches
+            matchesQuery.refetch();
+          }
+        })
+        .catch(() => null);
+    }
 
     const userPreds = getStoredPredictions();
     const matchPred = userPreds[matchId];
-    const kickoff = parseLocalDate(foundMatch.local_date, foundMatch.stadium_id);
     const isUpcoming = Date.now() < kickoff.getTime();
 
     if (!matchPred && isUpcoming && !predictionModalDismissedRef.current) {
       setShowPredictionModal(true);
     }
-  }, [fixtureQuery.data, matchId]);
+  }, [matchesQuery.data, teamsQuery.data, matchId, matchesQuery]);
 
   if (error) {
     return (
@@ -279,11 +325,24 @@ export default function MatchPage() {
     );
   }
 
+  if (matchNotFound) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-rose-950/20 border border-rose-900/30 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
+        <h3 className="font-display font-black text-xl uppercase tracking-wider text-white">Match Not Found</h3>
+        <p className="text-zinc-400 text-xs mt-2 max-w-sm">The requested Match ID does not exist or belongs to another season.</p>
+        <Link href="/world-cup-hub" className="mt-6 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all block">
+          Back to Hub
+        </Link>
+      </div>
+    );
+  }
+
   if (loading || !match) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Entering VAR Match Room...</p>
+      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
+        <div className="w-12 h-12 rounded-full border-4 border-[#881337]/20 border-t-[#E11D48] animate-spin mb-4" />
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Entering VAR Match Room...</p>
       </div>
     );
   }
@@ -549,6 +608,11 @@ export default function MatchPage() {
 
   // Resolve match and trigger Football IQ progression
   const handleResolveMatch = async () => {
+    if (!profile?.isAuthenticated) {
+      showToast('Sign in from the Locker Room to grade matches and save Verdict Cards.', 'warn');
+      return;
+    }
+
     if (!predictions[matchId]) {
       // Allow quick grade even without prior predictions
       showToast('No prior predictions found — grading with defaults.', 'warn');
@@ -647,9 +711,10 @@ export default function MatchPage() {
         let count = prevOvr;
         const target = Math.max(1, Math.min(99, result.profileUpdates.overallRating || prevOvr));
         const speed = Math.abs(target - count) > 10 ? 40 : 80;
-        const timer = setInterval(() => {
+        if (ratingTimerRef.current) clearInterval(ratingTimerRef.current);
+        ratingTimerRef.current = setInterval(() => {
           if (count === target) {
-            clearInterval(timer);
+            if (ratingTimerRef.current) clearInterval(ratingTimerRef.current);
           } else {
             count += target > count ? 1 : -1;
             setOverallRatingAnimate(count);
@@ -657,12 +722,13 @@ export default function MatchPage() {
         }, speed);
 
       } else {
-        throw new Error('Resolution failed');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Resolution failed');
       }
     } catch (err) {
       console.error(err);
       setResolving(false);
-      showToast('Resolution error — please try again.', 'error');
+      showToast(err instanceof Error ? err.message : 'Resolution error — please try again.', 'error');
     }
   };
 
@@ -958,29 +1024,55 @@ export default function MatchPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-mono font-bold text-green-400 bg-green-950/20 border border-green-900/30 px-3 py-1.5 rounded-lg">
-                        {predHomeScore === actualResult.homeScore && predAwayScore === actualResult.awayScore ? 'Exact Score (+15)' : (
-                          (predHomeScore > predAwayScore && actualResult.homeScore > actualResult.awayScore) ||
-                          (predHomeScore < predAwayScore && actualResult.homeScore < actualResult.awayScore) ||
-                          (predHomeScore === predAwayScore && actualResult.homeScore === actualResult.awayScore) ? 'Correct Outcome (+5)' : 'Incorrect Outcome (-2)'
-                        )}
-                      </span>
+                      {(() => {
+                        const predH = Number(predHomeScore), predA = Number(predAwayScore);
+                        const actH = Number(actualResult.homeScore), actA = Number(actualResult.awayScore);
+                        const isExactScore = predH === actH && predA === actA;
+                        const isExactOutcome = !isExactScore && (
+                          (predH > predA && actH > actA) ||
+                          (predH < predA && actH < actA) ||
+                          (predH === predA && actH === actA)
+                        );
+                        return (
+                          <span className={`text-xs font-mono font-bold px-3 py-1.5 rounded-lg border ${
+                            isExactScore ? 'text-amber-400 bg-amber-950/20 border-amber-900/30'
+                            : isExactOutcome ? 'text-green-400 bg-green-950/20 border-green-900/30'
+                            : 'text-red-400 bg-red-950/20 border-red-900/30'
+                          }`}>
+                            {isExactScore
+                              ? `Exact Score! Outcome +${predH === predA ? 35 : 30} • Goals +30`
+                              : isExactOutcome
+                              ? `Correct Winner +${predH === predA ? 35 : 30} PRD`
+                              : 'Wrong Outcome: 0 PRD'}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
 
                   {/* Hot Take AI Grading Summary */}
                   <div className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hot Take VAR Grader Result</p>
-                    {takes.map((t, idx) => (
-                      <div key={idx} className="border-b border-white/5 last:border-0 pb-3 last:pb-0">
-                        <p className="text-sm italic font-medium text-gray-200 leading-relaxed">&ldquo;{t.statement}&rdquo;</p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <span className="text-[10px] font-mono text-gray-400">Confidence: <span className="text-gray-200 font-bold">{t.confidence}%</span></span>
-                          <span className="text-[10px] font-mono text-gray-400">VAR rating: <span className="text-[#E11D48] font-bold">{gradingResult.gradedTakes?.[idx]?.ovr ?? 50} OVR</span></span>
+                    {takes.map((t, idx) => {
+                      const graded = gradingResult.gradedTakes?.[idx];
+                      const grade = graded?.grade || 'PENDING';
+                      const gradeColor = grade === 'CORRECT' ? 'text-green-400' : grade === 'PARTIALLY_CORRECT' ? 'text-amber-400' : 'text-red-400';
+                      const gradeLabel = grade === 'CORRECT' ? '✓ CORRECT' : grade === 'PARTIALLY_CORRECT' ? '~ PARTIAL' : '✗ WRONG';
+                      return (
+                        <div key={idx} className="border-b border-white/5 last:border-0 pb-3 last:pb-0">
+                          <p className="text-sm italic font-medium text-gray-200 leading-relaxed">&ldquo;{t.statement}&rdquo;</p>
+                          <div className="flex items-center gap-4 mt-2 flex-wrap">
+                            <span className="text-[10px] font-mono text-gray-400">Confidence: <span className="text-gray-200 font-bold">{t.confidence}/5</span></span>
+                            <span className={`text-[10px] font-mono font-bold ${gradeColor}`}>{gradeLabel}</span>
+                            {graded?.verdict && (
+                              <span className="text-[10px] font-mono text-zinc-500 italic">{graded.verdict}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+
 
                   {/* Settings Override Bypasser Info */}
                   <div className="flex items-center gap-2 text-xs text-gray-400 italic mt-4">
@@ -1039,19 +1131,31 @@ export default function MatchPage() {
                           {`${realHomeScore} : ${realAwayScore}`}
                         </span>}
                   </div>
-                  {/* Status + time */}
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${
-                      status === 'LIVE' ? 'text-red-400 bg-red-950/20 border-red-900/30'
-                      : status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-950/20 border-emerald-900/30'
-                      : 'text-[#E11D48] bg-[#E11D48]/10 border-[#E11D48]/20'
-                    }`}>
-                      {status === 'LIVE' ? '● LIVE' : status === 'COMPLETED' ? '✓ FULL TIME' : 'UPCOMING'}
-                    </span>
-                    <span className="text-[9px] font-mono text-zinc-500">
-                      {mounted ? kickoff.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' + kickoff.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true }) : match.local_date}
-                    </span>
+                   {/* Status + time */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${
+                        status === 'LIVE' ? 'text-red-400 bg-red-950/20 border-red-900/30'
+                        : status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-950/20 border-emerald-900/30'
+                        : 'text-[#E11D48] bg-[#E11D48]/10 border-[#E11D48]/20'
+                      }`}>
+                        {status === 'LIVE' ? '● LIVE' : status === 'COMPLETED' ? '✓ FULL TIME' : 'UPCOMING'}
+                      </span>
+                      <span className="text-[9px] font-mono text-zinc-500">
+                        {mounted ? kickoff.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' + kickoff.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true }) : match.local_date}
+                      </span>
+                    </div>
+                    {/* SofaScore live data indicator */}
+                    {(status === 'LIVE' || sofaSyncedAt) && (
+                      <div className="flex items-center gap-1">
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full ${status === 'LIVE' ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
+                        <span className="text-[8px] font-mono text-zinc-500">
+                          {status === 'LIVE' ? 'Live from SofaScore' : sofaSyncedAt ? `Synced SofaScore` : ''}
+                        </span>
+                      </div>
+                    )}
                   </div>
+
                 </div>
 
                 {/* Away Team */}

@@ -163,6 +163,15 @@ function formatChatHistory(messages: any[]): string {
     .join('\n');
 }
 
+function cleanMatchId(input: unknown) {
+  const value = String(input ?? '').trim().slice(0, 64);
+  return /^[a-zA-Z0-9_-]+$/.test(value) ? value : '';
+}
+
+function cleanChatText(input: unknown) {
+  return String(input ?? '').trim().slice(0, 280);
+}
+
 // ── GET Route ───────────────────────────────────────────────────────────────
 
 export async function GET(
@@ -171,14 +180,15 @@ export async function GET(
 ) {
   try {
     const { matchId } = await params;
+    const safeMatchId = cleanMatchId(matchId);
 
-    if (!matchId) {
+    if (!safeMatchId) {
       return NextResponse.json({ error: 'MatchId is required.' }, { status: 400 });
     }
 
     // 1. Fetch chat messages from the database
     const messages = await prisma.chatMessage.findMany({
-      where: { matchId },
+      where: { matchId: safeMatchId },
       orderBy: { createdAt: 'asc' },
       take: 100,
       include: {
@@ -205,7 +215,7 @@ export async function GET(
     if (shouldInject) {
       try {
         const randomName = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
-        const matchCtx = await getMatchContext(matchId);
+        const matchCtx = await getMatchContext(safeMatchId);
         const historyStr = formatChatHistory(messages);
         
         const randomText = await getChatBotResponse(
@@ -219,7 +229,7 @@ export async function GET(
 
         const newMsg = await prisma.chatMessage.create({
           data: {
-            matchId,
+            matchId: safeMatchId,
             profileId: botProfile.id,
             text: randomText
           },
@@ -273,31 +283,45 @@ export async function POST(
     if (auth.response || !auth.session) return auth.response;
 
     const { matchId } = await params;
-    const body = await request.json();
-    const { text, action, messageId, emoji } = body;
+    const safeMatchId = cleanMatchId(matchId);
 
-    if (!matchId) {
+    if (!safeMatchId) {
       return NextResponse.json({ error: 'MatchId is required.' }, { status: 400 });
     }
 
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid chat payload.' }, { status: 400 });
+    }
+
+    const { text, action, messageId, emoji } = body;
+
     if (action === 'react') {
-      if (!messageId || !emoji) {
+      const safeMessageId = String(messageId ?? '').trim();
+      const safeEmoji = String(emoji ?? '').trim();
+      if (!safeMessageId || !safeEmoji || safeEmoji.length > 16) {
         return NextResponse.json({ error: 'MessageId and emoji are required.' }, { status: 400 });
       }
 
       const message = await prisma.chatMessage.findUnique({
-        where: { id: messageId }
+        where: { id: safeMessageId }
       });
 
       if (!message) {
         return NextResponse.json({ error: 'Message not found.' }, { status: 404 });
       }
 
-      const reactions = (message.reactions as Record<string, number>) || {};
-      reactions[emoji] = (reactions[emoji] || 0) + 1;
+      if (message.matchId !== safeMatchId) {
+        return NextResponse.json({ error: 'Message does not belong to this match.' }, { status: 400 });
+      }
+
+      const reactions = { ...((message.reactions as Record<string, number>) || {}) };
+      reactions[safeEmoji] = (reactions[safeEmoji] || 0) + 1;
 
       const updatedMsg = await prisma.chatMessage.update({
-        where: { id: messageId },
+        where: { id: safeMessageId },
         data: {
           reactions,
           upvotes: { increment: 1 }
@@ -316,7 +340,8 @@ export async function POST(
       });
     }
 
-    if (!text) {
+    const safeText = cleanChatText(text);
+    if (!safeText) {
       return NextResponse.json({ error: 'Text is required.' }, { status: 400 });
     }
 
@@ -332,9 +357,9 @@ export async function POST(
     // 2. Create the message in database
     const msg = await prisma.chatMessage.create({
       data: {
-        matchId,
+        matchId: safeMatchId,
         profileId: profile.id,
-        text: String(text).trim().slice(0, 280)
+        text: safeText
       },
       include: {
         profile: {
@@ -355,11 +380,11 @@ export async function POST(
         const randomName = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
         const botProfile = await getOrCreateSimulatedProfile(randomName);
 
-        const matchCtx = await getMatchContext(matchId);
+        const matchCtx = await getMatchContext(safeMatchId);
 
         // Fetch 8 MOST RECENT messages for context (not 8 oldest)
         const recentMessages = await prisma.chatMessage.findMany({
-          where: { matchId },
+          where: { matchId: safeMatchId },
           orderBy: { createdAt: 'desc' },
           take: 8
         });
@@ -370,12 +395,12 @@ export async function POST(
           randomName,
           matchCtx,
           historyStr,
-          String(text).trim()
+          safeText
         );
 
         await prisma.chatMessage.create({
           data: {
-            matchId,
+            matchId: safeMatchId,
             profileId: botProfile.id,
             text: botReplyText
           }

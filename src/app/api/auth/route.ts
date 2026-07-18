@@ -48,7 +48,13 @@ function validateEmail(email: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid authentication payload.' }, { status: 400 });
+    }
+
     const { action, username, password, email, favoriteClub, favoriteNation } = body;
 
     if (!username || !password) {

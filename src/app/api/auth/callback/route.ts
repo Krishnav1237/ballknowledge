@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { cleanUsername, createSessionToken, sessionCookieHeader } from '@/lib/authSession';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,11 +8,37 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
-    const state = searchParams.get('state'); 
-    const provider = searchParams.get('provider') || state; 
+    const state = searchParams.get('state');
+    const provider = searchParams.get('provider') || state;
 
     if (!code || !provider) {
       return htmlErrorResponse('Code and provider parameters are required for authentication.');
+    }
+
+    // ── CSRF State Validation ─────────────────────────────────────────────────
+    // Compare the incoming state param against the bk_oauth_state cookie that
+    // was set by /api/auth/oauth-init to prevent login CSRF attacks.
+    const cookieHeader = request.headers.get('cookie') || '';
+    const stateCookie = cookieHeader
+      .split(';')
+      .map((p) => p.trim())
+      .find((p) => p.startsWith('bk_oauth_state='))
+      ?.slice('bk_oauth_state='.length);
+
+    // Only enforce state validation when the cookie exists (Discord/Facebook flows).
+    // Google uses its own nonce mechanism and does not go through this callback.
+    if (stateCookie) {
+      if (!state) {
+        return htmlErrorResponse('Missing CSRF state parameter.');
+      }
+      const stateTokenBuf = Buffer.from(state);
+      const cookieTokenBuf = Buffer.from(stateCookie);
+      const stateMatch =
+        stateTokenBuf.length === cookieTokenBuf.length &&
+        crypto.timingSafeEqual(stateTokenBuf, cookieTokenBuf);
+      if (!stateMatch) {
+        return htmlErrorResponse('CSRF state mismatch. Please try signing in again.');
+      }
     }
 
     const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
@@ -234,12 +261,15 @@ export async function GET(request: Request) {
     `;
 
     const sessionToken = createSessionToken({ profileId: profile.id, username: profile.username, role: profile.role });
-    return new Response(successHtml, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Set-Cookie': sessionCookieHeader(sessionToken),
-      }
+    // Build state cookie expiry — clear it so it cannot be replayed
+    const clearStateAttrs = ['bk_oauth_state=', 'Path=/api/auth', 'HttpOnly', 'SameSite=Lax', 'Max-Age=0'];
+    if (process.env.NODE_ENV === 'production') clearStateAttrs.push('Secure');
+    const headers = new Headers({
+      'Content-Type': 'text/html',
+      'Set-Cookie': sessionCookieHeader(sessionToken),
     });
+    headers.append('Set-Cookie', clearStateAttrs.join('; '));
+    return new Response(successHtml, { headers });
 
   } catch (error: any) {
     console.error('[OAuth Callback API] Error:', error);

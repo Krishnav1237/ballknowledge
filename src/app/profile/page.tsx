@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
+import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, loadSessionProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { getStorageItem, removeStorageItem } from '@/lib/browserStorage';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
@@ -53,23 +53,31 @@ export default function ProfileSettingsPage() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    setMounted(true);
-    const prof = getStoredProfile();
-    setProfile(prof);
-    setUsername(prof.username);
-    setFavoriteClub(prof.favoriteClub || '');
-    setFavoriteNation(prof.favoriteNation || '');
-    setRole(prof.role);
-    setAvatarSeed(prof.avatarSeed);
-    setAvatarStyle(prof.avatarStyle);
-    if (prof.inputImage) {
-      setPendingPhoto(prof.inputImage);
-    }
+    let cancelled = false;
 
-    // Fetch profile from DB via GET on mount to restore persisted image without overwriting DB
     (async () => {
+      await loadSessionProfile();
+      if (cancelled) return;
+
+      setMounted(true);
+      const prof = getStoredProfile();
+      setProfile(prof);
+      setUsername(prof.isAuthenticated ? prof.username : '');
+      setFavoriteClub(prof.favoriteClub || '');
+      setFavoriteNation(prof.favoriteNation || '');
+      setRole(prof.role);
+      setAvatarSeed(prof.avatarSeed);
+      setAvatarStyle(prof.avatarStyle);
+      if (prof.inputImage) {
+        setPendingPhoto(prof.inputImage);
+      }
+
+      if (!prof.isAuthenticated) return;
+
+      // Fetch profile from DB via GET on mount to restore persisted image without overwriting DB
       try {
         const res = await fetch(`/api/profile/${encodeURIComponent(prof.username)}`);
+        if (cancelled) return;
         if (res.ok) {
           const data = await res.json();
           if (data.profile) {
@@ -109,6 +117,10 @@ export default function ProfileSettingsPage() {
         console.warn('Failed to fetch profile from database on mount:', err);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Reused to verify credential tokens from both SDK prompt and custom redirect flows
