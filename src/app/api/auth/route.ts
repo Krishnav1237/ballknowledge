@@ -5,14 +5,36 @@ import { attachSessionCookie, cleanShortText, cleanUsername, expiredSessionCooki
 
 export const dynamic = 'force-dynamic';
 
+const CANDIDATE_SALTS = [
+  process.env.AUTH_SALT || process.env.AUTH_SECRET || '',
+  'ball_knowledge_salt_secret_2026',
+  'replace_with_at_least_32_random_bytes',
+  'replace_with_32_random_bytes_openssl_rand_hex_32',
+  ''
+];
+
+function hashPasswordWithSecret(password: string, username: string, secret: string) {
+  const userSalt = crypto.createHash('sha256').update(username.toLowerCase() + secret).digest('hex');
+  return crypto.pbkdf2Sync(password, userSalt, 100000, 64, 'sha512').toString('hex');
+}
+
 function hashPassword(password: string, username: string) {
-  // Dynamic per-user salt derived from their canonical lowercase username and global secret key
   const globalSecret = process.env.AUTH_SALT || process.env.AUTH_SECRET;
   if (!globalSecret && process.env.NODE_ENV === 'production') {
     throw new Error('AUTH_SALT or AUTH_SECRET must be set in production.');
   }
-  const userSalt = crypto.createHash('sha256').update(username.toLowerCase() + globalSecret).digest('hex');
-  return crypto.pbkdf2Sync(password, userSalt, 100000, 64, 'sha512').toString('hex');
+  return hashPasswordWithSecret(password, username, globalSecret || '');
+}
+
+function verifyPasswordHash(password: string, username: string, storedHash: string) {
+  for (const saltSecret of CANDIDATE_SALTS) {
+    const candidateHash = hashPasswordWithSecret(password, username, saltSecret);
+    if (safeCompareHash(storedHash, candidateHash)) {
+      const isPrimary = saltSecret === (process.env.AUTH_SALT || process.env.AUTH_SECRET || '');
+      return { matches: true, isPrimary };
+    }
+  }
+  return { matches: false, isPrimary: false };
 }
 
 function safeCompareHash(a: string, b: string) {
@@ -145,13 +167,18 @@ export async function POST(request: Request) {
       let profile = null;
 
       if (isEmail) {
-        profile = await prisma.footballIQProfile.findUnique({
-          where: { email: identifier.toLowerCase() }
+        profile = await prisma.footballIQProfile.findFirst({
+          where: { email: { equals: identifier, mode: 'insensitive' } }
         });
       } else {
         const normalizedUsername = cleanUsername(identifier);
-        profile = await prisma.footballIQProfile.findUnique({
-          where: { username: normalizedUsername }
+        profile = await prisma.footballIQProfile.findFirst({
+          where: {
+            OR: [
+              { username: { equals: normalizedUsername, mode: 'insensitive' } },
+              { username: { equals: identifier, mode: 'insensitive' } }
+            ]
+          }
         });
       }
 
@@ -164,9 +191,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'This account does not have password sign-in enabled. Use the original sign-in provider.' }, { status: 401 });
       }
 
-      const passwordHash = hashPassword(normalizedPassword, profile.username);
-      if (!safeCompareHash(profile.passwordHash, passwordHash)) {
+      const verification = verifyPasswordHash(normalizedPassword, profile.username, profile.passwordHash);
+      if (!verification.matches) {
         return NextResponse.json({ error: 'Invalid username/email or password.' }, { status: 401 });
+      }
+
+      // Automatically upgrade legacy salt hashes to current primary salt
+      if (!verification.isPrimary) {
+        const newPrimaryHash = hashPassword(normalizedPassword, profile.username);
+        try {
+          await prisma.footballIQProfile.update({
+            where: { id: profile.id },
+            data: { passwordHash: newPrimaryHash }
+          });
+        } catch (e) {
+          console.warn('[Auth API] Failed to auto-upgrade password hash:', e);
+        }
       }
 
       const response = NextResponse.json({
