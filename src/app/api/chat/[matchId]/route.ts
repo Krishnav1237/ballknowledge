@@ -386,7 +386,12 @@ export async function POST(
         const recentMessages = await prisma.chatMessage.findMany({
           where: { matchId: safeMatchId },
           orderBy: { createdAt: 'desc' },
-          take: 8
+          take: 8,
+          include: {
+            profile: {
+              select: { username: true }
+            }
+          }
         });
         // Reverse so oldest-first for chat history formatting
         const historyStr = formatChatHistory(recentMessages.reverse());

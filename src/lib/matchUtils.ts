@@ -296,7 +296,7 @@ export function getFlagEmoji(countryName: string): string {
   if (n.includes('ivory') || n.includes('cote')) return '🇨🇮';
   if (n.includes('tur') || n.includes('turkey')) return '🇹🇷';
   if (n.includes('ukr')) return '🇺🇦';
-  if (n.includes('wal') || n.includes('wales')) return '🏴󠁧󠁢󠁥󠁮󠁧󠁿';
+  if (n.includes('wal') || n.includes('wales')) return '🏴󠁧󠁢󠁷󠁬󠁳󠁿';
   if (n.includes('scot')) return '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
   if (n.includes('indonesia') || n.includes('idn')) return '🇮🇩';
   if (n.includes('iraq') || n.includes('irq')) return '🇮🇶';

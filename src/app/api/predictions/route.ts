@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/authSession';
 
@@ -19,13 +20,13 @@ function cleanMatchId(input: unknown) {
   return /^[a-zA-Z0-9_-]+$/.test(matchId) ? matchId : '';
 }
 
-function cleanLineup(input: unknown) {
-  if (input === undefined || input === null) return undefined;
-  if (typeof input !== 'object' || Array.isArray(input)) return undefined;
+function cleanLineup(input: unknown): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput | undefined {
+  if (input === undefined) return undefined;
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) return Prisma.JsonNull;
 
   const serialized = JSON.stringify(input);
-  if (serialized.length > 100_000) return undefined;
-  return input;
+  if (serialized.length > 100_000) return Prisma.JsonNull;
+  return input as Prisma.InputJsonValue;
 }
 
 export async function POST(request: Request) {
