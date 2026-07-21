@@ -160,9 +160,8 @@ export async function POST(request: Request) {
     // ──────────────────────────────────────────────────────────────
     const model = process.env.OPENROUTER_IMAGE_MODEL || 'black-forest-labs/flux.2-pro';
 
-    try {
-      // Flux.2 Pro exposes input_references on OpenRouter's /v1/images endpoint.
-      const response = await fetch('https://openrouter.ai/api/v1/images', {
+    const makeImageRequest = async (includeReference: boolean) => {
+      return await fetch('https://openrouter.ai/api/v1/images', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -176,17 +175,26 @@ export async function POST(request: Request) {
           n: 1,
           aspect_ratio: '3:4',
           output_format: 'jpeg',
-          safety_tolerance: 6, // passthrough param — maximum permissiveness
-          // Face reference image for identity preservation
-          ...(faceDataUrl ? {
+          safety_tolerance: 6,
+          ...(includeReference && faceDataUrl ? {
             input_references: [{
               type: 'image_url',
               image_url: { url: faceDataUrl },
             }],
           } : {}),
         }),
-        signal: AbortSignal.timeout(50_000),
+        signal: AbortSignal.timeout(45_000),
       });
+    };
+
+    try {
+      let response = await makeImageRequest(Boolean(faceDataUrl));
+
+      // If reference request failed (e.g., 502 Bad Gateway from provider on input_references), retry without reference
+      if (!response.ok && faceDataUrl) {
+        console.warn(`OpenRouter image gen with face reference failed (${response.status}). Retrying without face reference...`);
+        response = await makeImageRequest(false);
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -207,13 +215,33 @@ export async function POST(request: Request) {
       }
     } catch (err: any) {
       console.error('OpenRouter image generation error:', err);
-      return NextResponse.json(
-        {
-          error: 'OpenRouter image generation timed out or failed.',
-          details: err?.message || String(err),
-        },
-        { status: 500 }
-      );
+
+      // If timeout/error occurred while passing face reference, attempt one final prompt-only fallback
+      if (faceDataUrl) {
+        try {
+          console.warn('Attempting final fallback image generation without face reference...');
+          const fallbackRes = await makeImageRequest(false);
+          if (fallbackRes.ok) {
+            const data = await fallbackRes.json();
+            aiImageUrl = data?.data?.[0]?.url ?? '';
+            if (!aiImageUrl && data?.data?.[0]?.b64_json) {
+              aiImageUrl = `data:image/jpeg;base64,${data.data[0].b64_json}`;
+            }
+          }
+        } catch (fallbackErr) {
+          console.error('Fallback image generation failed:', fallbackErr);
+        }
+      }
+
+      if (!aiImageUrl) {
+        return NextResponse.json(
+          {
+            error: 'OpenRouter image generation timed out or failed.',
+            details: err?.message || String(err),
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // Persist card URL to DB if matching card found
