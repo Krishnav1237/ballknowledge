@@ -128,7 +128,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#030712] text-white">
         <motion.div style={{ y: yBg }} className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" preload />
+          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" priority />
           {/* Dark vignette — lighter in the middle so the stadium is visible */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/20 to-[#030712]/90" />
           {/* Side vignettes for readability */}

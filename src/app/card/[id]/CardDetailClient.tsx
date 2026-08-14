@@ -219,7 +219,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
           alt="World Cup Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.25]" 
-          preload
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#030712]/70 to-[#030712]" />
       </div>

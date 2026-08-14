@@ -577,7 +577,7 @@ export default function ProfileSettingsPage() {
               alt="Locker Room Authentication Background" 
               fill 
               className="object-cover opacity-[0.52] object-center" 
-              preload
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-background/60 to-background" />
           </div>
@@ -724,7 +724,7 @@ export default function ProfileSettingsPage() {
               alt="World Cup Stadium Background"
               fill
               className="object-cover opacity-[0.52] object-center scale-102"
-              preload
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/70 to-[#07090E]" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-rose-950/10 rounded-full blur-[120px] pointer-events-none" />
