@@ -17,8 +17,6 @@ interface MatchLiveChatProps {
   matchId: string;
   isLive: boolean;
   isCompleted: boolean;
-  homeTeam: string;
-  awayTeam: string;
   managerAlias?: string;
 }
 

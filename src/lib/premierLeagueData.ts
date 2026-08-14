@@ -39,7 +39,6 @@ export type PremierLeagueMatch = {
   away_team_label?: string;
 };
 
-export const PREMIER_LEAGUE_SEASON = 'Premier League 2026/27';
 export const PREMIER_LEAGUE_OPENING_DATE = '08/21/2026 20:00';
 export const PREMIER_LEAGUE_OPENING_HOME = 'Arsenal';
 export const PREMIER_LEAGUE_OPENING_AWAY = 'Coventry City';

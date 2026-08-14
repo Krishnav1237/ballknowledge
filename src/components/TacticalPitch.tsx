@@ -21,35 +21,6 @@ const PITCH_SLOTS = [
   { id: 'RW', label: 'RW', category: 'FWD', left: '80%', top: '15%' }
 ];
 
-function getFlagEmoji(countryName: string): string {
-  const normalized = countryName.trim().toLowerCase();
-  if (normalized.includes('arg')) return '🇦🇷';
-  if (normalized.includes('bra')) return '🇧🇷';
-  if (normalized.includes('por')) return '🇵🇹';
-  if (normalized.includes('fra')) return '🇫🇷';
-  if (normalized.includes('eng') || normalized.includes('gbr')) return '🏴\u200d󠁢\u200d󠁥\u200d󠁮\u200d󠁧\u200d󠁿';
-  if (normalized.includes('ger') || normalized.includes('deu')) return '🇩🇪';
-  if (normalized.includes('spa') || normalized.includes('esp')) return '🇪🇸';
-  if (normalized.includes('net') || normalized.includes('hol') || normalized.includes('nld')) return '🇳🇱';
-  if (normalized.includes('uru')) return '🇺🇾';
-  if (normalized.includes('mar') || normalized.includes('mor')) return '🇲🇦';
-  if (normalized.includes('jap') || normalized.includes('jpn')) return '🇯🇵';
-  if (normalized.includes('sau') || normalized.includes('ksa')) return '🇸🇦';
-  if (normalized.includes('usa') || normalized.includes('america') || normalized.includes('united states')) return '🇺🇸';
-  if (normalized.includes('can')) return '🇨🇦';
-  if (normalized.includes('mex')) return '🇲🇽';
-  if (normalized.includes('ita')) return '🇮🇹';
-  if (normalized.includes('cro')) return '🇭🇷';
-  if (normalized.includes('bel')) return '🇧🇪';
-  if (normalized.includes('sen')) return '🇸🇳';
-  if (normalized.includes('swe')) return '🇸🇪';
-  if (normalized.includes('tun')) return '🇹🇳';
-  if (normalized.includes('egy')) return '🇪🇬';
-  if (normalized.includes('irn') || normalized.includes('iran')) return '🇮🇷';
-  if (normalized.includes('nzl') || normalized.includes('new zealand')) return '🇳🇿';
-  return '🌍';
-}
-
 interface TacticalPitchProps {
   lineup: Record<string, Player>;
   isReadOnly: boolean;

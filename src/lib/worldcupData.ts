@@ -7,5 +7,3 @@ export {
   fetchPremierLeagueMatches as fetchWorldCupMatches,
   fetchPremierLeagueTeams as fetchWorldCupTeams,
 } from '@/lib/premierLeagueData';
-
-export { getPremierLeagueClubs, getPremierLeagueMatches } from '@/lib/premierLeagueData';

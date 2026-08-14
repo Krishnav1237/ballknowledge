@@ -1261,8 +1261,6 @@ export default function MatchPage() {
                       matchId={matchId}
                       isLive={status === 'LIVE'}
                       isCompleted={status === 'COMPLETED'}
-                      homeTeam={homeTeam.name_en}
-                      awayTeam={awayTeam.name_en}
                       managerAlias={profile?.username}
                     />
                   </div>

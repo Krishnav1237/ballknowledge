@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { requireSession } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -250,67 +249,4 @@ export async function GET(request: Request) {
     data: freshData,
     cached: false,
   });
-}
-
-/**
- * POST /api/sofascore-sync
- * Body: { matchIds: string[] }
- * Batch sync multiple matches. Admin only.
- */
-export async function POST(request: Request) {
-  const auth = requireSession(request);
-  if (auth.response || !auth.session) return auth.response;
-  if (auth.session.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  let body: any;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
-
-  const matchIds: string[] = Array.isArray(body?.matchIds) ? body.matchIds : [];
-  if (!matchIds.length) {
-    return NextResponse.json({ error: 'matchIds array is required' }, { status: 400 });
-  }
-
-  const map = readMap();
-  const cache = readCache();
-  const results: Record<string, any> = {};
-
-  for (const matchId of matchIds.slice(0, 20)) { // Cap at 20 per request
-    const mapEntry = map[String(matchId)];
-    if (!mapEntry?.sofascoreEventId) {
-      results[matchId] = { error: 'No SofaScore mapping' };
-      continue;
-    }
-
-    const sofascoreEventId = mapEntry.sofascoreEventId;
-    const cacheKey = String(matchId);
-
-    // Skip if cache is fresh
-    if (cache[cacheKey] && !isCacheStale(cache[cacheKey])) {
-      results[matchId] = { cached: true, isFinished: cache[cacheKey].data?.isFinished };
-      continue;
-    }
-
-    // Use coalesced process trigger
-    const freshData = await syncMatchData(matchId, sofascoreEventId);
-    if (freshData && !freshData.error) {
-      cache[cacheKey] = {
-        data: freshData,
-        fetchedAt: freshData.fetchedAt || Math.floor(Date.now() / 1000),
-        sofascoreEventId,
-      };
-      results[matchId] = { success: true, isFinished: freshData.isFinished, isLive: freshData.isLive };
-    } else {
-      results[matchId] = { error: freshData?.error || 'Scraper failed' };
-    }
-  }
-
-  writeCache(cache);
-
-  return NextResponse.json({ success: true, results });
 }

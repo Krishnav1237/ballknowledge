@@ -26,7 +26,3 @@ export function getClubCrestUrl(name: string): string {
 export function getClubCode(name: string): string {
   return lookup(name, CODE_BY_NAME) || name.trim().slice(0, 3).toUpperCase();
 }
-
-export function isPremierLeagueClub(name: string): boolean {
-  return Boolean(lookup(name, CODE_BY_NAME));
-}

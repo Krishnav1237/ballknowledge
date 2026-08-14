@@ -8,11 +8,6 @@ function getBrowserStorage(type: 'localStorage' | 'sessionStorage'): Storage | n
   }
 }
 
-export function getLocalStorage(): Storage | null {
-  return getBrowserStorage('localStorage');
-}
-
-
 export function getStorageItem(type: 'localStorage' | 'sessionStorage', key: string): string | null {
   const storage = getBrowserStorage(type);
   if (!storage) return null;

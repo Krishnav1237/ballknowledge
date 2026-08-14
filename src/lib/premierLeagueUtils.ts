@@ -34,10 +34,6 @@ export function listMatchweeks(matches: PremierLeagueMatch[]): number[] {
   return [...weeks].sort((a, b) => a - b);
 }
 
-export function matchesForMatchweek(matches: PremierLeagueMatch[], week: number): PremierLeagueMatch[] {
-  return matches.filter((match) => getMatchweek(match) === week);
-}
-
 /**
  * Single-table Premier League standings: 3 pts win, 1 draw, 0 loss.
  * Only finished matches with numeric scores are counted.
@@ -102,13 +98,5 @@ export function computeLeagueTable(
     if (b.gd !== a.gd) return b.gd - a.gd;
     if (b.gf !== a.gf) return b.gf - a.gf;
     return a.name.localeCompare(b.name);
-  });
-}
-
-export function findClubByName(clubs: PremierLeagueClub[], name: string): PremierLeagueClub | undefined {
-  const needle = name.trim().toLowerCase();
-  return clubs.find((club) => {
-    const hay = club.name_en.toLowerCase();
-    return hay === needle || hay.includes(needle) || needle.includes(hay);
   });
 }
