@@ -14,9 +14,27 @@ import { TEAM_ROSTERS } from './roster';
  * @param {string} [stadiumId] - The ID of the stadium.
  * @returns {number} The UTC offset in hours (e.g., -4 for EDT, -7 for PDT).
  */
-function getStadiumUTCOffset(stadiumId?: string | number): number {
-  if (!stadiumId) return -4; // Default to EDT (New York)
-  switch (String(stadiumId).trim()) {
+function lastSundayOfMonth(year: number, monthIndex: number): number {
+  const last = new Date(Date.UTC(year, monthIndex + 1, 0));
+  return last.getUTCDate() - last.getUTCDay();
+}
+
+function ukOffsetHours(year: number, month: number, day: number): number {
+  const bstStart = lastSundayOfMonth(year, 2);
+  const bstEnd = lastSundayOfMonth(year, 9);
+  const afterStart = month > 3 || (month === 3 && day >= bstStart);
+  const beforeEnd = month < 10 || (month === 10 && day < bstEnd);
+  return afterStart && beforeEnd ? 1 : 0;
+}
+
+function getStadiumUTCOffset(stadiumId?: string | number, year?: number, month?: number, day?: number): number {
+  const id = String(stadiumId ?? '').trim();
+  const numeric = Number(id);
+  if (id.startsWith('uk') || (Number.isFinite(numeric) && numeric >= 100)) {
+    return ukOffsetHours(year ?? 2026, month ?? 8, day ?? 1);
+  }
+  if (!stadiumId) return 1;
+  switch (id) {
     // Eastern Daylight Time (EDT / UTC-4)
     case '7':  // Atlanta (Mercedes-Benz Stadium)
     case '8':  // Miami (Hard Rock Stadium)
@@ -64,7 +82,7 @@ export function parseLocalDate(localDateStr: string, stadiumId?: string): Date {
   const [month, day, year] = datePart.split('/').map(Number);
   const [hours, minutes] = timePart.split(':').map(Number);
   
-  const offset = getStadiumUTCOffset(stadiumId);
+  const offset = getStadiumUTCOffset(stadiumId, year, month, day);
   // local time = UTC + offset, so UTC = local time - offset
   const utcMillis = Date.UTC(year, month - 1, day, hours, minutes) - offset * 60 * 60 * 1000;
   return new Date(utcMillis);
@@ -88,7 +106,7 @@ export function isSameUTCDate(d1: Date, d2: Date): boolean {
  * Resolves a team name to its matching key inside TEAM_ROSTERS.
  * Handles sub-strings and exact case-insensitive matches.
  * 
- * @param {string} teamName - The name of the country/team (e.g. "Argentina").
+ * @param {string} teamName - The name of the club/team (e.g. "Arsenal").
  * @returns {string|undefined} The normalized key for TEAM_ROSTERS, or undefined.
  */
 function findTeamRosterKey(teamName: string): string | undefined {

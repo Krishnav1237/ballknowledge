@@ -343,7 +343,7 @@ export default function SportsCenterCard({
   }
 
   /* =========================================================================
-     MAIN TOURNAMENT CARD — CLASSIC GOLD FUT SHIELD (UNCHANGED DESIGN)
+     MAIN SEASON CARD — CLASSIC GOLD FUT SHIELD (UNCHANGED DESIGN)
      ========================================================================= */
   return (
     <div

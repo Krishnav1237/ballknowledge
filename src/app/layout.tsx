@@ -8,8 +8,8 @@ import PageTransition from '@/components/PageTransition';
 import ServiceWorkerKiller from '@/components/ServiceWorkerKiller';
 
 export const metadata: Metadata = {
-  title: 'BallKnowledge | World Cup 2026 Reputation Arena',
-  description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based BallKnowledge Profile.",
+  title: 'BallKnowledge | Premier League 2026/27 Reputation Arena',
+  description: "Enter the Premier League 2026/27 reputation arena. Lock in matchweek predictions, submit bold hot takes, claim collectible Verdict Cards, and build your BallKnowledge Profile.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'),
   icons: {
     icon: '/images/ball_knowledge_logo.png',
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     apple: '/images/ball_knowledge_logo.png',
   },
   openGraph: {
-    title: 'BallKnowledge | World Cup 2026 Reputation Arena',
-    description: "Enter the world's most premium football debate arena. Lock in match predictions, submit bold hot takes, claim collectible Verdict Cards, and build your season-based BallKnowledge Profile.",
+    title: 'BallKnowledge | Premier League 2026/27 Reputation Arena',
+    description: "Enter the Premier League 2026/27 reputation arena. Lock in matchweek predictions, submit bold hot takes, claim collectible Verdict Cards, and build your BallKnowledge Profile.",
     type: 'website',
     locale: 'en_US',
     siteName: 'BallKnowledge',
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
         url: '/images/og-preview.png',
         width: 1200,
         height: 630,
-        alt: 'BallKnowledge — World Cup 2026 Reputation Arena',
+        alt: 'BallKnowledge — Premier League 2026/27 Reputation Arena',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BallKnowledge | World Cup 2026',
-    description: "Football predictions, hot takes, and collectible Verdict Cards for World Cup 2026.",
+    title: 'BallKnowledge | Premier League 2026/27',
+    description: "Premier League predictions, hot takes, and collectible Verdict Cards for the 2026/27 season.",
     images: ['/images/og-preview.png'],
   },
 };

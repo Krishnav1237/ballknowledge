@@ -302,8 +302,8 @@ export default function ProfileSettingsPage() {
       showToast('Please enter your Manager Alias first.', 'warn');
       return;
     }
-    if (!favoriteNation.trim()) {
-      showToast('Please enter your Supporting Country first.', 'warn');
+    if (!favoriteClub.trim() && !favoriteNation.trim()) {
+      showToast('Please enter your Favorite Club first.', 'warn');
       return;
     }
     if (!pendingPhoto) {
@@ -321,6 +321,7 @@ export default function ProfileSettingsPage() {
           username: profile.username,
           faceImage: pendingPhoto,
           favoriteNation,
+          favoriteClub: favoriteClub || favoriteNation,
           overallRating: profile.overallRating,
           predictionRating: profile.predictionRating,
           hotTakeRating: profile.hotTakeRating,
@@ -438,8 +439,8 @@ export default function ProfileSettingsPage() {
           username: username.trim(),
           password: password.trim(),
           email: authMode === 'signup' ? email.trim() : undefined,
-          favoriteClub: favoriteClub || 'VAR FC',
-          favoriteNation: favoriteNation || 'Argentina'
+          favoriteClub: favoriteClub || 'Arsenal',
+          favoriteNation: favoriteNation || 'England'
         })
       });
 
@@ -520,7 +521,7 @@ export default function ProfileSettingsPage() {
       clearStoredProfile();
       window.dispatchEvent(new Event('storage'));
       showToast('Contract terminated. Profile reset.', 'warn');
-      setTimeout(() => { window.location.href = '/world-cup-hub'; }, 1500);
+      setTimeout(() => { window.location.href = '/premier-league'; }, 1500);
     }
   };
 
@@ -529,7 +530,7 @@ export default function ProfileSettingsPage() {
   // Build the goated VerdictData object to feed to SportsCenterCard component
   const managerCardData: VerdictData = {
     id: 'mgr-preview',
-    text: `Locker room authorization active. Registered manager signed to ${favoriteClub || 'VAR FC'}.`,
+    text: `Locker room authorization active. Registered manager signed to ${favoriteClub || 'Arsenal'}.`,
     mode: 'court',
     caseId: 2026,
     fanbase: null,
@@ -539,7 +540,7 @@ export default function ProfileSettingsPage() {
     rulingText: 'Manager credentials registered successfully.',
     verdict: role === 'ADMIN' ? 'TRIBUNAL COMMISSIONER' : role === 'PREMIUM' ? 'CERTIFIED CHEF' : 'KNOWS BALL',
     charge: 'TACTICAL INGENUITY',
-    sentence: `Managing ${favoriteClub || 'VAR FC'} under ${role.toLowerCase()} status.`,
+    sentence: `Managing ${favoriteClub || 'Arsenal'} under ${role.toLowerCase()} status.`,
     ach: {
       title: 'MANAGER LICENSE',
       desc: 'Registered tactician.',
@@ -549,7 +550,7 @@ export default function ProfileSettingsPage() {
     countryFlag: favoriteNation ? getFlagEmoji(favoriteNation) : '🏳️',
     playerName: username.toUpperCase() || 'MANAGER',
     playerPosition: 'MGR',
-    clubName: favoriteClub || 'VAR FC',
+    clubName: favoriteClub || 'Arsenal',
     avatarStyle: avatarStyle,
     avatarSeed: avatarSeed,
     aiImageUrl: (avatarSeed.startsWith('http') || avatarSeed.startsWith('data:image')) ? avatarSeed : undefined,
@@ -687,13 +688,13 @@ export default function ProfileSettingsPage() {
                     <>
                       <div className="space-y-1.5 text-left">
                         <label className="block text-[8.5px] font-black uppercase tracking-widest text-rose-400">
-                          National Allegiance
+                          Favorite Club
                         </label>
                         <input
                           type="text"
-                          value={favoriteNation}
-                          onChange={e => setFavoriteNation(e.target.value)}
-                          placeholder="e.g. Argentina, Germany"
+                          value={favoriteClub}
+                          onChange={e => setFavoriteClub(e.target.value)}
+                          placeholder="e.g. Arsenal, Liverpool"
                           className="w-full h-10 bg-[#13070A] border border-rose-900/50 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/45 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/20 shadow-inner"
                         />
                       </div>
@@ -721,7 +722,7 @@ export default function ProfileSettingsPage() {
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
             <Image
               src="/images/world_cup_stadium.webp"
-              alt="World Cup Stadium Background"
+              alt="Stadium background"
               fill
               className="object-cover opacity-[0.52] object-center scale-102"
               priority
@@ -825,23 +826,23 @@ export default function ProfileSettingsPage() {
 
                         <div className="space-y-1.5 group">
                           <label className="block text-[10px] font-black text-rose-400 uppercase tracking-widest transition-all duration-200 group-focus-within:text-rose-300">
-                            Supporting Country (National Allegiance)
+                            Favorite Club
                           </label>
                           <input
                             type="text"
-                            value={favoriteNation}
+                            value={favoriteClub}
                             onChange={e => {
                               const val = e.target.value;
-                              setFavoriteNation(val);
+                              setFavoriteClub(val);
                               if (profile) {
-                                const updated = { ...profile, favoriteNation: val };
+                                const updated = { ...profile, favoriteClub: val };
                                 setProfile(updated);
                                 saveStoredProfile(updated);
                                 window.dispatchEvent(new Event('storage'));
                               }
                             }}
                             className="w-full h-10 bg-[#13070A] border border-rose-900/50 hover:border-rose-500/60 focus:border-[#E11D48] focus:ring-1 focus:ring-[#E11D48]/40 rounded-xl px-3.5 text-xs font-bold text-white placeholder-rose-500/30 shadow-inner transition-all"
-                            placeholder="Argentina / Brazil / England"
+                            placeholder="Arsenal / Liverpool / Manchester City"
                           />
                         </div>
                       </div>

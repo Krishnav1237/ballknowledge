@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const user = safeParam(url, 'user', 'Tactical Manager');
   const verdict = safeParam(url, 'verdict', 'VAR VERDICT CARD');
-  const fixture = safeParam(url, 'fixture', 'World Cup 2026');
+  const fixture = safeParam(url, 'fixture', 'Premier League 2026/27');
   const rarity = safeParam(url, 'rarity', 'COMMON', 20).toUpperCase();
   const rating = safeParam(url, 'rating', '88', 3);
   const accent = rarityColor(rarity);

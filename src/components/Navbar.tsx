@@ -36,7 +36,7 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'World Cup 2026', href: '/world-cup-hub', icon: Trophy },
+    { name: 'Premier League', href: '/premier-league', icon: Trophy },
     { name: 'Leaderboard',    href: '/leaderboard',   icon: BarChart2 },
     { name: 'My Card',        href: '/football-iq',   icon: Award },
     { name: 'Profile',        href: '/profile',        icon: User },

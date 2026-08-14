@@ -165,15 +165,15 @@ export async function GET(request: Request) {
           name,
           avatarStyle: 'fun-emoji',
           avatarSeed: avatarUrl || 'Reputation',
-          favoriteClub: 'VAR FC',
-          favoriteNation: 'Argentina',
+          favoriteClub: 'Arsenal',
+          favoriteNation: 'England',
           overallRating: 50,
           predictionRating: 50,
           hotTakeRating: 50,
           managerRating: 50,
           roastScore: 50,
           role: 'FREE',
-          season: 'World Cup 2026'
+          season: 'Premier League 2026/27'
         }
       });
     } else {

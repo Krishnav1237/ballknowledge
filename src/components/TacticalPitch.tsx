@@ -1,5 +1,6 @@
 import { Plus, X } from 'lucide-react';
 import { Player, getPlayerImageUrl, PLAYER_SILHOUETTE } from '@/lib/roster';
+import { getClubCode } from '@/lib/clubs';
 
 /**
  * Coordinates and category classification of the 11 player slots
@@ -134,7 +135,7 @@ export default function TacticalPitch({
                     }}
                   />
                   <div className="absolute -bottom-0.5 -right-0.5 text-[7px] min-[370px]:text-[9px] sm:text-[11px] bg-black/60 rounded-full px-0.5 shadow-sm leading-none">
-                    {getFlagEmoji(selectedPlayer.team)}
+                    {getClubCode(selectedPlayer.team)}
                   </div>
                 </div>
 

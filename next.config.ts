@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -37,12 +38,17 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(process.cwd()),
+  },
   allowedDevOrigins: ['ballknowledge.live'],
   devIndicators: false,
   images: {
     remotePatterns: [
       // Flag CDN for team flags
       { protocol: 'https', hostname: 'flagcdn.com' },
+      { protocol: 'https', hostname: 'crests.football-data.org' },
+      { protocol: 'https', hostname: 'resources.premierleague.com' },
       // DiceBear avatar API (used for default avatars)
       { protocol: 'https', hostname: 'api.dicebear.com' },
       // OpenRouter CDN — image generation results
@@ -76,9 +82,10 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/football-court', destination: '/world-cup-hub', permanent: true },
-      { source: '/match-oracle', destination: '/world-cup-hub', permanent: true },
-      { source: '/rate-my-take', destination: '/world-cup-hub', permanent: true },
+      { source: '/world-cup-hub', destination: '/premier-league', permanent: true },
+      { source: '/football-court', destination: '/premier-league', permanent: true },
+      { source: '/match-oracle', destination: '/premier-league', permanent: true },
+      { source: '/rate-my-take', destination: '/premier-league', permanent: true },
     ];
   },
 };

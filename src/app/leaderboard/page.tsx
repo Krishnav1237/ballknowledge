@@ -416,7 +416,7 @@ export default function LeaderboardPage() {
               GLOBAL MANAGER <span className="text-[#E11D48]">LEADERBOARD</span>
             </h1>
             <p className="text-zinc-400 text-[9px] sm:text-[10px] mt-1.5 font-bold uppercase tracking-widest leading-none">
-              WORLD CUP 2026 SEASON <span className="text-zinc-500 mx-2">•</span> RANKED BY FOOTBALL IQ
+              PREMIER LEAGUE 2026/27 <span className="text-zinc-500 mx-2">•</span> RANKED BY FOOTBALL IQ
             </p>
           </div>
 
@@ -520,10 +520,10 @@ export default function LeaderboardPage() {
                 Submit predictions and hot takes in the match console to raise your rank.
               </p>
               <Link
-                href="/world-cup-hub"
+                href="/premier-league"
                 className="mt-3 block w-full py-2 rounded-lg bg-gradient-to-r from-[#881337] to-[#E11D48] hover:opacity-90 text-white font-display font-black text-[10px] uppercase tracking-widest text-center transition-all shadow-md active:scale-98"
               >
-                Enter World Cup Hub
+                Enter Premier League Hub
               </Link>
             </div>
           </aside>

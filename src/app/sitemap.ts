@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/world-cup-hub`,
+      url: `${BASE_URL}/premier-league`,
       lastModified: new Date(),
       changeFrequency: 'hourly',
       priority: 0.9,

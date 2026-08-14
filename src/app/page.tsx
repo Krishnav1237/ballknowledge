@@ -21,18 +21,18 @@ export default function Home() {
 
 
   // ── Form sandboxes ────────────────────────────────────────────────────────────
-  const [sandboxText,  setSandboxText]  = useState('Messi is the greatest World Cup player of all time');
+  const [sandboxText,  setSandboxText]  = useState('Arsenal will retain the Premier League in 2026/27');
   const [sandboxOvr,   setSandboxOvr]   = useState(99);
 
   const [predMOTM,        setPredMOTM]        = useState('Kylian Mbappé');
   const [predGoalscorer,  setPredGoalscorer]  = useState('Jude Bellingham');
-  const [predPossession,  setPredPossession]  = useState('Argentina');
+  const [predPossession,  setPredPossession]  = useState('Arsenal');
 
   const [isTidied,       setIsTidied]       = useState(false);
   const [stats, setStats] = useState({ takes: 0, cases: 0, cards: 0 });
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [nationSearch, setNationSearch] = useState('');
+  const [clubSearch, setClubSearch] = useState('');
   
   useEffect(() => {
     setMounted(true);
@@ -100,7 +100,7 @@ export default function Home() {
           </div>
           
           <p className="text-[9px] font-sans font-black text-zinc-500 uppercase tracking-[0.2em] mt-1">
-            Connecting to World Cup Matchday Server...
+            Connecting to Premier League Matchweek Server...
           </p>
         </div>
       </div>
@@ -145,7 +145,7 @@ export default function Home() {
           {/* Live badge */}
           <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-6 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48] animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">World Cup 2026 • Season Active</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Premier League 2026/27 • Season Active</span>
           </div>
 
           <h1 className="font-display font-black uppercase tracking-tight text-white mb-4 text-center leading-[1.05]"
@@ -162,9 +162,9 @@ export default function Home() {
 
           {/* CTAs */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
-            <Link href="/world-cup-hub"
+            <Link href="/premier-league"
                   className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:opacity-90 shadow-md text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
-              Enter World Cup Hub
+              Enter Premier League Hub
             </Link>
             <Link href="/football-iq"
                   className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-gray-300 transition-all hover:scale-105 hover:opacity-90 shadow-md border border-white/10 bg-white/5 hover:bg-white/10 text-center">
@@ -317,10 +317,10 @@ export default function Home() {
               </div>
             </div>
             <Link
-              href="/world-cup-hub"
+              href="/premier-league"
               className="shrink-0 px-6 py-3 rounded-full font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all bg-gradient-to-r from-[#881337] to-[#E11D48] shadow-[0_4px_12px_rgba(225,29,72,0.25)]"
             >
-              Enter World Cup Hub
+              Enter Premier League Hub
             </Link>
           </div>
         </div>
@@ -373,7 +373,7 @@ export default function Home() {
                       <div className="flex items-center justify-between mt-1.5">
                         <div className="flex gap-1.5 flex-wrap max-w-[85%]">
                           {[
-                            { label: '🇦🇷 Messi take', text: 'Messi is the greatest World Cup player of all time' },
+                            { label: 'ARS title take', text: 'Arsenal will retain the Premier League in 2026/27' },
                             { label: '🇵🇹 Ronaldo take', text: "Ronaldo's aura will carry Portugal to the final trophy" },
                           ].map(t => (
                             <button key={t.label} onClick={() => setSandboxText(t.text)}
@@ -399,7 +399,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <Link href={`/world-cup-hub`}
+                <Link href={`/premier-league`}
                       className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#881337] to-[#a21c43]">
                   Pick Match & Submit Take →
                 </Link>
@@ -446,7 +446,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <Link href={`/world-cup-hub`}
+                <Link href={`/premier-league`}
                       className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#E11D48] to-[#EF4444]">
                   Lock predictions →
                 </Link>
@@ -492,7 +492,7 @@ export default function Home() {
                   </p>
                 </div>
 
-                <Link href={`/world-cup-hub`}
+                <Link href={`/premier-league`}
                       className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#334155] to-[#475569]">
                   View Fixtures Schedule
                 </Link>
@@ -657,7 +657,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* NATIONS: select country narrative                                      */}
+      {/* CLUBS: pick a Premier League side                                      */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="py-16 md:py-20 px-6 bg-[#030712] border-t border-gray-800 relative overflow-hidden">
         {/* Background */}
@@ -668,13 +668,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Header */}
           <div className="mb-10 md:mb-12 text-center">
-            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">ROUND OF 32 · 32 NATIONS QUALIFIED</p>
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">PREMIER LEAGUE 2026/27 · 20 CLUBS</p>
             <h2 className="font-serif italic font-black text-4xl sm:text-5xl md:text-6xl text-white leading-tight">
-              Pick your nation.<br />
+              Pick your club.<br />
               <span className="text-[#E11D48]">Own the narrative.</span>
             </h2>
             <p className="font-serif text-zinc-400 text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed font-medium">
-              The 32 nations who qualified for the Round of 32 knockout stage. Pick yours to predict their fixtures, submit hot takes, and claim Verdict Cards.
+              The 20 Premier League clubs contesting 38 matchweeks. Pick yours to predict their fixtures, submit hot takes, and claim Verdict Cards.
             </p>
           </div>
 
@@ -682,15 +682,15 @@ export default function Home() {
           <div className="flex justify-center mb-10">
             <div className="relative w-full max-w-md">
               <input
-                id="nation-search"
+                id="club-search"
                 type="text"
-                placeholder="Search tournament nation..."
-                value={nationSearch}
-                onChange={e => setNationSearch(e.target.value)}
+                placeholder="Search Premier League club..."
+                value={clubSearch}
+                onChange={e => setClubSearch(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#E11D48]/50 focus:ring-1 focus:ring-[#E11D48]/20 transition-all shadow-inner"
               />
-              {nationSearch && (
-                <button onClick={() => setNationSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-sm cursor-pointer">✕</button>
+              {clubSearch && (
+                <button onClick={() => setClubSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-sm cursor-pointer">✕</button>
               )}
             </div>
           </div>
@@ -698,12 +698,12 @@ export default function Home() {
           {/* Nations Grid - Rebuilt with larger cards */}
           {(() => {
             const filtered = COUNTRIES.filter(c => {
-              return nationSearch === '' || 
-                c.name.toLowerCase().includes(nationSearch.toLowerCase()) || 
-                (c.fifa && c.fifa.toLowerCase().includes(nationSearch.toLowerCase()));
+              return clubSearch === '' || 
+                c.name.toLowerCase().includes(clubSearch.toLowerCase()) || 
+                (c.fifa && c.fifa.toLowerCase().includes(clubSearch.toLowerCase()));
             });
             return filtered.length === 0 ? (
-              <div className="text-center py-20 text-zinc-500 font-bold text-sm">No nations found for &ldquo;{nationSearch}&rdquo;</div>
+              <div className="text-center py-20 text-zinc-500 font-bold text-sm">No clubs found for &ldquo;{clubSearch}&rdquo;</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {filtered.map((c, i) => (
@@ -723,7 +723,7 @@ export default function Home() {
                         <div className="flex flex-col items-end gap-1 font-mono">
                           <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border"
                                 style={{ background: c.color + '15', color: c.color, borderColor: c.color + '30' }}>
-                            GRP {c.group}
+                            {c.group}
                           </span>
                           <span className="text-[7.5px] font-bold text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
                             {c.qualified}
@@ -762,18 +762,18 @@ export default function Home() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="max-w-xl">
-            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">WORLD CUP 2026 • SEASON ACTIVE</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">PREMIER LEAGUE 2026/27 • SEASON ACTIVE</p>
             <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white uppercase tracking-tight mb-4">
-              The Tournament is Active.<br />
+              The Season is Active.<br />
               <span className="text-[#E11D48]">Build your reputation.</span>
             </h2>
             <p className="font-sans text-gray-300 text-sm sm:text-base mb-8 max-w-lg leading-relaxed">
               Grade your matchday predictions. Evolve your Overall Rating and verify your football reputation in the community.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/world-cup-hub"
+              <Link href="/premier-league"
                     className="px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:scale-105 transition-all shadow-lg text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
-                Enter World Cup Hub
+                Enter Premier League Hub
               </Link>
               <Link href="/football-iq"
                     className="px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-widest border border-white/20 text-white bg-white/10 hover:bg-white/20 transition-all hover:scale-105 text-center">

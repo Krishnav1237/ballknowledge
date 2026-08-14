@@ -331,7 +331,7 @@ export default function MatchPage() {
         <div className="w-16 h-16 rounded-full bg-rose-950/20 border border-rose-900/30 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
         <h3 className="font-display font-black text-xl uppercase tracking-wider text-white">Match Not Found</h3>
         <p className="text-zinc-400 text-xs mt-2 max-w-sm">The requested Match ID does not exist or belongs to another season.</p>
-        <Link href="/world-cup-hub" className="mt-6 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all block">
+        <Link href="/premier-league" className="mt-6 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all block">
           Back to Hub
         </Link>
       </div>
@@ -631,7 +631,7 @@ export default function MatchPage() {
     const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
     
     await sleep(1500);
-    setVarText('Auditing scoreline predictions against World Cup outcome...');
+    setVarText('Auditing scoreline predictions against the Premier League outcome...');
     
     await sleep(1500);
     setVarText('Summoning AI VAR tribunal to grade hot takes and confidence ranges...');
@@ -843,7 +843,7 @@ export default function MatchPage() {
             <h2 className="font-display font-black text-3xl text-white uppercase tracking-tight leading-none mb-1">
               Match Graded!
             </h2>
-            <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-6">World Cup 2026 Season</p>
+            <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-6">Premier League 2026/27</p>
 
             {/* Rating Evolution Visualizer */}
             <div className="flex justify-center items-center gap-8 mb-8">
@@ -1077,7 +1077,7 @@ export default function MatchPage() {
                   {/* Settings Override Bypasser Info */}
                   <div className="flex items-center gap-2 text-xs text-gray-400 italic mt-4">
                     <AlertCircle className="w-4 h-4 shrink-0 text-gray-500" />
-                    Permanently saved to your World Cup 2026 Season record. View total progress in &quot;My Card&quot;.
+                    Permanently saved to your Premier League 2026/27 record. View total progress in &quot;My Card&quot;.
                   </div>
                 </div>
               </div>
@@ -1121,7 +1121,7 @@ export default function MatchPage() {
                 <div className="shrink-0 flex flex-col items-center gap-1">
                   {/* Stage badge */}
                   <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-                    {match.type === 'r32' ? 'Round of 32' : match.type === 'r16' ? 'Round of 16' : match.type === 'qf' ? 'Quarter-Final' : match.type === 'sf' ? 'Semi-Final' : match.type === 'final' ? 'FINAL' : match.type === 'third' ? '3rd Place' : `Group ${match.group}`}
+                    {match.type === 'league' || match.group === 'PL' ? `Matchweek ${match.matchday}` : `Matchweek ${match.matchday}`}
                   </span>
                   {/* Score */}
                   <div className="font-display font-black text-4xl lg:text-5xl leading-none tracking-wider">

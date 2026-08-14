@@ -54,11 +54,11 @@ export default function NotFound() {
             Back to Home
           </Link>
           <Link
-            href="/world-cup-hub"
+            href="/premier-league"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all active:scale-95"
           >
             <Search className="w-4 h-4" />
-            World Cup Hub
+            Premier League Hub
           </Link>
         </div>
       </div>

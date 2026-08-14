@@ -216,7 +216,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
           src="/images/game_stadium_showcase.webp" 
-          alt="World Cup Stadium background" 
+          alt="Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.25]" 
           priority
@@ -230,7 +230,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
           {profileState.username}&apos;s Official Card Showcase
         </h2>
         <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">
-          World Cup 2026 Season • Supporter of {profileState.favoriteNation || 'Argentina'}
+          Premier League 2026/27 • Supporter of {profileState.favoriteClub || profileState.favoriteNation || 'Arsenal'}
         </p>
       </header>
 
@@ -314,18 +314,18 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                   }} />
                 ) : (
                   <SportsCenterCard cardRef={cardNodeRef} data={{
-                    text: 'Overall Tournament Manager Deck',
+                    text: 'Overall Premier League Manager Deck',
                     mode: 'court',
                     caseId: 2026,
                     fanbase: null,
                     isRivalry: false,
                     rarity: 'Legendary',
                     ovr: profileState.overallRating || 88,
-                    rulingText: 'TOURNAMENT DECK',
+                    rulingText: 'SEASON DECK',
                     verdict: 'CERTIFIED CHEF',
-                    charge: 'Tournament Mastermind',
+                    charge: 'Premier League Mastermind',
                     sentence: 'Undisputed Tactician',
-                    ach: { title: 'Tournament Deck', desc: 'Active Deck', badge: '👑' },
+                    ach: { title: 'Season Deck', desc: 'Active Deck', badge: '👑' },
                     stats: [
                       { label: 'PRD', name: 'Prediction', val: profileState.predictionRating || 90 },
                       { label: 'MGR', name: 'Manager Score', val: profileState.managerRating || 88 },
@@ -354,10 +354,10 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
             <div className="flex justify-between items-center border-b border-white/15 pb-4 mb-5">
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest bg-[#E11D48]/15 border border-[#E11D48]/40 text-rose-300 px-3 py-1 rounded-full">
-                  {activeTab === 'verdict' ? 'VAR Official Report' : 'Overall Tournament Manager Dossier'}
+                  {activeTab === 'verdict' ? 'VAR Official Report' : 'Overall Premier League Manager Dossier'}
                 </span>
                 <h4 className="font-display font-black text-xl md:text-2xl text-white uppercase mt-2 leading-none">
-                  {activeTab === 'verdict' ? card.verdict : 'FULL TOURNAMENT DECK'}
+                  {activeTab === 'verdict' ? card.verdict : 'FULL SEASON DECK'}
                 </h4>
               </div>
               <div className="text-right">
@@ -380,10 +380,10 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
 
               <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
                 <span className="text-rose-400 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
-                  {activeTab === 'verdict' ? 'VAR Audited Charge:' : 'National Allegiance:'}
+                  {activeTab === 'verdict' ? 'VAR Audited Charge:' : 'Club Allegiance:'}
                 </span>
                 <p className="text-gray-100 font-medium text-xs md:text-sm">
-                  {activeTab === 'verdict' ? card.charge : `${profileState.favoriteNation || 'Argentina'} Kit & Allegiance`}
+                  {activeTab === 'verdict' ? card.charge : `${profileState.favoriteClub || profileState.favoriteNation || 'Arsenal'} kit`}
                 </p>
               </div>
 
@@ -440,7 +440,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                 {/* X/Twitter Share */}
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR: ${card.verdict.toUpperCase()}. Can you beat my Football IQ?`
+                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Premier League Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR: ${card.verdict.toUpperCase()}. Can you beat my Football IQ?`
                   )}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -453,7 +453,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                 {/* WhatsApp Share */}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Tournament Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR. Can you beat my Football IQ? ${shareUrl}`
+                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Premier League Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR. Can you beat my Football IQ? ${shareUrl}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -478,7 +478,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
           {/* CTA Actions */}
           <div className="flex gap-4 w-full">
             <Link
-              href="/world-cup-hub"
+              href="/premier-league"
               className="flex-1 py-4 px-5 rounded-2xl bg-gradient-to-r from-[#881337] to-[#E11D48] hover:brightness-110 text-white font-display font-black text-xs uppercase tracking-widest shadow-xl text-center hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
             >
               <Trophy className="w-4 h-4" /> Grade My Takes
@@ -497,7 +497,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
 
       {/* Footer */}
       <footer className="relative z-10 text-center text-[9px] font-mono text-zinc-400 uppercase tracking-widest mt-4">
-        VAR Tribunal Collectibles Hub • World Cup 2026
+        VAR Tribunal Collectibles Hub • Premier League 2026/27
       </footer>
 
     </div>

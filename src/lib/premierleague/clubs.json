@@ -1,0 +1,202 @@
+[
+  {
+    "id": "1",
+    "name_en": "Arsenal",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/57.png",
+    "fifa_code": "ARS",
+    "iso2": "AR",
+    "groups": "PL",
+    "stadium": "Emirates Stadium"
+  },
+  {
+    "id": "2",
+    "name_en": "Aston Villa",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/58.png",
+    "fifa_code": "AVL",
+    "iso2": "AV",
+    "groups": "PL",
+    "stadium": "Villa Park"
+  },
+  {
+    "id": "3",
+    "name_en": "AFC Bournemouth",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/1044.png",
+    "fifa_code": "BOU",
+    "iso2": "BO",
+    "groups": "PL",
+    "stadium": "Dean Court"
+  },
+  {
+    "id": "4",
+    "name_en": "Brentford",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/402.png",
+    "fifa_code": "BRE",
+    "iso2": "BR",
+    "groups": "PL",
+    "stadium": "Gtech Community Stadium"
+  },
+  {
+    "id": "5",
+    "name_en": "Brighton & Hove Albion",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/397.png",
+    "fifa_code": "BHA",
+    "iso2": "BH",
+    "groups": "PL",
+    "stadium": "Falmer Stadium"
+  },
+  {
+    "id": "6",
+    "name_en": "Chelsea",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/61.png",
+    "fifa_code": "CHE",
+    "iso2": "CH",
+    "groups": "PL",
+    "stadium": "Stamford Bridge"
+  },
+  {
+    "id": "7",
+    "name_en": "Coventry City",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/1076.png",
+    "fifa_code": "COV",
+    "iso2": "CO",
+    "groups": "PL",
+    "stadium": "Coventry Building Society Arena"
+  },
+  {
+    "id": "8",
+    "name_en": "Crystal Palace",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/354.png",
+    "fifa_code": "CRY",
+    "iso2": "CR",
+    "groups": "PL",
+    "stadium": "Selhurst Park"
+  },
+  {
+    "id": "9",
+    "name_en": "Everton",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/62.png",
+    "fifa_code": "EVE",
+    "iso2": "EV",
+    "groups": "PL",
+    "stadium": "Hill Dickinson Stadium"
+  },
+  {
+    "id": "10",
+    "name_en": "Fulham",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/63.png",
+    "fifa_code": "FUL",
+    "iso2": "FU",
+    "groups": "PL",
+    "stadium": "Craven Cottage"
+  },
+  {
+    "id": "11",
+    "name_en": "Hull City",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/322.png",
+    "fifa_code": "HUL",
+    "iso2": "HU",
+    "groups": "PL",
+    "stadium": "MKM Stadium"
+  },
+  {
+    "id": "12",
+    "name_en": "Ipswich Town",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/349.png",
+    "fifa_code": "IPS",
+    "iso2": "IP",
+    "groups": "PL",
+    "stadium": "Portman Road"
+  },
+  {
+    "id": "13",
+    "name_en": "Leeds United",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/341.png",
+    "fifa_code": "LEE",
+    "iso2": "LE",
+    "groups": "PL",
+    "stadium": "Elland Road"
+  },
+  {
+    "id": "14",
+    "name_en": "Liverpool",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/64.png",
+    "fifa_code": "LIV",
+    "iso2": "LI",
+    "groups": "PL",
+    "stadium": "Anfield"
+  },
+  {
+    "id": "15",
+    "name_en": "Manchester City",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/65.png",
+    "fifa_code": "MCI",
+    "iso2": "MC",
+    "groups": "PL",
+    "stadium": "Etihad Stadium"
+  },
+  {
+    "id": "16",
+    "name_en": "Manchester United",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/66.png",
+    "fifa_code": "MUN",
+    "iso2": "MU",
+    "groups": "PL",
+    "stadium": "Old Trafford"
+  },
+  {
+    "id": "17",
+    "name_en": "Newcastle United",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/67.png",
+    "fifa_code": "NEW",
+    "iso2": "NE",
+    "groups": "PL",
+    "stadium": "St James' Park"
+  },
+  {
+    "id": "18",
+    "name_en": "Nottingham Forest",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/351.png",
+    "fifa_code": "NFO",
+    "iso2": "NF",
+    "groups": "PL",
+    "stadium": "City Ground"
+  },
+  {
+    "id": "19",
+    "name_en": "Sunderland",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/71.png",
+    "fifa_code": "SUN",
+    "iso2": "SU",
+    "groups": "PL",
+    "stadium": "Stadium of Light"
+  },
+  {
+    "id": "20",
+    "name_en": "Tottenham Hotspur",
+    "name_fa": "",
+    "flag": "https://crests.football-data.org/73.png",
+    "fifa_code": "TOT",
+    "iso2": "TO",
+    "groups": "PL",
+    "stadium": "Tottenham Hotspur Stadium"
+  }
+]

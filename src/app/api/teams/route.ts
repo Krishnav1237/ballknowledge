@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { fetchWorldCupTeams } from '@/lib/worldcupData';
+import { fetchPremierLeagueTeams } from '@/lib/premierLeagueData';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const teams = await fetchWorldCupTeams();
+    const teams = await fetchPremierLeagueTeams();
     return NextResponse.json(teams, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'

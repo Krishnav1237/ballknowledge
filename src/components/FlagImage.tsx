@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getFlagUrl, getCountryCode } from '@/lib/countries';
+import { getClubCode, getClubCrestUrl } from '@/lib/clubs';
 
 interface FlagImageProps {
   countryName: string;
@@ -42,9 +43,10 @@ const FLAG_EMOJI: Record<string, string> = {
 export default function FlagImage({ countryName, size = 'md', className = '' }: FlagImageProps) {
   const [imgError, setImgError] = useState(false);
   const config = SIZE_MAP[size];
+  const crestUrl = getClubCrestUrl(countryName);
   const code = getCountryCode(countryName);
-  const url = code ? getFlagUrl(countryName, config.cdnWidth) : '';
-  const emoji = code ? (FLAG_EMOJI[code] ?? '🏳️') : '🏳️';
+  const url = crestUrl || (code ? getFlagUrl(countryName, config.cdnWidth) : '');
+  const emoji = crestUrl ? getClubCode(countryName) : code ? (FLAG_EMOJI[code] ?? '🏳️') : '🏳️';
 
   if (!url || imgError) {
     return (

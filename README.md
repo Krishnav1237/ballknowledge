@@ -7,7 +7,7 @@
 
 > **"Build your football reputation, one match at a time."**
 
-BallKnowledge is a premium World Cup 2026 prediction and debate platform. Fans lock in match predictions, submit bold hot takes, and earn collectible FIFA-style Verdict Cards — all tracked against a persistent Football IQ reputation score.
+BallKnowledge is a premium Premier League 2026/27 prediction and debate platform. Fans lock in matchweek predictions, submit bold hot takes, and earn collectible FIFA-style Verdict Cards — all tracked against a persistent Football IQ reputation score.
 
 🔗 **Live**: [ballknowledge.live](https://ballknowledge.live)
 
@@ -20,7 +20,7 @@ Locker Room → World Cup Hub → Match Room → VAR Tribunal → Verdict Card �
 ```
 
 1. **Locker Room** (`/profile`) — Manage manager profile settings in a widescreen 3-column cockpit (Identity, FUT Card Spotlight, Telemetry & Operations) with secure credentials authentication.
-2. **World Cup Hub** (`/world-cup-hub`) — Browse all 104 fixtures across Groups A–L with live standings
+2. **Premier League Hub** (`/premier-league`) — Browse all 380 fixtures across 38 matchweeks with the league table
 3. **Match Room** (`/match/[id]`) — Before kickoff: lock score prediction, MOTM, goalscorer, hot takes, and Best XI squad. Once the match starts, a shared database live banter chat opens.
 4. **VAR Tribunal** — After a match completes, the AI grades your hot takes and checks your score prediction against actual results
 5. **Verdict Card** — A custom FIFA-style collectible card is generated based on your performance score

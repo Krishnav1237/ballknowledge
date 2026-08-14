@@ -100,7 +100,7 @@ export default function FootballIQPage() {
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           <Image
             src="/images/world_cup_stadium.webp"
-            alt="World Cup Stadium"
+            alt="Stadium"
             fill
             className="object-cover opacity-[0.15] object-center"
             priority
@@ -144,7 +144,7 @@ export default function FootballIQPage() {
   }).length;
   const accuracy = totalMatches > 0 ? Math.round((exactCount / totalMatches) * 100) : 0;
 
-  const totalAlbumSlots = 48; // Group stage + knockouts
+  const totalAlbumSlots = 38; // Premier League matchweeks
   const albumProgressPercent = Math.min(100, Math.round((totalMatches / totalAlbumSlots) * 100));
 
   let playstyle = 'Rookie Fan';
@@ -249,7 +249,7 @@ export default function FootballIQPage() {
       captureTarget.style.background = prevBackground;
 
       const link = document.createElement('a');
-      const label = selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Tournament_Deck';
+      const label = selectedCard ? `Verdict_Match_${selectedCard.matchId}` : 'Season_Deck';
       link.download = `${profile.username.replace(/\s+/g, '_')}_${label}.png`;
       link.href = dataUrl;
       link.click();
@@ -354,7 +354,7 @@ export default function FootballIQPage() {
     };
   };
 
-  // ── All tournament matches ───────────────────────────────────────────────
+  // ── All Premier League matches ───────────────────────────────────────────
   const activeMatches = matches;
   const predictedMatches = activeMatches.filter(m => userPreds[m.id]);
   const earnedCards = predictedMatches.map(m => constructMatchCardObj(m));
@@ -543,7 +543,7 @@ export default function FootballIQPage() {
           {/* BOTTOM: group / inspect */}
           <div className="border-t border-white/10 pt-2 flex justify-between items-center gap-1 min-w-0">
             <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest truncate min-w-0">
-              {isLocked ? 'LOCKED SLOT' : match?.type === 'r32' ? 'ROUND OF 32' : match?.type === 'r16' ? 'ROUND OF 16' : match?.type === 'qf' ? 'QUARTER FINAL' : match?.type === 'sf' ? 'SEMI FINAL' : `GROUP ${match?.group || 'STAGE'}`}
+              {isLocked ? 'LOCKED SLOT' : `MATCHWEEK ${match?.matchday || '—'}`}
             </span>
             <span className="shrink-0 text-[8px] text-amber-400 group-hover:text-amber-300 transition-all font-black uppercase tracking-widest">INSPECT ›</span>
           </div>
@@ -557,7 +557,7 @@ export default function FootballIQPage() {
   const activeShareUrl = activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile');
   const activeShareText = activeRightTab === 'verdict' && activeVerdictCard
     ? `Check out my VAR Verdict Card for Match ${activeVerdictCard.matchId}! Rated ${activeVerdictCard.rating} OVR: ${activeVerdictCard.verdict.toUpperCase()}.`
-    : `Check out my official World Cup 2026 Tournament Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`;
+    : `Check out my official Premier League 2026/27 Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`;
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] select-none">
@@ -566,7 +566,7 @@ export default function FootballIQPage() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
           src="/images/world_cup_stadium.webp" 
-          alt="World Cup Stadium background" 
+          alt="Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.48]" 
           priority
@@ -582,7 +582,7 @@ export default function FootballIQPage() {
             COLLECTIBLES <span className="text-[#E11D48]">BINDER</span>
           </h1>
           <p className="text-zinc-400 text-[10px] sm:text-xs mt-2.5 font-black uppercase tracking-widest leading-none">
-            TOURNAMENT <span className="text-[#E11D48] mx-1.5">★ KNOCKOUT STAGES</span> <span className="text-zinc-600 mx-1.5">•</span> EARNED VERDICT CARDS
+            PREMIER LEAGUE 2026/27 <span className="text-[#E11D48] mx-1.5">★ 38 MATCHWEEKS</span> <span className="text-zinc-600 mx-1.5">•</span> EARNED VERDICT CARDS
           </p>
         </div>
 
@@ -641,7 +641,7 @@ export default function FootballIQPage() {
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <Trophy className="w-4 h-4" /> Tournament Deck
+                  <Trophy className="w-4 h-4" /> Season Deck
                 </button>
                 <button
                   onClick={() => setActiveRightTab('verdict')}
@@ -765,7 +765,7 @@ export default function FootballIQPage() {
                         }} />
                       ) : (
                         <SportsCenterCard cardRef={cardCaptureRef} data={{
-                          text: `Loyal supporter of ${profile.favoriteNation || 'Argentina'}. Fighting for tactical ball knowledge in the 2026 tournament.`,
+                          text: `Loyal supporter of ${profile.favoriteClub || profile.favoriteNation || 'Arsenal'}. Fighting for tactical ball knowledge in Premier League 2026/27.`,
                           mode: 'court',
                           caseId: 1000,
                           fanbase: null,

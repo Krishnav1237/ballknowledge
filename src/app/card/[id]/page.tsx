@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const ogParams = new URLSearchParams({
       user: card.profile.username || 'Tactical Manager',
       verdict: card.verdict || 'VAR VERDICT CARD',
-      fixture: matchDetails.homeFifaCode && matchDetails.awayFifaCode ? `${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}` : 'World Cup 2026',
+      fixture: matchDetails.homeFifaCode && matchDetails.awayFifaCode ? `${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}` : 'Premier League 2026/27',
       rarity: card.rarity || 'COMMON',
       rating: String(card.rating || 50),
     });
@@ -127,8 +127,8 @@ export default async function SharedCardPage({ params }: Props) {
     avatarStyle: 'fun-emoji',
     avatarSeed: 'Manager',
     inputImage: null,
-    favoriteClub: 'VAR FC',
-    favoriteNation: 'Argentina',
+    favoriteClub: 'Arsenal',
+    favoriteNation: 'England',
     overallRating: 88
   };
 
@@ -153,18 +153,18 @@ export default async function SharedCardPage({ params }: Props) {
     rating: 88,
     verdict: 'TACTICAL MASTERMIND',
     charge: 'Audited VAR Prediction',
-    evidence: 'Hot Take statement: "World Cup 2026 Tactical Brilliance"',
+    evidence: 'Hot Take statement: "Premier League 2026/27 Tactical Brilliance"',
     sentence: 'Certified Ball Knowledge Expert',
     rarity: 'LEGENDARY',
     cardTheme: 'gold',
     aiImageUrl: null,
     statsJson: { prd: 90, mgr: 88, hot: 85, rst: 92 },
-    matchTitle: 'Argentina vs France',
-    matchScore: '3 - 3',
-    homeFlag: 'https://flagcdn.com/w80/ar.png',
-    awayFlag: 'https://flagcdn.com/w80/fr.png',
-    homeFifaCode: 'ARG',
-    awayFifaCode: 'FRA'
+    matchTitle: 'Arsenal vs Coventry City',
+    matchScore: '0 - 0',
+    homeFlag: 'https://crests.football-data.org/57.png',
+    awayFlag: 'https://crests.football-data.org/1076.png',
+    homeFifaCode: 'ARS',
+    awayFifaCode: 'COV'
   };
 
   return <CardDetailClient initialCard={clientCard} profile={clientProfile} />;

@@ -127,15 +127,15 @@ export async function POST(request: Request) {
           passwordHash,
           avatarStyle: 'fun-emoji',
           avatarSeed: 'Reputation',
-          favoriteClub: cleanShortText(favoriteClub, 80) || 'VAR FC',
-          favoriteNation: cleanShortText(favoriteNation, 80) || 'Argentina',
+          favoriteClub: cleanShortText(favoriteClub, 80) || 'Arsenal',
+          favoriteNation: cleanShortText(favoriteNation, 80) || 'England',
           overallRating: 50,
           predictionRating: 50,
           hotTakeRating: 50,
           managerRating: 50,
           roastScore: 50,
           role: 'FREE',
-          season: 'World Cup 2026'
+          season: 'Premier League 2026/27'
         }
       });
 

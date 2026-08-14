@@ -24,7 +24,7 @@ export default function Footer() {
             </span>
           </Link>
           <p className="text-gray-500 text-[11px] font-sans">
-            The premium football reputation arena for World Cup 2026.
+            The premium football reputation arena for Premier League 2026/27.
           </p>
         </div>
 

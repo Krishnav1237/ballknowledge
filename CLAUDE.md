@@ -67,9 +67,8 @@ User Action → localStorage (instant) → DB sync via /api/resolve-match or /ap
 
 ### Match Data — Hybrid Pipeline & SofaScore Sync
 ```
-worldcup26.ir API (Base fixtures)
-  └── football.matches.json (Local disk backup cache)
-        └── sofascore_cache.json (SofaScore live / player rating overlay)
+premierLeague/clubs.json + matches.json (2026/27 PL — live source)
+  └── worldcup2026/ JSON kept as historical WC backup only (not the live feed)
 ```
 - **Authoritative source pipeline**:
   1. Base fixture list is fetched from `worldcup26.ir` (or local backup `football.matches.json`).

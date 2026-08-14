@@ -21,8 +21,8 @@ const SIMULATED_BANTER = [
   'Tactical masterclass from the home side today.',
   'We need substitutions immediately, the midfield is ghosting 👻',
   'What a pass! Absolute vision 👁️',
-  'Is it just me or is this match of the tournament? 🔥',
-  'This is why we love the World Cup 🏆🐐',
+  'Is it just me or is this match of the season? 🔥',
+  'This is why we love the Premier League 🏆',
   'Defending is non-existent, love to see it 😂',
   'VAR is saving them again, unbelievable 🙄'
 ];
@@ -37,11 +37,11 @@ async function getOrCreateSimulatedProfile(username: string) {
         username,
         avatarStyle: 'fun-emoji',
         avatarSeed: username,
-        favoriteClub: 'VAR FC',
+        favoriteClub: 'Arsenal',
         favoriteNation: 'Germany',
         overallRating: Math.floor(Math.random() * 25) + 60,
         role: 'FREE',
-        season: 'World Cup 2026'
+        season: 'Premier League 2026/27'
       }
     });
   }

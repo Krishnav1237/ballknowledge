@@ -236,7 +236,7 @@ def fetch_live_wc_matches():
     events = data.get("events", [])
     wc_live = [
         e for e in events
-        if e.get("tournament", {}).get("uniqueTournament", {}).get("id") == 16
+        if e.get("tournament", {}).get("uniqueTournament", {}).get("id") == 17
     ]
     return [parse_event(e) for e in wc_live]
 

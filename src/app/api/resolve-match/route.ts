@@ -101,7 +101,7 @@ async function callOpenRouter(userPrompt: string) {
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live',
-      'X-Title': 'BallKnowledge World Cup 2026',
+      'X-Title': 'BallKnowledge Premier League 2026/27',
     },
     body: JSON.stringify({
       model: 'meta-llama/llama-3.3-70b-instruct',

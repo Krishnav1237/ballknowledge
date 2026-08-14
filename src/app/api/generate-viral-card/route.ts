@@ -92,6 +92,7 @@ export async function POST(request: Request) {
       username,
       faceImage,        // base64 face upload
       favoriteNation,
+      favoriteClub,
       overallRating,
       predictionRating,
       hotTakeRating,
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Cannot generate artwork for another manager.' }, { status: 403 });
     }
 
-    const nation = cleanText(favoriteNation, 80) || 'Argentina';
+    const nation = cleanText(favoriteClub || favoriteNation, 80) || 'Arsenal';
     const faceDataUrl = normalizeFaceImage(faceImage);
     if (faceImage && !faceDataUrl) {
       return NextResponse.json({ error: 'Invalid or oversized face image. Please upload an image under 5MB.' }, { status: 400 });
@@ -151,7 +152,7 @@ export async function POST(request: Request) {
             'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live',
-            'X-Title': 'BallKnowledge World Cup 2026',
+            'X-Title': 'BallKnowledge Premier League 2026/27',
           },
           body: JSON.stringify({
             model,
