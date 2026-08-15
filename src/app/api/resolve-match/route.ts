@@ -10,6 +10,7 @@ import {
   calculateOVR,
   calculatePRD,
   calculateRSTFromActivity,
+  gradeWithFallback,
 } from '@/lib/scoring';
 
 export const dynamic = 'force-dynamic';
@@ -201,38 +202,13 @@ async function callNvidia(userPrompt: string) {
  * @param {string} statement - The hot take text submitted by the user.
  * @returns {Promise<Object>} JSON containing grade, ovr, verdict, charge, and sentence.
  */
-async function gradeHotTake(statement: string): Promise<{ grade: string; ovr: number; verdict: string; charge: string; sentence: string }> {
+async function gradeHotTake(statement: string) {
   const prompt = `Grade this football hot take: "${statement}"`;
-
-  // Try each provider in order of priority
-  const attempts = [
+  return gradeWithFallback(statement, [
     () => !isPlaceholderKey(process.env.OPENROUTER_API_KEY) ? callOpenRouter(prompt) : Promise.reject(new Error('No key')),
     () => !isPlaceholderKey(process.env.GROQ_API_KEY) ? callGroq(prompt) : Promise.reject(new Error('No key')),
     () => !isPlaceholderKey(process.env.NVIDIA_API_KEY) ? callNvidia(prompt) : Promise.reject(new Error('No key')),
-  ];
-
-  for (const attempt of attempts) {
-    try {
-      const result = await attempt();
-      return result;
-    } catch {
-      // try next provider on failure
-    }
-  }
-
-  // Local heuristic fallback to prevent server crashes/timeout failures.
-  // Performs lightweight string parsing to give realistic, humorous grades.
-  const lower = statement.toLowerCase().trim();
-  const isElite = lower.includes('messi') || lower.includes('best world cup') || lower.includes('greatest');
-  const isDelusion = lower.includes('antony') || lower.includes('maguire') || lower.length < 10;
-  const ovr = isElite ? 85 : isDelusion ? 20 : 55;
-  return {
-    grade: isElite ? 'CORRECT' : isDelusion ? 'INCORRECT' : 'PARTIALLY_CORRECT',
-    ovr,
-    verdict: isElite ? 'CERTIFIED COOKING' : isDelusion ? 'SUPREME DELUSION' : 'MID TAKE GRADED',
-    charge: 'Local heuristic tribunal verdict.',
-    sentence: isDelusion ? 'Banned from tactical discussions for 48 hours.' : 'Sentenced to watch more football.',
-  };
+  ]);
 }
 
 

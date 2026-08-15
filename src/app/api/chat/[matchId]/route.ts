@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/authSession';
 import { fetchWorldCupMatches } from '@/lib/worldcupData';
+import {
+  chatListDegraded,
+  chatListOrDegraded,
+  serializeChatMessages,
+  shouldInjectBanter,
+} from '@/lib/chatList';
 
 export const dynamic = 'force-dynamic';
 
@@ -186,90 +192,58 @@ export async function GET(
       return NextResponse.json({ error: 'MatchId is required.' }, { status: 400 });
     }
 
-    // 1. Fetch chat messages from the database
-    const messages = await prisma.chatMessage.findMany({
-      where: { matchId: safeMatchId },
-      orderBy: { createdAt: 'asc' },
-      take: 100,
-      include: {
-        profile: {
-          select: {
-            username: true,
-            avatarStyle: true,
-            avatarSeed: true
-          }
-        }
-      }
-    });
-
-    // 2. Dynamic DB Banter: inject a bot message only if:
-    //    - chat is completely empty, OR
-    //    - last message (real or bot) was >5 minutes ago (rate limit to prevent DB bloat)
-    const now = new Date();
-    const lastMsg = messages[messages.length - 1];
-    const lastMsgAge = lastMsg ? now.getTime() - new Date(lastMsg.createdAt).getTime() : Infinity;
-    const shouldInject =
-      messages.length === 0 ||
-      (messages.length < 50 && lastMsgAge > 5 * 60 * 1000); // 5-minute cooldown
-
-    if (shouldInject) {
-      try {
-        const randomName = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
-        const matchCtx = await getMatchContext(safeMatchId);
-        const historyStr = formatChatHistory(messages);
-        
-        const randomText = await getChatBotResponse(
-          randomName,
-          matchCtx,
-          historyStr,
-          "Banter conversation starter"
-        );
-        
-        const botProfile = await getOrCreateSimulatedProfile(randomName);
-
-        const newMsg = await prisma.chatMessage.create({
-          data: {
-            matchId: safeMatchId,
-            profileId: botProfile.id,
-            text: randomText
-          },
-          include: {
-            profile: {
-              select: {
-                username: true,
-                avatarStyle: true,
-                avatarSeed: true
-              }
+    const body = await chatListOrDegraded(async () => {
+      const messages = await prisma.chatMessage.findMany({
+        where: { matchId: safeMatchId },
+        orderBy: { createdAt: 'asc' },
+        take: 100,
+        include: {
+          profile: {
+            select: {
+              username: true,
+              avatarStyle: true,
+              avatarSeed: true
             }
           }
-        });
-        messages.push(newMsg);
-      } catch (dbErr) {
-        console.warn('[Chat API] Failed to inject dynamic banter:', dbErr);
-      }
-    }
+        }
+      });
 
-    return NextResponse.json({
-      success: true,
-      messages: messages.map(m => ({
-        id: m.id,
-        matchId: m.matchId,
-        author: m.profile?.username || 'Anonymous',
-        text: m.text,
-        timestamp: new Date(m.createdAt).getTime(),
-        reactions: (m.reactions as Record<string, number>) || {},
-        type: 'message'
-      }))
+      const lastMsg = messages[messages.length - 1];
+      const lastMsgAge = lastMsg ? Date.now() - new Date(lastMsg.createdAt).getTime() : Infinity;
+      if (shouldInjectBanter(messages.length, lastMsgAge)) {
+        void injectBanter(safeMatchId, messages).catch((dbErr) => {
+          console.warn('[Chat API] Failed to inject dynamic banter:', dbErr);
+        });
+      }
+
+      return serializeChatMessages(messages);
     });
 
+    return NextResponse.json(body);
   } catch (error) {
     console.error('[Chat GET API] Error:', error);
-    return NextResponse.json({
-      success: true,
-      degraded: true,
-      messages: [],
-    });
+    return NextResponse.json(chatListDegraded());
   }
+}
+
+async function injectBanter(safeMatchId: string, messages: Array<{ text: string; profile?: { username?: string | null } | null; author?: string }>) {
+  const randomName = SIMULATED_MANAGERS[Math.floor(Math.random() * SIMULATED_MANAGERS.length)];
+  const matchCtx = await getMatchContext(safeMatchId);
+  const historyStr = formatChatHistory(messages);
+  const randomText = await getChatBotResponse(
+    randomName,
+    matchCtx,
+    historyStr,
+    'Banter conversation starter'
+  );
+  const botProfile = await getOrCreateSimulatedProfile(randomName);
+  await prisma.chatMessage.create({
+    data: {
+      matchId: safeMatchId,
+      profileId: botProfile.id,
+      text: randomText
+    }
+  });
 }
 
 // ── POST Route ──────────────────────────────────────────────────────────────

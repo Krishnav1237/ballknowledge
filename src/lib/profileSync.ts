@@ -5,6 +5,8 @@
  * and synced with the PostgreSQL database. No localStorage is used.
  */
 
+import { fetchWithTimeout } from '@/lib/requestBounds';
+
 export interface FootballIQProfile {
   id?: string;
   username: string;
@@ -82,7 +84,7 @@ export async function loadSessionProfile() {
 
   authLoadPromise = (async () => {
     try {
-      const res = await fetch('/api/auth');
+      const res = await fetchWithTimeout('/api/auth');
       if (res.ok) {
         const data = await res.json();
         if (data.authenticated && data.profile) {
@@ -207,7 +209,7 @@ export function saveStoredPredictions(preds: Record<string, LocalPrediction>) {
 export async function syncProfileWithDb(profile: FootballIQProfile): Promise<FootballIQProfile> {
   if (typeof window === 'undefined') return profile;
   try {
-    const res = await fetch(`/api/profile/${encodeURIComponent(profile.username)}`, {
+    const res = await fetchWithTimeout(`/api/profile/${encodeURIComponent(profile.username)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -281,7 +283,7 @@ export async function syncProfileWithDb(profile: FootballIQProfile): Promise<Foo
 export async function wipeProfileFromDb(username: string): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   try {
-    const res = await fetch(`/api/profile/${encodeURIComponent(username)}`, {
+    const res = await fetchWithTimeout(`/api/profile/${encodeURIComponent(username)}`, {
       method: 'DELETE',
     });
     return res.ok;

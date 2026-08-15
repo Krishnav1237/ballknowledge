@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/authSession';
+import { IMAGE_GEN_TIMEOUT_MS } from '@/lib/requestBounds';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 15;
 
 const FALLBACK_CARD_BG = '/images/toty_bg_premium.webp';
 
@@ -168,18 +169,12 @@ export async function POST(request: Request) {
               }],
             } : {}),
           }),
-          signal: AbortSignal.timeout(45_000),
+          signal: AbortSignal.timeout(IMAGE_GEN_TIMEOUT_MS),
         });
       };
 
       try {
-        let response = await makeImageRequest(Boolean(faceDataUrl));
-
-        // If face reference request failed (moderation or provider issue), retry without face reference
-        if (!response.ok && faceDataUrl) {
-          console.warn(`OpenRouter image gen with face reference failed (${response.status}). Retrying without face reference...`);
-          response = await makeImageRequest(false);
-        }
+        const response = await makeImageRequest(Boolean(faceDataUrl));
 
         if (response.ok) {
           const data = await response.json();
@@ -193,21 +188,6 @@ export async function POST(request: Request) {
         }
       } catch (err: any) {
         console.error('OpenRouter image generation error:', err);
-        if (faceDataUrl) {
-          try {
-            console.warn('Attempting final fallback image generation without face reference...');
-            const fallbackRes = await makeImageRequest(false);
-            if (fallbackRes.ok) {
-              const data = await fallbackRes.json();
-              aiImageUrl = data?.data?.[0]?.url ?? '';
-              if (!aiImageUrl && data?.data?.[0]?.b64_json) {
-                aiImageUrl = `data:image/jpeg;base64,${data.data[0].b64_json}`;
-              }
-            }
-          } catch (fallbackErr) {
-            console.error('Fallback image generation failed:', fallbackErr);
-          }
-        }
       }
     } else {
       console.warn('OpenRouter API key is missing. Using fallback card backdrop.');

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Flame, MessageCircle, AlertCircle } from 'lucide-react';
+import { CHAT_FETCH_TIMEOUT_MS, fetchWithTimeout } from '@/lib/requestBounds';
 
 interface ChatMessage {
   id: string;
@@ -60,7 +61,7 @@ export default function MatchLiveChat({
   const fetchChatMessages = useCallback(async () => {
     if (!matchId || matchId === 'undefined' || matchId === 'null') return;
     try {
-      const res = await fetch(`/api/chat/${matchId}`);
+      const res = await fetchWithTimeout(`/api/chat/${matchId}`, {}, CHAT_FETCH_TIMEOUT_MS);
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && Array.isArray(data.messages)) {
@@ -108,13 +109,13 @@ export default function MatchLiveChat({
     setSendError(null);
 
     try {
-      const res = await fetch(`/api/chat/${matchId}`, {
+      const res = await fetchWithTimeout(`/api/chat/${matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: trimmedText
         })
-      });
+      }, CHAT_FETCH_TIMEOUT_MS);
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && data.message) {
@@ -153,7 +154,7 @@ export default function MatchLiveChat({
     });
 
     try {
-      const res = await fetch(`/api/chat/${matchId}`, {
+      const res = await fetchWithTimeout(`/api/chat/${matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -161,7 +162,7 @@ export default function MatchLiveChat({
           messageId,
           emoji
         })
-      });
+      }, CHAT_FETCH_TIMEOUT_MS);
       if (!res.ok) {
         setMessages(previousMessages);
         setSendError(res.status === 401 ? 'Sign in to react in live chat.' : 'Reaction was not saved.');

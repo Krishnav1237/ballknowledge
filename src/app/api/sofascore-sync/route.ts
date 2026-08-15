@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { firstResolved, SOFASCORE_WAIT_MS } from '@/lib/requestBounds';
+import { sofaScoreFallbackResponse } from '@/lib/sofascoreFallback';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,16 +89,26 @@ async function runScraperInstance(eventId: number): Promise<any> {
     if (processQueue.length >= 10) {
       throw new Error('Server busy (sync queue full). Please try again in a few seconds.');
     }
-    // Queue the request
     return new Promise((resolve, reject) => {
-      processQueue.push({ eventId, resolve, reject });
+      let entry: (typeof processQueue)[number];
+      const timer = setTimeout(() => {
+        const idx = processQueue.indexOf(entry);
+        if (idx >= 0) processQueue.splice(idx, 1);
+        resolve(null);
+      }, SOFASCORE_WAIT_MS);
+      entry = {
+        eventId,
+        resolve: (data: any) => { clearTimeout(timer); resolve(data); },
+        reject: (err: any) => { clearTimeout(timer); reject(err); },
+      };
+      processQueue.push(entry);
     });
   }
 
   activeProcessCount++;
   try {
     const { stdout } = await execFileAsync('python3', [SCRAPER_PATH, 'fetch', String(eventId)], {
-      timeout: 15_000, // 15 second timeout limit
+      timeout: SOFASCORE_WAIT_MS,
       maxBuffer: 5 * 1024 * 1024, // 5MB
     });
     return JSON.parse(stdout.trim());
@@ -137,32 +149,7 @@ async function syncMatchData(matchId: string, eventId: number): Promise<any> {
   return syncPromise;
 }
 
-/**
- * Generates a structured fallback response based on basic match info.
- * Prevents page crashes if the scraper fails and there is no cache history.
- */
-function generateFallbackData(matchId: string, mapEntry: any) {
-  const homeName = mapEntry?.homeTeam || 'Home Team';
-  const awayName = mapEntry?.awayTeam || 'Away Team';
-  return {
-    matchId: String(matchId),
-    status: 'Scheduled',
-    homeTeam: homeName,
-    awayTeam: awayName,
-    homeScore: 0,
-    awayScore: 0,
-    isLive: false,
-    isFinished: false,
-    timeElapsed: 'notstarted',
-    firstGoalscorer: 'None',
-    motm: 'None',
-    ratingsMap: {},
-    homeGoals: [],
-    awayGoals: [],
-    fetchedAt: Math.floor(Date.now() / 1000),
-    isFallback: true,
-  };
-}
+
 
 /**
  * GET /api/sofascore-sync?matchId=102
@@ -199,12 +186,14 @@ export async function GET(request: Request) {
     });
   }
 
-  // Fetch fresh data from SofaScore (using request coalescing)
-  const freshData = await syncMatchData(matchId, sofascoreEventId);
+  const freshData = await firstResolved(
+    syncMatchData(matchId, sofascoreEventId),
+    SOFASCORE_WAIT_MS,
+    null,
+  );
   if (!freshData || freshData.error) {
     const isQueueFull = freshData?.error?.includes('queue full');
 
-    // Return stale cache if available
     if (cache[cacheKey]) {
       return NextResponse.json({
         success: true,
@@ -222,16 +211,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: freshData.error }, { status: 429 });
     }
 
-    // No cache & Scraper failed: generate clean fallback instead of HTTP 502 error
-    const fallback = generateFallbackData(matchId, mapEntry);
-    return NextResponse.json({
-      success: true,
-      matchId,
-      sofascoreEventId,
-      data: fallback,
-      cached: false,
-      fallback: true,
-    });
+    return NextResponse.json(sofaScoreFallbackResponse(matchId, sofascoreEventId, mapEntry));
   }
 
   // Update cache

@@ -4,6 +4,7 @@
  */
 
 import { TEAM_ROSTERS } from '@/lib/roster';
+import { GRADE_DEADLINE_MS } from '@/lib/requestBounds';
 
 const PLAYER_RATING_MAP: Record<string, number> = {
   'l. messi': 9.5, 'messi': 9.5,
@@ -249,4 +250,49 @@ export function calculateRSTFromActivity(messageCount: number, upvotes: number):
 export function calculateOVR(prd: number, mgr: number, hot: number, rst: number): number {
   const raw = (0.35 * prd) + (0.25 * mgr) + (0.25 * hot) + (0.15 * rst);
   return Math.max(1, Math.min(99, Math.round(raw)));
+}
+
+export type HotTakeGrade = {
+  grade: string;
+  ovr: number;
+  verdict: string;
+  charge: string;
+  sentence: string;
+};
+
+export function heuristicGradeHotTake(statement: string): HotTakeGrade {
+  const lower = statement.toLowerCase().trim();
+  const isElite = lower.includes('messi') || lower.includes('best world cup') || lower.includes('greatest');
+  const isDelusion = lower.includes('antony') || lower.includes('maguire') || lower.length < 10;
+  const ovr = isElite ? 85 : isDelusion ? 20 : 55;
+  return {
+    grade: isElite ? 'CORRECT' : isDelusion ? 'INCORRECT' : 'PARTIALLY_CORRECT',
+    ovr,
+    verdict: isElite ? 'CERTIFIED COOKING' : isDelusion ? 'SUPREME DELUSION' : 'MID TAKE GRADED',
+    charge: 'Local heuristic tribunal verdict.',
+    sentence: isDelusion ? 'Banned from tactical discussions for 48 hours.' : 'Sentenced to watch more football.',
+  };
+}
+
+export async function gradeWithFallback(
+  statement: string,
+  callers: Array<() => Promise<HotTakeGrade>>,
+  deadlineMs = GRADE_DEADLINE_MS,
+): Promise<HotTakeGrade> {
+  const deadlineAt = Date.now() + deadlineMs;
+  for (const caller of callers) {
+    const remaining = deadlineAt - Date.now();
+    if (remaining <= 0) break;
+    try {
+      return await Promise.race([
+        caller(),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('grade deadline')), remaining);
+        }),
+      ]);
+    } catch {
+      continue;
+    }
+  }
+  return heuristicGradeHotTake(statement);
 }

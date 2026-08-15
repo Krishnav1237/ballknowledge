@@ -15,6 +15,8 @@ import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
 import { parseLocalDate, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
+import { fetchWithTimeout } from '@/lib/requestBounds';
+import { resolveMatchPageLoad } from '@/lib/matchPageLoad';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -61,14 +63,14 @@ interface Match {
 
 
 async function fetchMatches(): Promise<Match[]> {
-  const res = await fetch('/api/matches');
+  const res = await fetchWithTimeout('/api/matches');
   if (!res.ok) throw new Error('Failed to load matches');
   const data = await res.json();
   return Array.isArray(data) ? data : data.matches || [];
 }
 
 async function fetchTeams(): Promise<Team[]> {
-  const res = await fetch('/api/teams');
+  const res = await fetchWithTimeout('/api/teams');
   if (!res.ok) throw new Error('Failed to load teams');
   const data = await res.json();
   return Array.isArray(data) ? data : data.teams || [];
@@ -128,6 +130,7 @@ export default function MatchPage() {
   const [mounted, setMounted] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState<'pitch' | 'sidebar'>('pitch');
   const [error, setError] = useState<string | null>(null);
+  const teamsWarnRef = useRef(false);
 
   // Split Query: Polling matches only, parameterising keys by matchId
   const matchesQuery = useQuery({
@@ -140,6 +143,7 @@ export default function MatchPage() {
     refetchOnWindowFocus: true,
     refetchInterval: isMatchLive ? 15_000 : false,
     refetchIntervalInBackground: false,
+    retry: 1,
   });
 
   // Split Query: Cache teams list indefinitely (static data)
@@ -148,6 +152,7 @@ export default function MatchPage() {
     queryFn: fetchTeams,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 2,
+    retry: 1,
   });
 
   const dismissPredictionModal = () => {
@@ -157,6 +162,7 @@ export default function MatchPage() {
   };
 
   useEffect(() => {
+    teamsWarnRef.current = false;
     setMounted(true);
     const dismissedKey = `bk_prediction_modal_dismissed_${matchId}`;
     predictionModalDismissedRef.current = getStorageItem('sessionStorage', dismissedKey) === 'true';
@@ -260,31 +266,33 @@ export default function MatchPage() {
   }, []);
 
   useEffect(() => {
-    const queryError = matchesQuery.error || teamsQuery.error;
-    if (!queryError) return;
+    const load = resolveMatchPageLoad({
+      matchId,
+      matches: matchesQuery.data,
+      teams: teamsQuery.data,
+      matchesPending: matchesQuery.isPending,
+      teamsPending: teamsQuery.isPending,
+      matchesError: Boolean(matchesQuery.isError || matchesQuery.error),
+      teamsError: Boolean(teamsQuery.isError || teamsQuery.error),
+    });
+    if (!load.ready) return;
 
-    console.error('Failed to load remote match data:', queryError);
-    if (!matchesQuery.data) {
-      setError('Failed to fetch real-time match details. Please verify your internet connection.');
-    } else {
-      showToast('Connection interrupted. Viewing offline match cache.', 'warn');
+    if (matchesQuery.error || teamsQuery.error) {
+      console.error('Failed to load remote match data:', matchesQuery.error || teamsQuery.error);
     }
+
+    setError(load.error);
+    setMatch(load.match as Match | null);
+    setTeams(load.teams as Team[]);
+    setMatchNotFound(load.matchNotFound);
     setLoading(false);
-  }, [matchesQuery.error, teamsQuery.error, matchesQuery.data, showToast]);
-
-  useEffect(() => {
-    if (!matchesQuery.data || !teamsQuery.data) return;
-
-    const foundMatch = matchesQuery.data.find((m) => m.id === matchId) || null;
-    setMatch(foundMatch);
-    setTeams(teamsQuery.data);
-    setLoading(false);
-
-    if (!foundMatch) {
-      setMatchNotFound(true);
-      return;
+    if (load.warnToast && !teamsWarnRef.current) {
+      teamsWarnRef.current = true;
+      showToast(load.warnToast, 'warn');
     }
-    setMatchNotFound(false);
+
+    const foundMatch = load.match;
+    if (!foundMatch) return;
 
     const kickoff = parseLocalDate(foundMatch.local_date, foundMatch.stadium_id);
     const timeDiff = Date.now() - kickoff.getTime();
@@ -293,7 +301,7 @@ export default function MatchPage() {
 
     // Trigger SofaScore sync for live/recently finished matches
     if (liveNow || (foundMatch.finished !== 'TRUE' && timeDiff >= -30 * 60 * 1000 && timeDiff < 4 * 60 * 60 * 1000)) {
-      fetch(`/api/sofascore-sync?matchId=${matchId}`)
+      fetchWithTimeout(`/api/sofascore-sync?matchId=${matchId}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.success) {
@@ -312,7 +320,18 @@ export default function MatchPage() {
     if (!matchPred && isUpcoming && !predictionModalDismissedRef.current) {
       setShowPredictionModal(true);
     }
-  }, [matchesQuery.data, teamsQuery.data, matchId, matchesQuery]);
+  }, [
+    matchId,
+    matchesQuery.data,
+    matchesQuery.isPending,
+    matchesQuery.isError,
+    matchesQuery.error,
+    teamsQuery.data,
+    teamsQuery.isPending,
+    teamsQuery.isError,
+    teamsQuery.error,
+    showToast,
+  ]);
 
   if (error) {
     return (
@@ -423,7 +442,7 @@ export default function MatchPage() {
     // 2. If authenticated, also save to DB
     if (profile?.isAuthenticated) {
       try {
-        const res = await fetch('/api/predictions', {
+        const res = await fetchWithTimeout('/api/predictions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -627,54 +646,49 @@ export default function MatchPage() {
 
     setResolving(true);
     setVarText('VAR official in Stockley Park review in progress...');
-    
-    // Animate VAR Review
+
+    const lockedPred = predictions[matchId];
+    const resolveHomeScore = lockedPred?.homeScore ?? predHomeScore;
+    const resolveAwayScore = lockedPred?.awayScore ?? predAwayScore;
+    const resolveScorer = lockedPred?.firstGoalscorer ?? predScorer;
+    const resolveMotm = lockedPred?.motm ?? predMotm;
+    const resolvePossession = lockedPred?.possessionWinner ?? predPossession;
+    const resolveHotTakes = (lockedPred?.hotTakes ?? takes).filter((t: any) => t.statement.trim() !== '');
+    const resolveLineup = lockedPred?.lineup ?? lineup;
+
+    const resolvePromise = fetchWithTimeout('/api/resolve-match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        matchId,
+        homeScore: resolveHomeScore,
+        awayScore: resolveAwayScore,
+        firstGoalscorer: resolveScorer,
+        motm: resolveMotm,
+        possessionWinner: resolvePossession,
+        hotTakes: resolveHotTakes,
+        lineup: resolveLineup,
+        profile: {
+          username: profile.username,
+          overallRating: profile.overallRating,
+          predictionRating: profile.predictionRating,
+          hotTakeRating: profile.hotTakeRating,
+          role: profile.role
+        }
+      })
+    });
+
     const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-    
     await sleep(1500);
     setVarText('Auditing scoreline predictions against the Premier League outcome...');
-    
     await sleep(1500);
     setVarText('Summoning AI VAR tribunal to grade hot takes and confidence ranges...');
-    
     await sleep(1800);
     setVarText('Football IQ Reputation algorithms updating overall status...');
-    
     await sleep(1500);
 
     try {
-      // Always use the saved (locked) prediction values to ensure accuracy
-      const lockedPred = predictions[matchId];
-      const resolveHomeScore = lockedPred?.homeScore ?? predHomeScore;
-      const resolveAwayScore = lockedPred?.awayScore ?? predAwayScore;
-      const resolveScorer = lockedPred?.firstGoalscorer ?? predScorer;
-      const resolveMotm = lockedPred?.motm ?? predMotm;
-      const resolvePossession = lockedPred?.possessionWinner ?? predPossession;
-      const resolveHotTakes = (lockedPred?.hotTakes ?? takes).filter((t: any) => t.statement.trim() !== '');
-      const resolveLineup = lockedPred?.lineup ?? lineup;
-
-      // POST to backend api
-      const response = await fetch('/api/resolve-match', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          matchId,
-          homeScore: resolveHomeScore,
-          awayScore: resolveAwayScore,
-          firstGoalscorer: resolveScorer,
-          motm: resolveMotm,
-          possessionWinner: resolvePossession,
-          hotTakes: resolveHotTakes,
-          lineup: resolveLineup,
-          profile: {
-            username: profile.username,
-            overallRating: profile.overallRating,
-            predictionRating: profile.predictionRating,
-            hotTakeRating: profile.hotTakeRating,
-            role: profile.role
-          }
-        })
-      });
+      const response = await resolvePromise;
 
       if (response.ok) {
         const result = await response.json();

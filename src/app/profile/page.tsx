@@ -5,6 +5,7 @@ import Image from 'next/image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { clearStoredPredictionsForCurrentProfile, clearStoredProfile, getStoredProfile, loadSessionProfile, saveStoredProfile, syncProfileWithDb, wipeProfileFromDb, FootballIQProfile } from '@/lib/profileSync';
 import { getStorageItem, removeStorageItem } from '@/lib/browserStorage';
+import { fetchWithTimeout } from '@/lib/requestBounds';
 import { VerdictData } from '@/lib/tribunalDB';
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { 
@@ -76,7 +77,7 @@ export default function ProfileSettingsPage() {
 
       // Fetch profile from DB via GET on mount to restore persisted image without overwriting DB
       try {
-        const res = await fetch(`/api/profile/${encodeURIComponent(prof.username)}`);
+        const res = await fetchWithTimeout(`/api/profile/${encodeURIComponent(prof.username)}`);
         if (cancelled) return;
         if (res.ok) {
           const data = await res.json();
@@ -127,7 +128,7 @@ export default function ProfileSettingsPage() {
   const handleGoogleCredentialResponse = useCallback(async (response: any) => {
     try {
       setAuthStage('Authenticating with Google...');
-      const res = await fetch('/api/auth/google', {
+      const res = await fetchWithTimeout('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: response.credential, expectedNonce: response.expectedNonce })
@@ -314,7 +315,7 @@ export default function ProfileSettingsPage() {
     setIsSynthesizing(true);
 
     try {
-      const res = await fetch('/api/generate-viral-card', {
+      const res = await fetchWithTimeout('/api/generate-viral-card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -431,7 +432,7 @@ export default function ProfileSettingsPage() {
     setAuthStage(authMode === 'signup' ? 'Signing up credentials...' : 'Verifying credentials...');
 
     try {
-      const res = await fetch('/api/auth', {
+      const res = await fetchWithTimeout('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

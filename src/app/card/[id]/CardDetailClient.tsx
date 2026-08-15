@@ -9,6 +9,7 @@ import SportsCenterCard from '@/components/SportsCenterCard';
 import { Trophy, Share2, CheckCircle, Home, Download, Shield, Sparkles } from 'lucide-react';
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
+import { fetchWithTimeout } from '@/lib/requestBounds';
 
 interface CardDetailClientProps {
   initialCard: any;
@@ -126,7 +127,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
     setGenerating(true);
     showStatus('Synthesizing dynamic country-themed background via OpenRouter...', 'info');
     try {
-      const response = await fetch('/api/generate-viral-card', {
+      const response = await fetchWithTimeout('/api/generate-viral-card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
