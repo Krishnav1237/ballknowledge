@@ -1254,7 +1254,7 @@ export default function MatchPage() {
                 activeMobileTab === 'sidebar' ? 'flex' : 'hidden lg:flex'
               }`}>
 
-                {/* ── LIVE / COMPLETED / LOCKED → Chat Panel ── */}
+                {/* ── LIVE / COMPLETED / LOCKED → Chat is the primary panel ── */}
                 {(status === 'LIVE' || status === 'COMPLETED' || predictions[matchId]?.locked) ? (
                   <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-0 backdrop-blur-md">
                     <MatchLiveChat
@@ -1380,6 +1380,17 @@ export default function MatchPage() {
                         <p className="text-[10px] text-zinc-500 mt-1 max-w-[160px] leading-normal">Click any slot on the pitch to see players for that position.</p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {(status !== 'LIVE' && status !== 'COMPLETED' && !predictions[matchId]?.locked) && (
+                  <div className="h-[220px] shrink-0 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col backdrop-blur-md">
+                    <MatchLiveChat
+                      matchId={matchId}
+                      isLive={false}
+                      isCompleted={false}
+                      managerAlias={profile?.username}
+                    />
                   </div>
                 )}
 

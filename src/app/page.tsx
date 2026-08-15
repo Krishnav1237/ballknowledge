@@ -24,8 +24,8 @@ export default function Home() {
   const [sandboxText,  setSandboxText]  = useState('Arsenal will retain the Premier League in 2026/27');
   const [sandboxOvr,   setSandboxOvr]   = useState(99);
 
-  const [predMOTM,        setPredMOTM]        = useState('Kylian Mbappé');
-  const [predGoalscorer,  setPredGoalscorer]  = useState('Jude Bellingham');
+  const [predMOTM,        setPredMOTM]        = useState('Bukayo Saka');
+  const [predGoalscorer,  setPredGoalscorer]  = useState('Erling Haaland');
   const [predPossession,  setPredPossession]  = useState('Arsenal');
 
   const [isTidied,       setIsTidied]       = useState(false);
@@ -194,8 +194,8 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* HOW IT WORKS                                                          */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── HOW IT WORKS — Light Section ─────────────────────────────────────── */}
-      <section className="py-16 md:py-20 px-6 bg-white border-t border-gray-100 relative overflow-hidden">
+      {/* ── HOW IT WORKS ─────────────────────────────────────────────────────── */}
+      <section className="py-16 md:py-20 px-6 bg-[#030712] border-t border-white/10 relative overflow-hidden">
         {/* Subtle stadium texture at very low opacity for depth */}
         <div className="absolute inset-0 pointer-events-none">
           <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.04] object-center" sizes="100vw" />
@@ -205,10 +205,10 @@ export default function Home() {
             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] bg-[#E11D48]/10 px-3 py-1 rounded-full border border-[#E11D48]/20">
               HOW IT WORKS
             </span>
-            <h2 className="font-display font-black text-2xl sm:text-3xl text-gray-900 uppercase tracking-wider mt-4">
+            <h2 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider mt-4">
               Build Your Reputation in <span className="text-[#E11D48]">5 Steps</span>
             </h2>
-            <p className="text-gray-500 text-xs sm:text-sm mt-3 max-w-lg mx-auto font-bold">
+            <p className="text-gray-400 text-xs sm:text-sm mt-3 max-w-lg mx-auto font-bold">
               Every step earns you points across 4 unique metrics to build your overall Football IQ card.
             </p>
           </div>
@@ -260,7 +260,7 @@ export default function Home() {
               return (
                 <div
                   key={s.n}
-                  className="relative group flex flex-col items-center text-center p-5 rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:border-gray-300 shadow-sm"
+                  className="relative group flex flex-col items-center text-center p-5 rounded-2xl border border-white/10 bg-[#0B0F19] transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:border-white/20 shadow-sm"
                 >
                   {/* Icon Capsule */}
                   <div
@@ -276,15 +276,14 @@ export default function Home() {
                   >
                     STEP {s.n} &middot; {s.metric}
                   </span>
-                  <h3 className="font-display font-black text-sm text-gray-900 mb-2 uppercase tracking-wide">{s.title}</h3>
-                  <p className="font-sans text-gray-500 text-[11.5px] leading-relaxed font-bold">{s.body}</p>
+                  <h3 className="font-display font-black text-sm text-white mb-2 uppercase tracking-wide">{s.title}</h3>
+                  <p className="font-sans text-gray-400 text-[11.5px] leading-relaxed font-bold">{s.body}</p>
                 </div>
               );
             })}
           </div>
 
-          {/* Formula Strip - Light card style */}
-          <div className="mt-10 py-4 px-6 rounded-2xl border border-gray-200 bg-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="mt-10 py-4 px-6 rounded-2xl border border-white/10 bg-[#0B0F19] shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 flex-wrap justify-center text-[10px] sm:text-xs font-black uppercase tracking-wider">
               {/* PRD */}
               <div className="flex items-center gap-1.5 bg-[#E11D48]/8 border border-[#E11D48]/20 text-[#E11D48] px-3 py-1 rounded-full font-black">
@@ -374,7 +373,7 @@ export default function Home() {
                         <div className="flex gap-1.5 flex-wrap max-w-[85%]">
                           {[
                             { label: 'ARS title take', text: 'Arsenal will retain the Premier League in 2026/27' },
-                            { label: '🇵🇹 Ronaldo take', text: "Ronaldo's aura will carry Portugal to the final trophy" },
+                            { label: 'Haaland 30+', text: 'Haaland still hits 30 Premier League goals in 2026/27' },
                           ].map(t => (
                             <button key={t.label} onClick={() => setSandboxText(t.text)}
                               className="text-[9px] font-bold px-2.5 py-1 rounded-full border border-white/10 text-gray-400 hover:border-[#E11D48] hover:text-white hover:bg-[#E11D48]/10 transition-all bg-white/5 cursor-pointer active:scale-95">
@@ -507,8 +506,8 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* DRAGGABLE DOSSIERS PLATFORM                                            */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── DOSSIERS — Light Section ──────────────────────────────────────────── */}
-      <section className="relative py-12 md:py-16 px-6 border-t border-gray-200 bg-slate-50 text-gray-900">
+      {/* ── DOSSIERS ─────────────────────────────────────────────────────────── */}
+      <section className="relative py-12 md:py-16 px-6 border-t border-white/10 bg-[#030712] text-white">
         {/* Trophy image bleed at very low opacity for editorial feel */}
         <div className="absolute inset-0 pointer-events-none">
           <Image src="/images/trophy_moment.webp" alt="" fill className="object-cover opacity-[0.05] object-top" sizes="100vw" />
@@ -516,22 +515,22 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto relative z-10">
           <div className="mb-8 text-center">
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-2">FIXTURE STORYLINES</p>
-            <h2 className="font-serif italic font-black text-4xl sm:text-5xl text-gray-900 leading-tight">
+            <h2 className="font-serif italic font-black text-4xl sm:text-5xl text-white leading-tight">
               Predict the scripts of key stars.
             </h2>
-            <p className="text-sm text-gray-500 font-sans mt-2 hidden lg:block">
+            <p className="text-sm text-gray-400 font-sans mt-2 hidden lg:block">
               Drag the player dossiers around the Editor&apos;s Desk.
             </p>
           </div>
 
           {/* Desktop Draggable dossiers canvas desk */}
-          <div ref={deskRef} className="relative w-full h-[980px] border border-gray-300 rounded-3xl bg-white/80 backdrop-blur-sm overflow-hidden p-6 hidden lg:block shadow-inner"
-               style={{ backgroundImage: 'radial-gradient(rgba(0,0,0,0.06) 1.5px, transparent 1.5px)', backgroundSize: '20px 20px' }}>
+          <div ref={deskRef} className="relative w-full h-[980px] border border-white/10 rounded-3xl bg-[#0B0F19]/80 backdrop-blur-sm overflow-hidden p-6 hidden lg:block shadow-inner"
+               style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1.5px, transparent 1.5px)', backgroundSize: '20px 20px' }}>
             
             <div className="absolute top-4 right-4 z-20 flex gap-2">
               <button
                 onClick={() => setIsTidied(!isTidied)}
-                className="px-4.5 py-2 rounded-full font-black text-xs uppercase tracking-widest text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm border border-gray-300 cursor-pointer flex items-center gap-1.5"
+                className="px-4.5 py-2 rounded-full font-black text-xs uppercase tracking-widest text-white bg-white/10 hover:bg-white/15 transition-colors shadow-sm border border-white/15 cursor-pointer flex items-center gap-1.5"
               >
                 {isTidied ? 'Scatter Dossiers' : 'Tidy Up Desk'}
               </button>
@@ -568,7 +567,7 @@ export default function Home() {
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   whileDrag={{ scale: 1.05, zIndex: 50, cursor: 'grabbing', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3)' }}
-                  className="absolute w-[320px] h-[430px] group flex flex-col rounded-2xl overflow-hidden shadow-md bg-white cursor-grab select-none hover:shadow-xl transition-shadow border border-gray-200"
+                  className="absolute w-[320px] h-[430px] group flex flex-col rounded-2xl overflow-hidden shadow-md bg-[#0B0F19] cursor-grab select-none hover:shadow-xl transition-shadow border border-white/10"
                   style={{
                     left: `${leftPercent}%`,
                     top: `${topPercent}%`,
@@ -597,7 +596,7 @@ export default function Home() {
                   </div>
 
                   <div className="p-5 flex flex-col gap-3 justify-between flex-grow">
-                    <p className="font-serif text-gray-600 text-xs sm:text-sm leading-relaxed select-none">{p.hook}</p>
+                    <p className="font-serif text-gray-400 text-xs sm:text-sm leading-relaxed select-none">{p.hook}</p>
                     <Link href={p.href}
                           className="text-[10px] sm:text-xs font-black uppercase tracking-widest inline-flex items-center gap-1 transition-all hover:translate-x-0.5"
                           style={{ color: p.accent }}>
@@ -618,7 +617,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="group flex flex-col rounded-2xl overflow-hidden shadow-md bg-white w-full h-[430px] sm:h-[460px] border border-gray-200"
+                className="group flex flex-col rounded-2xl overflow-hidden shadow-md bg-[#0B0F19] w-full h-[430px] sm:h-[460px] border border-white/10"
                 style={{ border: `1.5px solid ${p.border}30` }}
               >
                 <div className="relative w-full overflow-hidden" style={{ height: 230, flexShrink: 0 }}>
@@ -642,7 +641,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="p-5 flex flex-col gap-3 justify-between flex-grow">
-                  <p className="font-serif text-gray-600 text-xs sm:text-sm leading-relaxed flex-1">{p.hook}</p>
+                  <p className="font-serif text-gray-400 text-xs sm:text-sm leading-relaxed flex-1">{p.hook}</p>
                   <Link href={p.href}
                         className="text-[10px] sm:text-xs font-black uppercase tracking-widest inline-flex items-center gap-1"
                         style={{ color: p.accent }}>

@@ -45,6 +45,25 @@ test('shipped Premier League loaders expose 20 clubs and 380 fixtures', () => {
   const table = computeLeagueTable(matches, clubs);
   assert.equal(table.length, 20);
   assert.ok(table.every((row) => row.played === 0 && row.points === 0));
+
+  const clubIds = new Set(clubs.map((club) => club.id));
+  const nameById = new Map(clubs.map((club) => [club.id, club.name_en]));
+  const directed = new Set<string>();
+  for (const match of matches) {
+    assert.notEqual(match.home_team_id, match.away_team_id, `self-play ${match.id}`);
+    assert.ok(clubIds.has(match.home_team_id), `orphan home ${match.id}`);
+    assert.ok(clubIds.has(match.away_team_id), `orphan away ${match.id}`);
+    assert.equal(match.home_team_name_en, nameById.get(match.home_team_id));
+    assert.equal(match.away_team_name_en, nameById.get(match.away_team_id));
+    directed.add(`${match.home_team_id}-${match.away_team_id}`);
+  }
+  assert.equal(directed.size, 380);
+  for (const home of clubIds) {
+    for (const away of clubIds) {
+      if (home === away) continue;
+      assert.ok(directed.has(`${home}-${away}`), `missing pair ${home} v ${away}`);
+    }
+  }
 });
 
 test('computeLeagueTable uses 3/1/0 from shipped match objects', () => {
