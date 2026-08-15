@@ -147,10 +147,8 @@ test('match page leaves the spinner when teams fail after matches succeed', () =
   assert.match(page, /teamsQuery\.isPending/);
   assert.match(page, /matchesQuery\.isError/);
   assert.match(page, /teamsQuery\.isError/);
-  assert.match(page, /matchesQuery\.error/);
-  assert.match(page, /teamsQuery\.error/);
   assert.match(page, /teamsError:/);
-  assert.match(page, /setMatch\(load\.match/);
-  assert.match(page, /setError\(load\.error\)/);
-  assert.match(page, /setLoading\(false\)/);
+  assert.match(page, /const match = load\.match/);
+  assert.match(page, /if \(load\.error\)/);
+  assert.match(page, /if \(!load\.ready \|\| !match\)/);
 });

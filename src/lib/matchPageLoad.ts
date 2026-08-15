@@ -1,44 +1,23 @@
 /** Settles the match page so a partial API failure cannot leave the spinner up. */
 
-export type MatchPageRecord = {
-  id: string;
-  home_team_id: string;
-  away_team_id: string;
-  local_date: string;
-  finished: string;
-  stadium_id: string;
-  home_team_name_en?: string;
-  away_team_name_en?: string;
-  home_team_label?: string;
-  away_team_label?: string;
-};
-
-export type TeamPageRecord = {
-  id: string;
-  name_en: string;
-  flag: string;
-  fifa_code?: string;
-  groups?: string;
-};
-
-export type MatchPageLoad = {
+export type MatchPageLoad<M extends { id: string }, T> = {
   ready: boolean;
   error: string | null;
-  match: MatchPageRecord | null;
-  teams: TeamPageRecord[];
+  match: M | null;
+  teams: T[];
   matchNotFound: boolean;
   warnToast: string | null;
 };
 
-export function resolveMatchPageLoad(input: {
+export function resolveMatchPageLoad<M extends { id: string }, T>(input: {
   matchId: string;
-  matches?: MatchPageRecord[];
-  teams?: TeamPageRecord[];
+  matches?: M[];
+  teams?: T[];
   matchesPending: boolean;
   teamsPending: boolean;
   matchesError?: boolean;
   teamsError?: boolean;
-}): MatchPageLoad {
+}): MatchPageLoad<M, T> {
   if (input.matchesPending || input.teamsPending) {
     return {
       ready: false,

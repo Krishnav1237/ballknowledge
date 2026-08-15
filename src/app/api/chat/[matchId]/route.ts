@@ -4,7 +4,7 @@ import { requireSession } from '@/lib/authSession';
 import { fetchWorldCupMatches } from '@/lib/worldcupData';
 import {
   chatListDegraded,
-  chatListOrDegraded,
+  chatListSuccess,
   serializeChatMessages,
   shouldInjectBanter,
 } from '@/lib/chatList';
@@ -192,34 +192,30 @@ export async function GET(
       return NextResponse.json({ error: 'MatchId is required.' }, { status: 400 });
     }
 
-    const body = await chatListOrDegraded(async () => {
-      const messages = await prisma.chatMessage.findMany({
-        where: { matchId: safeMatchId },
-        orderBy: { createdAt: 'asc' },
-        take: 100,
-        include: {
-          profile: {
-            select: {
-              username: true,
-              avatarStyle: true,
-              avatarSeed: true
-            }
+    const messages = await prisma.chatMessage.findMany({
+      where: { matchId: safeMatchId },
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+      include: {
+        profile: {
+          select: {
+            username: true,
+            avatarStyle: true,
+            avatarSeed: true
           }
         }
-      });
-
-      const lastMsg = messages[messages.length - 1];
-      const lastMsgAge = lastMsg ? Date.now() - new Date(lastMsg.createdAt).getTime() : Infinity;
-      if (shouldInjectBanter(messages.length, lastMsgAge)) {
-        void injectBanter(safeMatchId, messages).catch((dbErr) => {
-          console.warn('[Chat API] Failed to inject dynamic banter:', dbErr);
-        });
       }
-
-      return serializeChatMessages(messages);
     });
 
-    return NextResponse.json(body);
+    const lastMsg = messages[messages.length - 1];
+    const lastMsgAge = lastMsg ? Date.now() - new Date(lastMsg.createdAt).getTime() : Infinity;
+    if (shouldInjectBanter(messages.length, lastMsgAge)) {
+      void injectBanter(safeMatchId, messages).catch((dbErr) => {
+        console.warn('[Chat API] Failed to inject dynamic banter:', dbErr);
+      });
+    }
+
+    return NextResponse.json(chatListSuccess(serializeChatMessages(messages)));
   } catch (error) {
     console.error('[Chat GET API] Error:', error);
     return NextResponse.json(chatListDegraded());

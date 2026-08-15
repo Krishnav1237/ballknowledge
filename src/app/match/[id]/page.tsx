@@ -81,9 +81,6 @@ export default function MatchPage() {
   const params = useParams();
   const matchId = params.id as string;
 
-  const [match, setMatch] = useState<Match | null>(null);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [predictions, setPredictions] = useState<Record<string, LocalPrediction>>({});
 
@@ -121,18 +118,13 @@ export default function MatchPage() {
     toastTimeoutRef.current = setTimeout(() => setToast(null), 3500);
   }, []);
 
-  // Determine if match is currently live for polling purposes
-  const [isMatchLive, setIsMatchLive] = useState(false);
   const [sofaSyncedAt, setSofaSyncedAt] = useState<number | null>(null);
-  const [matchNotFound, setMatchNotFound] = useState(false);
-
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState<'pitch' | 'sidebar'>('pitch');
-  const [error, setError] = useState<string | null>(null);
   const teamsWarnRef = useRef(false);
+  const sofaSyncKeyRef = useRef<string | null>(null);
 
-  // Split Query: Polling matches only, parameterising keys by matchId
   const matchesQuery = useQuery({
     queryKey: ['world-cup-matches-data', matchId],
     queryFn: fetchMatches,
@@ -141,7 +133,13 @@ export default function MatchPage() {
     refetchOnMount: true,
     refetchOnReconnect: true,
     refetchOnWindowFocus: true,
-    refetchInterval: isMatchLive ? 15_000 : false,
+    refetchInterval: (query) => {
+      const found = query.state.data?.find((item) => item.id === matchId);
+      if (!found || found.finished === 'TRUE') return false;
+      const kickoff = parseLocalDate(found.local_date, found.stadium_id);
+      const timeDiff = Date.now() - kickoff.getTime();
+      return timeDiff >= 0 && timeDiff < 3 * 60 * 60 * 1000 ? 15_000 : false;
+    },
     refetchIntervalInBackground: false,
     retry: 1,
   });
@@ -163,6 +161,7 @@ export default function MatchPage() {
 
   useEffect(() => {
     teamsWarnRef.current = false;
+    sofaSyncKeyRef.current = null;
     setMounted(true);
     const dismissedKey = `bk_prediction_modal_dismissed_${matchId}`;
     predictionModalDismissedRef.current = getStorageItem('sessionStorage', dismissedKey) === 'true';
@@ -265,49 +264,44 @@ export default function MatchPage() {
     };
   }, []);
 
+  const load = resolveMatchPageLoad({
+    matchId,
+    matches: matchesQuery.data,
+    teams: teamsQuery.data,
+    matchesPending: matchesQuery.isPending,
+    teamsPending: teamsQuery.isPending,
+    matchesError: Boolean(matchesQuery.isError),
+    teamsError: Boolean(teamsQuery.isError),
+  });
+  const match = load.match;
+  const teams = load.teams;
+
   useEffect(() => {
-    const load = resolveMatchPageLoad({
-      matchId,
-      matches: matchesQuery.data,
-      teams: teamsQuery.data,
-      matchesPending: matchesQuery.isPending,
-      teamsPending: teamsQuery.isPending,
-      matchesError: Boolean(matchesQuery.isError || matchesQuery.error),
-      teamsError: Boolean(teamsQuery.isError || teamsQuery.error),
-    });
-    if (!load.ready) return;
-
-    if (matchesQuery.error || teamsQuery.error) {
-      console.error('Failed to load remote match data:', matchesQuery.error || teamsQuery.error);
-    }
-
-    setError(load.error);
-    setMatch(load.match as Match | null);
-    setTeams(load.teams as Team[]);
-    setMatchNotFound(load.matchNotFound);
-    setLoading(false);
     if (load.warnToast && !teamsWarnRef.current) {
       teamsWarnRef.current = true;
       showToast(load.warnToast, 'warn');
     }
+  }, [load.warnToast, showToast]);
 
-    const foundMatch = load.match;
-    if (!foundMatch) return;
+  const refetchMatches = matchesQuery.refetch;
+  useEffect(() => {
+    if (!match) return;
 
-    const kickoff = parseLocalDate(foundMatch.local_date, foundMatch.stadium_id);
+    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
     const timeDiff = Date.now() - kickoff.getTime();
-    const liveNow = foundMatch.finished !== 'TRUE' && timeDiff >= 0 && timeDiff < 3 * 60 * 60 * 1000;
-    setIsMatchLive(liveNow);
+    const liveNow = match.finished !== 'TRUE' && timeDiff >= 0 && timeDiff < 3 * 60 * 60 * 1000;
 
-    // Trigger SofaScore sync for live/recently finished matches
-    if (liveNow || (foundMatch.finished !== 'TRUE' && timeDiff >= -30 * 60 * 1000 && timeDiff < 4 * 60 * 60 * 1000)) {
+    if (
+      sofaSyncKeyRef.current !== matchId &&
+      (liveNow || (match.finished !== 'TRUE' && timeDiff >= -30 * 60 * 1000 && timeDiff < 4 * 60 * 60 * 1000))
+    ) {
+      sofaSyncKeyRef.current = matchId;
       fetchWithTimeout(`/api/sofascore-sync?matchId=${matchId}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.success) {
             setSofaSyncedAt(data.cachedAt || Math.floor(Date.now() / 1000));
-            // Trigger a refetch to pick up the fresh SofaScore data overlaid on matches
-            matchesQuery.refetch();
+            refetchMatches();
           }
         })
         .catch(() => null);
@@ -315,36 +309,23 @@ export default function MatchPage() {
 
     const userPreds = getStoredPredictions();
     const matchPred = userPreds[matchId];
-    const isUpcoming = Date.now() < kickoff.getTime();
-
-    if (!matchPred && isUpcoming && !predictionModalDismissedRef.current) {
+    if (!matchPred && Date.now() < kickoff.getTime() && !predictionModalDismissedRef.current) {
       setShowPredictionModal(true);
     }
-  }, [
-    matchId,
-    matchesQuery.data,
-    matchesQuery.isPending,
-    matchesQuery.isError,
-    matchesQuery.error,
-    teamsQuery.data,
-    teamsQuery.isPending,
-    teamsQuery.isError,
-    teamsQuery.error,
-    showToast,
-  ]);
+  }, [match, matchId, refetchMatches]);
 
-  if (error) {
+  if (load.error) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center">
         <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
         <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Tribunal Offline</p>
-        <p className="text-zinc-500 text-sm max-w-md">{error}</p>
+        <p className="text-zinc-500 text-sm max-w-md">{load.error}</p>
         <button onClick={() => window.location.reload()} className="mt-6 px-5 py-2 bg-[#E11D48] hover:bg-[#E11D48]/90 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Retry Connection</button>
       </div>
     );
   }
 
-  if (matchNotFound) {
+  if (load.matchNotFound) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center p-6 text-center">
         <div className="w-16 h-16 rounded-full bg-rose-950/20 border border-rose-900/30 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
@@ -357,7 +338,7 @@ export default function MatchPage() {
     );
   }
 
-  if (loading || !match) {
+  if (!load.ready || !match) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-[#881337]/20 border-t-[#E11D48] animate-spin mb-4" />
