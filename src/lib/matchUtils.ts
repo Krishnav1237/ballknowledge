@@ -88,6 +88,24 @@ export function parseLocalDate(localDateStr: string, stadiumId?: string): Date {
   return new Date(utcMillis);
 }
 
+export function clockNow(): number {
+  return Date.now();
+}
+
+export type MatchClockStatus = 'UPCOMING' | 'LIVE' | 'COMPLETED';
+
+export function getMatchClockStatus(
+  match: { finished?: string; local_date: string; stadium_id?: string },
+  nowMs: number,
+): MatchClockStatus {
+  if (match.finished === 'TRUE') return 'COMPLETED';
+  const kickoff = parseLocalDate(match.local_date, match.stadium_id);
+  const elapsedMs = nowMs - kickoff.getTime();
+  if (elapsedMs < 0) return 'UPCOMING';
+  if (elapsedMs < 3 * 60 * 60 * 1000) return 'LIVE';
+  return 'COMPLETED';
+}
+
 /**
  * Checks if two Date objects fall on the same UTC calendar day.
  * Used for filtering matches by day, avoiding local timezone displacement.

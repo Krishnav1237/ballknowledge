@@ -90,17 +90,18 @@ async function runScraperInstance(eventId: number): Promise<any> {
       throw new Error('Server busy (sync queue full). Please try again in a few seconds.');
     }
     return new Promise((resolve, reject) => {
-      let entry: (typeof processQueue)[number];
+      const entry: (typeof processQueue)[number] = {
+        eventId,
+        resolve: () => {},
+        reject: () => {},
+      };
       const timer = setTimeout(() => {
         const idx = processQueue.indexOf(entry);
         if (idx >= 0) processQueue.splice(idx, 1);
         resolve(null);
       }, SOFASCORE_WAIT_MS);
-      entry = {
-        eventId,
-        resolve: (data: any) => { clearTimeout(timer); resolve(data); },
-        reject: (err: any) => { clearTimeout(timer); reject(err); },
-      };
+      entry.resolve = (data: any) => { clearTimeout(timer); resolve(data); };
+      entry.reject = (err: any) => { clearTimeout(timer); reject(err); };
       processQueue.push(entry);
     });
   }

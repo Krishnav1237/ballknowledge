@@ -9,6 +9,7 @@ import {
   BarChart2, Search, Sparkles,
 } from 'lucide-react';
 import { getStoredProfile, FootballIQProfile, getAvatarUrl } from '@/lib/profileSync';
+import { fetchWithTimeout } from '@/lib/requestBounds';
 import type { LeaderboardEntry } from '@/app/api/leaderboard/route';
 
 // ── Constants & Helpers ─────────────────────────────────────────────────────────
@@ -210,7 +211,7 @@ export default function LeaderboardPage() {
     
     setError(false);
     try {
-      const res = await fetch(`/api/leaderboard?sort=${sort}&limit=100`, {
+      const res = await fetchWithTimeout(`/api/leaderboard?sort=${sort}&limit=100`, {
         cache: 'no-store',
       });
       if (!res.ok) throw new Error('API error');

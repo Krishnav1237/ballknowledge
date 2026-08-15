@@ -37,6 +37,7 @@ export type PremierLeagueMatch = {
   away_team_name_en: string;
   home_team_label?: string;
   away_team_label?: string;
+  sofascore_ratings?: Record<string, number>;
 };
 
 export const PREMIER_LEAGUE_OPENING_DATE = '08/21/2026 20:00';

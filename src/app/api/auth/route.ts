@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
-import { attachSessionCookie, cleanShortText, cleanUsername, expiredSessionCookieHeader, getSessionFromRequest } from '@/lib/authSession';
+import { anonymousAuthBody, attachSessionCookie, cleanShortText, cleanUsername, expiredSessionCookieHeader, getSessionFromRequest } from '@/lib/authSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -250,7 +250,7 @@ export async function GET(request: Request) {
   try {
     const session = getSessionFromRequest(request);
     if (!session) {
-      return NextResponse.json({ success: true, authenticated: false, profile: null });
+      return NextResponse.json(anonymousAuthBody());
     }
 
     const profile = await prisma.footballIQProfile.findUnique({
@@ -266,7 +266,7 @@ export async function GET(request: Request) {
     });
 
     if (!profile) {
-      return NextResponse.json({ success: true, authenticated: false, profile: null });
+      return NextResponse.json(anonymousAuthBody());
     }
 
     return NextResponse.json({
@@ -295,6 +295,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Error in GET /api/auth:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(anonymousAuthBody(true));
   }
 }

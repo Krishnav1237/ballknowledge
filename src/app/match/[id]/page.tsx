@@ -13,7 +13,7 @@ import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
-import { parseLocalDate, getPlayerMatchRatings } from '@/lib/matchUtils';
+import { clockNow, getMatchClockStatus, parseLocalDate, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { fetchWithTimeout } from '@/lib/requestBounds';
 import { resolveMatchPageLoad } from '@/lib/matchPageLoad';
@@ -121,6 +121,7 @@ export default function MatchPage() {
   const [sofaSyncedAt, setSofaSyncedAt] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [nowMs, setNowMs] = useState(0);
   const [activeMobileTab, setActiveMobileTab] = useState<'pitch' | 'sidebar'>('pitch');
   const teamsWarnRef = useRef(false);
   const sofaSyncKeyRef = useRef<string | null>(null);
@@ -137,7 +138,7 @@ export default function MatchPage() {
       const found = query.state.data?.find((item) => item.id === matchId);
       if (!found || found.finished === 'TRUE') return false;
       const kickoff = parseLocalDate(found.local_date, found.stadium_id);
-      const timeDiff = Date.now() - kickoff.getTime();
+      const timeDiff = clockNow() - kickoff.getTime();
       return timeDiff >= 0 && timeDiff < 3 * 60 * 60 * 1000 ? 15_000 : false;
     },
     refetchIntervalInBackground: false,
@@ -158,6 +159,12 @@ export default function MatchPage() {
     setStorageItem('sessionStorage', `bk_prediction_modal_dismissed_${matchId}`, 'true');
     setShowPredictionModal(false);
   };
+
+  useEffect(() => {
+    setNowMs(clockNow());
+    const id = setInterval(() => setNowMs(clockNow()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     teamsWarnRef.current = false;
@@ -288,7 +295,7 @@ export default function MatchPage() {
     if (!match) return;
 
     const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-    const timeDiff = Date.now() - kickoff.getTime();
+    const timeDiff = clockNow() - kickoff.getTime();
     const liveNow = match.finished !== 'TRUE' && timeDiff >= 0 && timeDiff < 3 * 60 * 60 * 1000;
 
     if (
@@ -300,7 +307,7 @@ export default function MatchPage() {
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.success) {
-            setSofaSyncedAt(data.cachedAt || Math.floor(Date.now() / 1000));
+            setSofaSyncedAt(data.cachedAt || Math.floor(clockNow() / 1000));
             refetchMatches();
           }
         })
@@ -309,7 +316,7 @@ export default function MatchPage() {
 
     const userPreds = getStoredPredictions();
     const matchPred = userPreds[matchId];
-    if (!matchPred && Date.now() < kickoff.getTime() && !predictionModalDismissedRef.current) {
+    if (!matchPred && clockNow() < kickoff.getTime() && !predictionModalDismissedRef.current) {
       setShowPredictionModal(true);
     }
   }, [match, matchId, refetchMatches]);
@@ -350,18 +357,8 @@ export default function MatchPage() {
   const homeTeam = teams.find(t => t.id === match.home_team_id) || { name_en: match.home_team_name_en || match.home_team_label || 'TBD', flag: '', groups: 'A' };
   const awayTeam = teams.find(t => t.id === match.away_team_id) || { name_en: match.away_team_name_en || match.away_team_label || 'TBD', flag: '', groups: 'A' };
 
-  // Determine Match Status using real current time + finished flag
-  // Knockout matches can go to ET + penalties (~3h total), so use 3h threshold
   const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-  const timeDiff = new Date().getTime() - kickoff.getTime();
-  let status: 'UPCOMING' | 'LIVE' | 'COMPLETED' = 'UPCOMING';
-  if (match.finished === 'TRUE') {
-    status = 'COMPLETED';
-  } else if (timeDiff >= 3 * 60 * 60 * 1000) {
-    status = 'COMPLETED'; // 3h+ past kickoff, treat as completed
-  } else if (timeDiff >= 0) {
-    status = 'LIVE';
-  }
+  const status = getMatchClockStatus(match, nowMs || 0);
 
   // Admin overrides bypass
   const isAdmin = profile?.role === 'ADMIN';

@@ -61,13 +61,29 @@ function verifySessionToken(token?: string | null): SessionPayload | null {
   }
 }
 
+export function anonymousAuthBody(degraded = false) {
+  return {
+    success: true as const,
+    authenticated: false as const,
+    profile: null,
+    ...(degraded ? { degraded: true as const } : {}),
+  };
+}
+
 export function getSessionFromRequest(request: Request): SessionPayload | null {
   const cookieHeader = request.headers.get('cookie') || '';
   const cookie = cookieHeader
     .split(';')
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${SESSION_COOKIE}=`));
-  const token = cookie ? decodeURIComponent(cookie.slice(SESSION_COOKIE.length + 1)) : null;
+  let token: string | null = null;
+  if (cookie) {
+    try {
+      token = decodeURIComponent(cookie.slice(SESSION_COOKIE.length + 1));
+    } catch {
+      return null;
+    }
+  }
   return verifySessionToken(token);
 }
 

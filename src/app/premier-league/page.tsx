@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getStoredPredictions, getStoredProfile } from '@/lib/profileSync';
-import { isSameUTCDate, parseLocalDate } from '@/lib/matchUtils';
+import { clockNow, getMatchClockStatus, isSameUTCDate, parseLocalDate } from '@/lib/matchUtils';
 import { computeLeagueTable } from '@/lib/premierLeagueUtils';
+import { fetchWithTimeout } from '@/lib/requestBounds';
 import FlagImage from '@/components/FlagImage';
 
 const IconTrophy = () => (
@@ -87,6 +88,13 @@ export default function PremierLeagueHub() {
   const [profile, setProfile] = useState<any>(null);
   const [userPreds, setUserPreds] = useState<any>({});
   const [error, setError] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(0);
+
+  useEffect(() => {
+    setNowMs(clockNow());
+    const id = setInterval(() => setNowMs(clockNow()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     setProfile(getStoredProfile());
@@ -100,8 +108,8 @@ export default function PremierLeagueHub() {
     const fetchData = async () => {
       try {
         const [matchesRes, teamsRes] = await Promise.all([
-          fetch('/api/matches'),
-          fetch('/api/teams'),
+          fetchWithTimeout('/api/matches'),
+          fetchWithTimeout('/api/teams'),
         ]);
         if (!matchesRes.ok || !teamsRes.ok) throw new Error('Remote fetch failed');
         const [matchesData, teamsData] = await Promise.all([matchesRes.json(), teamsRes.json()]);
@@ -121,12 +129,7 @@ export default function PremierLeagueHub() {
   }, []);
 
   const getMatchStatus = (match: Match): 'COMPLETED' | 'LIVE' | 'UPCOMING' => {
-    if (match.finished === 'TRUE') return 'COMPLETED';
-    const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-    const elapsedMs = Date.now() - kickoff.getTime();
-    if (elapsedMs < 0) return 'UPCOMING';
-    if (elapsedMs < 3 * 60 * 60 * 1000) return 'LIVE';
-    return 'COMPLETED';
+    return getMatchClockStatus(match, nowMs || 0);
   };
 
   const getScore = (match: Match, side: 'home' | 'away'): string => {
@@ -144,9 +147,10 @@ export default function PremierLeagueHub() {
   }, [matches, matchweek]);
 
   const filteredMatches = useMemo(() => {
-    const now = new Date();
+    const clock = nowMs || 0;
+    const now = new Date(clock);
     return weekMatches.filter((match) => {
-      const status = getMatchStatus(match);
+      const status = getMatchClockStatus(match, clock);
       const kickoff = parseLocalDate(match.local_date, match.stadium_id);
       switch (scheduleFilter) {
         case 'completed': return status === 'COMPLETED';
@@ -156,7 +160,7 @@ export default function PremierLeagueHub() {
         default: return true;
       }
     });
-  }, [weekMatches, scheduleFilter]);
+  }, [weekMatches, scheduleFilter, nowMs]);
 
   const table = useMemo(() => computeLeagueTable(matches as any, teams as any), [matches, teams]);
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { anonymousAuthBody, getSessionFromRequest } from './authSession';
 import { chatListOrDegraded, serializeChatMessages } from './chatList';
 import { resolveMatchPageLoad } from './matchPageLoad';
 import { getPremierLeagueMatches, getPremierLeagueClubs } from './premierLeagueData';
@@ -72,6 +73,26 @@ test('SofaScore GET fallback is JSON when the scraper fails', () => {
   assert.equal(payload.fallback, true);
   assert.equal(payload.data.isFallback, true);
   assert.equal(JSON.parse(JSON.stringify(payload)).matchId, '1');
+});
+
+test('malformed session cookie does not throw and auth GET degrades', () => {
+  const request = new Request('http://localhost/api/auth', {
+    headers: { cookie: 'bk_session=%' },
+  });
+  assert.equal(getSessionFromRequest(request), null);
+  assert.doesNotThrow(() => getSessionFromRequest(request));
+
+  const degraded = anonymousAuthBody(true);
+  assert.equal(degraded.success, true);
+  assert.equal(degraded.authenticated, false);
+  assert.equal(degraded.profile, null);
+  assert.equal(degraded.degraded, true);
+
+  const authRoute = readFileSync(join(process.cwd(), 'src/app/api/auth/route.ts'), 'utf8');
+  assert.match(authRoute, /anonymousAuthBody\(true\)/);
+
+  const leaderboard = readFileSync(join(process.cwd(), 'src/app/leaderboard/page.tsx'), 'utf8');
+  assert.match(leaderboard, /fetchWithTimeout\(`\/api\/leaderboard/);
 });
 
 test('firstResolved returns the fallback instead of hanging', async () => {
