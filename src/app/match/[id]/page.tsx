@@ -368,6 +368,7 @@ export default function MatchPage() {
 
   // Submissions locked state
   const isSubmissionLocked = (status !== 'UPCOMING' && !isAdmin) || (predictions[matchId]?.locked && !isAdmin);
+  const showPrimaryChat = status === 'LIVE' || status === 'COMPLETED' || Boolean(predictions[matchId]?.locked);
 
   // Max hot takes based on user role (FREE = 3, PREMIUM/ADMIN = 5)
   const maxTakes = profile?.role === 'FREE' ? 3 : 5;
@@ -1223,9 +1224,7 @@ export default function MatchPage() {
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                {status === 'LIVE' || status === 'COMPLETED' || predictions[matchId]?.locked
-                  ? 'Banter Chat'
-                  : 'Select Players'}
+                {showPrimaryChat ? 'Banter Chat' : 'Select Players'}
               </button>
             </div>
 
@@ -1254,18 +1253,7 @@ export default function MatchPage() {
                 activeMobileTab === 'sidebar' ? 'flex' : 'hidden lg:flex'
               }`}>
 
-                {/* ── LIVE / COMPLETED / LOCKED → Chat is the primary panel ── */}
-                {(status === 'LIVE' || status === 'COMPLETED' || predictions[matchId]?.locked) ? (
-                  <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-0 backdrop-blur-md">
-                    <MatchLiveChat
-                      matchId={matchId}
-                      isLive={status === 'LIVE'}
-                      isCompleted={status === 'COMPLETED'}
-                      managerAlias={profile?.username}
-                    />
-                  </div>
-                ) : (
-                  /* ── UPCOMING & NOT LOCKED → Player Selector ── */
+                {!showPrimaryChat && (
                   <div className="flex-1 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-0 backdrop-blur-md">
                     {selectedSlot ? (
                       <>
@@ -1383,16 +1371,14 @@ export default function MatchPage() {
                   </div>
                 )}
 
-                {(status !== 'LIVE' && status !== 'COMPLETED' && !predictions[matchId]?.locked) && (
-                  <div className="h-[220px] shrink-0 bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col backdrop-blur-md">
-                    <MatchLiveChat
-                      matchId={matchId}
-                      isLive={false}
-                      isCompleted={false}
-                      managerAlias={profile?.username}
-                    />
-                  </div>
-                )}
+                <div className={`${showPrimaryChat ? 'flex-1 min-h-0' : 'h-[220px] shrink-0'} bg-[#0B0F19]/80 border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col backdrop-blur-md`}>
+                  <MatchLiveChat
+                    matchId={matchId}
+                    isLive={status === 'LIVE'}
+                    isCompleted={status === 'COMPLETED'}
+                    managerAlias={profile?.username}
+                  />
+                </div>
 
                 {/* Action Buttons — always visible, adapts to match status */}
                 <div className="shrink-0 space-y-1.5">
