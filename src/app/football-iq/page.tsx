@@ -99,7 +99,7 @@ export default function FootballIQPage() {
         {/* Immersive Stadium Background */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           <Image
-            src="/images/world_cup_stadium.webp"
+            src="/images/stadium_bg.webp"
             alt="Stadium"
             fill
             className="object-cover opacity-[0.15] object-center"
@@ -565,7 +565,7 @@ export default function FootballIQPage() {
       {/* Background Stadium Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/world_cup_stadium.webp" 
+          src="/images/stadium_bg.webp" 
           alt="Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.48]" 

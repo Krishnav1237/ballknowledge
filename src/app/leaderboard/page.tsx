@@ -392,7 +392,7 @@ export default function LeaderboardPage() {
       {/* ── Ambient background with Stadium Backdrop ─────────────────── */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <Image 
-          src="/images/world_cup_stadium.webp" 
+          src="/images/stadium_bg.webp" 
           alt="Stadium background"
           fill
           className="object-cover opacity-[0.66] object-center scale-102 filter saturate-100 contrast-100"

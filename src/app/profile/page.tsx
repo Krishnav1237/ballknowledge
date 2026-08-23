@@ -722,7 +722,7 @@ export default function ProfileSettingsPage() {
           {/* Clean Subdued Background */}
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
             <Image
-              src="/images/world_cup_stadium.webp"
+              src="/images/stadium_bg.webp"
               alt="Stadium background"
               fill
               className="object-cover opacity-[0.52] object-center scale-102"

@@ -514,7 +514,7 @@ export default function PublicProfilePage() {
       {/* Background Stadium Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <Image 
-          src="/images/world_cup_stadium.webp" 
+          src="/images/stadium_bg.webp" 
           alt="Stadium background" 
           fill 
           className="object-cover object-center opacity-[0.48]" 

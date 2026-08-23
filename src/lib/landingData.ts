@@ -9,8 +9,8 @@ export const BREAKING_NEWS = [
 
 export const PLAYERS = [
   {
-    src: '/images/messi.jpeg',
-    alt: 'Bukayo Saka Arsenal',
+    src: 'https://crests.football-data.org/57.png',
+    alt: 'Arsenal crest',
     flag: 'ARS',
     name: 'SAKA',
     country: 'Arsenal',
@@ -22,8 +22,8 @@ export const PLAYERS = [
     border: '#EF0107',
   },
   {
-    src: '/images/ronaldo.jpg',
-    alt: 'Erling Haaland Manchester City',
+    src: 'https://crests.football-data.org/65.png',
+    alt: 'Manchester City crest',
     flag: 'MCI',
     name: 'HAALAND',
     country: 'Manchester City',
@@ -35,8 +35,8 @@ export const PLAYERS = [
     border: '#6CABDD',
   },
   {
-    src: '/images/neymar.jpeg',
-    alt: 'Mohamed Salah Liverpool',
+    src: 'https://crests.football-data.org/64.png',
+    alt: 'Liverpool crest',
     flag: 'LIV',
     name: 'SALAH',
     country: 'Liverpool',
@@ -48,8 +48,8 @@ export const PLAYERS = [
     border: '#C8102E',
   },
   {
-    src: '/images/media__1781514653491.jpg',
-    alt: 'Cole Palmer Chelsea',
+    src: 'https://crests.football-data.org/61.png',
+    alt: 'Chelsea crest',
     flag: 'CHE',
     name: 'PALMER',
     country: 'Chelsea',
@@ -61,8 +61,8 @@ export const PLAYERS = [
     border: '#034694',
   },
   {
-    src: '/images/stadium_bg.webp',
-    alt: 'Bruno Fernandes Manchester United',
+    src: 'https://crests.football-data.org/66.png',
+    alt: 'Manchester United crest',
     flag: 'MUN',
     name: 'BRUNO',
     country: 'Manchester United',
@@ -74,8 +74,8 @@ export const PLAYERS = [
     border: '#DA291C',
   },
   {
-    src: '/images/debate_bg.webp',
-    alt: 'Coventry City promoted',
+    src: 'https://crests.football-data.org/1076.png',
+    alt: 'Coventry City crest',
     flag: 'COV',
     name: 'LAMPARD',
     country: 'Coventry City',

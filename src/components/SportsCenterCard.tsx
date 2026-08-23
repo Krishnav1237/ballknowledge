@@ -147,7 +147,7 @@ export default function SportsCenterCard({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={data.aiImageUrl}
-                alt="AI FIFA Card"
+                alt="Verdict Card"
                 style={{
                   position: 'absolute',
                   top: '72px',
@@ -389,7 +389,7 @@ export default function SportsCenterCard({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={data.aiImageUrl}
-              alt="AI FIFA Card"
+              alt="Verdict Card"
               style={{
                 position: 'absolute',
                 top: '72px',

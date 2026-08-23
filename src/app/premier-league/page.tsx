@@ -167,7 +167,7 @@ export default function PremierLeagueHub() {
   return (
     <div className="relative min-h-screen bg-[#030712] text-white pt-[52px]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <Image src="/images/world_cup_hub_bg.webp" alt="" fill className="object-cover opacity-[0.18]" sizes="100vw" />
+        <Image src="/images/match_details_bg.webp" alt="" fill className="object-cover opacity-[0.18]" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/80 to-[#030712]" />
       </div>
 

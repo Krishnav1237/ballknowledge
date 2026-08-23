@@ -110,7 +110,7 @@ export default function Home() {
       <div className="fixed top-[52px] left-0 w-full h-9 z-30 flex items-center overflow-hidden select-none"
            style={{ background: '#881337' }}>
         <div className="shrink-0 px-4 h-full flex items-center bg-zinc-950 border-r border-white/10 relative z-10">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#E11D48]">2026 LIVE</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#E11D48]">PL 26/27</span>
         </div>
         <div className="flex w-max">
           <div className="animate-marquee whitespace-nowrap flex space-x-12 pr-12 text-[11px] font-semibold text-white/90 uppercase tracking-wide items-center">
@@ -128,7 +128,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#030712] text-white">
         <motion.div style={{ y: yBg }} className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" priority />
+          <Image src="/images/stadium_bg.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" priority />
           {/* Dark vignette — lighter in the middle so the stadium is visible */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/20 to-[#030712]/90" />
           {/* Side vignettes for readability */}
@@ -198,7 +198,7 @@ export default function Home() {
       <section className="py-16 md:py-20 px-6 bg-[#030712] border-t border-white/10 relative overflow-hidden">
         {/* Subtle stadium texture at very low opacity for depth */}
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/images/world_cup_stadium.webp" alt="" fill className="object-cover opacity-[0.04] object-center" sizes="100vw" />
+          <Image src="/images/stadium_bg.webp" alt="" fill className="object-cover opacity-[0.04] object-center" sizes="100vw" />
         </div>
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-12">
@@ -574,12 +574,12 @@ export default function Home() {
                     border: `1px solid ${p.border}20`,
                   }}
                 >
-                  <div className="relative w-full overflow-hidden select-none pointer-events-none" style={{ height: 210, flexShrink: 0 }}>
+                  <div className="relative w-full overflow-hidden select-none pointer-events-none bg-black/40" style={{ height: 210, flexShrink: 0 }}>
                     <Image
                       src={p.src}
                       alt={p.alt}
                       fill
-                      className="object-cover object-top select-none pointer-events-none"
+                      className="object-contain p-8 select-none pointer-events-none"
                       sizes="320px"
                     />
                     <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.12) 55%, transparent 100%)' }} />
@@ -620,12 +620,12 @@ export default function Home() {
                 className="group flex flex-col rounded-2xl overflow-hidden shadow-md bg-[#0B0F19] w-full h-[430px] sm:h-[460px] border border-white/10"
                 style={{ border: `1.5px solid ${p.border}30` }}
               >
-                <div className="relative w-full overflow-hidden" style={{ height: 230, flexShrink: 0 }}>
+                <div className="relative w-full overflow-hidden bg-black/40" style={{ height: 230, flexShrink: 0 }}>
                   <Image
                     src={p.src}
                     alt={p.alt}
                     fill
-                    className="object-cover object-top"
+                    className="object-contain p-8"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
                   />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.12) 60%, transparent 100%)' }} />
@@ -661,7 +661,7 @@ export default function Home() {
       <section className="py-16 md:py-20 px-6 bg-[#030712] border-t border-gray-800 relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/images/world_cup_hub_bg.webp" alt="" fill className="object-cover opacity-[0.24] object-center" sizes="100vw" />
+          <Image src="/images/match_details_bg.webp" alt="" fill className="object-cover opacity-[0.24] object-center" sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/80 via-[#030712]/40 to-[#030712]/80" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
