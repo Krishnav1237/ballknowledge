@@ -101,6 +101,7 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     'src/components/Footer.tsx',
     'src/lib/shareCopy.ts',
     'src/lib/matchday.ts',
+    'src/components/GameBoard.tsx',
   ];
   const banned = [
     /WORLD CUP 2026/i,

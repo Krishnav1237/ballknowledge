@@ -8,8 +8,8 @@ import PageTransition from '@/components/PageTransition';
 import ServiceWorkerKiller from '@/components/ServiceWorkerKiller';
 
 export const metadata: Metadata = {
-  title: 'BallKnowledge | Matchday',
-  description: 'Enter the next Premier League fixture. Lock your call. Get your OVR.',
+  title: 'BallKnowledge | Take #1',
+  description: 'Rank is the OVR. Call the next fixture and take #1.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'),
   icons: {
     icon: '/images/ball_knowledge_logo.png',
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     apple: '/images/ball_knowledge_logo.png',
   },
   openGraph: {
-    title: 'BallKnowledge | Matchday',
-    description: 'Enter the next Premier League fixture. Lock a call. Get your OVR.',
+    title: 'BallKnowledge | Take #1',
+    description: 'Rank is the OVR. Call the next fixture and take #1.',
     type: 'website',
     locale: 'en_US',
     siteName: 'BallKnowledge',
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
         url: '/images/og-preview.png',
         width: 1200,
         height: 630,
-        alt: 'BallKnowledge — Matchday',
+        alt: 'BallKnowledge — Take #1',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BallKnowledge | Matchday',
-    description: 'Enter the next fixture. Get the card.',
+    title: 'BallKnowledge | Take #1',
+    description: "Rank is the OVR. Come take #1.",
     images: ['/images/og-preview.png'],
   },
 };

@@ -36,11 +36,10 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Matchday', href: '/',                icon: Trophy },
-    { name: 'Season',   href: '/premier-league',  icon: Trophy },
-    { name: 'Board',    href: '/leaderboard',     icon: BarChart2 },
-    { name: 'Card',     href: '/football-iq',     icon: Award },
-    { name: 'Profile',  href: '/profile',         icon: User },
+    { name: 'Board',   href: '/leaderboard',     icon: BarChart2 },
+    { name: 'Season',  href: '/premier-league',  icon: Trophy },
+    { name: 'Card',    href: '/football-iq',     icon: Award },
+    { name: 'Profile', href: '/profile',         icon: User },
   ];
 
   return (
@@ -67,7 +66,9 @@ export default function Navbar() {
           {/* Desktop Nav — extreme right */}
           <nav className="hidden md:flex items-center space-x-7">
             {navLinks.filter((link) => link.name !== 'Profile').map((link) => {
-              const isActive = link.href === '/' ? pathname === '/' : pathname === link.href;
+              const isActive = link.href === '/leaderboard'
+                ? pathname === '/' || pathname === '/leaderboard'
+                : pathname === link.href;
               return (
                 <Link
                   key={link.name}
@@ -143,7 +144,9 @@ export default function Navbar() {
           >
             <div className="flex flex-col space-y-5">
               {navLinks.map((link) => {
-                const isActive = link.href === '/' ? pathname === '/' : pathname === link.href;
+                const isActive = link.href === '/leaderboard'
+                  ? pathname === '/' || pathname === '/leaderboard'
+                  : pathname === link.href;
                 const Icon = link.icon;
                 return (
                   <Link

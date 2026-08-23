@@ -178,12 +178,16 @@ test('matchday HQ picks live first, then next kickoff', () => {
   assert.equal(matchActionLabel('LIVE', false), 'Enter live');
 });
 
-test('home boots into matchday instead of a sales landing', () => {
+test('home is an outbid-style rank board, not a sales landing', () => {
   const home = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8');
-  assert.doesNotMatch(home, /THE LOOP/);
-  assert.doesNotMatch(home, /Ride or die/);
-  assert.doesNotMatch(home, /HOW IT WORKS/);
-  assert.doesNotMatch(home, /landingData/);
-  assert.match(home, /pickFeaturedMatch/);
-  assert.match(home, /\/match\//);
+  const board = readFileSync(join(process.cwd(), 'src/components/GameBoard.tsx'), 'utf8');
+  assert.match(home, /GameBoard/);
+  assert.doesNotMatch(home + board, /THE LOOP/);
+  assert.doesNotMatch(home + board, /Ride or die/);
+  assert.doesNotMatch(home + board, /HOW IT WORKS/);
+  assert.doesNotMatch(home + board, /landingData/);
+  assert.match(board, /Take #1/);
+  assert.match(board, /\/api\/leaderboard/);
+  assert.match(board, /pickFeaturedMatch/);
+  assert.match(board, /\/match\//);
 });
