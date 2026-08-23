@@ -1,6 +1,6 @@
 # Raspberry Pi 5 Deployment Guide 24/7 🏆
 
-This guide walks you through setting up a production-ready environment on a **Raspberry Pi 5** (Debian/Ubuntu ARM64) to host the **Football Court** application 24/7 with a local **PostgreSQL** database, **Groq/Nvidia AI**, and **Nginx with SSL**.
+This guide walks you through setting up a production-ready environment on a **Raspberry Pi 5** (Debian/Ubuntu ARM64) to host **BallKnowledge** 24/7 with a local **PostgreSQL** database, **Groq/Nvidia AI**, and **Nginx with SSL**.
 
 ---
 

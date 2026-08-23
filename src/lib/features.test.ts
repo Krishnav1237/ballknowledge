@@ -190,4 +190,5 @@ test('home is an outbid-style rank board, not a sales landing', () => {
   assert.match(board, /\/api\/leaderboard/);
   assert.match(board, /pickFeaturedMatch/);
   assert.match(board, /\/match\//);
+  assert.match(board, /Post your OVR/);
 });

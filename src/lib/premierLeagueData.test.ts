@@ -96,7 +96,6 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     'src/components/Navbar.tsx',
     'src/app/layout.tsx',
     'src/app/premier-league/page.tsx',
-    'src/lib/landingData.ts',
     'src/app/match/[id]/page.tsx',
     'src/components/Footer.tsx',
     'src/lib/shareCopy.ts',

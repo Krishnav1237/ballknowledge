@@ -1,7 +1,6 @@
-# OpenRouter Image Generation Guide 🎨
+# OpenRouter Image Generation
 
-This document details how **BallKnowledge** uses OpenRouter's image generation API
-to produce photorealistic, premium shareable football cards.
+How BallKnowledge generates shareable OVR cards via OpenRouter.
 
 ---
 
@@ -40,7 +39,7 @@ const response = await fetch('https://openrouter.ai/api/v1/images', {
     'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
     'Content-Type': 'application/json',
     'HTTP-Referer': 'https://ballknowledge.live',
-    'X-Title': 'BallKnowledge World Cup 2026',
+    'X-Title': 'BallKnowledge',
   },
   body: JSON.stringify({
     model: 'black-forest-labs/flux.2-pro',

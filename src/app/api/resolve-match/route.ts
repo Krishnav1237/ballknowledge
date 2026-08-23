@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
-import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
+import { fetchPremierLeagueMatches, fetchPremierLeagueTeams } from '@/lib/premierLeagueData';
 import { getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { requireSession } from '@/lib/authSession';
 import {
@@ -338,8 +338,8 @@ export async function POST(request: Request) {
 
     // ── Load match data ───────────────────────────────────────────────────────
     const [matches, teams] = await Promise.all([
-      fetchWorldCupMatches(),
-      fetchWorldCupTeams()
+      fetchPremierLeagueMatches(),
+      fetchPremierLeagueTeams()
     ]);
 
     const match = matches.find((m: any) => String(m.id) === safeMatchId);
@@ -361,7 +361,7 @@ export async function POST(request: Request) {
       });
       if (syncRes.ok) {
         // Re-fetch matches so the SofaScore overlay is applied
-        const freshMatches = await fetchWorldCupMatches();
+        const freshMatches = await fetchPremierLeagueMatches();
         enrichedMatch = freshMatches.find((m: any) => String(m.id) === safeMatchId) || match;
       }
     } catch (syncErr) {

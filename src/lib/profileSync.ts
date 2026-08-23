@@ -1,8 +1,7 @@
 /**
  * @file profileSync.ts
  * @description Client-side synchronization helper for managing the user profile and prediction history.
- * Implements a database-authoritative pattern: reads and updates are held in memory (client cache)
- * and synced with the PostgreSQL database. No localStorage is used.
+ * Client cache plus localStorage (`football_iq_profile`) with opportunistic PostgreSQL sync.
  */
 
 import { fetchWithTimeout } from '@/lib/requestBounds';

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireSession } from '@/lib/authSession';
-import { fetchWorldCupMatches } from '@/lib/worldcupData';
+import { fetchPremierLeagueMatches } from '@/lib/premierLeagueData';
 import {
   chatListDegraded,
   chatListSuccess,
@@ -148,7 +148,7 @@ Generate your response:`;
 
 async function getMatchContext(matchId: string): Promise<string> {
   try {
-    const matches = await fetchWorldCupMatches();
+    const matches = await fetchPremierLeagueMatches();
     const match = matches.find(m => String(m.id) === String(matchId));
     if (!match) return `Match ID: ${matchId}`;
     const status = match.finished === 'TRUE' ? 'COMPLETED' : 'LIVE/UPCOMING';

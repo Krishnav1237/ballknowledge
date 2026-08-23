@@ -22,20 +22,11 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     siteName: 'BallKnowledge',
-    images: [
-      {
-        url: '/images/og-preview.png',
-        width: 1200,
-        height: 630,
-        alt: 'BallKnowledge — Take #1',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'BallKnowledge | Take #1',
-    description: "Rank is the OVR. Come take #1.",
-    images: ['/images/og-preview.png'],
+    description: 'Rank is the OVR. Come take #1.',
   },
 };
 

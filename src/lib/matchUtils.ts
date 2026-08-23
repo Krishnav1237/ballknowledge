@@ -475,7 +475,7 @@ export function getPlayerMatchRatings(
   processRoster(awayRoster, false);
 
   // ── SofaScore real ratings override ────────────────────────────────────────
-  // If the match object carries real SofaScore player ratings (injected by worldcupData.ts),
+  // If the match object carries real SofaScore player ratings (injected by the PL loaders),
   // overwrite the formula-based values with the actual match performance scores.
   const sofaRatings: Record<string, number> = match?.sofascore_ratings || {};
   if (Object.keys(sofaRatings).length > 0) {

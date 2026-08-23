@@ -17,7 +17,7 @@
 | DB migration | `npx prisma migrate dev` |
 | Regenerate Prisma client | `npx prisma generate` |
 | View DB (Prisma Studio) | `npx prisma studio` |
-| SofaScore Map Gen | `python3 scripts/generate_sofascore_map.py > src/lib/worldcup2026/sofascore_map.json` |
+| Tests | `npm test` |
 | SofaScore Single Scrape | `python3 src/lib/sofascore_scraper.py fetch <eventId>` |
 | SofaScore Live Scrape | `python3 src/lib/sofascore_scraper.py live` |
 
@@ -57,26 +57,23 @@ FACEBOOK_CLIENT_SECRET="your-facebook-app-secret"
 - All pages in `src/app/`. API routes under `src/app/api/`.
 - **Server Components** are the default. Only add `'use client'` when hooks/browser APIs are required.
 
+### Product
+Public OVR board for Premier League 2026/27. Home (`/` and `/leaderboard`) is the ranked list. Rank is the OVR. Climb by calling fixtures. Do not add a marketing landing.
+
 ### Data Layer — Offline-First Hybrid
 ```
 User Action → localStorage (instant) → DB sync via /api/resolve-match or /api/profile (async)
 ```
-- **localStorage key**: `var_cards_profile` (profile) + `var_cards_predictions` (predictions)
+- **localStorage key**: `football_iq_profile` (profile) + predictions store
 - **DB**: PostgreSQL via Prisma. All DB calls MUST be wrapped in `try/catch` with a localStorage fallback.
-- **Offline mode**: If DB is unreachable, the app still works 100%. DB writes fail silently.
+- **Offline mode**: If DB is unreachable, the app still works. DB writes fail silently.
 
-### Match Data — Hybrid Pipeline & SofaScore Sync
+### Match Data
 ```
-premierLeague/clubs.json + matches.json (2026/27 PL — live source)
-  └── worldcup2026/ JSON kept as historical WC backup only (not the live feed)
+src/lib/premierleague/clubs.json + matches.json   ← live 20 clubs / 380 fixtures
+src/lib/premierLeagueData.ts                      ← loaders used by /api/matches and /api/teams
 ```
-- **Authoritative source pipeline**:
-  1. Base fixture list is fetched from `worldcup26.ir` (or local backup `football.matches.json`).
-  2. SofaScore live events are mapped using `src/lib/worldcup2026/sofascore_map.json`.
-  3. Python scraper (`src/lib/sofascore_scraper.py`) fetches real-time/finished event scores, goalscorers, and player performance ratings.
-  4. Node sync endpoint (`/api/sofascore-sync?matchId=<id>`) writes to `sofascore_cache.json`.
-  5. The server overlays SofaScore data on top of the base matches in `src/lib/worldcupData.ts`.
-- When new match results or ratings come in, trigger sync or run the scraper. No server restart required.
+- SofaScore GET `/api/sofascore-sync` still exists and is called from the match page. Overlay mapping in `worldcup2026/sofascore_map.json` is WC-era and may not match PL ids. Do not treat it as the live fixture source.
 
 ### Shared Utilities — ALWAYS import from here, never duplicate
 | Export | File | Purpose |
@@ -90,14 +87,7 @@ premierLeague/clubs.json + matches.json (2026/27 PL — live source)
 > ⚠️ **DO NOT copy-paste these functions into pages.** They exist in `matchUtils.ts` for a reason.
 
 ### Match Status Calculation
-Status is always computed from **real current time** (`new Date()`), never a hardcoded date:
-```ts
-const kickoff = parseLocalDate(match.local_date);  // from matchUtils.ts
-const timeDiff = new Date().getTime() - kickoff.getTime();
-if (timeDiff >= 2 * 60 * 60 * 1000) status = 'COMPLETED';
-else if (timeDiff >= 0) status = 'LIVE';
-else status = 'UPCOMING';
-```
+Always use `getMatchClockStatus(match, clockNow())` from `matchUtils.ts`. Never hardcode "today". LIVE is kickoff until +3 hours unless `finished === 'TRUE'`.
 
 ### AI Grading Fallback Chain
 ```
@@ -121,27 +111,24 @@ POST /api/generate-viral-card
 
 | File | What it does |
 |------|-------------|
-| `src/lib/matchUtils.ts` | ✅ Shared utilities (parseLocalDate, getDeterministicMatchResult, getFlagEmoji) |
-| `src/lib/worldcupData.ts` | Match/team data from local JSON — module-level process cache, no remote fetch |
-| `src/lib/worldcup2026/football.matches.json` | All 104 World Cup 2026 fixtures with real results |
-| `src/lib/worldcup2026/football.teams.json` | All 32 World Cup team records |
-| `src/lib/profileSync.ts` | Client-side localStorage ↔ DB sync helpers |
-| `src/lib/db.ts` | Prisma singleton — use this, never `new PrismaClient()` |
-| `src/lib/roster.ts` | 32-team player roster for Best XI squad builder |
-| `src/lib/countries.ts` | Country → ISO code map for flagcdn.com flag images |
-| `src/lib/tribunalDB.ts` | Static types for VerdictData, Achievement, CaseOfDay |
-| `src/lib/landingData.ts` | Static data for landing page (breaking news, players, countries tickers) |
-| `src/components/SportsCenterCard.tsx` | FIFA-style card renderer (Canvas + SVG). Large file — handle carefully |
-| `src/components/TacticalPitch.tsx` | Interactive 4-3-3 formation grid |
-| `src/components/PredictionModal.tsx` | Predictions/hot takes modal form |
-| `src/components/MatchLiveChat.tsx` | localStorage banter chat for live matches |
-| `src/components/FlagImage.tsx` | flagcdn.com image with emoji fallback |
-| `src/components/Navbar.tsx` | Fixed solid top header (bg-[#0B0F19]), no transparency on scroll |
-| `src/components/Footer.tsx` | Site footer |
-| `src/components/Providers.tsx` | React Query + client provider wrapper |
-| `src/app/api/resolve-match/route.ts` | Core grading engine — AI + DB write. Has `force-dynamic` |
-| `src/proxy.ts` | Next.js 16 Proxy (formerly middleware) for security blocking and routing |
-| `src/app/globals.css` | Design tokens, glassmorphism, keyframe animations |
+| `src/components/GameBoard.tsx` | Public OVR board — the product |
+| `src/lib/premierLeagueData.ts` | 20 clubs + 380 PL 2026/27 fixtures |
+| `src/lib/matchday.ts` | Next-kickoff picker for Take #1 |
+| `src/lib/scoring.ts` | PRD / MGR / HOT / RST / OVR |
+| `src/lib/shareCopy.ts` | Tweet / WhatsApp lines |
+| `src/lib/matchUtils.ts` | parseLocalDate, getMatchClockStatus, getFlagEmoji |
+| `src/lib/profileSync.ts` | localStorage ↔ DB profile helpers (`football_iq_profile`) |
+| `src/lib/db.ts` | Prisma singleton — never `new PrismaClient()` |
+| `src/lib/roster.ts` | 20-club Best XI rosters |
+| `src/lib/countries.ts` | Country → ISO / flagcdn |
+| `src/lib/tribunalDB.ts` | VerdictData types for the FIFA-style card |
+| `src/components/SportsCenterCard.tsx` | Card renderer. Large file — handle carefully |
+| `src/components/TacticalPitch.tsx` | 4-3-3 grid |
+| `src/components/PredictionModal.tsx` | Lock score / takes |
+| `src/components/MatchLiveChat.tsx` | Live match chat |
+| `src/components/Navbar.tsx` | HUD: Board · Season · Card |
+| `src/app/api/resolve-match/route.ts` | Grading engine. `force-dynamic` |
+| `src/proxy.ts` | Next.js 16 proxy (not middleware) |
 
 ---
 
@@ -184,7 +171,7 @@ $$\text{Overall} = (0.35 \times \text{PRD}) + (0.25 \times \text{MGR}) + (0.25 \
 
 | Role | Hot Takes | Capabilities |
 |------|-----------|-------------|
-| `FREE` | 2 max | Standard |
+| `FREE` | 3 max | Standard |
 | `PREMIUM` | 5 max | Roast styling, tagging |
 | `ADMIN` | 5 max | Bypass kickoff lock |
 
@@ -194,7 +181,7 @@ Roles are stored in localStorage AND synced to PostgreSQL via `POST /api/resolve
 
 ## Design System (Dark Theme)
 
-This is a **premium dark/black theme** with World Cup-themed accents. **Do not use light classes**.
+This is a **premium dark theme**. Board first, not a brochure. **Do not use light classes**.
 
 ### Color Palette
 | Token | Value | Usage |
@@ -241,9 +228,9 @@ This is a **premium dark/black theme** with World Cup-themed accents. **Do not u
 
 ## Production Checklist (Before Deploy)
 
-- [ ] `DATABASE_URL` set in Cloudflare environment
-- [ ] `OPENROUTER_API_KEY` set in Cloudflare environment (for AI grading + image gen)
-- [ ] `GROQ_API_KEY` set in Cloudflare environment (fallback)
+- [ ] `DATABASE_URL` set in the host environment (Vercel)
+- [ ] `OPENROUTER_API_KEY` set (AI grading + image gen)
+- [ ] `GROQ_API_KEY` set (fallback)
 - [ ] `NEXT_PUBLIC_SITE_URL` set to `https://ballknowledge.live`
 - [ ] `npx prisma db push` run against production DB
 - [ ] `npm run build` passes with 0 errors

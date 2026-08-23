@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/db';
-import { fetchWorldCupMatches, fetchWorldCupTeams } from '@/lib/worldcupData';
+import { fetchPremierLeagueMatches, fetchPremierLeagueTeams } from '@/lib/premierLeagueData';
 import { getDeterministicMatchResult } from '@/lib/matchUtils';
 import CardDetailClient from './CardDetailClient';
 
@@ -13,8 +13,8 @@ interface Props {
 async function resolveMatchDetails(matchId: string) {
   try {
     const [matches, teams] = await Promise.all([
-      fetchWorldCupMatches(),
-      fetchWorldCupTeams()
+      fetchPremierLeagueMatches(),
+      fetchPremierLeagueTeams()
     ]);
     const match = matches.find(m => String(m.id) === String(matchId));
     if (!match) return {};

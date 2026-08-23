@@ -111,11 +111,9 @@ export default function GameBoard() {
     <div className="relative min-h-screen bg-[#030712] text-white pt-[52px]">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <p className="text-[11px] font-semibold text-zinc-400">
-          {formatCount(stats.cases)} on the board
-          <span className="text-zinc-600"> · </span>
-          {formatCount(stats.cards)} cards
-          <span className="text-zinc-600"> · </span>
-          {formatCount(stats.takes)} takes
+          {ready
+            ? `${formatCount(stats.cases)} on the board · ${formatCount(stats.cards)} cards · ${formatCount(stats.takes)} takes`
+            : 'Public OVR board'}
         </p>
 
         <h1 className="mt-6 font-display font-black text-4xl sm:text-5xl uppercase tracking-tight leading-[0.95]">
@@ -147,6 +145,14 @@ export default function GameBoard() {
           >
             {playLabel}
           </Link>
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm ${yourOvr} OVR on BallKnowledge. Rank is the OVR. Take #1.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 block text-center text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white"
+          >
+            Post your OVR
+          </a>
         </section>
 
         <ol className="mt-8 divide-y divide-white/10 border-y border-white/10">
