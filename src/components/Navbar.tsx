@@ -36,10 +36,11 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Fixtures', href: '/premier-league', icon: Trophy },
-    { name: 'Board',    href: '/leaderboard',   icon: BarChart2 },
-    { name: 'My Card',  href: '/football-iq',   icon: Award },
-    { name: 'Profile',  href: '/profile',        icon: User },
+    { name: 'Matchday', href: '/',                icon: Trophy },
+    { name: 'Season',   href: '/premier-league',  icon: Trophy },
+    { name: 'Board',    href: '/leaderboard',     icon: BarChart2 },
+    { name: 'Card',     href: '/football-iq',     icon: Award },
+    { name: 'Profile',  href: '/profile',         icon: User },
   ];
 
   return (
@@ -58,15 +59,15 @@ export default function Navbar() {
                 className="w-9 h-9 object-contain rounded-full border border-[#E11D48]/35 shadow-[0_0_12px_rgba(225,29,72,0.25)]"
               />
             </div>
-            <span className="font-display font-black text-2xl tracking-widest flex items-center transition-colors duration-300 text-white">
+            <span className="hidden sm:flex font-display font-black text-2xl tracking-widest items-center transition-colors duration-300 text-white">
               BALL<span className="ml-1 text-[#E11D48] group-hover:text-rose-400 transition-colors">KNOWLEDGE</span>
             </span>
           </Link>
 
           {/* Desktop Nav — extreme right */}
           <nav className="hidden md:flex items-center space-x-7">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+            {navLinks.filter((link) => link.name !== 'Profile').map((link) => {
+              const isActive = link.href === '/' ? pathname === '/' : pathname === link.href;
               return (
                 <Link
                   key={link.name}
@@ -90,30 +91,29 @@ export default function Navbar() {
             })}
 
             {/* Auth Button/Pill */}
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-1.5 pr-3 py-1"
+            >
+              <span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#881337] to-[#E11D48] flex items-center justify-center font-display font-black text-[10px] text-white">
+                {profile?.overallRating ?? 50}
+              </span>
+              <span className="font-sans font-bold text-[10px] text-white uppercase tracking-wider max-w-[90px] truncate">
+                {profile?.isAuthenticated ? profile.username : 'Guest'}
+              </span>
+            </Link>
             {profile?.isAuthenticated ? (
-              <div className="flex items-center space-x-3 bg-white/5 border border-white/10 rounded-full px-3 py-1 shadow-inner relative z-10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={getAvatarUrl(profile.avatarStyle, profile.avatarSeed)} 
-                  className="w-5 h-5 object-cover rounded-full" 
-                  alt="Avatar" 
-                />
-                <span className="font-sans font-bold text-xs text-white uppercase tracking-wider max-w-[85px] truncate">
-                  {profile.username}
-                </span>
-                <div className="w-[1px] h-3 bg-white/10" />
-                <button 
-                  onClick={handleSignOut} 
-                  className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
-                  title="Sign Out Manager"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <button
+                onClick={handleSignOut}
+                className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             ) : (
-              <Link 
-                href="/profile" 
-                className="px-4 py-2 rounded-full font-display font-black text-[11px] uppercase tracking-widest text-white transition-all hover:scale-105 bg-gradient-to-r from-[#881337] to-[#E11D48] shadow-md hover:shadow-[0_0_15px_rgba(225,29,72,0.3)] flex items-center gap-1.5"
+              <Link
+                href="/profile"
+                className="px-3 py-1.5 rounded-full font-display font-black text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-[#881337] to-[#E11D48] flex items-center gap-1.5"
               >
                 <LogIn className="w-3 h-3" /> Get in
               </Link>
@@ -143,7 +143,7 @@ export default function Navbar() {
           >
             <div className="flex flex-col space-y-5">
               {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = link.href === '/' ? pathname === '/' : pathname === link.href;
                 const Icon = link.icon;
                 return (
                   <Link
@@ -185,7 +185,7 @@ export default function Navbar() {
                     }}
                     className="w-full text-center py-4 rounded-xl border border-red-500/35 text-red-500 font-bold uppercase tracking-wider hover:bg-red-500/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <LogOut className="w-4 h-4" /> Sign Out Manager
+                    <LogOut className="w-4 h-4" /> Sign out
                   </button>
                 </div>
               ) : (

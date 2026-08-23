@@ -13,6 +13,7 @@ import {
   calculateRSTFromActivity,
 } from './scoring';
 import { cardShareText, deckShareText } from './shareCopy';
+import { listMatchQueue, matchActionLabel, pickFeaturedMatch } from './matchday';
 
 const FORMATION_SLOTS = ['GK', 'LB', 'LCB', 'RCB', 'RB', 'LCM', 'CDM', 'RCM', 'LW', 'ST', 'RW'] as const;
 
@@ -156,4 +157,33 @@ test('share copy flexes OVR and dares the reader', () => {
   assert.equal(theirs, 'Chef is 88 OVR on BallKnowledge. KNOWS BALL. Beat me.');
 
   assert.equal(deckShareText({ ovr: 91 }), "I'm 91 OVR on BallKnowledge. Come take the card.");
+});
+
+test('matchday HQ picks live first, then next kickoff', () => {
+  const opening = getPremierLeagueMatches().find((match) => match.id === '1');
+  assert.ok(opening);
+  const kickoff = parseLocalDate(opening.local_date, opening.stadium_id).getTime();
+  const slate = getPremierLeagueMatches().slice(0, 8);
+
+  const before = pickFeaturedMatch(slate, kickoff - 1);
+  assert.equal(before?.id, '1');
+
+  const live = pickFeaturedMatch(slate, kickoff + 1);
+  assert.equal(live?.id, '1');
+
+  const queue = listMatchQueue(slate, '1', kickoff - 1, 3);
+  assert.equal(queue.length, 3);
+  assert.ok(queue.every((match) => match.id !== '1'));
+  assert.equal(matchActionLabel('UPCOMING', false), 'Enter match');
+  assert.equal(matchActionLabel('LIVE', false), 'Enter live');
+});
+
+test('home boots into matchday instead of a sales landing', () => {
+  const home = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8');
+  assert.doesNotMatch(home, /THE LOOP/);
+  assert.doesNotMatch(home, /Ride or die/);
+  assert.doesNotMatch(home, /HOW IT WORKS/);
+  assert.doesNotMatch(home, /landingData/);
+  assert.match(home, /pickFeaturedMatch/);
+  assert.match(home, /\/match\//);
 });

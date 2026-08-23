@@ -8,8 +8,8 @@ import PageTransition from '@/components/PageTransition';
 import ServiceWorkerKiller from '@/components/ServiceWorkerKiller';
 
 export const metadata: Metadata = {
-  title: 'BallKnowledge | Prove you know ball',
-  description: 'Call Premier League matches. Get an OVR card. Post it. Make your group chat look at the number.',
+  title: 'BallKnowledge | Matchday',
+  description: 'Enter the next Premier League fixture. Lock your call. Get your OVR.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'),
   icons: {
     icon: '/images/ball_knowledge_logo.png',
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     apple: '/images/ball_knowledge_logo.png',
   },
   openGraph: {
-    title: 'BallKnowledge | Prove you know ball',
-    description: 'Call Premier League matches. Get an OVR card. Post it. Make your group chat look at the number.',
+    title: 'BallKnowledge | Matchday',
+    description: 'Enter the next Premier League fixture. Lock a call. Get your OVR.',
     type: 'website',
     locale: 'en_US',
     siteName: 'BallKnowledge',
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
         url: '/images/og-preview.png',
         width: 1200,
         height: 630,
-        alt: 'BallKnowledge — Prove you know ball',
+        alt: 'BallKnowledge — Matchday',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BallKnowledge | Prove you know ball',
-    description: "I'm dropping my OVR. Come take the card.",
+    title: 'BallKnowledge | Matchday',
+    description: 'Enter the next fixture. Get the card.',
     images: ['/images/og-preview.png'],
   },
 };

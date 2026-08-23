@@ -174,10 +174,10 @@ export default function PremierLeagueHub() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48]">2026/27 · The league is live</p>
-            <h1 className="font-display font-black text-3xl uppercase tracking-wide mt-1">Call the next fixture</h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48]">Season map · 26/27</p>
+            <h1 className="font-display font-black text-3xl uppercase tracking-wide mt-1">Matchweeks</h1>
             <p className="text-zinc-400 text-sm mt-1 max-w-xl">
-              Lock it or sit down. Your OVR is public.
+              Pick a fixture. Enter. Lock the call.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-zinc-400">
@@ -199,7 +199,7 @@ export default function PremierLeagueHub() {
                 activeTab === tab ? 'bg-[#E11D48] text-white' : 'bg-white/5 text-zinc-400 border border-white/10'
               }`}
             >
-              {tab === 'schedule' ? 'Matchweeks' : 'League Table'}
+              {tab === 'schedule' ? 'Fixtures' : 'Table'}
             </button>
           ))}
         </div>
@@ -234,7 +234,7 @@ export default function PremierLeagueHub() {
             </div>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {loading ? (
-                <div className="col-span-full py-20 text-center text-zinc-400">Loading fixtures...</div>
+                <div className="col-span-full py-20 text-center text-zinc-400">Loading season...</div>
               ) : filteredMatches.length === 0 ? (
                 <div className="col-span-full border border-white/10 rounded-2xl p-12 text-center bg-black/35">
                   <h3 className="font-display font-black text-sm uppercase">No Matches Found</h3>
@@ -302,7 +302,7 @@ export default function PremierLeagueHub() {
                       <div className="border-t border-white/10 pt-2 flex justify-between text-[9px] text-gray-500 font-mono uppercase">
                         <span>{kickoffStr}</span>
                         <span className="text-[#E11D48] font-black flex items-center gap-0.5">
-                          Lock Tactics <IconChevronRight />
+                          Enter <IconChevronRight />
                         </span>
                       </div>
                     </Link>
