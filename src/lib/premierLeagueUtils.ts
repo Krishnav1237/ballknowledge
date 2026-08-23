@@ -20,7 +20,7 @@ function numericScore(raw: string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function getMatchweek(match: PremierLeagueMatch): number {
+function getMatchweek(match: PremierLeagueMatch): number {
   const n = parseInt(String(match.matchday), 10);
   return Number.isFinite(n) ? n : 0;
 }

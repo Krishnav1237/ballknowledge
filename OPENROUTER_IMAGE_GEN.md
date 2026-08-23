@@ -69,8 +69,8 @@ The `buildCardPrompt()` function in `route.ts` produces prompts like:
 
 ```
 Hyper-realistic premium FIFA Ultimate Team trading card illustration.
-A passionate {NATION} football fan named {USERNAME} wearing the official
-{NATION} national team jersey, standing in a dramatic stadium pose with arms raised.
+A passionate Premier League fan named {USERNAME} wearing their club
+colours, standing in a dramatic stadium pose with arms raised.
 Dark stadium background with golden spotlight, bokeh crowd, dramatic lens flare.
 Card rating {OVR} OVR shown in large gold numerals.
 Verdict badge reads "{VERDICT}".
@@ -80,7 +80,7 @@ professional sports photography style. 4K quality. Sharp focus.
 ```
 
 **Key elements that improve quality:**
-- Specify the national team jersey explicitly (gives model colour/style context)
+- Specify the club colours explicitly (gives the model colour/style context)
 - Use "Panini sticker aesthetic" or "FIFA Ultimate Team" to anchor the card style
 - "Cinematic lighting" / "bokeh crowd" for authentic sports photography feel
 - Include `Sharp focus` — prevents blurry AI faces

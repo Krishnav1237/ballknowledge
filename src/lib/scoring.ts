@@ -269,7 +269,7 @@ export function heuristicGradeHotTake(statement: string): HotTakeGrade {
     grade: isElite ? 'CORRECT' : isDelusion ? 'INCORRECT' : 'PARTIALLY_CORRECT',
     ovr,
     verdict: isElite ? 'CERTIFIED COOKING' : isDelusion ? 'SUPREME DELUSION' : 'MID TAKE GRADED',
-    charge: 'Local heuristic tribunal verdict.',
+    charge: 'Local grade.',
     sentence: isDelusion ? 'Banned from tactical discussions for 48 hours.' : 'Sentenced to watch more football.',
   };
 }

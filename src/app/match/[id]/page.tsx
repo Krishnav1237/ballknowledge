@@ -128,7 +128,7 @@ export default function MatchPage() {
   const sofaSyncKeyRef = useRef<string | null>(null);
 
   const matchesQuery = useQuery({
-    queryKey: ['world-cup-matches-data', matchId],
+    queryKey: ['premier-league-matches', matchId],
     queryFn: fetchMatches,
     staleTime: 0,
     gcTime: 1000 * 60 * 10,
@@ -148,7 +148,7 @@ export default function MatchPage() {
 
   // Split Query: Cache teams list indefinitely (static data)
   const teamsQuery = useQuery({
-    queryKey: ['world-cup-teams-data'],
+    queryKey: ['premier-league-teams'],
     queryFn: fetchTeams,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 2,

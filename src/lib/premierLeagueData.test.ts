@@ -121,6 +121,7 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     /world_cup_stadium/,
     /world_cup_hub_bg/,
     /AI FIFA Card/,
+    /No R32 predictions/,
     /AI VAR Tribunal/i,
     /Reputation Arena/i,
     /Locker Room Login/,

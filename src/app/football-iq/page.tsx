@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
-import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
@@ -95,8 +94,6 @@ export default function FootballIQPage() {
   if (!profile || !profile.isAuthenticated) {
     return (
       <div className="relative min-h-screen bg-[#07090E] text-zinc-100 flex flex-col font-sans select-none justify-center items-center px-4">
-        <Navbar />
-        
         {/* Immersive Stadium Background */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           <Image
@@ -703,7 +700,7 @@ export default function FootballIQPage() {
                   ) : filteredCards.length === 0 ? (
                     <div className="text-center py-20 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-2xl bg-black/20">
                       <ShieldAlert className="w-8 h-8 text-gray-400 mb-2.5" />
-                      <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No R32 predictions found in this filter</p>
+                      <p className="font-display font-black text-xs text-gray-300 uppercase tracking-widest">No cards in this filter</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-3 p-1">

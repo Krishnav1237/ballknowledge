@@ -154,7 +154,7 @@ async function syncMatchData(matchId: string, eventId: number): Promise<any> {
 
 /**
  * GET /api/sofascore-sync?matchId=102
- * Returns the cached/fresh SofaScore data for a given worldcup26.ir match ID.
+ * Returns cached/fresh SofaScore data for a Premier League fixture id.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

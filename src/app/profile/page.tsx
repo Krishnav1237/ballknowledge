@@ -576,7 +576,7 @@ export default function ProfileSettingsPage() {
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
             <Image 
               src="/images/locker_room_auth.webp" 
-              alt="Locker Room Authentication Background" 
+              alt="" 
               fill 
               className="object-cover opacity-[0.52] object-center" 
               priority

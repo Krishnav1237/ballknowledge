@@ -27,6 +27,3 @@ export function deckShareText(input: {
     : "I'm";
   return `${who} ${ovr} OVR on BallKnowledge. Come take the card.`;
 }
-
-export const SITE_TAGLINE =
-  'Prove you know ball. Get the card. Make them look at your OVR.';

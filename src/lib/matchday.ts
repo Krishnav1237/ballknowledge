@@ -12,7 +12,7 @@ export type MatchdayFixture = {
   away_team_name_en?: string;
 };
 
-export function sortByKickoff<T extends MatchdayFixture>(matches: T[]): T[] {
+function sortByKickoff<T extends MatchdayFixture>(matches: T[]): T[] {
   return [...matches].sort(
     (a, b) =>
       parseLocalDate(a.local_date, a.stadium_id).getTime() -
