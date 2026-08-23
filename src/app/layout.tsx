@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import './globals.css';
 import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
@@ -42,22 +41,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
-        <Script id="bk-drop-stale-sw" strategy="beforeInteractive">{`
-          (function () {
-            try {
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function (regs) {
-                  regs.forEach(function (reg) { reg.unregister(); });
-                });
-              }
-              if (window.caches) {
-                caches.keys().then(function (keys) {
-                  keys.forEach(function (key) { caches.delete(key); });
-                });
-              }
-            } catch (e) {}
-          })();
-        `}</Script>
         <Providers>
           <AppEffects />
           <Navbar />

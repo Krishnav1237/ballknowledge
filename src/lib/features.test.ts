@@ -242,4 +242,6 @@ test('root chrome does not fade, spin, or wait on every navigation', () => {
   const nav = readFileSync(join(process.cwd(), 'src/components/Navbar.tsx'), 'utf8');
   assert.doesNotMatch(nav, /framer-motion/);
   assert.doesNotMatch(layout, /framer-motion/);
+  assert.doesNotMatch(layout, /next\/script/);
+  assert.doesNotMatch(layout, /<Script/);
 });
