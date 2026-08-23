@@ -94,7 +94,7 @@ export default function FootballIQPage() {
 
   if (!profile || !profile.isAuthenticated) {
     return (
-      <PageShell atmosphere="stadium" width="board" className="flex flex-col items-center justify-center px-4">
+      <PageShell atmosphere="arena" width="board" className="flex flex-col items-center justify-center px-4">
         <div className="relative z-10 flex flex-col items-center max-w-md w-full text-center bg-[#0B0F19]/95 border border-white/10 rounded-3xl p-8 shadow-[0_0_60px_rgba(225,29,72,0.1)]">
           <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-6 shadow-lg shadow-rose-500/5 animate-pulse">
             <svg className="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -547,7 +547,7 @@ export default function FootballIQPage() {
     : deckShareText({ ovr: profile.overallRating });
 
   return (
-    <PageShell atmosphere="stadium" width="full" className="flex flex-col select-none">
+    <PageShell atmosphere="arena" width="full" className="flex flex-col select-none">
 
       <div className="relative z-10 w-full flex-grow flex flex-col min-h-0">
         

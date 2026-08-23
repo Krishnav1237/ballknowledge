@@ -6,8 +6,6 @@ import { IMAGE_GEN_TIMEOUT_MS } from '@/lib/requestBounds';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 15;
 
-const FALLBACK_CARD_BG = '/images/toty_bg_premium.webp';
-
 /**
  * Builds an un-moderated, immersive prompt for the trading card portrait background.
  */
@@ -195,7 +193,7 @@ export async function POST(request: Request) {
 
     if (!aiImageUrl) {
       return NextResponse.json(
-        { success: false, error: 'Image generation failed.', fallbackImage: FALLBACK_CARD_BG },
+        { success: false, error: 'Image generation failed.' },
         { status: 503 },
       );
     }

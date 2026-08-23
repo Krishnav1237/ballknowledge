@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import NextImage from 'next/image';
 import Link from 'next/link';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, saveStoredPredictions, saveStoredProfile, LocalPrediction } from '@/lib/profileSync';
@@ -797,16 +796,7 @@ export default function MatchPage() {
         </div>
       )}
 
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <NextImage
-          src="/images/match_details_bg.webp"
-          alt=""
-          fill
-          className="object-cover object-center opacity-[0.28]"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/88 via-[#030712]/72 to-[#030712]" />
-      </div>
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden arena-pitch" aria-hidden />
 
       {/* VAR Simulation Loading Screen */}
       {resolving && (

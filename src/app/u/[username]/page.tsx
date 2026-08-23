@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download, Send } from 'lucide-react';
@@ -525,17 +524,7 @@ export default function PublicProfilePage() {
   return (
     <div className="relative min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col justify-between select-none">
       
-      {/* Background Stadium Atmosphere */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <Image 
-          src="/images/stadium_bg.webp" 
-          alt="Stadium background" 
-          fill 
-          className="object-cover object-center opacity-[0.48]" 
-          priority
-        />
-        <div className="absolute inset-0 bg-[#030712]/75" />
-      </div>
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden arena-pitch" aria-hidden />
 
       <div className="relative z-10 w-full flex-grow flex flex-col min-h-0">
         

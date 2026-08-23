@@ -723,17 +723,7 @@ export default function ProfileSettingsPage() {
         <div className="relative flex min-h-[calc(100dvh-var(--nav-h))] flex-grow flex-col justify-center bg-[#030712] pb-8">
 
           {/* Clean Subdued Background */}
-          <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-            <Image
-              src="/images/stadium_bg.webp"
-              alt="Stadium background"
-              fill
-              className="object-cover opacity-[0.52] object-center scale-102"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/80 to-[#030712]" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-rose-950/10 rounded-full blur-[120px] pointer-events-none" />
-          </div>
+          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden arena-pitch" aria-hidden />
 
           {/* Main Dashboard Panel */}
           <div className="relative z-10 flex flex-col px-4 sm:px-6 py-4 max-w-8xl w-full mx-auto flex-grow justify-center">

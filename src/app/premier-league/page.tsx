@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getStoredPredictions, getStoredProfile } from '@/lib/profileSync';
-import { clockNow, getMatchClockStatus, isSameUTCDate, parseLocalDate } from '@/lib/matchUtils';
+import { clockNow, formatKickoffLabel, getMatchClockStatus, isSameUTCDate, parseLocalDate } from '@/lib/matchUtils';
 import { computeLeagueTable } from '@/lib/premierLeagueUtils';
 import { catalogMatches, catalogTeams, fetchLeagueMatches, fetchLeagueTeams, leagueKeys } from '@/lib/leagueCatalog';
 import FlagImage from '@/components/FlagImage';
@@ -250,11 +250,7 @@ export default function PremierLeagueHub() {
                   const homeName = teams.find((t) => t.id === match.home_team_id)?.name_en || match.home_team_name_en || 'Home';
                   const awayName = teams.find((t) => t.id === match.away_team_id)?.name_en || match.away_team_name_en || 'Away';
                   const status = getMatchStatus(match);
-                  const kickoff = parseLocalDate(match.local_date, match.stadium_id);
-                  const kickoffStr = kickoff.toLocaleString('en-GB', {
-                    weekday: 'short', month: 'short', day: 'numeric',
-                    hour: '2-digit', minute: '2-digit', hour12: false, timeZoneName: 'short',
-                  });
+                  const kickoffStr = formatKickoffLabel(match.local_date);
                   const homeScorers = parseScorers(match.home_scorers);
                   const awayScorers = parseScorers(match.away_scorers);
                   return (

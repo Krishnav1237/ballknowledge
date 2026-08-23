@@ -3,7 +3,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { getPremierLeagueClubs, getPremierLeagueMatches } from './premierLeagueData';
-import { getMatchClockStatus, hasOfficialScore, parseLocalDate } from './matchUtils';
+import { publicAvatarSeed } from './boardSnapshot';
+import { formatKickoffLabel, getMatchClockStatus, hasOfficialScore, parseLocalDate } from './matchUtils';
 import { getRosterForTeam, isPlayerAllowedForSlot, type Player } from './roster';
 import {
   calculateHOT,
@@ -209,12 +210,23 @@ test('home is an outbid-style rank board, not a sales landing', () => {
   assert.doesNotMatch(home + board, /HOW IT WORKS/);
   assert.doesNotMatch(home + board, /landingData/);
   assert.match(board, /Take #1/);
-  assert.match(catalog, /\/api\/leaderboard/);
+  assert.match(catalog, /\/api\/board/);
   assert.match(board, /pickFeaturedMatch/);
   assert.match(board, /\/match\//);
   assert.match(board, /Post your OVR/);
-  assert.match(shell, /stadium_bg/);
+  assert.match(shell, /arena-pitch/);
   assert.match(board, /lg:grid-cols-12/);
+  assert.doesNotMatch(board, /toLocaleString/);
+});
+
+test('kickoff labels do not use the machine locale', () => {
+  assert.equal(formatKickoffLabel('08/21/2026 20:00'), 'Fri 21 Aug 20:00 UK');
+});
+
+test('public board avatars never include uploaded photo blobs', () => {
+  assert.equal(publicAvatarSeed('Chef', 'Reputation'), 'Reputation');
+  assert.equal(publicAvatarSeed('Chef', 'data:image/jpeg;base64,/9j/abc'), 'Chef');
+  assert.equal(publicAvatarSeed('Chef', 'x'.repeat(200)), 'Chef');
 });
 
 test('root chrome does not fade, spin, or wait on every navigation', () => {

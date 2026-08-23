@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
@@ -214,17 +213,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
         </div>
       )}
       
-      {/* Immersive Game-style Stadium Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <Image 
-          src="/images/game_stadium_showcase.webp" 
-          alt="Stadium background" 
-          fill 
-          className="object-cover object-center opacity-[0.25]" 
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#030712]/70 to-[#030712]" />
-      </div>
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden arena-pitch" aria-hidden />
 
       {/* Centered Heading */}
       <header className="relative z-10 text-center flex flex-col items-center mt-2">

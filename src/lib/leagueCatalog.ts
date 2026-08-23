@@ -1,10 +1,11 @@
 import { getPremierLeagueClubs, getPremierLeagueMatches, type PremierLeagueClub, type PremierLeagueMatch } from '@/lib/premierLeagueData';
 import { fetchWithTimeout } from '@/lib/requestBounds';
-import type { LeaderboardEntry } from '@/app/api/leaderboard/route';
+import type { BoardSnapshot, LeaderboardEntry } from '@/lib/boardSnapshot';
 
 export const leagueKeys = {
   matches: ['premier-league-matches'] as const,
   teams: ['premier-league-teams'] as const,
+  board: ['board'] as const,
   leaderboard: ['leaderboard'] as const,
   stats: ['stats'] as const,
 };
@@ -26,23 +27,17 @@ export async function fetchLeagueTeams(): Promise<PremierLeagueClub[]> {
   return Array.isArray(data) ? data : data.teams || [];
 }
 
-export async function fetchLeagueLeaderboard(limit = 50): Promise<LeaderboardEntry[]> {
-  const res = await fetchWithTimeout(`/api/leaderboard?limit=${limit}`);
+export async function fetchLeagueBoard(): Promise<BoardSnapshot> {
+  const res = await fetchWithTimeout('/api/board');
   if (!res.ok) throw new Error('Failed to load board');
   const data = await res.json();
-  return Array.isArray(data?.entries) ? data.entries : [];
-}
-
-export type LeagueStats = { takes: number; cases: number; cards: number; degraded?: boolean };
-
-export async function fetchLeagueStats(): Promise<LeagueStats> {
-  const res = await fetchWithTimeout('/api/stats');
-  if (!res.ok) throw new Error('Failed to load stats');
-  const data = await res.json();
   return {
-    takes: Number(data.takes) || 0,
-    cases: Number(data.cases) || 0,
-    cards: Number(data.cards) || 0,
-    degraded: Boolean(data.degraded),
+    entries: Array.isArray(data?.entries) ? (data.entries as LeaderboardEntry[]) : [],
+    stats: {
+      takes: Number(data?.stats?.takes) || 0,
+      cases: Number(data?.stats?.cases) || 0,
+      cards: Number(data?.stats?.cards) || 0,
+    },
+    degraded: Boolean(data?.degraded),
   };
 }

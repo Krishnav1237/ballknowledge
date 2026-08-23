@@ -92,6 +92,18 @@ export function clockNow(): number {
   return Date.now();
 }
 
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+
+/** Kickoff label from the stored local clock. No locale/timezone APIs — identical on server and client. */
+export function formatKickoffLabel(localDateStr: string): string {
+  const [datePart, timePart = '00:00'] = localDateStr.split(' ');
+  const [month, day, year] = datePart.split('/').map(Number);
+  const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day, 12, 0, 0)).getUTCDay()];
+  const hhmm = timePart.slice(0, 5);
+  return `${weekday} ${day} ${MONTHS[month - 1]} ${hhmm} UK`;
+}
+
 export type MatchClockStatus = 'UPCOMING' | 'LIVE' | 'COMPLETED';
 
 export function hasOfficialScore(match: { home_score?: string; away_score?: string; finished?: string }): boolean {

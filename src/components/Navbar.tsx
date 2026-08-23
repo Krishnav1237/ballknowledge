@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Trophy, Award, User, Menu, X, LogOut, LogIn, BarChart2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { clearStoredProfile, getStoredProfile, FootballIQProfile, getAvatarUrl } from '@/lib/profileSync';
 
 export default function Navbar() {
@@ -82,13 +81,7 @@ export default function Navbar() {
                   }`}
                 >
                   <span className="relative z-10">{link.name}</span>
-                  {isActive && (
-                    <motion.span
-                      layoutId="activeNavIndicator"
-                      className="absolute bottom-[-6px] left-0 h-[2px] w-full bg-[#E11D48] shadow-[0_0_8px_rgba(225,29,72,0.4)]"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
+                  {isActive && <span className="absolute bottom-[-6px] left-0 h-[2px] w-full bg-[#E11D48] shadow-[0_0_8px_rgba(225,29,72,0.4)]" />}
                 </Link>
               );
             })}
@@ -134,79 +127,71 @@ export default function Navbar() {
         </div>
       </header>
 
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-40 flex flex-col justify-between bg-[#0B0F19] px-6 pb-12 pt-[calc(var(--nav-h)+20px)] md:hidden"
-          >
-            <div className="flex flex-col space-y-3">
-              {navLinks.map((link) => {
-                const isActive = link.href === '/leaderboard'
-                  ? pathname === '/' || pathname === '/leaderboard'
-                  : pathname === link.href;
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-4 rounded-xl border p-4 transition-all ${
-                      isActive
-                        ? 'border-[#E11D48]/20 bg-[#E11D48]/5 text-[#E11D48]'
-                        : 'border-white/5 bg-white/5 text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Icon className={`h-5 w-5 ${isActive ? 'text-[#E11D48]' : 'text-gray-400'}`} />
-                    <span className="font-sans text-base font-bold uppercase tracking-wider">{link.name}</span>
-                  </Link>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-col space-y-4">
-              {hydrated && profile?.isAuthenticated ? (
-                <div className="flex flex-col space-y-4">
-                  <div className="flex items-center space-x-4 rounded-xl border border-white/10 bg-white/5 p-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={getAvatarUrl(profile.avatarStyle, profile.avatarSeed)}
-                      className="h-10 w-10 rounded-full object-cover"
-                      alt="Avatar"
-                    />
-                    <div>
-                      <h4 className="font-sans text-sm font-black uppercase leading-none text-white">{profile.username}</h4>
-                      <p className="mt-1 text-[8.5px] font-black uppercase tracking-widest text-[#E11D48]">
-                        OVR {profile.overallRating} • {profile.role}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleSignOut();
-                    }}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/35 py-4 text-center font-bold uppercase tracking-wider text-red-500 transition-all hover:bg-red-500/5"
-                  >
-                    <LogOut className="h-4 w-4" /> Sign out
-                  </button>
-                </div>
-              ) : (
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 flex flex-col justify-between bg-[#0B0F19] px-6 pb-12 pt-[calc(var(--nav-h)+20px)] md:hidden">
+          <div className="flex flex-col space-y-3">
+            {navLinks.map((link) => {
+              const isActive = link.href === '/leaderboard'
+                ? pathname === '/' || pathname === '/leaderboard'
+                : pathname === link.href;
+              const Icon = link.icon;
+              return (
                 <Link
-                  href="/profile"
+                  key={link.name}
+                  href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] py-4 text-center font-bold uppercase tracking-wider text-white transition-all hover:scale-[1.01]"
+                  className={`flex items-center space-x-4 rounded-xl border p-4 transition-all ${
+                    isActive
+                      ? 'border-[#E11D48]/20 bg-[#E11D48]/5 text-[#E11D48]'
+                      : 'border-white/5 bg-white/5 text-white hover:bg-white/10'
+                  }`}
                 >
-                  <LogIn className="h-4 w-4" /> Get in
+                  <Icon className={`h-5 w-5 ${isActive ? 'text-[#E11D48]' : 'text-gray-400'}`} />
+                  <span className="font-sans text-base font-bold uppercase tracking-wider">{link.name}</span>
                 </Link>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col space-y-4">
+            {hydrated && profile?.isAuthenticated ? (
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center space-x-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getAvatarUrl(profile.avatarStyle, profile.avatarSeed)}
+                    className="h-10 w-10 rounded-full object-cover"
+                    alt="Avatar"
+                  />
+                  <div>
+                    <h4 className="font-sans text-sm font-black uppercase leading-none text-white">{profile.username}</h4>
+                    <p className="mt-1 text-[8.5px] font-black uppercase tracking-widest text-[#E11D48]">
+                      OVR {profile.overallRating} • {profile.role}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/35 py-4 text-center font-bold uppercase tracking-wider text-red-500 transition-all hover:bg-red-500/5"
+                >
+                  <LogOut className="h-4 w-4" /> Sign out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] py-4 text-center font-bold uppercase tracking-wider text-white transition-all hover:scale-[1.01]"
+              >
+                <LogIn className="h-4 w-4" /> Get in
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

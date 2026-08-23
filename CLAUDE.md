@@ -57,7 +57,9 @@ FACEBOOK_CLIENT_SECRET="your-facebook-app-secret"
 - All pages in `src/app/`. API routes under `src/app/api/`.
 - **Server Components** are the default. Only add `'use client'` when hooks/browser APIs are required.
 - **Root layout** owns the HUD chrome: fixed Navbar, `main` offset with `--nav-h` (52px), Footer. Do **not** add `pt-[52px]` on pages. Do **not** wrap routes in `PageTransition` or a root `loading.tsx` spinner — those made every navigation fade and wait.
-- **PageShell** (`src/components/PageShell.tsx`) is the page frame: `atmosphere` (`none` | `stadium` | `pitch` | `locker`) + `width` (`board` | `wide` | `full`). Use it instead of a new `min-h-screen` wrapper.
+- **PageShell** (`src/components/PageShell.tsx`) is the page frame: `atmosphere` (`none` | `arena` | `pitch` | `locker`) + `width` (`board` | `wide` | `full`). Arena/pitch are CSS, not photo wallpaper. Use it instead of a new `min-h-screen` wrapper.
+- **Kickoff labels** use `formatKickoffLabel` from `matchUtils.ts`. Never `toLocaleString` in render — that hydrates differently on Vercel UTC vs the browser.
+- **Board stats** come from `getBoardSnapshot()` (`src/lib/boardSnapshot.ts`): lean profile rows, 15s memory cache, 2s deadline. Landing calls `/api/board` once — do not fan out `/api/stats` + `/api/leaderboard` + `/api/matches` on first paint.
 - **Fonts** come from `next/font` in `src/lib/fonts.ts` (Outfit, Space Grotesk, Oswald). Never `@import` Google Fonts in CSS.
 - **League data** is shared through `src/lib/leagueCatalog.ts` + React Query keys `premier-league-matches` / `premier-league-teams`. Prefetch on `Providers` mount. Fixture JSON is the placeholder so season/match/board paint without a spinner.
 
@@ -118,12 +120,13 @@ POST /api/generate-viral-card
 | `src/components/GameBoard.tsx` | Public OVR board — the product |
 | `src/components/PageShell.tsx` | Shared page frame (atmosphere + width) |
 | `src/lib/leagueCatalog.ts` | Shared matches/teams/board fetchers + query keys |
+| `src/lib/boardSnapshot.ts` | Lean OVR board + counts, 15s cache, 2s deadline |
 | `src/lib/fonts.ts` | next/font Outfit / Space Grotesk / Oswald |
 | `src/lib/premierLeagueData.ts` | 20 clubs + 380 PL 2026/27 fixtures |
 | `src/lib/matchday.ts` | Next-kickoff picker for Take #1 |
 | `src/lib/scoring.ts` | PRD / MGR / HOT / RST / OVR |
 | `src/lib/shareCopy.ts` | Tweet / WhatsApp lines |
-| `src/lib/matchUtils.ts` | parseLocalDate, getMatchClockStatus, getFlagEmoji |
+| `src/lib/matchUtils.ts` | parseLocalDate, formatKickoffLabel, getMatchClockStatus, getFlagEmoji |
 | `src/lib/profileSync.ts` | localStorage ↔ DB profile helpers (`football_iq_profile`) |
 | `src/lib/db.ts` | Prisma singleton — never `new PrismaClient()` |
 | `src/lib/roster.ts` | 20-club Best XI rosters |

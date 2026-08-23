@@ -106,7 +106,7 @@ test('malformed session cookie does not throw and auth GET degrades', () => {
 
   const catalog = readFileSync(join(process.cwd(), 'src/lib/leagueCatalog.ts'), 'utf8');
   assert.match(catalog, /fetchWithTimeout/);
-  assert.match(catalog, /\/api\/leaderboard/);
+  assert.match(catalog, /\/api\/board/);
 
   const resolveMatch = readFileSync(join(process.cwd(), 'src/app/api/resolve-match/route.ts'), 'utf8');
   assert.equal(resolveMatch.includes('localhost:3000'), false);

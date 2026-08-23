@@ -6,18 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import FlagImage from '@/components/FlagImage';
 import PageShell from '@/components/PageShell';
 import { getAvatarUrl, getStoredProfile, type FootballIQProfile } from '@/lib/profileSync';
-import {
-  catalogMatches,
-  catalogTeams,
-  fetchLeagueLeaderboard,
-  fetchLeagueMatches,
-  fetchLeagueStats,
-  fetchLeagueTeams,
-  leagueKeys,
-} from '@/lib/leagueCatalog';
-import { clockNow, getMatchClockStatus, parseLocalDate } from '@/lib/matchUtils';
+import { catalogMatches, catalogTeams, fetchLeagueBoard, leagueKeys } from '@/lib/leagueCatalog';
+import { clockNow, formatKickoffLabel, getMatchClockStatus } from '@/lib/matchUtils';
 import { matchActionLabel, pickFeaturedMatch } from '@/lib/matchday';
-import type { LeaderboardEntry } from '@/app/api/leaderboard/route';
+import type { LeaderboardEntry } from '@/lib/boardSnapshot';
 
 type Team = { id: string; name_en: string };
 type Match = {
@@ -42,18 +34,7 @@ function nameOf(teams: Team[], match: Match, side: 'home' | 'away'): string {
 }
 
 function formatCount(n: number): string {
-  return n.toLocaleString('en-GB');
-}
-
-function kickoffLabel(match: Match): string {
-  return parseLocalDate(match.local_date, match.stadium_id).toLocaleString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  return String(Math.trunc(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function statusTone(status: 'LIVE' | 'COMPLETED' | 'UPCOMING') {
@@ -66,27 +47,11 @@ export default function GameBoard() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
   const [nowMs, setNowMs] = useState(0);
 
-  const matchesQuery = useQuery({
-    queryKey: leagueKeys.matches,
-    queryFn: fetchLeagueMatches,
-    placeholderData: catalogMatches,
-    staleTime: 30_000,
-  });
-  const teamsQuery = useQuery({
-    queryKey: leagueKeys.teams,
-    queryFn: fetchLeagueTeams,
-    placeholderData: catalogTeams,
-    staleTime: Infinity,
-  });
   const boardQuery = useQuery({
-    queryKey: leagueKeys.leaderboard,
-    queryFn: () => fetchLeagueLeaderboard(50),
+    queryKey: leagueKeys.board,
+    queryFn: fetchLeagueBoard,
     staleTime: 15_000,
-  });
-  const statsQuery = useQuery({
-    queryKey: leagueKeys.stats,
-    queryFn: fetchLeagueStats,
-    staleTime: 15_000,
+    refetchInterval: (query) => (query.state.data?.degraded ? 3_000 : false),
   });
 
   useEffect(() => {
@@ -102,19 +67,19 @@ export default function GameBoard() {
     return () => window.removeEventListener('storage', sync);
   }, []);
 
-  const matches = useMemo(() => (matchesQuery.data ?? []) as Match[], [matchesQuery.data]);
-  const teams = useMemo(() => (teamsQuery.data ?? []) as Team[], [teamsQuery.data]);
-  const entries: LeaderboardEntry[] = boardQuery.data ?? [];
-  const statsReady = Boolean(statsQuery.data && !statsQuery.data.degraded);
-  const stats = statsQuery.data ?? { takes: 0, cases: 0, cards: 0 };
+  const matches = useMemo(() => catalogMatches() as Match[], []);
+  const teams = useMemo(() => catalogTeams() as Team[], []);
+  const entries: LeaderboardEntry[] = boardQuery.data?.entries ?? [];
+  const statsReady = Boolean(boardQuery.data && !boardQuery.data.degraded);
+  const stats = boardQuery.data?.stats ?? { takes: 0, cases: 0, cards: 0 };
   const boardReady = !boardQuery.isPending;
 
-  const clock = nowMs || 0;
+  const clock = nowMs;
   const featured = useMemo(() => pickFeaturedMatch(matches, clock), [matches, clock]);
-  const featuredStatus = featured ? getMatchClockStatus(featured, clock) : 'UPCOMING';
+  const featuredStatus = featured ? getMatchClockStatus(featured, clock || 0) : 'UPCOMING';
   const leader = entries[0] ?? null;
   const chase = entries[1] ?? null;
-  const rest = entries.slice(1);
+  const rest = entries.slice(1, 12);
   const youName = profile?.username;
   const youRank = youName
     ? entries.find((entry) => entry.username.toLowerCase() === youName.toLowerCase())
@@ -128,63 +93,60 @@ export default function GameBoard() {
   const homeName = featured ? nameOf(teams, featured, 'home') : '';
   const awayName = featured ? nameOf(teams, featured, 'away') : '';
 
-  const chips = [
-    { n: statsReady ? formatCount(stats.cases) : '—', l: 'On the board' },
-    { n: statsReady ? formatCount(stats.cards) : '—', l: 'Cards' },
-    { n: statsReady ? formatCount(stats.takes) : '—', l: 'Takes' },
-    { n: String(yourOvr), l: youRank ? `You · #${youRank.rank}` : 'You · unranked' },
-  ];
-
   return (
-    <PageShell atmosphere="stadium" width="board">
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        {chips.map((chip) => (
-          <div key={chip.l} className="hud-chip flex items-baseline gap-2 rounded-full px-3 py-1.5">
-            <span className="font-display text-sm font-black tabular-nums text-[#E11D48]">{chip.n}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">{chip.l}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
-        <section className="flex flex-col gap-5 lg:col-span-7">
-          <header>
+    <PageShell atmosphere="arena" width="board">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+        <section className="relative flex flex-col gap-6 lg:col-span-7">
+          <p className="pointer-events-none absolute -top-8 right-0 select-none font-display text-[7.5rem] font-black leading-none text-white/[0.04] sm:text-[10rem]">
+            01
+          </p>
+          <header className="relative">
             <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#E11D48]">Premier League 26/27</p>
-            <h1 className="mt-2 font-display text-5xl font-black uppercase leading-[0.9] tracking-tight sm:text-6xl">
+            <h1 className="mt-3 font-display text-5xl font-black uppercase leading-[0.88] tracking-tight sm:text-7xl">
               Rank is the OVR.
               <br />
               <span className="ovr-glow text-[#E11D48]">Take #1.</span>
             </h1>
-            <p className="mt-3 max-w-lg text-sm font-semibold text-zinc-300 sm:text-base">
-              One public board. Call the next fixture. Climb or get climbed on.
+            <p className="mt-4 max-w-md text-sm font-semibold text-zinc-300">
+              Call the next fixture. Climb the public board. Rank is the number — nothing else.
+            </p>
+            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+              {statsReady ? `${formatCount(stats.cases)} on the board` : 'Board live'}
+              {' · '}
+              {statsReady ? `${formatCount(stats.cards)} cards` : 'cards pending'}
+              {' · '}
+              you {yourOvr} ovr{youRank ? ` · #${youRank.rank}` : ''}
             </p>
           </header>
 
           {featured ? (
-            <article className="panel relative overflow-hidden rounded-3xl p-5 sm:p-6">
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#E11D48] to-transparent" />
-              <div className="mb-5 flex items-center justify-between gap-2">
+            <article className="ticket relative overflow-hidden rounded-[28px] p-5 sm:p-7">
+              <div className="mb-6 flex items-center justify-between gap-2">
                 <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] ${statusTone(featuredStatus)}`}>
                   {featuredStatus === 'LIVE' ? 'Live now' : featuredStatus === 'COMPLETED' ? 'Full time' : `Next · MW ${featured.matchday}`}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">{kickoffLabel(featured)}</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  {formatKickoffLabel(featured.local_date)}
+                </span>
               </div>
 
               <div className="flex items-center gap-3 sm:gap-6">
-                <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                <div className="flex min-w-0 flex-1 flex-col items-center gap-3">
                   <FlagImage countryName={homeName} size="xl" className="h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" />
-                  <p className="text-center font-display text-base font-black uppercase leading-tight tracking-tight sm:text-xl">{homeName}</p>
+                  <p className="text-center font-display text-lg font-black uppercase leading-tight tracking-tight sm:text-2xl">{homeName}</p>
                 </div>
-                <div className="ovr-glow shrink-0 font-display text-3xl font-black text-[#E11D48] sm:text-5xl">VS</div>
-                <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[#E11D48]/40 bg-[#E11D48]/10 sm:h-20 sm:w-20">
+                  <span className="ovr-glow font-display text-2xl font-black text-[#E11D48] sm:text-3xl">VS</span>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col items-center gap-3">
                   <FlagImage countryName={awayName} size="xl" className="h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" />
-                  <p className="text-center font-display text-base font-black uppercase leading-tight tracking-tight sm:text-xl">{awayName}</p>
+                  <p className="text-center font-display text-lg font-black uppercase leading-tight tracking-tight sm:text-2xl">{awayName}</p>
                 </div>
               </div>
 
               <Link
                 href={playHref}
-                className="mt-6 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#881337] to-[#E11D48] py-4 font-display text-xs font-black uppercase tracking-[0.2em] text-white shadow-[0_8px_28px_rgba(225,29,72,0.35)] hover:brightness-110"
+                className="mt-7 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#881337] to-[#E11D48] py-4 font-display text-xs font-black uppercase tracking-[0.22em] text-white shadow-[0_8px_28px_rgba(225,29,72,0.35)] hover:brightness-110"
               >
                 {playLabel}
               </Link>
@@ -200,7 +162,7 @@ export default function GameBoard() {
           ) : (
             <Link
               href="/premier-league"
-              className="panel rounded-3xl px-6 py-8 text-center font-display font-black uppercase tracking-widest text-[#E11D48]"
+              className="ticket rounded-[28px] px-6 py-10 text-center font-display font-black uppercase tracking-widest text-[#E11D48]"
             >
               Open season
             </Link>
@@ -208,19 +170,19 @@ export default function GameBoard() {
         </section>
 
         <aside className="lg:col-span-5">
-          <div className="panel overflow-hidden rounded-3xl">
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
+          <div className="scoreboard overflow-hidden rounded-[28px]">
+            <div className="flex items-end justify-between gap-3 border-b border-white/10 px-5 py-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#E11D48]">
                   {youAreOne ? 'Defend #1' : 'Public board'}
                 </p>
-                <p className="font-display text-lg font-black uppercase tracking-tight">
+                <p className="mt-1 font-display text-xl font-black uppercase tracking-tight">
                   {leader ? `Beat ${leader.username}` : boardReady ? 'Board is empty. Take it.' : 'Public board'}
                 </p>
               </div>
               {leader && (
                 <div className="text-right">
-                  <p className="ovr-glow font-display text-3xl font-black leading-none tabular-nums text-[#E11D48]">{leader.overallRating}</p>
+                  <p className="ovr-glow font-display text-5xl font-black leading-none tabular-nums text-[#E11D48]">{leader.overallRating}</p>
                   <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-zinc-500">#1 OVR</p>
                 </div>
               )}
@@ -229,7 +191,7 @@ export default function GameBoard() {
             {leader && (
               <Link
                 href={`/u/${encodeURIComponent(leader.username)}`}
-                className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-[#E11D48]/15 to-transparent px-5 py-4"
+                className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-[#E11D48]/20 to-transparent px-5 py-4"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -251,9 +213,9 @@ export default function GameBoard() {
               </Link>
             )}
 
-            <ol className="custom-scrollbar max-h-[420px] divide-y divide-white/8 overflow-y-auto">
+            <ol className="custom-scrollbar max-h-[440px] divide-y divide-white/8 overflow-y-auto">
               {!boardReady &&
-                Array.from({ length: 6 }).map((_, i) => (
+                Array.from({ length: 8 }).map((_, i) => (
                   <li key={i} className="flex items-center gap-3 px-5 py-3">
                     <span className="h-4 w-8 rounded skel" />
                     <span className="h-8 w-8 rounded-full skel" />
