@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
  * Demands a structured JSON output with OVR grading, funny title (verdict),
  * specific bias charge, and humorous punishment (sentence).
  */
-const EVALUATE_TAKE_PROMPT = `You are the Stockley Park VAR Grader. Evaluate this football hot take.
+const EVALUATE_TAKE_PROMPT = `You grade Premier League hot takes. Evaluate this football hot take.
 
 Determine if the statement is:
 - CORRECT: Visionary, genuinely insightful, or factually sound take (75-99 OVR)
@@ -78,7 +78,7 @@ function parseAndNormalizeGrading(rawContent: string): { grade: string; ovr: num
     grade,
     ovr,
     verdict: String(result.verdict || 'MID TAKE GRADED').trim(),
-    charge: String(result.charge || 'VAR reviewed details.').trim(),
+    charge: String(result.charge || 'Take graded.').trim(),
     sentence: String(result.sentence || 'Sentenced to watch more football.').trim()
   };
 }

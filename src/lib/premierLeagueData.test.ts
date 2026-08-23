@@ -101,6 +101,8 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     'src/lib/shareCopy.ts',
     'src/lib/matchday.ts',
     'src/components/GameBoard.tsx',
+    'src/app/api/resolve-match/route.ts',
+    'src/app/api/sofascore-sync/route.ts',
   ];
   const banned = [
     /WORLD CUP 2026/i,
@@ -126,6 +128,8 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     /Reputation Arena/i,
     /Locker Room Login/,
     /Stockley Park/,
+    /Manager Dossier/,
+    /Authenticating Dossier/,
     /35% PRD/,
     /Portugal will secure/,
     /VAR Tribunal: Grade Match/,

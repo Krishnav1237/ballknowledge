@@ -4,7 +4,8 @@ import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { firstResolved, SOFASCORE_WAIT_MS } from '@/lib/requestBounds';
-import { sofaScoreFallbackResponse } from '@/lib/sofascoreFallback';
+import { sofaScoreFallbackResponse, sofaScoreMappingFitsFixture } from '@/lib/sofascoreFallback';
+import { getPremierLeagueMatches } from '@/lib/premierLeagueData';
 
 export const dynamic = 'force-dynamic';
 
@@ -164,19 +165,29 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'matchId is required' }, { status: 400 });
   }
 
+  const fixture = getPremierLeagueMatches().find((match) => String(match.id) === String(matchId));
+  if (!fixture) {
+    return NextResponse.json({ error: `No Premier League fixture ${matchId}` }, { status: 404 });
+  }
+
+  const plNames = { homeTeam: fixture.home_team_name_en, awayTeam: fixture.away_team_name_en };
   const map = readMap();
   const mapEntry = map[matchId];
 
-  if (!mapEntry || !mapEntry.sofascoreEventId) {
-    return NextResponse.json({ error: `No SofaScore mapping for match ${matchId}` }, { status: 404 });
+  if (!mapEntry || !mapEntry.sofascoreEventId || !sofaScoreMappingFitsFixture(mapEntry, fixture)) {
+    return NextResponse.json(sofaScoreFallbackResponse(matchId, 0, plNames));
   }
 
   const sofascoreEventId = mapEntry.sofascoreEventId;
   const cache = readCache();
   const cacheKey = String(matchId);
 
-  // Return cached data if fresh
-  if (cache[cacheKey] && !isCacheStale(cache[cacheKey])) {
+  // Return cached data if fresh and still the same fixture
+  if (
+    cache[cacheKey] &&
+    !isCacheStale(cache[cacheKey]) &&
+    sofaScoreMappingFitsFixture(cache[cacheKey].data, fixture)
+  ) {
     return NextResponse.json({
       success: true,
       matchId,
@@ -195,7 +206,7 @@ export async function GET(request: Request) {
   if (!freshData || freshData.error) {
     const isQueueFull = freshData?.error?.includes('queue full');
 
-    if (cache[cacheKey]) {
+    if (cache[cacheKey] && sofaScoreMappingFitsFixture(cache[cacheKey].data, fixture)) {
       return NextResponse.json({
         success: true,
         matchId,
@@ -212,7 +223,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: freshData.error }, { status: 429 });
     }
 
-    return NextResponse.json(sofaScoreFallbackResponse(matchId, sofascoreEventId, mapEntry));
+    return NextResponse.json(sofaScoreFallbackResponse(matchId, sofascoreEventId, plNames));
+  }
+
+  if (!sofaScoreMappingFitsFixture(freshData, fixture)) {
+    return NextResponse.json(sofaScoreFallbackResponse(matchId, sofascoreEventId, plNames));
   }
 
   // Update cache

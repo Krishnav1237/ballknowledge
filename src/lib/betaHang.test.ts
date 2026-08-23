@@ -8,7 +8,7 @@ import { resolveMatchPageLoad } from './matchPageLoad';
 import { getPremierLeagueMatches, getPremierLeagueClubs } from './premierLeagueData';
 import { firstResolved } from './requestBounds';
 import { gradeWithFallback, heuristicGradeHotTake } from './scoring';
-import { generateFallbackData, sofaScoreFallbackResponse } from './sofascoreFallback';
+import { generateFallbackData, sofaScoreFallbackResponse, sofaScoreMappingFitsFixture } from './sofascoreFallback';
 
 test('grading still produces a finite result when LLM callers reject', async () => {
   const result = await gradeWithFallback(
@@ -73,6 +73,19 @@ test('SofaScore GET fallback is JSON when the scraper fails', () => {
   assert.equal(payload.fallback, true);
   assert.equal(payload.data.isFallback, true);
   assert.equal(JSON.parse(JSON.stringify(payload)).matchId, '1');
+});
+
+test('World Cup SofaScore map rows do not attach to Premier League fixtures', () => {
+  const opening = getPremierLeagueMatches().find((match) => match.id === '1');
+  assert.ok(opening);
+  assert.equal(
+    sofaScoreMappingFitsFixture({ sofascoreHome: 'Mexico', sofascoreAway: 'South Africa' }, opening),
+    false,
+  );
+  assert.equal(
+    sofaScoreMappingFitsFixture({ sofascoreHome: 'Arsenal', sofascoreAway: 'Coventry City' }, opening),
+    true,
+  );
 });
 
 test('malformed session cookie does not throw and auth GET degrades', () => {

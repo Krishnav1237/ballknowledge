@@ -9,6 +9,7 @@ import SportsCenterCard from '@/components/SportsCenterCard';
 import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 import { cardShareText, deckShareText } from '@/lib/shareCopy';
+import { fetchWithTimeout } from '@/lib/requestBounds';
 
 interface Team {
   id: string;
@@ -65,9 +66,9 @@ export default function PublicProfilePage() {
   useEffect(() => {
     async function fetchPublicProfile() {
       try {
-        const res = await fetch(`/api/profile/${encodeURIComponent(username)}`);
+        const res = await fetchWithTimeout(`/api/profile/${encodeURIComponent(username)}`);
         if (!res.ok) {
-          setErrorMsg('Manager Dossier not found or classified.');
+          setErrorMsg('No manager with that name.');
           setLoading(false);
           return;
         }
@@ -76,8 +77,8 @@ export default function PublicProfilePage() {
         setCards(data.cards || []);
 
         const [resM, resT] = await Promise.all([
-          fetch('/api/matches'),
-          fetch('/api/teams')
+          fetchWithTimeout('/api/matches'),
+          fetchWithTimeout('/api/teams'),
         ]);
         if (resM.ok && resT.ok) {
           const datM = await resM.json();
@@ -99,7 +100,7 @@ export default function PublicProfilePage() {
     return (
       <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-center items-center">
         <div className="w-10 h-10 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Authenticating Dossier Access...</p>
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Loading manager...</p>
       </div>
     );
   }
