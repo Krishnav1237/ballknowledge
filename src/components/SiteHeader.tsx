@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Trophy, Award, User, Menu, X, LogOut, LogIn, BarChart2 } from 'lucide-react';
 import { clearStoredProfile, getStoredProfile, FootballIQProfile, getAvatarUrl } from '@/lib/profileSync';
 
-export default function Navbar() {
+export default function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
   const [hydrated, setHydrated] = useState(false);

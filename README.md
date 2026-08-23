@@ -74,7 +74,7 @@ Roles: FREE 3 takes / match, PREMIUM and ADMIN 5. ADMIN can bypass kickoff lock.
 ## Layout
 
 ```
-src/app/layout.tsx               Navbar + main offset + Footer (no route fade)
+src/app/layout.tsx               SiteHeader + main offset + Footer (no route fade)
 src/app/page.tsx                 Game board (Take #1)
 src/app/leaderboard/page.tsx     Same board
 src/app/premier-league/page.tsx  Season map

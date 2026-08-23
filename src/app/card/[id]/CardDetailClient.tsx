@@ -188,7 +188,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
     });
   };
 
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/card/${card.id}` : '';
+  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'}/card/${card.id}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);

@@ -154,7 +154,7 @@ test('primary pages stay on the dark shell and Navbar points at live destination
     assert.match(text, /#030712|#0B0F19|#0A0A0A|bg-background|PageShell|GameBoard/);
   }
 
-  const nav = readFileSync(join(process.cwd(), 'src/components/Navbar.tsx'), 'utf8');
+  const nav = readFileSync(join(process.cwd(), 'src/components/SiteHeader.tsx'), 'utf8');
   for (const href of ['href="/"', 'href: \'/premier-league\'', 'href: \'/leaderboard\'', 'href: \'/football-iq\'', 'href: \'/profile\'']) {
     assert.ok(nav.includes(href), `Navbar missing ${href}`);
   }
@@ -239,9 +239,11 @@ test('root chrome does not fade, spin, or wait on every navigation', () => {
   assert.match(layout, /pt-\[var\(--nav-h\)\]/);
   assert.match(layout, /from '@\/lib\/fonts'/);
   assert.doesNotMatch(globals, /fonts\.googleapis\.com/);
-  const nav = readFileSync(join(process.cwd(), 'src/components/Navbar.tsx'), 'utf8');
+  const nav = readFileSync(join(process.cwd(), 'src/components/SiteHeader.tsx'), 'utf8');
   assert.doesNotMatch(nav, /framer-motion/);
   assert.doesNotMatch(layout, /framer-motion/);
   assert.doesNotMatch(layout, /next\/script/);
   assert.doesNotMatch(layout, /<Script/);
+  assert.equal(existsSync(join(process.cwd(), 'src/components/Navbar.tsx')), false);
+  assert.match(layout, /SiteHeader/);
 });

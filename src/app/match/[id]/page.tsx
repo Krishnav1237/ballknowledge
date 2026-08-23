@@ -946,7 +946,7 @@ export default function MatchPage() {
                           verdict: gradingResult.card.verdict,
                           fixture: `${homeTeam.name_en} vs ${awayTeam.name_en} ${actualResult.homeScore}-${actualResult.awayScore}`,
                         })
-                      )}&url=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : '')}`}
+                      )}&url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'}/card/${gradingResult.card.id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-white transition-colors cursor-pointer"
@@ -962,7 +962,7 @@ export default function MatchPage() {
                           ovr: gradingResult.card.rating,
                           verdict: gradingResult.card.verdict,
                           fixture: `${homeTeam.name_en} vs ${awayTeam.name_en} ${actualResult.homeScore}-${actualResult.awayScore}`,
-                        })} ${typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : ''}`
+                        })} ${process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live'}/card/${gradingResult.card.id}`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

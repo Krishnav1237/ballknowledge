@@ -136,7 +136,7 @@ POST /api/generate-viral-card
 | `src/components/TacticalPitch.tsx` | 4-3-3 grid |
 | `src/components/PredictionModal.tsx` | Lock score / takes |
 | `src/components/MatchLiveChat.tsx` | Live match chat |
-| `src/components/Navbar.tsx` | HUD: Board · Season · Card |
+| `src/components/SiteHeader.tsx` | HUD: Board · Season · Card |
 | `src/app/api/resolve-match/route.ts` | Grading engine. `force-dynamic` |
 | `src/proxy.ts` | Next.js 16 proxy (not middleware) |
 

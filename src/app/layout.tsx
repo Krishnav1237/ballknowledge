@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Providers from '@/components/Providers';
-import Navbar from '@/components/Navbar';
+import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 import AppEffects from '@/components/AppEffects';
 import { outfit, spaceGrotesk, oswald } from '@/lib/fonts';
@@ -43,7 +43,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
         <Providers>
           <AppEffects />
-          <Navbar />
+          <SiteHeader />
           <main className="flex-1 flex flex-col min-h-0 pt-[var(--nav-h)]">
             {children}
           </main>

@@ -185,10 +185,10 @@ export default function FootballIQPage() {
   };
 
   const getShareUrl = (type: 'profile' | 'card', idStr?: string) => {
-    if (typeof window === 'undefined') return '';
-    return type === 'profile' 
-      ? `${window.location.origin}/u/${profile.username}` 
-      : `${window.location.origin}/card/${idStr}`;
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live';
+    return type === 'profile'
+      ? `${origin}/u/${profile.username}`
+      : `${origin}/card/${idStr}`;
   };
 
   const handleCopyLink = (platformStr: string, textToCopy: string) => {
