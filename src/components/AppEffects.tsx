@@ -12,12 +12,20 @@ export default function AppEffects() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach((sw) => {
-        void sw.unregister();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((sw) => {
+          void sw.unregister();
+        });
       });
-    });
+    }
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => {
+          void caches.delete(key);
+        });
+      });
+    }
   }, []);
 
   return null;

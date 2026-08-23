@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { Trophy, Share2, CheckCircle, Home, Download, Shield, Sparkles } from 'lucide-react';
@@ -257,18 +256,13 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
 
           {/* Active Card Frame Container */}
           <div className="relative flex justify-center items-center w-full scale-[0.80] min-[360px]:scale-[0.85] min-[400px]:scale-[0.95] sm:scale-100 origin-center py-4">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, scale: 0.9, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -15 }}
-                transition={{ duration: 0.3 }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                style={tiltStyle}
-                className="relative card-3d-tilt origin-center"
-              >
+            <div
+              key={activeTab}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              style={tiltStyle}
+              className="relative card-3d-tilt origin-center"
+            >
                 {activeTab === 'verdict' ? (
                   <SportsCenterCard cardRef={cardNodeRef} data={{
                     text: card.evidence ? card.evidence.replace('Hot Take statement: "', '').replace('" (VAR grading:', '') : 'No evidence submitted.',
@@ -332,8 +326,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                     avatarSeed: profileState.avatarSeed
                   }} />
                 )}
-              </motion.div>
-            </AnimatePresence>
+            </div>
           </div>
         </div>
 

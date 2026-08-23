@@ -239,4 +239,7 @@ test('root chrome does not fade, spin, or wait on every navigation', () => {
   assert.match(layout, /pt-\[var\(--nav-h\)\]/);
   assert.match(layout, /from '@\/lib\/fonts'/);
   assert.doesNotMatch(globals, /fonts\.googleapis\.com/);
+  const nav = readFileSync(join(process.cwd(), 'src/components/Navbar.tsx'), 'utf8');
+  assert.doesNotMatch(nav, /framer-motion/);
+  assert.doesNotMatch(layout, /framer-motion/);
 });

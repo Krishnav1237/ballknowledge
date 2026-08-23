@@ -1,17 +1,6 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
-const isDev = process.env.NODE_ENV !== 'production';
-
-// Force browsers/SWs to always revalidate JS chunks — prevents stale SW-cached module-factory errors.
-// Only applied in PRODUCTION. In dev, Next.js Turbopack manages its own chunk versioning and
-// adding no-store here breaks hot-reload and causes "Failed to find Server Action" 404 storms.
-const chunkNoCacheHeaders = [
-  { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
-  { key: 'Pragma', value: 'no-cache' },
-  { key: 'Expires', value: '0' },
-];
-
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
@@ -67,14 +56,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
-      // Only apply no-store to static chunks in production — in dev this breaks Turbopack HMR
-      // and causes "Failed to find Server Action" 404 errors after every hot reload.
-      ...(!isDev ? [{
-        source: '/_next/static/:path*',
-        headers: chunkNoCacheHeaders,
-      }] : []),
       {
-        // Apply security headers to all page routes
+        // Apply security headers to all page routes.
+        // Do not override /_next/static Cache-Control — hashed chunks must stay
+        // `immutable` so a new deploy cannot mix with a previous JS graph.
         source: '/(.*)',
         headers: securityHeaders,
       },
