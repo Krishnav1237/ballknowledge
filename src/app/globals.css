@@ -36,8 +36,13 @@ html, body {
   color: var(--foreground);
   font-family: 'Outfit', sans-serif;
   overflow-x: hidden;
-  scroll-behavior: auto !important;
+  scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html, body { scroll-behavior: auto !important; }
+  .animate-marquee { animation: none !important; }
 }
 
 /* Lenis Smooth Scroll Overrides */

@@ -256,7 +256,7 @@ export default function PremierLeagueHub() {
                     <Link
                       key={match.id}
                       href={`/match/${match.id}`}
-                      className="group border border-white/10 hover:border-white/25 bg-black/40 rounded-2xl p-4 flex flex-col gap-3"
+                      className="group border border-white/10 hover:border-[#E11D48]/50 hover:bg-white/[0.04] bg-black/40 rounded-2xl p-4 flex flex-col gap-3 transition-colors duration-150"
                     >
                       <div className="flex justify-between items-center">
                         <span className="text-[9px] font-black uppercase tracking-wider text-[#E11D48] font-mono">

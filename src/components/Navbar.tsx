@@ -45,12 +45,12 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="fixed top-0 left-0 w-full h-[52px] flex items-center z-[100] border-b border-white/10 bg-[#0B0F19] shadow-md shadow-black/30 animate-in fade-in slide-in-from-top-4 duration-300"
+        className="fixed top-0 left-0 w-full h-[52px] flex items-center z-[100] border-b border-white/10 bg-[#0B0F19] shadow-md shadow-black/30"
       >
         <div className="w-full px-6 flex items-center justify-between">
           {/* Logo — extreme left */}
           <Link href="/" className="flex items-center space-x-3 group shrink-0">
-            <div className="relative flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+            <div className="relative flex items-center justify-center transition-transform duration-150 group-hover:scale-105">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/ball_knowledge_logo.png"

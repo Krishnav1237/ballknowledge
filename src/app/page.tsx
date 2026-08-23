@@ -3,9 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Target, Users, Flame, MessageSquare, Award } from 'lucide-react';
-import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 
 
 import { BREAKING_NEWS, PLAYERS, COUNTRIES } from '@/lib/landingData';
@@ -13,14 +12,8 @@ import { BREAKING_NEWS, PLAYERS, COUNTRIES } from '@/lib/landingData';
 
 
 export default function Home() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const deskRef = useRef<HTMLDivElement>(null);
 
-  const { scrollYProgress } = useScroll();
-  const yBg = useTransform(scrollYProgress, [0, 1], [0, -200]);
-
-
-  // ── Form sandboxes ────────────────────────────────────────────────────────────
   const [sandboxText,  setSandboxText]  = useState('Arsenal will retain the Premier League in 2026/27');
   const [sandboxOvr,   setSandboxOvr]   = useState(99);
 
@@ -30,25 +23,9 @@ export default function Home() {
 
   const [isTidied,       setIsTidied]       = useState(false);
   const [stats, setStats] = useState({ takes: 0, cases: 0, cards: 0 });
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [clubSearch, setClubSearch] = useState('');
   
   useEffect(() => {
-    setMounted(true);
-
-    let timer: NodeJS.Timeout | undefined;
-
-    const hasPreloaded = getStorageItem('sessionStorage', 'bk_preloaded');
-    if (hasPreloaded) {
-      setLoading(false);
-    } else {
-      timer = setTimeout(() => {
-        setLoading(false);
-        setStorageItem('sessionStorage', 'bk_preloaded', 'true');
-      }, 400); // Fast initial splash
-    }
-
     fetch('/api/stats')
       .then(res => res.json())
       .then(data => {
@@ -57,53 +34,11 @@ export default function Home() {
         }
       })
       .catch(err => console.warn('Failed to load stats baseline:', err));
-
-    const id = setInterval(() => {
-      setStats(p => ({
-        takes: p.takes + Math.floor(Math.random() * 3),
-        cases: p.cases + (Math.random() > 0.85 ? 1 : 0),
-        cards: p.cards + Math.floor(Math.random() * 4),
-      }));
-    }, 3000);
-
-    return () => {
-      if (timer) clearTimeout(timer);
-      clearInterval(id);
-    };
   }, []);
 
 
   return (
-    <div ref={containerRef} className="relative bg-[#030712] text-[#F3F4F6] min-h-screen overflow-hidden">
-
-      {/* ── IMMERSIVE PRELOADER SCREEN ──────────────────────────────────────── */}
-      <div 
-        className={`fixed inset-0 z-[100] bg-[#030712] flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
-          !loading ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}
-      >
-        <div className="flex flex-col items-center gap-4 text-center px-6">
-          {/* Spinning Burgundy & Red Rings */}
-          <div className="relative w-16 h-16 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full border-2 border-t-[#E11D48] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '1s' }} />
-            <div className="absolute inset-1.5 rounded-full border-2 border-b-[#881337] border-t-transparent border-r-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }} />
-            <span className="font-display font-black text-xs text-white uppercase tracking-wider">VAR</span>
-          </div>
-          
-          <h2 className="font-display font-black text-2xl tracking-[0.2em] text-white uppercase mt-2">
-            BALL<span className="text-[#E11D48]">KNOWLEDGE</span>
-          </h2>
-
-          
-          <div className="w-44 h-[2px] bg-zinc-800 rounded-full overflow-hidden relative mt-1">
-            <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#881337] to-[#E11D48] w-full animate-loading-bar" />
-          </div>
-          
-          <p className="text-[9px] font-sans font-black text-zinc-500 uppercase tracking-[0.2em] mt-1">
-            Connecting to Premier League Matchweek Server...
-          </p>
-        </div>
-      </div>
+    <div className="relative bg-[#030712] text-[#F3F4F6] min-h-screen overflow-x-hidden">
 
       {/* ── TICKER ──────────────────────────────────────────────────────────── */}
 
@@ -126,21 +61,14 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* HERO                                                                  */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-screen lg:h-screen bg-[#030712] text-white">
-        <motion.div style={{ y: yBg }} className="absolute inset-0 pointer-events-none overflow-hidden">
+      <section className="relative px-6 pt-[116px] pb-6 flex flex-col items-center justify-center min-h-[85vh] lg:min-h-screen bg-[#030712] text-white">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <Image src="/images/stadium_bg.webp" alt="" fill className="object-cover opacity-[0.40]" sizes="100vw" priority />
-          {/* Dark vignette — lighter in the middle so the stadium is visible */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/20 to-[#030712]/90" />
-          {/* Side vignettes for readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/60 via-transparent to-[#030712]/60" />
-        </motion.div>
+        </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.35 }}
-          className="relative w-full max-w-3xl mx-auto text-center py-4 md:py-6 flex flex-col justify-center items-center"
-        >
+        <div className="relative w-full max-w-3xl mx-auto text-center py-4 md:py-6 flex flex-col justify-center items-center">
 
           {/* Live badge */}
           <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-6 shadow-sm">
@@ -163,11 +91,11 @@ export default function Home() {
           {/* CTAs */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             <Link href="/premier-league"
-                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:opacity-90 shadow-md text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
+                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-colors duration-150 hover:opacity-90 shadow-md text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
               Enter Premier League Hub
             </Link>
             <Link href="/football-iq"
-                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-gray-300 transition-all hover:scale-105 hover:opacity-90 shadow-md border border-white/10 bg-white/5 hover:bg-white/10 text-center">
+                  className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-gray-300 transition-colors duration-150 hover:bg-white/10 shadow-md border border-white/10 bg-white/5 text-center">
               View My Card
             </Link>
           </div>
@@ -180,7 +108,7 @@ export default function Home() {
                 { v: stats.cards.toLocaleString(), l: 'Cards Generated' },
                 { v: stats.cases.toLocaleString(), l: 'Reputations Synced' },
               ].map(s => (
-                <div key={s.l} className="bg-[#0B0F19]/80 border border-white/10 px-6 py-3 rounded-2xl shadow-md text-center min-w-[155px] transition-transform duration-300 hover:scale-105 flex flex-col justify-center backdrop-blur-md">
+                <div key={s.l} className="bg-[#0B0F19]/80 border border-white/10 px-6 py-3 rounded-2xl shadow-md text-center min-w-[155px] flex flex-col justify-center">
                   <div className="font-display font-black text-2xl sm:text-3xl text-[#E11D48]">{s.v}</div>
                   <div className="text-[9px] font-sans font-black uppercase tracking-widest text-zinc-500 mt-1">{s.l}</div>
                 </div>
@@ -188,7 +116,7 @@ export default function Home() {
             </div>
           )}
 
-        </motion.div>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}

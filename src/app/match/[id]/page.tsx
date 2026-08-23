@@ -656,14 +656,7 @@ export default function MatchPage() {
       })
     });
 
-    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-    await sleep(1500);
-    setVarText('Auditing scoreline predictions against the Premier League outcome...');
-    await sleep(1500);
-    setVarText('Summoning AI VAR tribunal to grade hot takes and confidence ranges...');
-    await sleep(1800);
-    setVarText('Football IQ Reputation algorithms updating overall status...');
-    await sleep(1500);
+    setVarText('Grading your predictions against the match...');
 
     try {
       const response = await resolvePromise;
