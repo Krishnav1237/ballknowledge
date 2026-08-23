@@ -9,6 +9,7 @@ import Navbar from '@/components/Navbar';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import { cardShareText, deckShareText } from '@/lib/shareCopy';
 
 interface Team {
   id: string;
@@ -116,17 +117,17 @@ export default function FootballIQPage() {
           </div>
           
           <h2 className="font-display font-black text-2xl text-white uppercase tracking-wider leading-none mb-3">
-            Locker Room Locked
+            Your card is locked
           </h2>
           <p className="text-zinc-400 text-xs font-semibold leading-relaxed mb-8">
-            Access to your Football IQ cards, predictions, and reputation cockpit is restricted. Please sign in or authorize your manager profile to proceed.
+            Sign in. Then flex the OVR.
           </p>
 
           <Link
             href="/profile"
             className="w-full h-11 rounded-xl bg-gradient-to-r from-[#E11D48] to-[#881337] hover:from-rose-500 hover:to-[#a21a3a] text-white font-display font-black text-[10px] uppercase tracking-widest cursor-pointer shadow-[0_4px_12px_rgba(225,29,72,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
           >
-            ENTER LOCKER ROOM
+            GET IN
           </Link>
         </div>
       </div>
@@ -333,8 +334,8 @@ export default function FootballIQPage() {
       id: `pending-${match.id}`,
       matchId: match.id,
       rating: tempOvr,
-      verdict: isCompleted ? 'PENDING VAR' : 'PREDICTED',
-      charge: isCompleted ? 'VAR TRIBUNAL GRADING IN PROGRESS' : 'PREDICTION REGISTERED',
+      verdict: isCompleted ? 'PENDING' : 'LOCKED IN',
+      charge: isCompleted ? 'WAITING ON THE RESULT' : 'CALL IS LIVE',
       sentence: `Predicted: ${userPred.homeScore} - ${userPred.awayScore}`,
       evidence: userPred.hotTakes?.[0]?.statement ? `Hot Take: "${userPred.hotTakes[0].statement}"` : 'No hot take submitted.',
       rarity: tempRarity,
@@ -556,8 +557,8 @@ export default function FootballIQPage() {
 
   const activeShareUrl = activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile');
   const activeShareText = activeRightTab === 'verdict' && activeVerdictCard
-    ? `Check out my VAR Verdict Card for Match ${activeVerdictCard.matchId}! Rated ${activeVerdictCard.rating} OVR: ${activeVerdictCard.verdict.toUpperCase()}.`
-    : `Check out my official Premier League 2026/27 Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`;
+    ? cardShareText({ ovr: activeVerdictCard.rating, verdict: activeVerdictCard.verdict })
+    : deckShareText({ ovr: profile.overallRating });
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] select-none">

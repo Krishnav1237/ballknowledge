@@ -8,6 +8,7 @@ import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { ShieldAlert, Trophy, Share2, CheckCircle, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
+import { cardShareText, deckShareText } from '@/lib/shareCopy';
 
 interface Team {
   id: string;
@@ -86,7 +87,7 @@ export default function PublicProfilePage() {
         }
       } catch (err) {
         console.error(err);
-        setErrorMsg('Failed to connect to VAR Tribunal Database.');
+        setErrorMsg('Could not load this manager.');
       } finally {
         setLoading(false);
       }
@@ -505,8 +506,17 @@ export default function PublicProfilePage() {
 
   const activeShareUrl = activeVerdictCard ? getShareUrl('card', activeVerdictCard.id) : getShareUrl('profile');
   const activeShareText = activeRightTab === 'verdict' && activeVerdictCard
-    ? `Check out ${profile.username}'s VAR Verdict Card for Match ${activeVerdictCard.matchId}! Rated ${activeVerdictCard.rating} OVR: ${activeVerdictCard.verdict.toUpperCase()}.`
-    : `Check out ${profile.username}'s official Premier League 2026/27 Manager Deck! Rated ${profile.overallRating} OVR (${playstyle}).`;
+    ? cardShareText({
+        ovr: activeVerdictCard.rating,
+        verdict: activeVerdictCard.verdict,
+        username: profile.username,
+        firstPerson: false,
+      })
+    : deckShareText({
+        ovr: profile.overallRating,
+        username: profile.username,
+        firstPerson: false,
+      });
 
   return (
     <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] select-none">

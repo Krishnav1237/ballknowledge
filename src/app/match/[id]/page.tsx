@@ -17,6 +17,7 @@ import { clockNow, getMatchClockStatus, parseLocalDate, getPlayerMatchRatings } 
 import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { fetchWithTimeout } from '@/lib/requestBounds';
 import { resolveMatchPageLoad } from '@/lib/matchPageLoad';
+import { cardShareText } from '@/lib/shareCopy';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -324,8 +325,8 @@ export default function MatchPage() {
   if (load.error) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
-        <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Tribunal Offline</p>
+        <div className="w-16 h-16 rounded-full bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-400 text-2xl mb-4">⚠️</div>
+        <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Can&apos;t load this match</p>
         <p className="text-zinc-500 text-sm max-w-md">{load.error}</p>
         <button onClick={() => window.location.reload()} className="mt-6 px-5 py-2 bg-[#E11D48] hover:bg-[#E11D48]/90 text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">Retry Connection</button>
       </div>
@@ -349,7 +350,7 @@ export default function MatchPage() {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-[#881337]/20 border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Entering VAR Match Room...</p>
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Loading the fixture...</p>
       </div>
     );
   }
@@ -607,7 +608,7 @@ export default function MatchPage() {
   // Resolve match and trigger Football IQ progression
   const handleResolveMatch = async () => {
     if (!profile?.isAuthenticated) {
-      showToast('Sign in from the Locker Room to grade matches and save Verdict Cards.', 'warn');
+      showToast('Sign in to save your card.', 'warn');
       return;
     }
 
@@ -623,7 +624,7 @@ export default function MatchPage() {
     }
 
     setResolving(true);
-    setVarText('VAR official in Stockley Park review in progress...');
+    setVarText('Scoring your take...');
 
     const lockedPred = predictions[matchId];
     const resolveHomeScore = lockedPred?.homeScore ?? predHomeScore;
@@ -813,7 +814,7 @@ export default function MatchPage() {
               <span className="font-display font-black text-xs text-white">VAR</span>
             </div>
           </div>
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-wider mb-2">Stockley Park Auditing</h2>
+          <h2 className="font-display font-black text-2xl text-white uppercase tracking-wider mb-2">Scoring your take</h2>
           <p className="text-zinc-200 text-sm max-w-md leading-relaxed animate-pulse">{varText}</p>
         </div>
       )}
@@ -823,23 +824,23 @@ export default function MatchPage() {
         <div className="fixed inset-0 bg-zinc-950/65 backdrop-blur-sm z-50 flex flex-col justify-center items-center p-6 text-center overflow-y-auto text-white">
           <div className="max-w-md w-full bg-[#0B0F19]/90 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-md">
             <div className="inline-flex items-center gap-1.5 bg-[#E11D48]/10 border border-[#E11D48]/20 text-[#E11D48] rounded-full px-3.5 py-1 text-[10px] font-black uppercase tracking-widest mb-4">
-              <Sparkles className="w-3.5 h-3.5" /> Football IQ Progression
+              <Sparkles className="w-3.5 h-3.5" /> Your new OVR
             </div>
             
             <h2 className="font-display font-black text-3xl text-white uppercase tracking-tight leading-none mb-1">
-              Match Graded!
+              Card unlocked
             </h2>
             <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-6">Premier League 2026/27</p>
 
             {/* Rating Evolution Visualizer */}
             <div className="flex justify-center items-center gap-8 mb-8">
               <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Old IQ</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Was</span>
                 <span className="font-display font-black text-3xl text-gray-400">{profile?.overallRating - (gradingResult.profileUpdates.overallDelta || 0)}</span>
               </div>
 
               <div className="relative w-28 h-28 rounded-full border-4 border-double border-[#E11D48] bg-black/40 flex flex-col justify-center items-center shadow-md">
-                <span className="text-[9px] font-black text-[#E11D48] uppercase tracking-widest">Overall IQ</span>
+                <span className="text-[9px] font-black text-[#E11D48] uppercase tracking-widest">OVR</span>
                 <span className="font-display font-black text-4xl text-white leading-none mt-1 animate-pulse-slow">
                   {overallRatingAnimate}
                 </span>
@@ -942,12 +943,16 @@ export default function MatchPage() {
               {/* Share Card Block */}
               <div className="mt-6 flex flex-col gap-3 w-full max-w-[340px]">
                 <div className="flex justify-between items-center bg-[#0B0F19]/90 border border-white/10 rounded-2xl p-3 backdrop-blur-md">
-                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Share Verdict:</span>
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Flex this:</span>
                   <div className="flex gap-2 items-center">
                     {/* X/Twitter Share */}
                     <a
                       href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                        `I just graded my VAR Verdict Card for ${homeTeam.name_en} vs ${awayTeam.name_en} (${actualResult.homeScore}-${actualResult.awayScore})! Rated ${gradingResult.card.rating} OVR: ${gradingResult.card.verdict.toUpperCase()}.`
+                        cardShareText({
+                          ovr: gradingResult.card.rating,
+                          verdict: gradingResult.card.verdict,
+                          fixture: `${homeTeam.name_en} vs ${awayTeam.name_en} ${actualResult.homeScore}-${actualResult.awayScore}`,
+                        })
                       )}&url=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -960,7 +965,11 @@ export default function MatchPage() {
                     {/* WhatsApp Share */}
                     <a
                       href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                        `Check out my VAR Verdict Card for ${homeTeam.name_en} vs ${awayTeam.name_en} (${actualResult.homeScore}-${actualResult.awayScore})! Graded at ${gradingResult.card.rating} OVR: ${gradingResult.card.verdict.toUpperCase()}. ${typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : ''}`
+                        `${cardShareText({
+                          ovr: gradingResult.card.rating,
+                          verdict: gradingResult.card.verdict,
+                          fixture: `${homeTeam.name_en} vs ${awayTeam.name_en} ${actualResult.homeScore}-${actualResult.awayScore}`,
+                        })} ${typeof window !== 'undefined' ? `${window.location.origin}/card/${gradingResult.card.id}` : ''}`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -1038,7 +1047,7 @@ export default function MatchPage() {
 
                   {/* Hot Take AI Grading Summary */}
                   <div className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hot Take VAR Grader Result</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Your take</p>
                     {takes.map((t, idx) => {
                       const graded = gradingResult.gradedTakes?.[idx];
                       const grade = graded?.grade || 'PENDING';
@@ -1063,7 +1072,7 @@ export default function MatchPage() {
                   {/* Settings Override Bypasser Info */}
                   <div className="flex items-center gap-2 text-xs text-gray-400 italic mt-4">
                     <AlertCircle className="w-4 h-4 shrink-0 text-gray-500" />
-                    Permanently saved to your Premier League 2026/27 record. View total progress in &quot;My Card&quot;.
+                    Saved. Flex it from My Card.
                   </div>
                 </div>
               </div>
@@ -1378,7 +1387,7 @@ export default function MatchPage() {
                       onClick={handleSavePredictions}
                       className="w-full py-3 rounded-xl bg-[#881337] hover:bg-[#881337]/80 text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer"
                     >
-                      Lock Predictions &amp; Squad
+                      Lock it in
                     </button>
                   )}
                   {status === 'COMPLETED' && (
@@ -1387,7 +1396,7 @@ export default function MatchPage() {
                       disabled={resolving}
                       className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                     >
-                      {resolving ? 'VAR In Progress...' : hasSubmitted ? 'VAR Tribunal: Grade Match 🏆' : 'VAR Tribunal: Quick Grade ⚡'}
+                      {resolving ? 'Scoring...' : hasSubmitted ? 'Get my card 🏆' : 'Get my card ⚡'}
                     </button>
                   )}
                 </div>

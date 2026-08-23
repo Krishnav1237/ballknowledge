@@ -414,10 +414,10 @@ export default function LeaderboardPage() {
           {/* ── Unified Header Panel ── */}
           <div className="shrink-0 border-b border-white/10 bg-black/20 backdrop-blur-xs p-4 flex flex-col items-center justify-center text-center w-full">
             <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider leading-none">
-              GLOBAL MANAGER <span className="text-[#E11D48]">LEADERBOARD</span>
+              WHO&apos;S <span className="text-[#E11D48]">ON TOP</span>
             </h1>
             <p className="text-zinc-400 text-[9px] sm:text-[10px] mt-1.5 font-bold uppercase tracking-widest leading-none">
-              PREMIER LEAGUE 2026/27 <span className="text-zinc-500 mx-2">•</span> RANKED BY FOOTBALL IQ
+              PREMIER LEAGUE 2026/27 <span className="text-zinc-500 mx-2">•</span> RANKED BY OVR
             </p>
           </div>
 
@@ -452,7 +452,7 @@ export default function LeaderboardPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">Football IQ</span>
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-widest font-black leading-none">OVR</span>
                     <span className="font-display font-black text-xs md:text-sm text-white leading-none mt-1 block">
                       {myProfile.overallRating}
                     </span>
@@ -516,15 +516,15 @@ export default function LeaderboardPage() {
 
             {/* Section 4: Activity Console */}
             <div className="relative bg-gradient-to-b from-black/40 to-transparent border border-white/5 rounded-xl p-4 text-center mt-auto overflow-hidden">
-              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Activity Console</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Your move</p>
               <p className="text-zinc-400 text-[10px] mt-1.5 leading-normal">
-                Submit predictions and hot takes in the match console to raise your rank.
+                Lock a fixture. Get the card. Climb.
               </p>
               <Link
                 href="/premier-league"
                 className="mt-3 block w-full py-2 rounded-lg bg-gradient-to-r from-[#881337] to-[#E11D48] hover:opacity-90 text-white font-display font-black text-[10px] uppercase tracking-widest text-center transition-all shadow-md active:scale-98"
               >
-                Enter Premier League Hub
+                Get on the board
               </Link>
             </div>
           </aside>
@@ -559,7 +559,7 @@ export default function LeaderboardPage() {
               {!loading && error && (
                 <div className="text-center py-24 bg-black/20 flex flex-col justify-center items-center h-full gap-4">
                   <Shield className="w-12 h-12 text-[#881337]/30" />
-                  <p className="font-display font-black text-xl uppercase text-zinc-400">Tribunal Offline</p>
+                  <p className="font-display font-black text-xl uppercase text-zinc-400">Board&apos;s down</p>
                   <button
                     onClick={() => fetchLeaderboard(sortBy)}
                     className="px-5 py-2.5 rounded-xl bg-[#881337] hover:bg-[#881337]/90 text-white text-sm font-bold transition-all"

@@ -63,9 +63,9 @@ export default function PredictionModal({
         {/* Modal Header */}
         <div className="p-5 border-b border-white/5 flex justify-between items-center shrink-0">
           <div>
-            <span className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">Match Verdict Dossier</span>
+            <span className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">Call this match</span>
             <h3 className="font-display font-black text-base uppercase tracking-wider text-white mt-0.5">
-              Scoreline & Hot Takes
+              Score. Scorer. Take.
             </h3>
           </div>
           <button
@@ -227,14 +227,14 @@ export default function PredictionModal({
             onClick={onClose}
             className="flex-1 py-3 rounded-xl bg-surface border border-white/10 hover:bg-white/5 text-white font-semibold text-xs uppercase tracking-wider transition-colors cursor-pointer"
           >
-            Close View
+            Back
           </button>
           {!isSubmissionLocked && (
             <button
               onClick={onSaveDraft}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-md hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
             >
-              Save Predictions Draft
+              Lock it in
             </button>
           )}
         </div>

@@ -32,13 +32,13 @@ export default function GlobalError({
         {/* VAR Review styling */}
         <div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#E11D48] font-black mb-2">
-            VAR Review — System Error
+            Hold up
           </p>
           <h1 className="font-display font-black text-3xl uppercase tracking-tight mb-3">
-            Something Went Wrong
+            Something Broke
           </h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            The VAR room encountered an unexpected issue. The tribunal has been notified.
+            The pitch glitched. Hit retry and get back on the board.
             {error?.digest && (
               <span className="block mt-2 text-xs text-gray-600 font-mono">
                 Error ID: {error.digest}

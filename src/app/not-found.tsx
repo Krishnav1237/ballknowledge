@@ -33,14 +33,13 @@ export default function NotFound() {
         {/* Copy */}
         <div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#E11D48] font-black mb-2">
-            VAR Reviewed — Not Found
+            Offside
           </p>
           <h1 className="font-display font-black text-3xl uppercase tracking-tight mb-3">
-            Page Offside
+            This page is gone
           </h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            The VAR tribunal couldn&apos;t find this page. It may have been moved,
-            deleted, or never existed — much like some managers&apos; tactical plans.
+            Wrong link. Get back on the board or call the next fixture.
           </p>
         </div>
 
@@ -58,7 +57,7 @@ export default function NotFound() {
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold transition-all active:scale-95"
           >
             <Search className="w-4 h-4" />
-            Premier League Hub
+            Call a fixture
           </Link>
         </div>
       </div>

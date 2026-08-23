@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Target, Users, Flame, MessageSquare, Award } from 'lucide-react';
+import { Target, Award, Share2 } from 'lucide-react';
 
 
 import { BREAKING_NEWS, PLAYERS, COUNTRIES } from '@/lib/landingData';
@@ -73,30 +73,30 @@ export default function Home() {
           {/* Live badge */}
           <div className="inline-flex items-center gap-2 bg-[#881337] text-white rounded-full px-4 py-1.5 mb-6 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48] animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Premier League 2026/27 • Season Active</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Premier League 2026/27 • Live</span>
           </div>
 
           <h1 className="font-display font-black uppercase tracking-tight text-white mb-4 text-center leading-[1.05]"
               style={{
                 fontSize: 'clamp(2rem, 6vw, 4.5rem)',
               }}>
-            Build Your<br />
-            Football <span className="text-[#E11D48]">Reputation</span>
+            You know ball.<br />
+            <span className="text-[#E11D48]">Prove it.</span>
           </h1>
 
           <p className="font-sans text-zinc-400 text-[12.5px] sm:text-sm md:text-base leading-relaxed max-w-xl mx-auto mb-8 font-semibold text-center">
-            Lock in predictions, construct your Best XI squad, drop bold hot takes, and survive the AI VAR Tribunal to collect dynamic Verdict Cards.
+            Call the next fixture. Get the card. Make them look at your OVR.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             <Link href="/premier-league"
                   className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-white transition-colors duration-150 hover:opacity-90 shadow-md text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
-              Enter Premier League Hub
+              Get my card
             </Link>
-            <Link href="/football-iq"
+            <Link href="/leaderboard"
                   className="flex items-center gap-2 px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest text-gray-300 transition-colors duration-150 hover:bg-white/10 shadow-md border border-white/10 bg-white/5 text-center">
-              View My Card
+              Show the board
             </Link>
           </div>
 
@@ -104,9 +104,9 @@ export default function Home() {
           {(stats.takes > 0 || stats.cards > 0) && (
             <div className="flex flex-wrap justify-center gap-4 mt-2">
               {[
-                { v: stats.takes.toLocaleString(), l: 'Takes Graded' },
-                { v: stats.cards.toLocaleString(), l: 'Cards Generated' },
-                { v: stats.cases.toLocaleString(), l: 'Reputations Synced' },
+                { v: stats.takes.toLocaleString(), l: 'Takes dropped' },
+                { v: stats.cards.toLocaleString(), l: 'Cards claimed' },
+                { v: stats.cases.toLocaleString(), l: 'Managers live' },
               ].map(s => (
                 <div key={s.l} className="bg-[#0B0F19]/80 border border-white/10 px-6 py-3 rounded-2xl shadow-md text-center min-w-[155px] flex flex-col justify-center">
                   <div className="font-display font-black text-2xl sm:text-3xl text-[#E11D48]">{s.v}</div>
@@ -131,57 +131,41 @@ export default function Home() {
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] bg-[#E11D48]/10 px-3 py-1 rounded-full border border-[#E11D48]/20">
-              HOW IT WORKS
+              THE LOOP
             </span>
             <h2 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-wider mt-4">
-              Build Your Reputation in <span className="text-[#E11D48]">5 Steps</span>
+              Three moves. <span className="text-[#E11D48]">Then flex.</span>
             </h2>
             <p className="text-gray-400 text-xs sm:text-sm mt-3 max-w-lg mx-auto font-bold">
-              Every step earns you points across 4 unique metrics to build your overall Football IQ card.
+              No lecture. Call it. Get the number. Make them beat you.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               {
                 n: '01',
                 icon: Target,
                 color: '#E11D48',
-                metric: 'PRD',
-                title: 'Lock In Predictions',
-                body: 'Predict scorelines, goalscorers, and MOTM to build your Predictor rating.',
+                metric: 'LOCK',
+                title: 'Call the match',
+                body: 'Score. Scorer. MOTM. Lock it before kickoff. No edits after.',
               },
               {
                 n: '02',
-                icon: Users,
-                color: '#3B82F6',
-                metric: 'MGR',
-                title: 'Build Best XI',
-                body: 'Assemble your tactical team. Real-world ratings determine your Manager Score.',
+                icon: Award,
+                color: '#E11D48',
+                metric: 'CARD',
+                title: 'Get the OVR',
+                body: 'Your rating goes public. Legendary if you actually know ball.',
               },
               {
                 n: '03',
-                icon: Flame,
+                icon: Share2,
                 color: '#E11D48',
-                metric: 'HOT',
-                title: 'Drop Hot Takes',
-                body: 'Submit takes graded by the AI VAR Tribunal multiplied by your confidence.',
-              },
-              {
-                n: '04',
-                icon: MessageSquare,
-                color: '#8B5CF6',
-                metric: 'RST',
-                title: 'Banter & Roast',
-                body: 'Engage in the Roast Zone. Upvotes and chat activity boost your Roast Score.',
-              },
-              {
-                n: '05',
-                icon: Award,
-                color: '#10B981',
-                metric: 'OVR',
-                title: 'Get Verdict Card',
-                body: 'Claim your Ultimate Team style card showing your overall Football IQ.',
+                metric: 'POST',
+                title: 'Dare the chat',
+                body: 'Drop the card. “Beat me” is the whole product.',
               },
             ].map((s) => {
               const IconComponent = s.icon;
@@ -212,42 +196,14 @@ export default function Home() {
           </div>
 
           <div className="mt-10 py-4 px-6 rounded-2xl border border-white/10 bg-[#0B0F19] shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 flex-wrap justify-center text-[10px] sm:text-xs font-black uppercase tracking-wider">
-              {/* PRD */}
-              <div className="flex items-center gap-1.5 bg-[#E11D48]/8 border border-[#E11D48]/20 text-[#E11D48] px-3 py-1 rounded-full font-black">
-                <Target className="w-3.5 h-3.5" />
-                <span>35% PRD</span>
-              </div>
-              <span className="text-gray-400 font-bold">+</span>
-              {/* MGR */}
-              <div className="flex items-center gap-1.5 bg-blue-500/8 border border-blue-500/20 text-[#3B82F6] px-3 py-1 rounded-full font-black">
-                <Users className="w-3.5 h-3.5" />
-                <span>25% MGR</span>
-              </div>
-              <span className="text-gray-400 font-bold">+</span>
-              {/* HOT */}
-              <div className="flex items-center gap-1.5 bg-[#E11D48]/8 border border-[#E11D48]/20 text-[#E11D48] px-3 py-1 rounded-full font-black">
-                <Flame className="w-3.5 h-3.5" />
-                <span>25% HOT</span>
-              </div>
-              <span className="text-gray-400 font-bold">+</span>
-              {/* RST */}
-              <div className="flex items-center gap-1.5 bg-purple-500/8 border border-purple-500/20 text-[#8B5CF6] px-3 py-1 rounded-full font-black">
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>15% RST</span>
-              </div>
-              <span className="text-gray-400 font-bold">=</span>
-              {/* OVR */}
-              <div className="flex items-center gap-1.5 bg-[#E11D48]/10 border border-[#E11D48]/30 text-[#E11D48] px-4 py-1.5 rounded-full">
-                <Award className="w-4 h-4" />
-                <span>FOOTBALL IQ OVR</span>
-              </div>
-            </div>
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-zinc-400 text-center md:text-left">
+              Your OVR is public. If you are not on the board, you are nobody.
+            </p>
             <Link
               href="/premier-league"
               className="shrink-0 px-6 py-3 rounded-full font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all bg-gradient-to-r from-[#881337] to-[#E11D48] shadow-[0_4px_12px_rgba(225,29,72,0.25)]"
             >
-              Enter Premier League Hub
+              Get my card
             </Link>
           </div>
         </div>
@@ -280,12 +236,12 @@ export default function Home() {
                       <span className="text-white font-black text-xs">01</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">MODULE 01</p>
-                      <h2 className="font-sans font-black text-xl text-white">Matchday Hot Takes</h2>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">SAY IT</p>
+                      <h2 className="font-sans font-black text-xl text-white">Hot takes</h2>
                     </div>
                   </div>
                   <p className="font-serif text-gray-400 text-sm leading-relaxed">
-                    Submit bold takes on fixture matchdays. The Stockley Park VAR tribunal scores them using AI, updating your overall Hot Takes IQ.
+                    Type the take you would send at 2am. Then live with it when the card is public.
                   </p>
 
                   <div className="space-y-4">
@@ -328,7 +284,7 @@ export default function Home() {
 
                 <Link href={`/premier-league`}
                       className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#881337] to-[#a21c43]">
-                  Pick Match & Submit Take →
+                  Drop the take →
                 </Link>
               </div>
             </motion.div>
@@ -348,12 +304,12 @@ export default function Home() {
                       <span className="text-white font-black text-xs">02</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">MODULE 02</p>
-                      <h2 className="font-sans font-black text-xl text-white">Fixture Predictions</h2>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">CALL IT</p>
+                      <h2 className="font-sans font-black text-xl text-white">The match</h2>
                     </div>
                   </div>
                   <p className="font-serif text-gray-400 text-sm leading-relaxed">
-                    Predict scorelines, MOTM, goalscorers, and possession. Earn rating increases: Exact score (+15) or Correct outcome (+5).
+                    Score. MOTM. First goal. If you know ball, this is free. If you don’t, the card will say so.
                   </p>
 
                   <div className="space-y-3.5">
@@ -375,7 +331,7 @@ export default function Home() {
 
                 <Link href={`/premier-league`}
                       className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#E11D48] to-[#EF4444]">
-                  Lock predictions →
+                  Lock the call →
                 </Link>
               </div>
             </motion.div>
@@ -395,33 +351,32 @@ export default function Home() {
                       <span className="text-white font-black text-xs">03</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">MODULE 03</p>
-                      <h2 className="font-sans font-black text-xl text-white">Verdict Cards</h2>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">FLEX IT</p>
+                      <h2 className="font-sans font-black text-xl text-white">The card</h2>
                     </div>
                   </div>
                   
-                  {/* Today's Prophecy Ticker */}
                   <div className="bg-gradient-to-br from-slate-950 to-slate-900 border border-[#E11D48]/35 rounded-2xl p-4.5 relative overflow-hidden shadow-inner">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[9px] font-black uppercase text-[#E11D48] tracking-widest flex items-center">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-1.5" />
-                        ACTIVE SEASON FIXTURE
+                        GROUP CHAT BAIT
                       </span>
-                      <span className="text-[8px] font-mono text-slate-400">STATUS: OPEN</span>
+                      <span className="text-[8px] font-mono text-slate-400">OVR LIVE</span>
                     </div>
                     <p className="text-xs font-mono text-rose-200/90 leading-relaxed italic">
-                      &quot;Portugal will secure a last-minute victory through a controversial penalty locked in by Cristiano Ronaldo&apos;s aura.&quot;
+                      &quot;I&apos;m 94 OVR. Arsenal 2-0. Saka MOTM. Beat me.&quot;
                     </p>
                   </div>
 
                   <p className="font-serif text-gray-400 text-sm leading-relaxed">
-                    Earn collectible FUT-style Verdict Cards for completed matches. Album count increases dynamically: Common, Rare, Epic, and Legendary.
+                    Common. Rare. Epic. Legendary. The number on the card is the argument.
                   </p>
                 </div>
 
                 <Link href={`/premier-league`}
                       className="block w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.01] hover:opacity-95 shadow-md active:scale-95 bg-gradient-to-r from-[#334155] to-[#475569]">
-                  View Fixtures Schedule
+                  Claim a card
                 </Link>
               </div>
             </motion.div>
@@ -442,12 +397,12 @@ export default function Home() {
         </div>
         <div className="max-w-[1400px] mx-auto relative z-10">
           <div className="mb-8 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-2">FIXTURE STORYLINES</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-2">THE NAMES</p>
             <h2 className="font-serif italic font-black text-4xl sm:text-5xl text-white leading-tight">
-              Predict the scripts of key stars.
+              These names decide the league. Call them first.
             </h2>
             <p className="text-sm text-gray-400 font-sans mt-2 hidden lg:block">
-              Drag the player dossiers around the Editor&apos;s Desk.
+              Drag the cards. Then lock a take.
             </p>
           </div>
 
@@ -460,12 +415,12 @@ export default function Home() {
                 onClick={() => setIsTidied(!isTidied)}
                 className="px-4.5 py-2 rounded-full font-black text-xs uppercase tracking-widest text-white bg-white/10 hover:bg-white/15 transition-colors shadow-sm border border-white/15 cursor-pointer flex items-center gap-1.5"
               >
-                {isTidied ? 'Scatter Dossiers' : 'Tidy Up Desk'}
+                {isTidied ? 'Scatter them' : 'Line them up'}
               </button>
             </div>
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <span className="text-[10rem] font-sans font-black text-black/[0.025]">DOSSIER</span>
+              <span className="text-[10rem] font-sans font-black text-black/[0.025]">OVR</span>
             </div>
 
             {PLAYERS.map((p, i) => {
@@ -597,11 +552,11 @@ export default function Home() {
           <div className="mb-10 md:mb-12 text-center">
             <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">PREMIER LEAGUE 2026/27 · 20 CLUBS</p>
             <h2 className="font-serif italic font-black text-4xl sm:text-5xl md:text-6xl text-white leading-tight">
-              Pick your club.<br />
-              <span className="text-[#E11D48]">Own the narrative.</span>
+              Pick a side.<br />
+              <span className="text-[#E11D48]">Ride or die.</span>
             </h2>
             <p className="font-serif text-zinc-400 text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed font-medium">
-              The 20 Premier League clubs contesting 38 matchweeks. Pick yours to predict their fixtures, submit hot takes, and claim Verdict Cards.
+              20 clubs. Your name on one of them. Call their fixtures like it is personal.
             </p>
           </div>
 
@@ -666,7 +621,7 @@ export default function Home() {
                       <p className="font-serif text-zinc-400 text-xs leading-relaxed flex-1 font-medium">{c.story}</p>
                       <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mt-4 group-hover:translate-x-1 transition-transform inline-block"
                             style={{ color: c.color }}>
-                        Predict fixture →
+                        Call their next one →
                       </span>
                     </Link>
                   </motion.div>
@@ -689,22 +644,22 @@ export default function Home() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="max-w-xl">
-            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">PREMIER LEAGUE 2026/27 • SEASON ACTIVE</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#E11D48] mb-3">PREMIER LEAGUE 2026/27 • LIVE</p>
             <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white uppercase tracking-tight mb-4">
-              The Season is Active.<br />
-              <span className="text-[#E11D48]">Build your reputation.</span>
+              The league is live.<br />
+              <span className="text-[#E11D48]">Where is your card?</span>
             </h2>
             <p className="font-sans text-gray-300 text-sm sm:text-base mb-8 max-w-lg leading-relaxed">
-              Grade your matchday predictions. Evolve your Overall Rating and verify your football reputation in the community.
+              Everyone in your chat thinks they know ball. Only one of you has the OVR to prove it.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/premier-league"
                     className="px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-widest text-white hover:scale-105 transition-all shadow-lg text-center bg-gradient-to-r from-[#881337] to-[#E11D48]">
-                Enter Premier League Hub
+                Get my card
               </Link>
-              <Link href="/football-iq"
+              <Link href="/leaderboard"
                     className="px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-widest border border-white/20 text-white bg-white/10 hover:bg-white/20 transition-all hover:scale-105 text-center">
-                View My Card
+                Show the board
               </Link>
             </div>
           </div>

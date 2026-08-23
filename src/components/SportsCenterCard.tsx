@@ -192,7 +192,7 @@ export default function SportsCenterCard({
             {ovr}
           </span>
           <span className="block text-center font-black text-[10px] tracking-[0.2em] uppercase mt-0.5" style={{ color: glow }}>
-            VAR
+            OVR
           </span>
         </div>
 

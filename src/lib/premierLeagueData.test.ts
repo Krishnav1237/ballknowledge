@@ -97,6 +97,9 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     'src/app/layout.tsx',
     'src/app/premier-league/page.tsx',
     'src/lib/landingData.ts',
+    'src/app/match/[id]/page.tsx',
+    'src/components/Footer.tsx',
+    'src/lib/shareCopy.ts',
   ];
   const banned = [
     /WORLD CUP 2026/i,
@@ -117,6 +120,18 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     /world_cup_stadium/,
     /world_cup_hub_bg/,
     /AI FIFA Card/,
+    /AI VAR Tribunal/i,
+    /Reputation Arena/i,
+    /Locker Room Login/,
+    /Stockley Park/,
+    /35% PRD/,
+    /Portugal will secure/,
+    /VAR Tribunal: Grade Match/,
+    /Can you beat my Football IQ/,
+    /Check out my VAR Verdict Card/,
+    /Editor's Desk/,
+    /ACCESS GATE/,
+    /Enter Premier League Hub/,
   ];
   for (const rel of files) {
     const text = readFileSync(join(process.cwd(), rel), 'utf8');

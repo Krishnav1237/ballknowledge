@@ -174,10 +174,10 @@ export default function PremierLeagueHub() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48]">2026/27 Season · 38 matchweeks</p>
-            <h1 className="font-display font-black text-3xl uppercase tracking-wide mt-1">Premier League Hub</h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48]">2026/27 · The league is live</p>
+            <h1 className="font-display font-black text-3xl uppercase tracking-wide mt-1">Call the next fixture</h1>
             <p className="text-zinc-400 text-sm mt-1 max-w-xl">
-              20 clubs, 380 fixtures. Lock predictions before kickoff — Arsenal vs Coventry City opens the season on 21 August 2026.
+              Lock it or sit down. Your OVR is public.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-zinc-400">

@@ -36,10 +36,10 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Premier League', href: '/premier-league', icon: Trophy },
-    { name: 'Leaderboard',    href: '/leaderboard',   icon: BarChart2 },
-    { name: 'My Card',        href: '/football-iq',   icon: Award },
-    { name: 'Profile',        href: '/profile',        icon: User },
+    { name: 'Fixtures', href: '/premier-league', icon: Trophy },
+    { name: 'Board',    href: '/leaderboard',   icon: BarChart2 },
+    { name: 'My Card',  href: '/football-iq',   icon: Award },
+    { name: 'Profile',  href: '/profile',        icon: User },
   ];
 
   return (
@@ -115,7 +115,7 @@ export default function Navbar() {
                 href="/profile" 
                 className="px-4 py-2 rounded-full font-display font-black text-[11px] uppercase tracking-widest text-white transition-all hover:scale-105 bg-gradient-to-r from-[#881337] to-[#E11D48] shadow-md hover:shadow-[0_0_15px_rgba(225,29,72,0.3)] flex items-center gap-1.5"
               >
-                <LogIn className="w-3 h-3" /> Locker Room Login
+                <LogIn className="w-3 h-3" /> Get in
               </Link>
             )}
           </nav>
@@ -194,7 +194,7 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-4 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-bold uppercase tracking-wider hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
                 >
-                  <LogIn className="w-4 h-4" /> Locker Room Login
+                  <LogIn className="w-4 h-4" /> Get in
                 </Link>
               )}
             </div>

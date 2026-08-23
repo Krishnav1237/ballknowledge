@@ -405,7 +405,7 @@ export default function ProfileSettingsPage() {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-[#881337]/20 border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Loading Manager Locker Room...</p>
+        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Loading your card...</p>
       </div>
     );
   }
@@ -506,7 +506,7 @@ export default function ProfileSettingsPage() {
     setAvatarStyle('fun-emoji');
     setPendingPhoto(null);
     window.dispatchEvent(new Event('storage'));
-    showToast('Successfully signed out of Locker Room. 🚪', 'success');
+    showToast('Signed out. Come back when you are ready to flex.', 'success');
   };
 
   const handleResetCampaign = async () => {
@@ -539,7 +539,7 @@ export default function ProfileSettingsPage() {
     rarity: role === 'ADMIN' ? 'LEGENDARY' : role === 'PREMIUM' ? 'EPIC' : 'COMMON',
     ovr: profile.overallRating,
     rulingText: 'Manager credentials registered successfully.',
-    verdict: role === 'ADMIN' ? 'TRIBUNAL COMMISSIONER' : role === 'PREMIUM' ? 'CERTIFIED CHEF' : 'KNOWS BALL',
+    verdict: role === 'ADMIN' ? 'TOP OF THE BOARD' : role === 'PREMIUM' ? 'CERTIFIED CHEF' : 'KNOWS BALL',
     charge: 'TACTICAL INGENUITY',
     sentence: `Managing ${favoriteClub || 'Arsenal'} under ${role.toLowerCase()} status.`,
     ach: {
@@ -586,11 +586,11 @@ export default function ProfileSettingsPage() {
 
           <div className="relative z-10 w-full max-w-md text-center">
             <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-wider leading-none mb-3">
-              LOCKER ROOM <span className="text-[#E11D48]">ACCESS GATE</span>
+              GET YOUR <span className="text-[#E11D48]">CARD</span>
             </h1>
             
             <p className="text-gray-400 text-[10px] sm:text-[11px] mt-2.5 font-bold uppercase tracking-widest leading-none max-w-sm mx-auto mb-8">
-              VERIFY IDENTITY TO ACCESS SEASON PREDICTIONS COCKPIT <span className="text-zinc-300 mx-2">•</span> UNLOCK COLLECTIBLES
+              SIGN IN. THEN YOUR OVR IS PUBLIC.
             </p>
 
             {/* Authenticator Buttons Card */}
@@ -887,7 +887,7 @@ export default function ProfileSettingsPage() {
                 <div className="col-span-12 lg:col-span-4 flex flex-col justify-between h-[520px] bg-[#14080B]/80 border border-rose-900/40 rounded-2xl p-6 relative shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
                   <div className="flex flex-col gap-5">
                     <div className="shrink-0 flex items-center justify-between border-b border-rose-900/30 pb-3">
-                      <h3 className="text-xs font-black text-rose-400 tracking-widest uppercase border-l-2 border-[#E11D48] pl-2.5">Reputation &amp; Telemetry</h3>
+                      <h3 className="text-xs font-black text-rose-400 tracking-widest uppercase border-l-2 border-[#E11D48] pl-2.5">Your OVR</h3>
                       <span className="text-[9px] font-mono text-zinc-500 uppercase font-bold">SEASON 2026</span>
                     </div>
 
@@ -899,7 +899,7 @@ export default function ProfileSettingsPage() {
                         <span className="text-[7px] text-rose-200 font-black uppercase tracking-widest mt-0.5">OVR</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10.5px] font-black text-white uppercase tracking-wider leading-none">FOOTBALL IQ RATING</p>
+                        <p className="text-[10.5px] font-black text-white uppercase tracking-wider leading-none">OVERALL</p>
                         <p className="text-[10px] text-zinc-400 font-mono mt-1 truncate">{username || 'MANAGER'}</p>
                       </div>
                       <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border shrink-0 shadow-sm ${
@@ -916,10 +916,10 @@ export default function ProfileSettingsPage() {
                     {/* Stat bars */}
                     <div className="flex flex-col gap-2.5">
                       {[
-                        { label: 'PRD', val: profile.predictionRating, color: '#E11D48', name: 'PREDICTIONS', weight: '35%' },
-                        { label: 'MGR', val: profile.managerRating,    color: '#FB7185', name: 'MANAGER INDEX', weight: '25%' },
-                        { label: 'HOT', val: profile.hotTakeRating,    color: '#F43F5E', name: 'HOT TAKES',    weight: '25%' },
-                        { label: 'RST', val: profile.roastScore,       color: '#FDA4AF', name: 'ROAST INDEX',  weight: '15%' }
+                        { label: 'PRD', val: profile.predictionRating, color: '#E11D48', name: 'CALLS' },
+                        { label: 'MGR', val: profile.managerRating,    color: '#FB7185', name: 'XI' },
+                        { label: 'HOT', val: profile.hotTakeRating,    color: '#F43F5E', name: 'TAKES' },
+                        { label: 'RST', val: profile.roastScore,       color: '#FDA4AF', name: 'ROAST' }
                       ].map(stat => (
                         <div key={stat.label} className="bg-[#13070A] border border-rose-900/30 rounded-xl p-3 space-y-1.5 shadow-inner">
                           <div className="flex justify-between items-baseline">
@@ -929,7 +929,7 @@ export default function ProfileSettingsPage() {
                             </div>
                             <div className="flex items-baseline gap-1">
                               <span className="font-mono font-black text-xs text-white">{stat.val}</span>
-                              <span className="text-[8.5px] text-zinc-500 font-mono font-bold">/{stat.weight}</span>
+                              <span className="text-[8.5px] text-zinc-500 font-mono font-bold">/99</span>
                             </div>
                           </div>
                           <div className="w-full h-2 bg-black rounded-full overflow-hidden border border-white/5">

@@ -12,6 +12,7 @@ import {
   calculatePRD,
   calculateRSTFromActivity,
 } from './scoring';
+import { cardShareText, deckShareText } from './shareCopy';
 
 const FORMATION_SLOTS = ['GK', 'LB', 'LCB', 'RCB', 'RB', 'LCM', 'CDM', 'RCM', 'LW', 'ST', 'RW'] as const;
 
@@ -140,4 +141,19 @@ test('primary pages stay on the dark shell and Navbar points at live destination
   assert.match(matchPage, /MatchLiveChat/);
   assert.match(matchPage, /getRosterForTeam/);
   assert.match(matchPage, /isPlayerAllowedForSlot/);
+});
+
+test('share copy flexes OVR and dares the reader', () => {
+  const mine = cardShareText({ ovr: 94, verdict: 'legendary', fixture: 'Arsenal vs Coventry 2-0' });
+  assert.equal(mine, "I'm 94 OVR on BallKnowledge. Arsenal vs Coventry 2-0. LEGENDARY. Beat me.");
+
+  const theirs = cardShareText({
+    ovr: 88,
+    verdict: 'knows ball',
+    username: 'Chef',
+    firstPerson: false,
+  });
+  assert.equal(theirs, 'Chef is 88 OVR on BallKnowledge. KNOWS BALL. Beat me.');
+
+  assert.equal(deckShareText({ ovr: 91 }), "I'm 91 OVR on BallKnowledge. Come take the card.");
 });

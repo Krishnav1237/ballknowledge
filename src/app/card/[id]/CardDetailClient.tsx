@@ -10,6 +10,7 @@ import { Trophy, Share2, CheckCircle, Home, Download, Shield, Sparkles } from 'l
 import { getFlagEmoji } from '@/lib/matchUtils';
 import { getStoredProfile, getStoredPredictions } from '@/lib/profileSync';
 import { fetchWithTimeout } from '@/lib/requestBounds';
+import { cardShareText, deckShareText } from '@/lib/shareCopy';
 
 interface CardDetailClientProps {
   initialCard: any;
@@ -355,7 +356,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
             <div className="flex justify-between items-center border-b border-white/15 pb-4 mb-5">
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest bg-[#E11D48]/15 border border-[#E11D48]/40 text-rose-300 px-3 py-1 rounded-full">
-                  {activeTab === 'verdict' ? 'VAR Official Report' : 'Overall Premier League Manager Dossier'}
+                  {activeTab === 'verdict' ? 'The card' : 'Season deck'}
                 </span>
                 <h4 className="font-display font-black text-xl md:text-2xl text-white uppercase mt-2 leading-none">
                   {activeTab === 'verdict' ? card.verdict : 'FULL SEASON DECK'}
@@ -372,7 +373,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
             <div className="space-y-4 text-sm text-gray-200 font-medium leading-relaxed">
               <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
                 <span className="text-amber-400 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
-                  {activeTab === 'verdict' ? 'Audited Match Statement:' : 'Manager Profile Alias:'}
+                  {activeTab === 'verdict' ? 'The take:' : 'Manager:'}
                 </span>
                 <p className="text-white font-semibold text-sm md:text-base">
                   &ldquo;{activeTab === 'verdict' ? (card.evidence ? card.evidence.replace('Hot Take statement: "', '').split('" (VAR')[0] : 'No evidence submitted.') : profileState.username}&rdquo;
@@ -381,7 +382,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
 
               <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
                 <span className="text-rose-400 font-black uppercase tracking-widest text-[9.5px] block mb-1.5">
-                  {activeTab === 'verdict' ? 'VAR Audited Charge:' : 'Club Allegiance:'}
+                  {activeTab === 'verdict' ? 'The call:' : 'Club:'}
                 </span>
                 <p className="text-gray-100 font-medium text-xs md:text-sm">
                   {activeTab === 'verdict' ? card.charge : `${profileState.favoriteClub || profileState.favoriteNation || 'Arsenal'} kit`}
@@ -441,7 +442,9 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                 {/* X/Twitter Share */}
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Premier League Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR: ${card.verdict.toUpperCase()}. Can you beat my Football IQ?`
+                    activeTab === 'verdict'
+                      ? cardShareText({ ovr: card.rating, verdict: card.verdict })
+                      : deckShareText({ ovr: profileState.overallRating })
                   )}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -454,7 +457,9 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
                 {/* WhatsApp Share */}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                    `Check out my official ${activeTab === 'verdict' ? 'VAR Verdict Card' : 'Premier League Manager Deck'}! Rated ${activeTab === 'verdict' ? card.rating : profileState.overallRating} OVR. Can you beat my Football IQ? ${shareUrl}`
+                    `${activeTab === 'verdict'
+                      ? cardShareText({ ovr: card.rating, verdict: card.verdict })
+                      : deckShareText({ ovr: profileState.overallRating })} ${shareUrl}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -482,7 +487,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
               href="/premier-league"
               className="flex-1 py-4 px-5 rounded-2xl bg-gradient-to-r from-[#881337] to-[#E11D48] hover:brightness-110 text-white font-display font-black text-xs uppercase tracking-widest shadow-xl text-center hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
             >
-              <Trophy className="w-4 h-4" /> Grade My Takes
+              <Trophy className="w-4 h-4" /> Get my card
             </Link>
             
             <Link
@@ -498,7 +503,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
 
       {/* Footer */}
       <footer className="relative z-10 text-center text-[9px] font-mono text-zinc-400 uppercase tracking-widest mt-4">
-        VAR Tribunal Collectibles Hub • Premier League 2026/27
+        BallKnowledge • Prove you know ball
       </footer>
 
     </div>

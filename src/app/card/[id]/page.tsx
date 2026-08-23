@@ -54,8 +54,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!card) {
       return {
-        title: 'VAR Verdict Card | BallKnowledge',
-        description: 'Check out this Football IQ card on BallKnowledge!'
+        title: 'Beat this OVR | BallKnowledge',
+        description: 'A public OVR card on BallKnowledge. Come take it.'
       };
     }
 
@@ -65,11 +65,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : '';
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ballknowledge.live';
-    const title = `${card.profile.username || 'Manager'}'s VAR Verdict${fixtureString} — OVR ${card.rating || 50}`;
-    const description = `Verdict: ${card.verdict || 'VAR VERDICT'} | ${card.charge || 'Football IQ audited.'}. Check out this Football IQ card!`;
+    const title = `${card.profile.username || 'Manager'} is ${card.rating || 50} OVR${fixtureString}`;
+    const description = `${card.verdict || 'KNOWS BALL'}. Beat them on BallKnowledge.`;
     const ogParams = new URLSearchParams({
       user: card.profile.username || 'Tactical Manager',
-      verdict: card.verdict || 'VAR VERDICT CARD',
+      verdict: card.verdict || 'KNOWS BALL',
       fixture: matchDetails.homeFifaCode && matchDetails.awayFifaCode ? `${matchDetails.homeFifaCode} vs ${matchDetails.awayFifaCode}` : 'Premier League 2026/27',
       rarity: card.rarity || 'COMMON',
       rating: String(card.rating || 50),
@@ -94,8 +94,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: 'VAR Verdict Card | BallKnowledge',
-      description: 'Check out this Football IQ card on BallKnowledge!'
+      title: 'Beat this OVR | BallKnowledge',
+      description: 'A public OVR card on BallKnowledge. Come take it.'
     };
   }
 }
@@ -152,7 +152,7 @@ export default async function SharedCardPage({ params }: Props) {
     matchId: id,
     rating: 88,
     verdict: 'TACTICAL MASTERMIND',
-    charge: 'Audited VAR Prediction',
+    charge: 'Called it. Posted it.',
     evidence: 'Hot Take statement: "Premier League 2026/27 Tactical Brilliance"',
     sentence: 'Certified Ball Knowledge Expert',
     rarity: 'LEGENDARY',
