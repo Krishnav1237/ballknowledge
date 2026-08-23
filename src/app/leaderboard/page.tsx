@@ -546,7 +546,7 @@ export default function LeaderboardPage() {
             </div>
 
             {/* List content (Independent Scroll with Lenis Prevent) */}
-            <div className="flex-grow overflow-y-auto custom-scrollbar divide-y divide-zinc-100" data-lenis-prevent>
+            <div className="flex-grow overflow-y-auto custom-scrollbar divide-y divide-white/10">
               {loading && (
                 <div className="flex flex-col items-center justify-center py-32 gap-4 h-full">
                   <div className="relative w-14 h-14">
