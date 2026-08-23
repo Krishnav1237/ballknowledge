@@ -403,9 +403,12 @@ export default function ProfileSettingsPage() {
 
   if (!mounted || !profile) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337]/20 border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Loading your card...</p>
+      <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] px-4 py-10">
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-6 h-8 w-48 mx-auto rounded-lg skel" />
+          <div className="h-72 rounded-3xl border border-white/10 skel" />
+        </div>
+        <p className="sr-only">Loading your card</p>
       </div>
     );
   }
@@ -564,13 +567,13 @@ export default function ProfileSettingsPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white flex flex-col">
+    <div className="relative min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col">
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* CASE A: SIGNED OUT (OAUTH AUTHENTICATION LOCKER ROOM)                  */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {!profile.isAuthenticated ? (
-        <div className="relative w-full min-h-screen flex flex-col justify-center items-center px-6 pt-[52px] z-10">
+        <div className="relative z-10 flex min-h-[calc(100dvh-var(--nav-h))] w-full flex-col items-center justify-center px-6">
           
           {/* Locker Room Background (High Contrast, Immersive) */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -717,7 +720,7 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
       ) : (
-        <div className="relative flex flex-col bg-[#07090E] pt-[52px] min-h-[calc(100vh-52px)] flex-grow pb-8 justify-center">
+        <div className="relative flex min-h-[calc(100dvh-var(--nav-h))] flex-grow flex-col justify-center bg-[#030712] pb-8">
 
           {/* Clean Subdued Background */}
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -728,7 +731,7 @@ export default function ProfileSettingsPage() {
               className="object-cover opacity-[0.52] object-center scale-102"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/70 to-[#07090E]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/80 to-[#030712]" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-rose-950/10 rounded-full blur-[120px] pointer-events-none" />
           </div>
 

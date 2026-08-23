@@ -6,7 +6,7 @@ Premier League 2026/27. Public OVR board. Rank is the OVR — nothing else.
 
 You land in a two-panel arena: next fixture on the left, public OVR board on the right. See who is #1. Call the next match. Climb or get climbed on. Cards are what you post when you want someone to beat you.
 
-Dark HUD: `#030712` / `#0B0F19` / `#E11D48`. Stadium backdrop, live chips, #1 spotlight. Not a brochure.
+Dark HUD: `#030712` / `#0B0F19` / `#E11D48`. Shared `PageShell`, stadium backdrop, live chips, #1 spotlight. Not a brochure. Pages paint immediately — fixtures come from the local catalog, the board fills in.
 
 ```
 Board → Season map → Match → Card → Share
@@ -74,11 +74,14 @@ Roles: FREE 3 takes / match, PREMIUM and ADMIN 5. ADMIN can bypass kickoff lock.
 ## Layout
 
 ```
+src/app/layout.tsx               Navbar + main offset + Footer (no route fade)
 src/app/page.tsx                 Game board (Take #1)
 src/app/leaderboard/page.tsx     Same board
 src/app/premier-league/page.tsx  Season map
 src/app/match/[id]/page.tsx      Fixture
+src/components/PageShell.tsx     Shared page frame
 src/components/GameBoard.tsx     Board UI
+src/lib/leagueCatalog.ts         Shared matches / teams / board queries
 src/lib/premierLeagueData.ts     20 clubs, 380 fixtures
 src/lib/scoring.ts               PRD / MGR / HOT / RST / OVR
 src/lib/shareCopy.ts             Tweet lines

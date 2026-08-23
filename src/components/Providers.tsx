@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fetchLeagueMatches, fetchLeagueTeams, leagueKeys } from '@/lib/leagueCatalog';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -10,11 +11,26 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: {
             refetchOnWindowFocus: false,
-            staleTime: 1000 * 60 * 5, // 5 minutes
+            refetchOnReconnect: true,
+            retry: 1,
+            staleTime: 1000 * 30,
           },
         },
-      })
+      }),
   );
+
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: leagueKeys.matches,
+      queryFn: fetchLeagueMatches,
+      staleTime: 1000 * 30,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: leagueKeys.teams,
+      queryFn: fetchLeagueTeams,
+      staleTime: Infinity,
+    });
+  }, [queryClient]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -34,11 +50,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           normalized.includes("didn't match the client properties") ||
           normalized.includes('does not match the server');
 
-        // Silence known browser-extension hydration noise without hiding app-owned mismatches.
-        if (
-          isExtensionNoise &&
-          isHydrationNoise
-        ) {
+        if (isExtensionNoise && isHydrationNoise) {
           return;
         }
         originalError(...args);

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { getPremierLeagueClubs, getPremierLeagueMatches } from './premierLeagueData';
@@ -150,7 +150,7 @@ test('primary pages stay on the dark shell and Navbar points at live destination
   for (const rel of shells) {
     const text = readFileSync(join(process.cwd(), rel), 'utf8');
     assert.equal(lightShell.test(text), false, `${rel} still has a light product shell class`);
-    assert.match(text, /#030712|#0B0F19|#0A0A0A|bg-background/);
+    assert.match(text, /#030712|#0B0F19|#0A0A0A|bg-background|PageShell|GameBoard/);
   }
 
   const nav = readFileSync(join(process.cwd(), 'src/components/Navbar.tsx'), 'utf8');
@@ -201,16 +201,30 @@ test('matchday HQ picks live first, then next kickoff', () => {
 test('home is an outbid-style rank board, not a sales landing', () => {
   const home = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8');
   const board = readFileSync(join(process.cwd(), 'src/components/GameBoard.tsx'), 'utf8');
+  const shell = readFileSync(join(process.cwd(), 'src/components/PageShell.tsx'), 'utf8');
+  const catalog = readFileSync(join(process.cwd(), 'src/lib/leagueCatalog.ts'), 'utf8');
   assert.match(home, /GameBoard/);
   assert.doesNotMatch(home + board, /THE LOOP/);
   assert.doesNotMatch(home + board, /Ride or die/);
   assert.doesNotMatch(home + board, /HOW IT WORKS/);
   assert.doesNotMatch(home + board, /landingData/);
   assert.match(board, /Take #1/);
-  assert.match(board, /\/api\/leaderboard/);
+  assert.match(catalog, /\/api\/leaderboard/);
   assert.match(board, /pickFeaturedMatch/);
   assert.match(board, /\/match\//);
   assert.match(board, /Post your OVR/);
-  assert.match(board, /stadium_bg/);
+  assert.match(shell, /stadium_bg/);
   assert.match(board, /lg:grid-cols-12/);
+});
+
+test('root chrome does not fade, spin, or wait on every navigation', () => {
+  const layout = readFileSync(join(process.cwd(), 'src/app/layout.tsx'), 'utf8');
+  const globals = readFileSync(join(process.cwd(), 'src/app/globals.css'), 'utf8');
+  assert.equal(existsSync(join(process.cwd(), 'src/app/loading.tsx')), false);
+  assert.equal(existsSync(join(process.cwd(), 'src/components/PageTransition.tsx')), false);
+  assert.doesNotMatch(layout, /PageTransition/);
+  assert.doesNotMatch(layout, /SmoothScroll/);
+  assert.match(layout, /pt-\[var\(--nav-h\)\]/);
+  assert.match(layout, /from '@\/lib\/fonts'/);
+  assert.doesNotMatch(globals, /fonts\.googleapis\.com/);
 });

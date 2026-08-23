@@ -18,6 +18,7 @@ import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { fetchWithTimeout } from '@/lib/requestBounds';
 import { resolveMatchPageLoad } from '@/lib/matchPageLoad';
 import { cardShareText } from '@/lib/shareCopy';
+import { catalogMatches, catalogTeams, fetchLeagueMatches, fetchLeagueTeams, leagueKeys } from '@/lib/leagueCatalog';
 
 const PITCH_SLOTS = [
   { id: 'GK', label: 'GK', category: 'GK' },
@@ -64,17 +65,11 @@ interface Match {
 
 
 async function fetchMatches(): Promise<Match[]> {
-  const res = await fetchWithTimeout('/api/matches');
-  if (!res.ok) throw new Error('Failed to load matches');
-  const data = await res.json();
-  return Array.isArray(data) ? data : data.matches || [];
+  return fetchLeagueMatches() as Promise<Match[]>;
 }
 
 async function fetchTeams(): Promise<Team[]> {
-  const res = await fetchWithTimeout('/api/teams');
-  if (!res.ok) throw new Error('Failed to load teams');
-  const data = await res.json();
-  return Array.isArray(data) ? data : data.teams || [];
+  return fetchLeagueTeams() as Promise<Team[]>;
 }
 
 
@@ -128,13 +123,14 @@ export default function MatchPage() {
   const sofaSyncKeyRef = useRef<string | null>(null);
 
   const matchesQuery = useQuery({
-    queryKey: ['premier-league-matches', matchId],
+    queryKey: leagueKeys.matches,
     queryFn: fetchMatches,
-    staleTime: 0,
+    placeholderData: catalogMatches as () => Match[],
+    staleTime: 15_000,
     gcTime: 1000 * 60 * 10,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     refetchInterval: (query) => {
       const found = query.state.data?.find((item) => item.id === matchId);
       if (!found || found.finished === 'TRUE') return false;
@@ -146,10 +142,10 @@ export default function MatchPage() {
     retry: 1,
   });
 
-  // Split Query: Cache teams list indefinitely (static data)
   const teamsQuery = useQuery({
-    queryKey: ['premier-league-teams'],
+    queryKey: leagueKeys.teams,
     queryFn: fetchTeams,
+    placeholderData: catalogTeams as () => Team[],
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60 * 2,
     retry: 1,
@@ -324,7 +320,7 @@ export default function MatchPage() {
 
   if (load.error) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-6 text-center">
+      <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col justify-center items-center p-6 text-center">
         <div className="w-16 h-16 rounded-full bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-400 text-2xl mb-4">⚠️</div>
         <p className="font-display font-black text-lg uppercase tracking-wider text-red-500 mb-2">Can&apos;t load this match</p>
         <p className="text-zinc-500 text-sm max-w-md">{load.error}</p>
@@ -335,7 +331,7 @@ export default function MatchPage() {
 
   if (load.matchNotFound) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center p-6 text-center">
+      <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col justify-center items-center p-6 text-center">
         <div className="w-16 h-16 rounded-full bg-rose-950/20 border border-rose-900/30 flex items-center justify-center text-red-500 text-2xl mb-4">⚠️</div>
         <h3 className="font-display font-black text-xl uppercase tracking-wider text-white">Match Not Found</h3>
         <p className="text-zinc-400 text-xs mt-2 max-w-sm">The requested Match ID does not exist or belongs to another season.</p>
@@ -348,9 +344,12 @@ export default function MatchPage() {
 
   if (!load.ready || !match) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-center items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#881337]/20 border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-500">Loading the fixture...</p>
+      <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] px-4 py-8 sm:px-6">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-5 lg:grid-cols-12">
+          <div className="h-80 rounded-3xl border border-white/10 skel lg:col-span-7" />
+          <div className="h-80 rounded-3xl border border-white/10 skel lg:col-span-5" />
+        </div>
+        <p className="sr-only">Loading the fixture</p>
       </div>
     );
   }
@@ -777,7 +776,7 @@ export default function MatchPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden pt-[52px]">
+    <div className="relative min-h-[calc(100dvh-var(--nav-h))] overflow-x-hidden bg-[#030712] text-white">
 
       {/* ── Inline Toast Notification ── */}
       {toast && (
@@ -798,16 +797,15 @@ export default function MatchPage() {
         </div>
       )}
 
-      {/* Premium Light Stadium Backdrop */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <NextImage 
-          src="/images/match_details_bg.webp" 
-          alt="Match Dugout Background" 
-          fill 
-          className="object-cover opacity-[0.52] object-center scale-102" 
+        <NextImage
+          src="/images/match_details_bg.webp"
+          alt=""
+          fill
+          className="object-cover object-center opacity-[0.28]"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-background/20 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/88 via-[#030712]/72 to-[#030712]" />
       </div>
 
       {/* VAR Simulation Loading Screen */}

@@ -104,9 +104,9 @@ test('malformed session cookie does not throw and auth GET degrades', () => {
   const authRoute = readFileSync(join(process.cwd(), 'src/app/api/auth/route.ts'), 'utf8');
   assert.match(authRoute, /anonymousAuthBody\(true\)/);
 
-  const board = readFileSync(join(process.cwd(), 'src/components/GameBoard.tsx'), 'utf8');
-  assert.match(board, /fetchWithTimeout/);
-  assert.match(board, /\/api\/leaderboard/);
+  const catalog = readFileSync(join(process.cwd(), 'src/lib/leagueCatalog.ts'), 'utf8');
+  assert.match(catalog, /fetchWithTimeout/);
+  assert.match(catalog, /\/api\/leaderboard/);
 
   const resolveMatch = readFileSync(join(process.cwd(), 'src/app/api/resolve-match/route.ts'), 'utf8');
   assert.equal(resolveMatch.includes('localhost:3000'), false);

@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { toPng } from 'html-to-image';
 import SportsCenterCard from '@/components/SportsCenterCard';
 import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib/profileSync';
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 import { cardShareText, deckShareText } from '@/lib/shareCopy';
-import { fetchWithTimeout } from '@/lib/requestBounds';
+import { catalogMatches, catalogTeams, fetchLeagueMatches, fetchLeagueTeams, leagueKeys } from '@/lib/leagueCatalog';
+import PageShell from '@/components/PageShell';
 
 interface Team {
   id: string;
@@ -42,9 +43,6 @@ const getSystemDate = () => new Date();
 export default function FootballIQPage() {
   const [profile, setProfile] = useState<FootballIQProfile | null>(null);
   const [userPreds, setUserPreds] = useState<Record<string, any>>({});
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loadingMatches, setLoadingMatches] = useState(true);
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'COMPLETED' | 'UPCOMING' | 'PREDICTED'>('ALL');
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'verdict' | 'deck'>('verdict');
@@ -58,31 +56,33 @@ export default function FootballIQPage() {
   // Separate ref attached directly to the SportsCenterCard root (340×480) for clean PNG export
   const cardCaptureRef = useRef<HTMLDivElement>(null);
 
+  const matchesQuery = useQuery({
+    queryKey: leagueKeys.matches,
+    queryFn: fetchLeagueMatches,
+    placeholderData: catalogMatches,
+    staleTime: 30_000,
+  });
+  const teamsQuery = useQuery({
+    queryKey: leagueKeys.teams,
+    queryFn: fetchLeagueTeams,
+    placeholderData: catalogTeams,
+    staleTime: Infinity,
+  });
+  const matches = useMemo(
+    () => (matchesQuery.data ?? []) as Match[],
+    [matchesQuery.data],
+  );
+  const teams = useMemo(
+    () => (teamsQuery.data ?? []) as Team[],
+    [teamsQuery.data],
+  );
+  const loadingMatches = matchesQuery.isPending && matches.length === 0;
+
   useEffect(() => {
     const p = getStoredProfile();
     setProfile(p);
     const preds = getStoredPredictions();
     setUserPreds(preds);
-
-    async function fetchData() {
-      try {
-        const [resM, resT] = await Promise.all([
-          fetchWithTimeout('/api/matches'),
-          fetchWithTimeout('/api/teams'),
-        ]);
-        if (resM.ok && resT.ok) {
-          const datM = await resM.json();
-          const datT = await resT.json();
-          setMatches(Array.isArray(datM) ? datM : (datM.matches || []));
-          setTeams(Array.isArray(datT) ? datT : (datT.teams || []));
-        }
-      } catch (e) {
-        console.error('Failed to load matches/teams', e);
-      } finally {
-        setLoadingMatches(false);
-      }
-    }
-    fetchData();
 
     const handleStorage = () => {
       setProfile(getStoredProfile());
@@ -94,20 +94,8 @@ export default function FootballIQPage() {
 
   if (!profile || !profile.isAuthenticated) {
     return (
-      <div className="relative min-h-screen bg-[#07090E] text-zinc-100 flex flex-col font-sans select-none justify-center items-center px-4">
-        {/* Immersive Stadium Background */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          <Image
-            src="/images/stadium_bg.webp"
-            alt="Stadium"
-            fill
-            className="object-cover opacity-[0.15] object-center"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/60 via-black/80 to-[#07090E]" />
-        </div>
-
-        <div className="relative z-10 flex flex-col items-center max-w-md w-full text-center bg-[#0F111A]/95 border border-rose-900/40 rounded-3xl p-8 shadow-[0_0_60px_rgba(225,29,72,0.1)] backdrop-blur-2xl">
+      <PageShell atmosphere="stadium" width="board" className="flex flex-col items-center justify-center px-4">
+        <div className="relative z-10 flex flex-col items-center max-w-md w-full text-center bg-[#0B0F19]/95 border border-white/10 rounded-3xl p-8 shadow-[0_0_60px_rgba(225,29,72,0.1)]">
           <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-6 shadow-lg shadow-rose-500/5 animate-pulse">
             <svg className="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -128,7 +116,7 @@ export default function FootballIQPage() {
             GET IN
           </Link>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
@@ -559,19 +547,7 @@ export default function FootballIQPage() {
     : deckShareText({ ovr: profile.overallRating });
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] select-none">
-      
-      {/* Background Stadium Atmosphere */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <Image 
-          src="/images/stadium_bg.webp" 
-          alt="Stadium background" 
-          fill 
-          className="object-cover object-center opacity-[0.48]" 
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/60 via-[#030712]/80 to-[#030712]" />
-      </div>
+    <PageShell atmosphere="stadium" width="full" className="flex flex-col select-none">
 
       <div className="relative z-10 w-full flex-grow flex flex-col min-h-0">
         
@@ -884,6 +860,6 @@ export default function FootballIQPage() {
 
         </div>
 
-    </div>
+    </PageShell>
   );
 }

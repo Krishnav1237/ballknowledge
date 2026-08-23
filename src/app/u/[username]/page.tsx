@@ -98,16 +98,19 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-center items-center">
-        <div className="w-10 h-10 rounded-full border-4 border-[#881337] border-t-[#E11D48] animate-spin mb-4" />
-        <p className="font-display font-black text-sm uppercase tracking-widest text-zinc-400">Loading manager...</p>
+      <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] px-4 py-10">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-5 lg:grid-cols-12">
+          <div className="h-80 rounded-3xl border border-white/10 skel lg:col-span-7" />
+          <div className="h-80 rounded-3xl border border-white/10 skel lg:col-span-5" />
+        </div>
+        <p className="sr-only">Loading manager</p>
       </div>
     );
   }
 
   if (errorMsg || !profile) {
     return (
-      <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-center items-center px-4">
+      <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col justify-center items-center px-4">
         <div className="bg-[#0B0F19]/90 border border-rose-900/40 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-xl">
           <ShieldAlert className="w-12 h-12 text-[#E11D48] mx-auto mb-4" />
           <h2 className="font-display font-black text-2xl uppercase tracking-wider mb-2">MANAGER NOT FOUND</h2>
@@ -520,7 +523,7 @@ export default function PublicProfilePage() {
       });
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white flex flex-col justify-between pt-[52px] select-none">
+    <div className="relative min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col justify-between select-none">
       
       {/* Background Stadium Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">

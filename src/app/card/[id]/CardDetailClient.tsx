@@ -199,7 +199,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
   };
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground flex flex-col justify-between pt-[56px] pb-8 px-4 md:px-8 select-none">
+    <div className="relative min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-foreground flex flex-col justify-between pb-8 px-4 md:px-8 select-none">
       
       {/* Inline Status Message */}
       {statusMsg && (

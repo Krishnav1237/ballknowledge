@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Providers from '@/components/Providers';
-import SmoothScroll from '@/components/SmoothScroll';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import PageTransition from '@/components/PageTransition';
-import ServiceWorkerKiller from '@/components/ServiceWorkerKiller';
+import AppEffects from '@/components/AppEffects';
+import { outfit, spaceGrotesk, oswald } from '@/lib/fonts';
 
 export const metadata: Metadata = {
   title: 'BallKnowledge | Take #1',
@@ -36,16 +35,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased dark" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`h-full antialiased dark ${outfit.variable} ${spaceGrotesk.variable} ${oswald.variable}`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-primary selection:text-background" suppressHydrationWarning>
         <Providers>
-          <ServiceWorkerKiller />
-          <SmoothScroll />
+          <AppEffects />
           <Navbar />
-          <main className="flex-grow flex flex-col">
-            <PageTransition>
-              {children}
-            </PageTransition>
+          <main className="flex-1 flex flex-col min-h-0 pt-[var(--nav-h)]">
+            {children}
           </main>
           <Footer />
         </Providers>

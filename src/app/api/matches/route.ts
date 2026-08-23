@@ -8,7 +8,7 @@ export async function GET() {
     const matches = await fetchPremierLeagueMatches();
     return NextResponse.json(matches, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+        'Cache-Control': 'public, max-age=30, stale-while-revalidate=120'
       }
     });
   } catch (error) {

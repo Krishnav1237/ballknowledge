@@ -16,7 +16,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#881337]/8 rounded-full blur-3xl" />

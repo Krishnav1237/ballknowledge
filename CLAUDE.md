@@ -56,6 +56,10 @@ FACEBOOK_CLIENT_SECRET="your-facebook-app-secret"
 - **Next.js 16.2.9** (App Router, Turbopack). **NOT Next.js 14/15.** Read `/node_modules/next/dist/docs/` before writing API routes or metadata.
 - All pages in `src/app/`. API routes under `src/app/api/`.
 - **Server Components** are the default. Only add `'use client'` when hooks/browser APIs are required.
+- **Root layout** owns the HUD chrome: fixed Navbar, `main` offset with `--nav-h` (52px), Footer. Do **not** add `pt-[52px]` on pages. Do **not** wrap routes in `PageTransition` or a root `loading.tsx` spinner — those made every navigation fade and wait.
+- **PageShell** (`src/components/PageShell.tsx`) is the page frame: `atmosphere` (`none` | `stadium` | `pitch` | `locker`) + `width` (`board` | `wide` | `full`). Use it instead of a new `min-h-screen` wrapper.
+- **Fonts** come from `next/font` in `src/lib/fonts.ts` (Outfit, Space Grotesk, Oswald). Never `@import` Google Fonts in CSS.
+- **League data** is shared through `src/lib/leagueCatalog.ts` + React Query keys `premier-league-matches` / `premier-league-teams`. Prefetch on `Providers` mount. Fixture JSON is the placeholder so season/match/board paint without a spinner.
 
 ### Product
 Public OVR board for Premier League 2026/27. Home (`/` and `/leaderboard`) is a two-panel arena: next fixture + ranked OVRs (`GameBoard`). Rank is the OVR. Climb by calling fixtures. Keep it a game HUD — stadium atmosphere, #1 spotlight, OVR bars — not a marketing landing and not a sparse text list.
@@ -112,6 +116,9 @@ POST /api/generate-viral-card
 | File | What it does |
 |------|-------------|
 | `src/components/GameBoard.tsx` | Public OVR board — the product |
+| `src/components/PageShell.tsx` | Shared page frame (atmosphere + width) |
+| `src/lib/leagueCatalog.ts` | Shared matches/teams/board fetchers + query keys |
+| `src/lib/fonts.ts` | next/font Outfit / Space Grotesk / Oswald |
 | `src/lib/premierLeagueData.ts` | 20 clubs + 380 PL 2026/27 fixtures |
 | `src/lib/matchday.ts` | Next-kickoff picker for Take #1 |
 | `src/lib/scoring.ts` | PRD / MGR / HOT / RST / OVR |
@@ -206,8 +213,17 @@ This is a **premium dark theme**. Board first, not a brochure. **Do not use ligh
 > ⚠️ **NEVER use**: `bg-white`, `bg-zinc-50`, `text-zinc-950`, `border-zinc-200` in dark theme pages.
 
 ### Navbar
-- **Fixed header** at `z-[100]`, fully solid: `bg-[#0B0F19]` — never transparent.
+- **Fixed header** at `z-[100]`, height `--nav-h` (52px), fully solid: `bg-[#0B0F19]` — never transparent.
 - Logo at top-left: `/images/ball_knowledge_logo.png`
+- Root `main` already has `pt-[var(--nav-h)]`. Pages must not add a second offset.
+
+### Page layouts
+| Surface | Shell |
+|---------|--------|
+| Board (`/`, `/leaderboard`) | `PageShell` stadium + board width |
+| Season | `PageShell` pitch + wide |
+| Match | Full-bleed pitch art, dark `#030712` wash (never `from-white`) |
+| Card / profile | `PageShell` stadium or locker, same tokens |
 
 ---
 

@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useQuery } from '@tanstack/react-query';
 import { getStoredPredictions, getStoredProfile } from '@/lib/profileSync';
 import { clockNow, getMatchClockStatus, isSameUTCDate, parseLocalDate } from '@/lib/matchUtils';
 import { computeLeagueTable } from '@/lib/premierLeagueUtils';
-import { fetchWithTimeout } from '@/lib/requestBounds';
+import { catalogMatches, catalogTeams, fetchLeagueMatches, fetchLeagueTeams, leagueKeys } from '@/lib/leagueCatalog';
 import FlagImage from '@/components/FlagImage';
+import PageShell from '@/components/PageShell';
 
 const IconTrophy = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -79,16 +80,33 @@ function parseScorers(raw: string): string[] {
 }
 
 export default function PremierLeagueHub() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'schedule' | 'table'>('schedule');
   const [scheduleFilter, setScheduleFilter] = useState<StatusFilter>('all');
   const [matchweek, setMatchweek] = useState(1);
   const [profile, setProfile] = useState<any>(null);
   const [userPreds, setUserPreds] = useState<any>({});
-  const [error, setError] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(0);
+  const [weekPicked, setWeekPicked] = useState(false);
+
+  const matchesQuery = useQuery({
+    queryKey: leagueKeys.matches,
+    queryFn: fetchLeagueMatches,
+    placeholderData: catalogMatches,
+    staleTime: 30_000,
+  });
+  const teamsQuery = useQuery({
+    queryKey: leagueKeys.teams,
+    queryFn: fetchLeagueTeams,
+    placeholderData: catalogTeams,
+    staleTime: Infinity,
+  });
+
+  const matches = useMemo(() => (matchesQuery.data ?? []) as Match[], [matchesQuery.data]);
+  const teams = useMemo(() => (teamsQuery.data ?? []) as Team[], [teamsQuery.data]);
+  const loading = matchesQuery.isPending && matches.length === 0;
+  const error = matchesQuery.isError && matches.length === 0
+    ? 'Failed to connect to the Premier League data service. Please try again.'
+    : null;
 
   useEffect(() => {
     setNowMs(clockNow());
@@ -104,29 +122,14 @@ export default function PremierLeagueHub() {
       setUserPreds(getStoredPredictions());
     };
     window.addEventListener('storage', handleStorage);
-
-    const fetchData = async () => {
-      try {
-        const [matchesRes, teamsRes] = await Promise.all([
-          fetchWithTimeout('/api/matches'),
-          fetchWithTimeout('/api/teams'),
-        ]);
-        if (!matchesRes.ok || !teamsRes.ok) throw new Error('Remote fetch failed');
-        const [matchesData, teamsData] = await Promise.all([matchesRes.json(), teamsRes.json()]);
-        const list = Array.isArray(matchesData) ? matchesData : [];
-        setMatches(list);
-        setTeams(Array.isArray(teamsData) ? teamsData : []);
-        const upcoming = list.find((match: Match) => match.finished !== 'TRUE');
-        if (upcoming?.matchday) setMatchweek(parseInt(upcoming.matchday, 10) || 1);
-      } catch {
-        setError('Failed to connect to the Premier League data service. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
+
+  useEffect(() => {
+    if (weekPicked || matches.length === 0) return;
+    const upcoming = matches.find((match) => match.finished !== 'TRUE');
+    if (upcoming?.matchday) setMatchweek(parseInt(upcoming.matchday, 10) || 1);
+  }, [matches, weekPicked]);
 
   const getMatchStatus = (match: Match): 'COMPLETED' | 'LIVE' | 'UPCOMING' => {
     return getMatchClockStatus(match, nowMs || 0);
@@ -165,13 +168,8 @@ export default function PremierLeagueHub() {
   const table = useMemo(() => computeLeagueTable(matches as any, teams as any), [matches, teams]);
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white pt-[52px]">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <Image src="/images/match_details_bg.webp" alt="" fill className="object-cover opacity-[0.18]" sizes="100vw" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/70 via-[#030712]/80 to-[#030712]" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
+    <PageShell atmosphere="pitch" width="wide">
+      <div>
         <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E11D48]">Season map · 26/27</p>
@@ -210,7 +208,10 @@ export default function PremierLeagueHub() {
               {Array.from({ length: 38 }, (_, i) => i + 1).map((week) => (
                 <button
                   key={week}
-                  onClick={() => setMatchweek(week)}
+                  onClick={() => {
+                    setWeekPicked(true);
+                    setMatchweek(week);
+                  }}
                   className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-black ${
                     matchweek === week ? 'bg-[#E11D48] text-white' : 'bg-black/40 border border-white/10 text-zinc-400'
                   }`}
@@ -234,7 +235,11 @@ export default function PremierLeagueHub() {
             </div>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {loading ? (
-                <div className="col-span-full py-20 text-center text-zinc-400">Loading season...</div>
+                <div className="col-span-full grid grid-cols-1 gap-4 xl:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-36 rounded-2xl border border-white/10 skel" />
+                  ))}
+                </div>
               ) : filteredMatches.length === 0 ? (
                 <div className="col-span-full border border-white/10 rounded-2xl p-12 text-center bg-black/35">
                   <h3 className="font-display font-black text-sm uppercase">No Matches Found</h3>
@@ -359,6 +364,6 @@ export default function PremierLeagueHub() {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -3,7 +3,7 @@ import { Home, Search, Trophy } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-[calc(100dvh-var(--nav-h))] bg-[#030712] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Background orbs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-[#881337]/8 rounded-full blur-3xl" />
