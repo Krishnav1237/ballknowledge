@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 import { fetchPremierLeagueMatches, fetchPremierLeagueTeams } from '@/lib/premierLeagueData';
-import { getDeterministicMatchResult, getPlayerMatchRatings } from '@/lib/matchUtils';
+import { getDeterministicMatchResult, getPlayerMatchRatings, hasOfficialScore } from '@/lib/matchUtils';
 import { requireSession } from '@/lib/authSession';
 import {
   calculateHOT,
@@ -345,6 +345,9 @@ export async function POST(request: Request) {
     const match = matches.find((m: any) => String(m.id) === safeMatchId);
     if (!match) {
       return NextResponse.json({ error: 'Match not found.' }, { status: 404 });
+    }
+    if (!hasOfficialScore(match)) {
+      return NextResponse.json({ error: 'No official result yet. Cannot grade this fixture.' }, { status: 409 });
     }
 
     const homeTeamName = teams.find((t: any) => t.id === match.home_team_id)?.name_en || match.home_team_label || 'Home';

@@ -45,7 +45,7 @@ async function getOrCreateSimulatedProfile(username: string) {
         avatarSeed: username,
         favoriteClub: 'Arsenal',
         favoriteNation: 'Germany',
-        overallRating: Math.floor(Math.random() * 25) + 60,
+        overallRating: 1,
         role: 'FREE',
         season: 'Premier League 2026/27'
       }

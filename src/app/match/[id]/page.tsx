@@ -13,7 +13,7 @@ import TacticalPitch from '@/components/TacticalPitch';
 import PredictionModal from '@/components/PredictionModal';
 import FlagImage from '@/components/FlagImage';
 import MatchLiveChat from '@/components/MatchLiveChat';
-import { clockNow, getMatchClockStatus, parseLocalDate, getPlayerMatchRatings } from '@/lib/matchUtils';
+import { clockNow, getMatchClockStatus, hasOfficialScore, parseLocalDate, getPlayerMatchRatings } from '@/lib/matchUtils';
 import { getStorageItem, setStorageItem } from '@/lib/browserStorage';
 import { fetchWithTimeout } from '@/lib/requestBounds';
 import { resolveMatchPageLoad } from '@/lib/matchPageLoad';
@@ -340,7 +340,7 @@ export default function MatchPage() {
         <h3 className="font-display font-black text-xl uppercase tracking-wider text-white">Match Not Found</h3>
         <p className="text-zinc-400 text-xs mt-2 max-w-sm">The requested Match ID does not exist or belongs to another season.</p>
         <Link href="/premier-league" className="mt-6 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all block">
-          Back to Hub
+          Season map
         </Link>
       </div>
     );
@@ -607,6 +607,10 @@ export default function MatchPage() {
 
   // Resolve match and trigger Football IQ progression
   const handleResolveMatch = async () => {
+    if (!hasOfficialScore(match)) {
+      showToast('No official result yet. Cannot grade this fixture.', 'warn');
+      return;
+    }
     if (!profile?.isAuthenticated) {
       showToast('Sign in to save your card.', 'warn');
       return;
@@ -745,8 +749,9 @@ export default function MatchPage() {
   const isResolved = hasSubmitted && predictions[matchId].resolved && gradingResult;
 
   // Use REAL scores from match JSON data, not deterministic fallback
-  const realHomeScore = match.finished === 'TRUE' ? (parseInt(match.home_score, 10) || 0) : 0;
-  const realAwayScore = match.finished === 'TRUE' ? (parseInt(match.away_score, 10) || 0) : 0;
+  const official = hasOfficialScore(match);
+  const realHomeScore = official ? (parseInt(match.home_score, 10) || 0) : 0;
+  const realAwayScore = official ? (parseInt(match.away_score, 10) || 0) : 0;
   const actualResult = { homeScore: realHomeScore, awayScore: realAwayScore };
 
   // Parse real goalscorers from JSON format
@@ -1390,7 +1395,7 @@ export default function MatchPage() {
                       Lock it in
                     </button>
                   )}
-                  {status === 'COMPLETED' && (
+                  {status === 'COMPLETED' && official && (
                     <button
                       onClick={handleResolveMatch}
                       disabled={resolving}

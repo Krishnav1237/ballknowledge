@@ -760,7 +760,7 @@ export default function ProfileSettingsPage() {
                   <div className="flex flex-col gap-6">
                     <div className="shrink-0 flex items-center justify-between border-b border-rose-900/30 pb-3">
                       <h3 className="text-xs font-black text-rose-400 tracking-widest uppercase border-l-2 border-[#E11D48] pl-2.5">Identity Credentials</h3>
-                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-bold">DOSSIER #2026</span>
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-bold">SEASON 26/27</span>
                     </div>
 
                     {/* Avatar Upload zone and inputs stack vertically */}
@@ -965,7 +965,7 @@ export default function ProfileSettingsPage() {
                       onClick={handleSaveSettings}
                       className="flex-grow h-11 rounded-xl bg-[#13070A] hover:bg-rose-950/50 border border-rose-900/50 hover:border-rose-500/70 text-white font-sans font-black text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] shadow-md"
                     >
-                      {saveLoading ? 'SAVING...' : 'SAVE DOSSIER'}
+                      {saveLoading ? 'SAVING...' : 'SAVE PROFILE'}
                     </button>
                   </div>
                 </div>

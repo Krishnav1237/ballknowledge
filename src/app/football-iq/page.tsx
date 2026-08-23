@@ -9,6 +9,7 @@ import { getStoredProfile, getStoredPredictions, FootballIQProfile } from '@/lib
 import { Share2, ShieldAlert, CheckCircle, Trophy, Shield, Download, Send } from 'lucide-react';
 import { getFlagEmoji, parseLocalDate, getDeterministicMatchResult } from '@/lib/matchUtils';
 import { cardShareText, deckShareText } from '@/lib/shareCopy';
+import { fetchWithTimeout } from '@/lib/requestBounds';
 
 interface Team {
   id: string;
@@ -66,8 +67,8 @@ export default function FootballIQPage() {
     async function fetchData() {
       try {
         const [resM, resT] = await Promise.all([
-          fetch('/api/matches'),
-          fetch('/api/teams')
+          fetchWithTimeout('/api/matches'),
+          fetchWithTimeout('/api/teams'),
         ]);
         if (resM.ok && resT.ok) {
           const datM = await resM.json();

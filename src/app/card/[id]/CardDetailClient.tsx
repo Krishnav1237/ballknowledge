@@ -494,7 +494,7 @@ export default function CardDetailClient({ initialCard, profile: initialProfile 
               href="/"
               className="py-4 px-6 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-display font-black text-xs uppercase tracking-widest text-center transition-all flex items-center justify-center gap-2"
             >
-              <Home className="w-4 h-4" /> Hub Home
+              <Home className="w-4 h-4" /> Board
             </Link>
           </div>
         </div>

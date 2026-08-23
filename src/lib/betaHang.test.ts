@@ -105,7 +105,8 @@ test('malformed session cookie does not throw and auth GET degrades', () => {
   assert.match(authRoute, /anonymousAuthBody\(true\)/);
 
   const board = readFileSync(join(process.cwd(), 'src/components/GameBoard.tsx'), 'utf8');
-  assert.match(board, /fetchWithTimeout\('\/api\/leaderboard/);
+  assert.match(board, /fetchWithTimeout/);
+  assert.match(board, /\/api\/leaderboard/);
 });
 
 test('firstResolved returns the fallback instead of hanging', async () => {

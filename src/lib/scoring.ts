@@ -226,7 +226,7 @@ export type HotTakeGrade = {
 
 export function heuristicGradeHotTake(statement: string): HotTakeGrade {
   const lower = statement.toLowerCase().trim();
-  const isElite = lower.includes('messi') || lower.includes('best world cup') || lower.includes('greatest');
+  const isElite = lower.includes('haaland') || lower.includes('saka') || lower.includes('greatest');
   const isDelusion = lower.includes('antony') || lower.includes('maguire') || lower.length < 10;
   const ovr = isElite ? 85 : isDelusion ? 20 : 55;
   return {

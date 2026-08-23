@@ -114,7 +114,7 @@ export default function PredictionModal({
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">First Goalscorer</label>
               <input
                 type="text"
-                placeholder="e.g. Messi"
+                placeholder="e.g. Saka"
                 value={predScorer}
                 disabled={isSubmissionLocked}
                 onChange={e => setPredScorer(e.target.value)}
@@ -125,7 +125,7 @@ export default function PredictionModal({
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Man of the Match</label>
               <input
                 type="text"
-                placeholder="e.g. Yamal"
+                placeholder="e.g. Haaland"
                 value={predMotm}
                 disabled={isSubmissionLocked}
                 onChange={e => setPredMotm(e.target.value)}

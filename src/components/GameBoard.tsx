@@ -55,40 +55,32 @@ export default function GameBoard() {
     window.addEventListener('storage', sync);
 
     const load = async () => {
-      try {
-        const [boardRes, statsRes, matchRes, teamRes] = await Promise.all([
-          fetchWithTimeout('/api/leaderboard?limit=50'),
-          fetchWithTimeout('/api/stats'),
-          fetchWithTimeout('/api/matches'),
-          fetchWithTimeout('/api/teams'),
-        ]);
-        if (boardRes.ok) {
-          const data = await boardRes.json();
-          setEntries(Array.isArray(data.entries) ? data.entries : []);
+      const read = async (url: string) => {
+        try {
+          const res = await fetchWithTimeout(url);
+          if (!res.ok) return null;
+          return res.json();
+        } catch {
+          return null;
         }
-        if (statsRes.ok) {
-          const data = await statsRes.json();
-          if (!data.degraded) {
-            setStats({
-              takes: Number(data.takes) || 0,
-              cases: Number(data.cases) || 0,
-              cards: Number(data.cards) || 0,
-            });
-          }
-        }
-        if (matchRes.ok) {
-          const data = await matchRes.json();
-          setMatches(Array.isArray(data) ? data : []);
-        }
-        if (teamRes.ok) {
-          const data = await teamRes.json();
-          setTeams(Array.isArray(data) ? data : []);
-        }
-      } catch {
-        setEntries([]);
-      } finally {
-        setReady(true);
+      };
+      const [boardData, statsData, matchData, teamData] = await Promise.all([
+        read('/api/leaderboard?limit=50'),
+        read('/api/stats'),
+        read('/api/matches'),
+        read('/api/teams'),
+      ]);
+      if (boardData && Array.isArray(boardData.entries)) setEntries(boardData.entries);
+      if (statsData && !statsData.degraded) {
+        setStats({
+          takes: Number(statsData.takes) || 0,
+          cases: Number(statsData.cases) || 0,
+          cards: Number(statsData.cards) || 0,
+        });
       }
+      if (Array.isArray(matchData)) setMatches(matchData);
+      if (Array.isArray(teamData)) setTeams(teamData);
+      setReady(true);
     };
     void load();
     return () => window.removeEventListener('storage', sync);

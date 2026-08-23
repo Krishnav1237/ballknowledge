@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { CHAT_BOT_USERNAMES } from '@/lib/chatList';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
         : { overallRating: 'desc' as const };
 
     const profiles = await prisma.footballIQProfile.findMany({
+      where: { username: { notIn: [...CHAT_BOT_USERNAMES] } },
       orderBy: orderField,
       take: limit,
       select: {

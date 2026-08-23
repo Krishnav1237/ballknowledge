@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { getPremierLeagueClubs, getPremierLeagueMatches } from './premierLeagueData';
-import { getMatchClockStatus, parseLocalDate } from './matchUtils';
+import { getMatchClockStatus, hasOfficialScore, parseLocalDate } from './matchUtils';
 import { getRosterForTeam, isPlayerAllowedForSlot, type Player } from './roster';
 import {
   calculateHOT,
@@ -35,8 +35,23 @@ test('shipped match clock status uses fixture kickoff from the live loaders', ()
   const kickoff = parseLocalDate(opening.local_date, opening.stadium_id).getTime();
   assert.equal(getMatchClockStatus(opening, kickoff - 1), 'UPCOMING');
   assert.equal(getMatchClockStatus({ ...opening, finished: 'FALSE' }, kickoff + 1), 'LIVE');
-  assert.equal(getMatchClockStatus({ ...opening, finished: 'TRUE' }, kickoff + 1), 'COMPLETED');
-  assert.equal(getMatchClockStatus({ ...opening, finished: 'FALSE' }, kickoff + 3 * 60 * 60 * 1000), 'COMPLETED');
+  assert.equal(hasOfficialScore(opening), false);
+  assert.equal(getMatchClockStatus({ ...opening, finished: 'TRUE' }, kickoff + 1), 'LIVE');
+  assert.equal(
+    getMatchClockStatus({ ...opening, finished: 'TRUE', home_score: '2', away_score: '0' }, kickoff + 1),
+    'COMPLETED',
+  );
+  assert.equal(
+    getMatchClockStatus({ ...opening, finished: 'FALSE' }, kickoff + 3 * 60 * 60 * 1000),
+    'LIVE',
+  );
+  assert.equal(
+    getMatchClockStatus(
+      { ...opening, finished: 'TRUE', home_score: '2', away_score: '0' },
+      kickoff + 3 * 60 * 60 * 1000,
+    ),
+    'COMPLETED',
+  );
 });
 
 test('every live club roster fills a legal 4-3-3 and rejects illegal slots', () => {

@@ -110,10 +110,10 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-center items-center px-4">
         <div className="bg-[#0B0F19]/90 border border-rose-900/40 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-xl">
           <ShieldAlert className="w-12 h-12 text-[#E11D48] mx-auto mb-4" />
-          <h2 className="font-display font-black text-2xl uppercase tracking-wider mb-2">DOSSIER NOT FOUND</h2>
+          <h2 className="font-display font-black text-2xl uppercase tracking-wider mb-2">MANAGER NOT FOUND</h2>
           <p className="text-gray-400 text-xs mb-6 leading-relaxed">{errorMsg || 'The requested manager profile does not exist.'}</p>
           <Link href="/" className="inline-block py-3 px-6 rounded-xl bg-gradient-to-r from-[#881337] to-[#E11D48] text-white font-display font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 transition-transform">
-            Return to Hub
+            Back to the board
           </Link>
         </div>
       </div>
@@ -542,7 +542,7 @@ export default function PublicProfilePage() {
             {profile.username}&apos;S <span className="text-[#E11D48]">BINDER</span>
           </h1>
           <p className="text-zinc-400 text-[10px] sm:text-xs mt-2.5 font-black uppercase tracking-widest leading-none">
-            PREMIER LEAGUE 2026/27 DOSSIER <span className="text-zinc-600 mx-2">•</span> EARNED VERDICT CARDS
+            PREMIER LEAGUE 2026/27 <span className="text-zinc-600 mx-2">•</span> CARDS
           </p>
         </div>
 

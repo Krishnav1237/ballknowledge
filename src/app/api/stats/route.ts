@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { CHAT_BOT_USERNAMES } from '@/lib/chatList';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     const [profileCount, cardCount, hotTakeCount] = await Promise.all([
-      prisma.footballIQProfile.count(),
+      prisma.footballIQProfile.count({
+        where: { username: { notIn: [...CHAT_BOT_USERNAMES] } },
+      }),
       prisma.matchCard.count(),
       prisma.hotTake.count(),
     ]);

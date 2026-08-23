@@ -94,16 +94,25 @@ export function clockNow(): number {
 
 export type MatchClockStatus = 'UPCOMING' | 'LIVE' | 'COMPLETED';
 
+export function hasOfficialScore(match: { home_score?: string; away_score?: string; finished?: string }): boolean {
+  const home = match.home_score;
+  const away = match.away_score;
+  if (home == null || away == null || home === '' || away === '' || home === 'null' || away === 'null') {
+    return false;
+  }
+  return Number.isFinite(Number(home)) && Number.isFinite(Number(away));
+}
+
 export function getMatchClockStatus(
-  match: { finished?: string; local_date: string; stadium_id?: string },
+  match: { finished?: string; local_date: string; stadium_id?: string; home_score?: string; away_score?: string },
   nowMs: number,
 ): MatchClockStatus {
-  if (match.finished === 'TRUE') return 'COMPLETED';
+  if (match.finished === 'TRUE' && hasOfficialScore(match)) return 'COMPLETED';
   const kickoff = parseLocalDate(match.local_date, match.stadium_id);
   const elapsedMs = nowMs - kickoff.getTime();
   if (elapsedMs < 0) return 'UPCOMING';
   if (elapsedMs < 3 * 60 * 60 * 1000) return 'LIVE';
-  return 'COMPLETED';
+  return hasOfficialScore(match) ? 'COMPLETED' : 'LIVE';
 }
 
 /**
@@ -251,9 +260,8 @@ export function getDeterministicMatchResult(
       }
     }
   } else if (hasEndedByTime) {
-    // Case B: Match duration elapsed but no real result registered yet. Avoid fabricating fake results.
-    homeScore = 0;
-    awayScore = 0;
+    homeScore = Number.NaN;
+    awayScore = Number.NaN;
     firstGoalscorer = 'None';
     motm = 'None';
   }

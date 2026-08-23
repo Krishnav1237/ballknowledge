@@ -1,5 +1,7 @@
 /** Chat list payload used by GET /api/chat/:matchId. Always returns a messages array. */
 
+export const CHAT_BOT_USERNAMES = ['VARTribunal', 'TacticalMaster'] as const;
+
 export type ChatListMessage = {
   id: string;
   matchId: string;

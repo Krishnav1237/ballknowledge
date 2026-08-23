@@ -137,7 +137,7 @@ export default function PremierLeagueHub() {
     if (status === 'UPCOMING') return '-';
     const raw = side === 'home' ? match.home_score : match.away_score;
     if (raw !== null && raw !== undefined && raw !== '' && raw !== 'null') return String(raw);
-    return '0';
+    return status === 'LIVE' ? '-' : '-';
   };
 
   const weekMatches = useMemo(() => {
