@@ -21,6 +21,7 @@ export async function GET() {
       takes: 0,
       cases: 0,
       cards: 0,
+      degraded: true,
     });
   }
 }

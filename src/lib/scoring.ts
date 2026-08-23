@@ -36,14 +36,6 @@ const CONFIDENCE_MULTIPLIER: Record<number, number> = {
   1: 0.80, 2: 0.90, 3: 1.00, 4: 1.10, 5: 1.20,
 };
 
-function getPlayerRating(playerName: string): number {
-  const lower = playerName.toLowerCase().trim();
-  for (const [key, rating] of Object.entries(PLAYER_RATING_MAP)) {
-    if (lower.includes(key) || key.includes(lower)) return rating;
-  }
-  return 7.0;
-}
-
 function getPlayerTeamGlobal(playerName: string): string | null {
   const lower = playerName.toLowerCase().trim();
   if (!lower || lower === 'none') return null;
@@ -72,23 +64,6 @@ function getPlayerTeamName(playerName: string, homeTeam: string, awayTeam: strin
   return null;
 }
 
-function isStrongPlayer(playerName: string): boolean {
-  const rating = getPlayerRating(playerName);
-  if (rating >= 8.2) return true;
-
-  const lower = playerName.toLowerCase().trim();
-  for (const roster of Object.values(TEAM_ROSTERS)) {
-    for (const p of roster) {
-      const pName = p.name.toLowerCase().trim();
-      if (pName === lower || pName.includes(lower) || lower.includes(pName)) {
-        if (p.rating >= 82) return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 function getPlayerRatingFromRoster(playerName: string): number {
   const lower = playerName.toLowerCase().trim();
 
@@ -110,8 +85,8 @@ function getPlayerRatingFromRoster(playerName: string): number {
 
 function getTakeBaseScore(grade: string): number {
   if (grade === 'CORRECT')           return 100;
-  if (grade === 'PARTIALLY_CORRECT') return  50;
-  return 0;
+  if (grade === 'PARTIALLY_CORRECT') return  75;
+  return 50;
 }
 
 export function calculatePRD(params: {
@@ -131,7 +106,7 @@ export function calculatePRD(params: {
   if (predOutcome === actualOutcome) {
     outcomePoints = predOutcome === 0 ? 35 : 30;
   } else {
-    outcomePoints = 0;
+    outcomePoints = 15;
   }
 
   const homeDiff   = Math.abs(predHome - actualHome);
@@ -152,9 +127,9 @@ export function calculatePRD(params: {
       const predTeam   = getPlayerTeamName(predMotm, homeTeamName, awayTeamName);
       const actualTeam = getPlayerTeamName(actualMotm, homeTeamName, awayTeamName);
       if (predTeam && actualTeam && predTeam === actualTeam) {
-        motmPoints = isStrongPlayer(predMotm) ? 12 : 7;
+        motmPoints = 12;
       } else {
-        motmPoints = 0;
+        motmPoints = 4;
       }
     }
   } else if (!pm || pm === 'none') {
@@ -176,9 +151,9 @@ export function calculatePRD(params: {
       const actualTeam = getPlayerTeamName(actualScorer, homeTeamName, awayTeamName);
       if (predTeam && actualTeam && predTeam === actualTeam) {
         const scoredLater = allScorersLower.some(s => s.includes(ps) || ps.includes(s));
-        scorerPoints = scoredLater ? 10 : isStrongPlayer(predScorer) ? 5 : 0;
+        scorerPoints = scoredLater ? 10 : 3;
       } else {
-        scorerPoints = 0;
+        scorerPoints = 3;
       }
     }
   } else if (!ps || ps === 'none') {
@@ -191,8 +166,9 @@ export function calculatePRD(params: {
 export function calculateMGR(
   lineup: Record<string, any>,
   playerMatchRatings: Record<string, number>,
-  hasRealSofaScoreData = false
+  hasRealSofaScoreData = false,
 ): number {
+  void hasRealSofaScoreData;
   const players = Object.values(lineup).filter(p => p && p.name);
   if (!players.length) return 50;
 
@@ -201,12 +177,9 @@ export function calculateMGR(
     normRatings[k.toLowerCase().trim()] = v;
   }
 
-  let sumScore   = 0;
-  let totalWeight = 0;
-
+  const matchRatings: number[] = [];
   for (const p of players) {
     const pNorm = p.name.toLowerCase().trim();
-
     let rawRating: number | undefined =
       normRatings[pNorm] ??
       Object.entries(normRatings).find(([k]) => pNorm.includes(k) || k.includes(pNorm))?.[1];
@@ -214,20 +187,12 @@ export function calculateMGR(
     if (rawRating === undefined) {
       rawRating = getPlayerRatingFromRoster(p.name);
     }
-
-    let score: number;
-    if (hasRealSofaScoreData) {
-      score = Math.round(Math.max(0, Math.min(99, ((rawRating - 6.0) / 4.0) * 99)));
-    } else {
-      score = Math.round(Math.max(30, Math.min(90, ((rawRating - 6.0) / 3.5) * 60 + 30)));
-    }
-
-    const weight = p.isCaptain ? 2.0 : p.isViceCaptain ? 1.5 : 1.0;
-    sumScore    += score * weight;
-    totalWeight += weight;
+    if (rawRating > 10) rawRating = rawRating / 10;
+    matchRatings.push(rawRating);
   }
 
-  return Math.max(0, Math.min(99, Math.round(sumScore / totalWeight)));
+  const avg = matchRatings.reduce((sum, rating) => sum + rating, 0) / matchRatings.length;
+  return Math.max(10, Math.min(99, Math.round(avg * 10)));
 }
 
 export function calculateHOT(gradedTakes: Array<{ grade: string; confidence: number }>): number {
@@ -243,8 +208,7 @@ export function calculateHOT(gradedTakes: Array<{ grade: string; confidence: num
 }
 
 export function calculateRSTFromActivity(messageCount: number, upvotes: number): number {
-  const raw = Math.sqrt(messageCount * 8 + upvotes * 4) * 10;
-  return Math.max(0, Math.min(100, Math.round(raw)));
+  return Math.max(50, Math.min(100, 50 + Math.max(0, messageCount) + Math.max(0, upvotes)));
 }
 
 export function calculateOVR(prd: number, mgr: number, hot: number, rst: number): number {

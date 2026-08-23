@@ -68,11 +68,13 @@ export default function GameBoard() {
         }
         if (statsRes.ok) {
           const data = await statsRes.json();
-          setStats({
-            takes: Number(data.takes) || 0,
-            cases: Number(data.cases) || 0,
-            cards: Number(data.cards) || 0,
-          });
+          if (!data.degraded) {
+            setStats({
+              takes: Number(data.takes) || 0,
+              cases: Number(data.cases) || 0,
+              cards: Number(data.cards) || 0,
+            });
+          }
         }
         if (matchRes.ok) {
           const data = await matchRes.json();

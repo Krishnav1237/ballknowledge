@@ -458,9 +458,9 @@ export async function POST(request: Request) {
     let verdictText = 'DELUSION MERCHANT';
 
     // Rarity tiers recalibrated: OVR now ranges from ~1 to 99 with no free floor points
-    if (ovr >= 85)      { rarity = 'LEGENDARY'; verdictText = 'CERTIFIED GOAT DISCUSSION'; }
-    else if (ovr >= 70) { rarity = 'EPIC';      verdictText = 'BALL KNOWLEDGE SUPREME';   }
-    else if (ovr >= 55) { rarity = 'RARE';      verdictText = 'MID TAKE APPROVED';         }
+    if (ovr >= 90)      { rarity = 'LEGENDARY'; verdictText = 'CERTIFIED GOAT DISCUSSION'; }
+    else if (ovr >= 75) { rarity = 'EPIC';      verdictText = 'BALL KNOWLEDGE SUPREME';   }
+    else if (ovr >= 60) { rarity = 'RARE';      verdictText = 'MID TAKE APPROVED';         }
     else if (ovr >= 30) { rarity = 'COMMON';    verdictText = 'DELUSION MERCHANT';         }
     else                { rarity = 'COMMON';    verdictText = 'FOOTBALL TERRORIST';         }
 

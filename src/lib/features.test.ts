@@ -115,6 +115,11 @@ test('shipped scoring returns finite PRD and OVR on a representative prediction'
   assert.ok(rst >= 0 && rst <= 100);
   assert.ok(ovr >= 1 && ovr <= 99);
   assert.ok(ovr > worseOvr);
+
+  assert.equal(calculateHOT([{ grade: 'PARTIALLY_CORRECT', confidence: 3 }]), 75);
+  assert.equal(calculateHOT([{ grade: 'INCORRECT', confidence: 3 }]), 50);
+  assert.equal(calculateRSTFromActivity(0, 0), 50);
+  assert.equal(calculateRSTFromActivity(10, 5), 65);
 });
 
 test('primary pages stay on the dark shell and Navbar points at live destinations', () => {

@@ -307,7 +307,7 @@ export default function MatchPage() {
       fetchWithTimeout(`/api/sofascore-sync?matchId=${matchId}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
-          if (data?.success) {
+          if (data?.success && !data.fallback && !data.data?.isFallback) {
             setSofaSyncedAt(data.cachedAt || Math.floor(clockNow() / 1000));
             refetchMatches();
           }
@@ -1141,11 +1141,11 @@ export default function MatchPage() {
                       </span>
                     </div>
                     {/* SofaScore live data indicator */}
-                    {(status === 'LIVE' || sofaSyncedAt) && (
+                    {sofaSyncedAt && (
                       <div className="flex items-center gap-1">
                         <span className={`inline-block w-1.5 h-1.5 rounded-full ${status === 'LIVE' ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
                         <span className="text-[8px] font-mono text-zinc-500">
-                          {status === 'LIVE' ? 'Live from SofaScore' : sofaSyncedAt ? `Synced SofaScore` : ''}
+                          {status === 'LIVE' ? 'Live scores' : 'Scores synced'}
                         </span>
                       </div>
                     )}

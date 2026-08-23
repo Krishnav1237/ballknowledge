@@ -193,14 +193,14 @@ export async function POST(request: Request) {
       console.warn('OpenRouter API key is missing. Using fallback card backdrop.');
     }
 
-    // Graceful fallback if AI image generation failed, timed out, or was missing API key
     if (!aiImageUrl) {
-      console.warn('AI image generation returned empty URL or failed. Activating fallback card template.');
-      aiImageUrl = FALLBACK_CARD_BG;
+      return NextResponse.json(
+        { success: false, error: 'Image generation failed.', fallbackImage: FALLBACK_CARD_BG },
+        { status: 503 },
+      );
     }
 
-    // Persist card URL to DB if matching card found
-    if (aiImageUrl && cardId) {
+    if (cardId) {
       try {
         const update = await prisma.matchCard.updateMany({
           where: { id: cardId, profileId: auth.session.profileId },

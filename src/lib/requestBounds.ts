@@ -2,7 +2,7 @@
 
 export const PAGE_FETCH_TIMEOUT_MS = 8_000;
 export const CHAT_FETCH_TIMEOUT_MS = 3_000;
-export const IMAGE_GEN_TIMEOUT_MS = 8_000;
+export const IMAGE_GEN_TIMEOUT_MS = 14_000;
 export const SOFASCORE_WAIT_MS = 8_000;
 export const GRADE_DEADLINE_MS = 4_000;
 
