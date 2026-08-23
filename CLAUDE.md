@@ -228,7 +228,9 @@ This is a **premium dark theme**. Board first, not a brochure. **Do not use ligh
 
 ## Production Checklist (Before Deploy)
 
-- [ ] `DATABASE_URL` set in the host environment (Vercel)
+- [ ] `DATABASE_URL` set in the host environment (Vercel pooled URL)
+- [ ] `DIRECT_URL` set for Prisma
+- [ ] `AUTH_SECRET` set (>=32 random bytes) or login 500s
 - [ ] `OPENROUTER_API_KEY` set (AI grading + image gen)
 - [ ] `GROQ_API_KEY` set (fallback)
 - [ ] `NEXT_PUBLIC_SITE_URL` set to `https://ballknowledge.live`

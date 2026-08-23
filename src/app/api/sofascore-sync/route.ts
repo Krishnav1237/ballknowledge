@@ -59,6 +59,7 @@ function readCache(): SofaScoreCache {
 
 function writeCache(cache: SofaScoreCache) {
   memoryCache = cache;
+  if (process.env.VERCEL) return;
   try {
     fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8');
   } catch (err) {
@@ -84,8 +85,18 @@ function isCacheStale(entry: { fetchedAt: number; data: any }): boolean {
   return age > LIVE_TTL_SECONDS;
 }
 
+function scraperAvailable(): boolean {
+  if (process.env.VERCEL) return false;
+  try {
+    return fs.existsSync(SCRAPER_PATH);
+  } catch {
+    return false;
+  }
+}
+
 // Process runner with strict concurrency queuing
 async function runScraperInstance(eventId: number): Promise<any> {
+  if (!scraperAvailable()) return null;
   if (activeProcessCount >= 2) {
     if (processQueue.length >= 10) {
       throw new Error('Server busy (sync queue full). Please try again in a few seconds.');

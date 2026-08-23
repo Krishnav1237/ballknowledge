@@ -706,7 +706,7 @@ export default function ProfileSettingsPage() {
                     type="submit"
                     className="w-full h-11 rounded-xl bg-gradient-to-r from-[#E11D48] to-[#881337] hover:from-rose-500 hover:to-[#a21a3a] text-white font-display font-black text-[10px] uppercase tracking-widest cursor-pointer group shadow-[0_4px_12px_rgba(225,29,72,0.2)] hover:shadow-[0_4px_16px_rgba(225,29,72,0.35)] active:scale-98 transition-all"
                   >
-                    {authMode === 'signin' ? 'ENTER LOCKER ROOM' : 'CREATE MANAGER PROFILE'}
+                    {authMode === 'signin' ? 'GET IN' : 'CREATE PROFILE'}
                   </button>
 
 

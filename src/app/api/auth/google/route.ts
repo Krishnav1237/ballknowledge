@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { attachSessionCookie, cleanUsername } from '@/lib/authSession';
 
@@ -71,42 +72,45 @@ export async function POST(request: Request) {
     });
 
     if (!profile) {
-      // 2. If no profile exists, create a unique username (alias) from their email or name
       const baseAlias = cleanUsername(name || email.split('@')[0]) || 'Manager';
-      let uniqueAlias = baseAlias;
-      
-      // Ensure unique constraint in DB
-      let existingAlias = await prisma.footballIQProfile.findUnique({
-        where: { username: uniqueAlias }
-      });
-      let attempts = 0;
-      while (existingAlias && attempts < 10) {
-        uniqueAlias = cleanUsername(`${baseAlias}_${Math.floor(Math.random() * 1000)}`);
-        existingAlias = await prisma.footballIQProfile.findUnique({
-          where: { username: uniqueAlias }
-        });
-        attempts++;
-      }
-
-      // Create new profile with Google Auth details
-      profile = await prisma.footballIQProfile.create({
-        data: {
-          username: uniqueAlias,
-          email,
-          name,
-          avatarStyle: 'fun-emoji',
-          avatarSeed: picture || 'Reputation',
-          favoriteClub: 'Arsenal',
-          favoriteNation: 'England',
-          overallRating: 50,
-          predictionRating: 50,
-          hotTakeRating: 50,
-          managerRating: 50,
-          roastScore: 50,
-          role: 'FREE',
-          season: 'Premier League 2026/27'
+      for (let attempts = 0; attempts < 12 && !profile; attempts++) {
+        const uniqueAlias = attempts === 0
+          ? baseAlias
+          : cleanUsername(`${baseAlias}_${Math.floor(Math.random() * 10000)}`);
+        try {
+          profile = await prisma.footballIQProfile.create({
+            data: {
+              username: uniqueAlias,
+              email,
+              name,
+              avatarStyle: 'fun-emoji',
+              avatarSeed: picture || 'Reputation',
+              favoriteClub: 'Arsenal',
+              favoriteNation: 'England',
+              overallRating: 50,
+              predictionRating: 50,
+              hotTakeRating: 50,
+              managerRating: 50,
+              roastScore: 50,
+              role: 'FREE',
+              season: 'Premier League 2026/27'
+            }
+          });
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            const existingEmail = await prisma.footballIQProfile.findUnique({ where: { email } });
+            if (existingEmail) {
+              profile = existingEmail;
+              break;
+            }
+            continue;
+          }
+          throw error;
         }
-      });
+      }
+      if (!profile) {
+        return NextResponse.json({ error: 'Could not create a unique manager alias.' }, { status: 409 });
+      }
     } else {
       // If profile exists, update Google profile picture if avatarSeed is not a customized upload
       if (picture && (!profile.avatarSeed.startsWith('data:image') && profile.avatarSeed === 'Reputation')) {

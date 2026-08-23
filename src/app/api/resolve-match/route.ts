@@ -353,23 +353,7 @@ export async function POST(request: Request) {
     const homeTeamName = teams.find((t: any) => t.id === match.home_team_id)?.name_en || match.home_team_label || 'Home';
     const awayTeamName = teams.find((t: any) => t.id === match.away_team_id)?.name_en || match.away_team_label || 'Away';
 
-    // ── Trigger SofaScore sync before resolving (non-blocking best-effort) ────
-    // This refreshes the sofascore_cache.json so the match object carries real
-    // player ratings (sofascore_ratings) and goalscorer data (sofascore_firstGoalscorer, sofascore_motm).
-    let enrichedMatch = match;
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-      const syncRes = await fetch(`${baseUrl}/api/sofascore-sync?matchId=${safeMatchId}`, {
-        signal: AbortSignal.timeout(8000),
-      });
-      if (syncRes.ok) {
-        // Re-fetch matches so the SofaScore overlay is applied
-        const freshMatches = await fetchPremierLeagueMatches();
-        enrichedMatch = freshMatches.find((m: any) => String(m.id) === safeMatchId) || match;
-      }
-    } catch (syncErr) {
-      console.warn(`[resolve-match] SofaScore sync failed for match ${safeMatchId}, using cached data:`, (syncErr as Error).message);
-    }
+    const enrichedMatch = match;
 
     // Get deterministic completed result — uses enrichedMatch which has SofaScore data overlaid
     const result = getDeterministicMatchResult(safeMatchId, homeTeamName, awayTeamName, enrichedMatch);

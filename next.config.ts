@@ -27,11 +27,11 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://accounts.google.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com https://frontend-cdn.perplexity.ai",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://openrouter.ai https://api.dicebear.com https://flagcdn.com https://*.cloudflareinsights.com https://cloudflareinsights.com",
+      "connect-src 'self' https://openrouter.ai https://api.dicebear.com https://flagcdn.com https://*.cloudflareinsights.com https://cloudflareinsights.com https://accounts.google.com https://oauth2.googleapis.com https://api.groq.com",
       "frame-ancestors 'none'",
     ].join('; '),
   },

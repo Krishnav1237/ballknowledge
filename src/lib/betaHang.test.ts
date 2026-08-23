@@ -107,6 +107,10 @@ test('malformed session cookie does not throw and auth GET degrades', () => {
   const board = readFileSync(join(process.cwd(), 'src/components/GameBoard.tsx'), 'utf8');
   assert.match(board, /fetchWithTimeout/);
   assert.match(board, /\/api\/leaderboard/);
+
+  const resolveMatch = readFileSync(join(process.cwd(), 'src/app/api/resolve-match/route.ts'), 'utf8');
+  assert.equal(resolveMatch.includes('localhost:3000'), false);
+  assert.equal(resolveMatch.includes('/api/sofascore-sync'), false);
 });
 
 test('firstResolved returns the fallback instead of hanging', async () => {

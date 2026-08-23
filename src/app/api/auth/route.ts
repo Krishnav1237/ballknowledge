@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 import { anonymousAuthBody, attachSessionCookie, cleanShortText, cleanUsername, expiredSessionCookieHeader, getSessionFromRequest } from '@/lib/authSession';
@@ -118,26 +119,33 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Email is already registered.' }, { status: 409 });
       }
 
-      // Hash password and create new profile in database
       const passwordHash = hashPassword(normalizedPassword, normalizedUsername);
-      const profile = await prisma.footballIQProfile.create({
-        data: {
-          username: normalizedUsername,
-          email: normalizedEmail,
-          passwordHash,
-          avatarStyle: 'fun-emoji',
-          avatarSeed: 'Reputation',
-          favoriteClub: cleanShortText(favoriteClub, 80) || 'Arsenal',
-          favoriteNation: cleanShortText(favoriteNation, 80) || 'England',
-          overallRating: 50,
-          predictionRating: 50,
-          hotTakeRating: 50,
-          managerRating: 50,
-          roastScore: 50,
-          role: 'FREE',
-          season: 'Premier League 2026/27'
+      let profile;
+      try {
+        profile = await prisma.footballIQProfile.create({
+          data: {
+            username: normalizedUsername,
+            email: normalizedEmail,
+            passwordHash,
+            avatarStyle: 'fun-emoji',
+            avatarSeed: 'Reputation',
+            favoriteClub: cleanShortText(favoriteClub, 80) || 'Arsenal',
+            favoriteNation: cleanShortText(favoriteNation, 80) || 'England',
+            overallRating: 50,
+            predictionRating: 50,
+            hotTakeRating: 50,
+            managerRating: 50,
+            roastScore: 50,
+            role: 'FREE',
+            season: 'Premier League 2026/27'
+          }
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          return NextResponse.json({ error: 'Username or email is already taken.' }, { status: 409 });
         }
-      });
+        throw error;
+      }
 
       const response = NextResponse.json({
         success: true,

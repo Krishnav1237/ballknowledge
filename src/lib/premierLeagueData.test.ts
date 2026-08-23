@@ -128,6 +128,7 @@ test('live UI source does not advertise World Cup 2026 knockout identity', () =>
     /AI VAR Tribunal/i,
     /Reputation Arena/i,
     /Locker Room Login/,
+    /ENTER LOCKER ROOM/,
     /Stockley Park/,
     /Manager Dossier/,
     /Authenticating Dossier/,
