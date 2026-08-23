@@ -4,7 +4,9 @@ Premier League 2026/27. Public OVR board. Rank is the OVR — nothing else.
 
 🔗 **Live**: [ballknowledge.live](https://ballknowledge.live)
 
-You land on the board. You see who is #1. You call the next fixture to climb. Cards are what you post when you want someone to beat you.
+You land in a two-panel arena: next fixture on the left, public OVR board on the right. See who is #1. Call the next match. Climb or get climbed on. Cards are what you post when you want someone to beat you.
+
+Dark HUD: `#030712` / `#0B0F19` / `#E11D48`. Stadium backdrop, live chips, #1 spotlight. Not a brochure.
 
 ```
 Board → Season map → Match → Card → Share
@@ -12,7 +14,7 @@ Board → Season map → Match → Card → Share
 
 | Screen | Route | What it is |
 |--------|-------|------------|
-| Board | `/` and `/leaderboard` | Public OVR list. Take #1. |
+| Board | `/` and `/leaderboard` | Arena: next fixture + ranked OVRs. Take #1. |
 | Season | `/premier-league` | 38 matchweeks, 380 fixtures, table |
 | Match | `/match/[id]` | Lock score, MOTM, scorer, takes, XI. Chat when live. Grade when done. |
 | Card | `/football-iq` | Your OVR card and album |

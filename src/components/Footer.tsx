@@ -9,7 +9,7 @@ export default function Footer() {
         <Link href="/" className="text-white hover:text-[#E11D48]">
           BALL<span className="text-[#E11D48]">KNOWLEDGE</span>
         </Link>
-        <span>Season 26/27</span>
+        <span>Season 26/27 · Take #1</span>
       </div>
     </footer>
   );

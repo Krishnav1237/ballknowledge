@@ -58,7 +58,7 @@ FACEBOOK_CLIENT_SECRET="your-facebook-app-secret"
 - **Server Components** are the default. Only add `'use client'` when hooks/browser APIs are required.
 
 ### Product
-Public OVR board for Premier League 2026/27. Home (`/` and `/leaderboard`) is the ranked list. Rank is the OVR. Climb by calling fixtures. Do not add a marketing landing.
+Public OVR board for Premier League 2026/27. Home (`/` and `/leaderboard`) is a two-panel arena: next fixture + ranked OVRs (`GameBoard`). Rank is the OVR. Climb by calling fixtures. Keep it a game HUD — stadium atmosphere, #1 spotlight, OVR bars — not a marketing landing and not a sparse text list.
 
 ### Data Layer — Offline-First Hybrid
 ```

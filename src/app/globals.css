@@ -75,3 +75,20 @@ html, body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.ovr-glow {
+  text-shadow: 0 0 28px rgba(225, 29, 72, 0.55);
+}
+
+.hud-chip {
+  background: rgba(11, 15, 25, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(225, 29, 72, 0.35);
+  border-radius: 9999px;
+}

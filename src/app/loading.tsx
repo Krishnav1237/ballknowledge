@@ -8,11 +8,11 @@ export default function Loading() {
         <div className="relative w-14 h-14 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full border-2 border-t-[#E11D48] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '0.8s' }} />
           <div className="absolute inset-1.5 rounded-full border-2 border-b-[#881337] border-t-transparent border-r-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.2s', animationDirection: 'reverse' }} />
-          <span className="font-display font-black text-[9px] text-white/80 uppercase tracking-widest animate-pulse">OVR</span>
+          <span className="font-display font-black text-[9px] text-[#E11D48] uppercase tracking-widest animate-pulse">OVR</span>
         </div>
         
         <p className="text-[10px] font-sans font-black text-gray-500 uppercase tracking-[0.2em] mt-1">
-          Loading your card...
+          Loading the board...
         </p>
       </div>
     </div>

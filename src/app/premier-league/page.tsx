@@ -256,7 +256,11 @@ export default function PremierLeagueHub() {
                     <Link
                       key={match.id}
                       href={`/match/${match.id}`}
-                      className="group border border-white/10 hover:border-[#E11D48]/50 hover:bg-white/[0.04] bg-black/40 rounded-2xl p-4 flex flex-col gap-3 transition-colors duration-150"
+                      className={`group border rounded-2xl p-4 flex flex-col gap-3 transition-colors duration-150 bg-black/45 ${
+                        status === 'LIVE'
+                          ? 'border-[#E11D48]/60 shadow-[0_0_24px_rgba(225,29,72,0.18)]'
+                          : 'border-white/10 hover:border-[#E11D48]/50 hover:bg-white/[0.04]'
+                      }`}
                     >
                       <div className="flex justify-between items-center">
                         <span className="text-[9px] font-black uppercase tracking-wider text-[#E11D48] font-mono">
@@ -280,17 +284,17 @@ export default function PremierLeagueHub() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 bg-black/30 border border-white/5 rounded-xl px-3 py-2.5">
+                      <div className="flex items-center gap-2 bg-black/50 border border-white/10 rounded-xl px-3 py-3">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <FlagImage countryName={homeName} size="sm" className="w-7 h-7 rounded-full object-cover shrink-0" />
-                          <span className="font-display font-black text-xs uppercase truncate">{homeName}</span>
+                          <FlagImage countryName={homeName} size="md" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                          <span className="font-display font-black text-sm uppercase truncate">{homeName}</span>
                         </div>
-                        <div className="px-2 shrink-0 font-mono font-black text-[#E11D48]">
-                          {status === 'UPCOMING' ? 'VS' : `${getScore(match, 'home')} – ${getScore(match, 'away')}`}
+                        <div className="px-2 shrink-0 font-display font-black text-lg text-[#E11D48]">
+                          {status === 'UPCOMING' || getScore(match, 'home') === '-' ? 'VS' : `${getScore(match, 'home')} – ${getScore(match, 'away')}`}
                         </div>
                         <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-                          <span className="font-display font-black text-xs uppercase truncate text-right">{awayName}</span>
-                          <FlagImage countryName={awayName} size="sm" className="w-7 h-7 rounded-full object-cover shrink-0" />
+                          <span className="font-display font-black text-sm uppercase truncate text-right">{awayName}</span>
+                          <FlagImage countryName={awayName} size="md" className="w-9 h-9 rounded-full object-cover shrink-0" />
                         </div>
                       </div>
                       {status === 'COMPLETED' && (homeScorers.length > 0 || awayScorers.length > 0) && (

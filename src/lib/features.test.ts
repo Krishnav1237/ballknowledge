@@ -211,4 +211,6 @@ test('home is an outbid-style rank board, not a sales landing', () => {
   assert.match(board, /pickFeaturedMatch/);
   assert.match(board, /\/match\//);
   assert.match(board, /Post your OVR/);
+  assert.match(board, /stadium_bg/);
+  assert.match(board, /lg:grid-cols-12/);
 });

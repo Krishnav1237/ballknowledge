@@ -45,7 +45,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="fixed top-0 left-0 w-full h-[52px] flex items-center z-[100] border-b border-white/10 bg-[#0B0F19] shadow-md shadow-black/30"
+        className="fixed top-0 left-0 w-full h-[52px] flex items-center z-[100] border-b border-white/10 bg-[#0B0F19] shadow-[0_8px_24px_rgba(0,0,0,0.45)] after:pointer-events-none after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-[#E11D48]/60 after:to-transparent"
       >
         <div className="w-full px-6 flex items-center justify-between">
           {/* Logo — extreme left */}
@@ -94,7 +94,7 @@ export default function Navbar() {
             {/* Auth Button/Pill */}
             <Link
               href="/profile"
-              className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-1.5 pr-3 py-1"
+              className="flex items-center gap-2 bg-white/5 border border-[#E11D48]/25 rounded-full pl-1.5 pr-3 py-1 shadow-[0_0_12px_rgba(225,29,72,0.15)]"
             >
               <span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#881337] to-[#E11D48] flex items-center justify-center font-display font-black text-[10px] text-white">
                 {profile?.overallRating ?? 50}
